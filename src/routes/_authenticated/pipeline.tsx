@@ -7,6 +7,7 @@ import { updateLeadEtapa, markFirstResponse } from "@/lib/leads.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Phone, MessageCircle } from "lucide-react";
+import { LeadDetailSheet } from "@/components/lead-detail-sheet";
 
 export const Route = createFileRoute("/_authenticated/pipeline")({
   head: () => ({ meta: [{ title: "Pipeline — CRM" }] }),
@@ -16,6 +17,7 @@ export const Route = createFileRoute("/_authenticated/pipeline")({
 function PipelinePage() {
   const [leads, setLeads] = useState<LeadRow[]>([]);
   const [, setTick] = useState(0);
+  const [openLead, setOpenLead] = useState<string | null>(null);
   const updateEtapa = useServerFn(updateLeadEtapa);
   const markFirst = useServerFn(markFirstResponse);
 
@@ -60,15 +62,17 @@ function PipelinePage() {
         <div className="flex gap-4 overflow-x-auto pb-4">
           {ETAPAS.map((etapa) => (
             <Column key={etapa.id} id={etapa.id} title={etapa.nome}
-              leads={leads.filter((l) => l.etapa === etapa.id)} />
+              leads={leads.filter((l) => l.etapa === etapa.id)}
+              onOpen={setOpenLead} />
           ))}
         </div>
       </DndContext>
+      <LeadDetailSheet leadId={openLead} onClose={() => setOpenLead(null)} />
     </div>
   );
 }
 
-function Column({ id, title, leads }: { id: string; title: string; leads: LeadRow[] }) {
+function Column({ id, title, leads, onOpen }: { id: string; title: string; leads: LeadRow[]; onOpen: (id: string) => void }) {
   const { setNodeRef, isOver } = useDroppable({ id });
   return (
     <div ref={setNodeRef} className={`min-w-[280px] w-[280px] bg-muted/40 rounded-xl p-3 ${isOver ? "ring-2 ring-gold" : ""}`}>
@@ -77,13 +81,13 @@ function Column({ id, title, leads }: { id: string; title: string; leads: LeadRo
         <span className="text-xs bg-card border border-border rounded-full px-2 py-0.5">{leads.length}</span>
       </div>
       <div className="space-y-2">
-        {leads.map((lead) => <Card key={lead.id} lead={lead} />)}
+        {leads.map((lead) => <Card key={lead.id} lead={lead} onOpen={onOpen} />)}
       </div>
     </div>
   );
 }
 
-function Card({ lead }: { lead: LeadRow }) {
+function Card({ lead, onOpen }: { lead: LeadRow; onOpen: (id: string) => void }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: lead.id });
   const urgency = urgencyForLead(lead);
   const style = transform ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` } : undefined;
@@ -92,7 +96,8 @@ function Card({ lead }: { lead: LeadRow }) {
     : "bg-muted text-muted-foreground";
   return (
     <div ref={setNodeRef} style={style} {...listeners} {...attributes}
-      className={`bg-card border border-border rounded-lg p-3 cursor-grab active:cursor-grabbing ${isDragging ? "opacity-50" : ""}`}>
+      onClick={(e) => { if (!isDragging) { e.stopPropagation(); onOpen(lead.id); } }}
+      className={`bg-card border border-border rounded-lg p-3 cursor-pointer hover:border-gold/40 transition-colors ${isDragging ? "opacity-50 cursor-grabbing" : ""}`}>
       <div className="flex items-start justify-between gap-2">
         <div className="font-medium text-sm truncate">{lead.nome}</div>
         {!lead.first_response_at && lead.etapa !== "fechado_ganho" && lead.etapa !== "fechado_perdido" && (
