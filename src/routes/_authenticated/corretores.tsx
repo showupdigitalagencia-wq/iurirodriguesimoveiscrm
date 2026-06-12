@@ -138,7 +138,7 @@ function CorretoresPage() {
         </Table>
       </div>
 
-      <LeadDetailSheet leadId={openLead} onClose={() => setOpenLead(null)} onUpdated={load} />
+      <LeadDetailSheet leadId={openLead} onClose={() => setOpenLead(null)} onUpdated={load} backLabel="Voltar aos Corretores" />
     </div>
   );
 }

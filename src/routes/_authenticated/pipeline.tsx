@@ -67,7 +67,7 @@ function PipelinePage() {
           ))}
         </div>
       </DndContext>
-      <LeadDetailSheet leadId={openLead} onClose={() => setOpenLead(null)} />
+      <LeadDetailSheet leadId={openLead} onClose={() => setOpenLead(null)} backLabel="Voltar ao Pipeline" />
     </div>
   );
 }
