@@ -162,18 +162,31 @@ export const Route = createFileRoute("/api/public/webhook")({
           });
         }
 
-        if (responsavel?.whatsapp) {
-          const { sendZapiMessage, formatLeadMessage } = await import("@/lib/notify.server");
-          const msg = formatLeadMessage({
+        if (responsavel?.id) {
+          const { sendOneSignalPush, formatPushLead } = await import("@/lib/onesignal.server");
+          const { title, message } = formatPushLead({
             nome, telefone, email,
-            regiao: regiao.replace(/_/g, " "),
-            tipo_imovel, faixa_valor, observacoes,
+            regiao,
+            tipo_imovel,
+            faixa_valor,
+            observacoes,
+            is_corretor: isCaptacaoCorretor,
+            dados_corretor,
           });
-          const result = await sendZapiMessage(responsavel.whatsapp, msg);
+          const url = `https://iurirodriguesimoveiscrmcombr.lovable.app/leads?lead=${lead.id}`;
+          const result = await sendOneSignalPush({
+            externalId: responsavel.id,
+            title,
+            message,
+            url,
+            data: { lead_id: lead.id, regiao, canal, is_corretor: isCaptacaoCorretor },
+          });
           await supabaseAdmin.from("notificacoes").insert({
-            lead_id: lead.id, tipo: "whatsapp_novo_lead", destino: responsavel.whatsapp,
+            lead_id: lead.id,
+            tipo: "push_novo_lead",
+            destino: responsavel.id,
             status: result.ok ? "enviado" : "falha",
-            payload: { message: msg },
+            payload: { title, message, url } as never,
             resposta: (result.resp ?? { error: result.error }) as never,
           });
         }
