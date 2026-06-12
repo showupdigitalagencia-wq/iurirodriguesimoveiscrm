@@ -256,12 +256,24 @@ function RelatorioPage() {
         <div className="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
           <div className="min-w-[560px] md:min-w-0">
             <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={porEtapaPeriodo}>
-                <XAxis dataKey="nome" tick={{ fontSize: 10 }} angle={-25} textAnchor="end" height={70} />
-                <YAxis allowDecimals={false} />
-                <Tooltip />
-                <Bar dataKey="qtd" fill="#c9a35b" radius={[4, 4, 0, 0]} />
-              </BarChart>
+              {compareBrokers ? (
+                <BarChart data={funnelCompare}>
+                  <XAxis dataKey="nome" tick={{ fontSize: 10 }} angle={-25} textAnchor="end" height={70} />
+                  <YAxis allowDecimals={false} />
+                  <Tooltip />
+                  <Legend />
+                  {resps.map((r, i) => (
+                    <Bar key={r.id} dataKey={r.nome} fill={COLORS[i % COLORS.length]} radius={[4, 4, 0, 0]} />
+                  ))}
+                </BarChart>
+              ) : (
+                <BarChart data={porEtapaPeriodo}>
+                  <XAxis dataKey="nome" tick={{ fontSize: 10 }} angle={-25} textAnchor="end" height={70} />
+                  <YAxis allowDecimals={false} />
+                  <Tooltip />
+                  <Bar dataKey="qtd" fill="#c9a35b" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              )}
             </ResponsiveContainer>
           </div>
         </div>
@@ -278,7 +290,12 @@ function RelatorioPage() {
                 <XAxis dataKey="mes" />
                 <YAxis allowDecimals={false} />
                 <Tooltip />
-                <Line type="monotone" dataKey="total" stroke="#c9a35b" strokeWidth={2} dot={{ r: 4 }} />
+                <Legend />
+                {compareBrokers
+                  ? resps.map((r, i) => (
+                      <Line key={r.id} type="monotone" dataKey={r.nome} stroke={COLORS[i % COLORS.length]} strokeWidth={2} dot={{ r: 3 }} />
+                    ))
+                  : <Line type="monotone" dataKey="total" stroke="#c9a35b" strokeWidth={2} dot={{ r: 4 }} />}
               </LineChart>
             </ResponsiveContainer>
           </div>
