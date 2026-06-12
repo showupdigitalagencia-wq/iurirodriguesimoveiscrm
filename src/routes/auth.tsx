@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
@@ -17,7 +16,6 @@ export const Route = createFileRoute("/auth")({
 function AuthPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [tab, setTab] = useState("login");
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -37,25 +35,6 @@ function AuthPage() {
     else { toast.success("Bem-vindo!"); navigate({ to: "/dashboard" }); }
   }
 
-  async function handleSignup(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    const email = String(fd.get("email"));
-    const password = String(fd.get("password"));
-    const nome = String(fd.get("nome"));
-    setLoading(true);
-    const { error } = await supabase.auth.signUp({
-      email, password,
-      options: { data: { nome } },
-    });
-    setLoading(false);
-    if (error) toast.error(error.message);
-    else {
-      toast.success("Conta criada! Faça login.");
-      setTab("login");
-    }
-  }
-
   return (
     <main className="min-h-screen flex items-center justify-center px-4 bg-background">
       <div className="w-full max-w-md">
@@ -64,12 +43,7 @@ function AuthPage() {
           <div className="text-2xl font-bold text-gold mt-1">CRM Imóveis</div>
         </Link>
         <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
-          <Tabs value={tab} onValueChange={setTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-4">
-              <TabsTrigger value="login">Entrar</TabsTrigger>
-              <TabsTrigger value="signup">Cadastrar</TabsTrigger>
-            </TabsList>
-            <TabsContent value="login">
+          <div>
               <form onSubmit={handleLogin} className="space-y-4">
                 <div><Label htmlFor="li-email">Email</Label><Input id="li-email" name="email" type="email" required className="mt-1.5" /></div>
                 <div><Label htmlFor="li-pw">Senha</Label><Input id="li-pw" name="password" type="password" required className="mt-1.5" /></div>

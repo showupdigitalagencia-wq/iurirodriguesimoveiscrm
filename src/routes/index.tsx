@@ -22,7 +22,6 @@ function Home() {
         <p className="mt-4 text-muted-foreground">Captação, distribuição e acompanhamento de leads com SLA, pipeline visual e relatórios.</p>
         <div className="mt-8 flex flex-wrap gap-3 justify-center">
           <Button variant="gold" size="lg" asChild><Link to="/auth">Acessar CRM</Link></Button>
-          <Button variant="outline" size="lg" asChild><Link to="/formulario">Formulário público</Link></Button>
         </div>
       </div>
     </main>
