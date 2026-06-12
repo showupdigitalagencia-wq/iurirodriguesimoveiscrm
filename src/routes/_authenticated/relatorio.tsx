@@ -209,11 +209,6 @@ function RelatorioPage() {
             </div>
           )}
         </div>
-              <div><Label className="text-xs">De</Label><Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="mt-1 h-11" /></div>
-              <div><Label className="text-xs">Até</Label><Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="mt-1 h-11" /></div>
-            </div>
-          )}
-        </div>
         {/* Desktop: chips — inalterado */}
         <div className="hidden md:flex md:flex-wrap md:items-end md:gap-3">
           <div className="flex gap-2">
