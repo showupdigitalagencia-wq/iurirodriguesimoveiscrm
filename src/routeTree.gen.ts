@@ -16,6 +16,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedUsuariosRouteImport } from './routes/_authenticated/usuarios'
 import { Route as AuthenticatedRelatorioRouteImport } from './routes/_authenticated/relatorio'
 import { Route as AuthenticatedPipelineRouteImport } from './routes/_authenticated/pipeline'
+import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
 import { Route as AuthenticatedLeadsRouteImport } from './routes/_authenticated/leads'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCorretoresRouteImport } from './routes/_authenticated/corretores'
@@ -58,6 +59,12 @@ const AuthenticatedPipelineRoute = AuthenticatedPipelineRouteImport.update({
   path: '/pipeline',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedNotificacoesRoute =
+  AuthenticatedNotificacoesRouteImport.update({
+    id: '/notificacoes',
+    path: '/notificacoes',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedLeadsRoute = AuthenticatedLeadsRouteImport.update({
   id: '/leads',
   path: '/leads',
@@ -103,6 +110,7 @@ export interface FileRoutesByFullPath {
   '/corretores': typeof AuthenticatedCorretoresRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/leads': typeof AuthenticatedLeadsRoute
+  '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/pipeline': typeof AuthenticatedPipelineRoute
   '/relatorio': typeof AuthenticatedRelatorioRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
@@ -118,6 +126,7 @@ export interface FileRoutesByTo {
   '/corretores': typeof AuthenticatedCorretoresRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/leads': typeof AuthenticatedLeadsRoute
+  '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/pipeline': typeof AuthenticatedPipelineRoute
   '/relatorio': typeof AuthenticatedRelatorioRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
@@ -135,6 +144,7 @@ export interface FileRoutesById {
   '/_authenticated/corretores': typeof AuthenticatedCorretoresRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/leads': typeof AuthenticatedLeadsRoute
+  '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/_authenticated/pipeline': typeof AuthenticatedPipelineRoute
   '/_authenticated/relatorio': typeof AuthenticatedRelatorioRoute
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
@@ -152,6 +162,7 @@ export interface FileRouteTypes {
     | '/corretores'
     | '/dashboard'
     | '/leads'
+    | '/notificacoes'
     | '/pipeline'
     | '/relatorio'
     | '/usuarios'
@@ -167,6 +178,7 @@ export interface FileRouteTypes {
     | '/corretores'
     | '/dashboard'
     | '/leads'
+    | '/notificacoes'
     | '/pipeline'
     | '/relatorio'
     | '/usuarios'
@@ -183,6 +195,7 @@ export interface FileRouteTypes {
     | '/_authenticated/corretores'
     | '/_authenticated/dashboard'
     | '/_authenticated/leads'
+    | '/_authenticated/notificacoes'
     | '/_authenticated/pipeline'
     | '/_authenticated/relatorio'
     | '/_authenticated/usuarios'
@@ -252,6 +265,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPipelineRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/notificacoes': {
+      id: '/_authenticated/notificacoes'
+      path: '/notificacoes'
+      fullPath: '/notificacoes'
+      preLoaderRoute: typeof AuthenticatedNotificacoesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/leads': {
       id: '/_authenticated/leads'
       path: '/leads'
@@ -309,6 +329,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCorretoresRoute: typeof AuthenticatedCorretoresRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedLeadsRoute: typeof AuthenticatedLeadsRoute
+  AuthenticatedNotificacoesRoute: typeof AuthenticatedNotificacoesRoute
   AuthenticatedPipelineRoute: typeof AuthenticatedPipelineRoute
   AuthenticatedRelatorioRoute: typeof AuthenticatedRelatorioRoute
   AuthenticatedUsuariosRoute: typeof AuthenticatedUsuariosRoute
@@ -319,6 +340,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCorretoresRoute: AuthenticatedCorretoresRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedLeadsRoute: AuthenticatedLeadsRoute,
+  AuthenticatedNotificacoesRoute: AuthenticatedNotificacoesRoute,
   AuthenticatedPipelineRoute: AuthenticatedPipelineRoute,
   AuthenticatedRelatorioRoute: AuthenticatedRelatorioRoute,
   AuthenticatedUsuariosRoute: AuthenticatedUsuariosRoute,

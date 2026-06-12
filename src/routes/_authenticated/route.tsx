@@ -2,7 +2,7 @@ import { createFileRoute, Outlet, redirect, Link, useRouter } from "@tanstack/re
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useMemo, useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
-import { LayoutDashboard, Kanban, Users, BarChart3, Settings, LogOut, Bell, BadgeCheck, UserCog } from "lucide-react";
+import { LayoutDashboard, Kanban, Users, BarChart3, Settings, LogOut, Bell, BadgeCheck, UserCog, BellRing } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { urgencyForLead, type LeadRow } from "@/lib/lead-helpers";
@@ -23,6 +23,7 @@ const NAV = [
   { to: "/leads", label: "Leads", icon: Users },
   { to: "/corretores", label: "Corretores", icon: BadgeCheck },
   { to: "/relatorio", label: "Relatórios", icon: BarChart3 },
+  { to: "/notificacoes", label: "Notificações", icon: BellRing },
 ] as const;
 
 const ADMIN_NAV = [
@@ -39,6 +40,8 @@ function AuthLayout() {
 
   useEffect(() => {
     let active = true;
+    // Inicializa OneSignal cedo (idempotente; guard-rails internos para preview/iframe)
+    import("@/lib/onesignal-client").then((m) => m.initOneSignal()).catch(() => null);
     supabase.auth.getUser().then(({ data: userData }) => {
       const userId = userData.user?.id;
       if (!userId) return;
