@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, redirect, Link, useRouter } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { LayoutDashboard, Kanban, Users, BarChart3, Settings, LogOut, Bell, BadgeCheck, UserCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,9 @@ const NAV = [
   { to: "/leads", label: "Leads", icon: Users },
   { to: "/corretores", label: "Corretores", icon: BadgeCheck },
   { to: "/relatorio", label: "Relatórios", icon: BarChart3 },
+] as const;
+
+const ADMIN_NAV = [
   { to: "/usuarios", label: "Usuários", icon: UserCog },
   { to: "/configuracoes", label: "Configurações", icon: Settings },
 ] as const;
@@ -30,9 +33,19 @@ const NAV = [
 function AuthLayout() {
   const router = useRouter();
   const [pendentes, setPendentes] = useState(0);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  const navItems = useMemo(() => isAdmin ? [...NAV, ...ADMIN_NAV] : NAV, [isAdmin]);
 
   useEffect(() => {
     let active = true;
+    supabase
+      .from("user_roles")
+      .select("role")
+      .eq("role", "admin")
+      .maybeSingle()
+      .then(({ data }) => { if (active) setIsAdmin(data?.role === "admin"); });
+
     async function refresh() {
       const { data } = await supabase
         .from("leads")
@@ -69,7 +82,7 @@ function AuthLayout() {
           <div className="text-xl font-bold text-gold mt-0.5">CRM Imóveis</div>
         </div>
         <nav className="flex-1 px-3 py-4 space-y-1">
-          {NAV.map((item) => {
+          {navItems.map((item) => {
             const Icon = item.icon;
             return (
               <Link key={item.to} to={item.to}
