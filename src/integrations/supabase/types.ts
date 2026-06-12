@@ -309,6 +309,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      current_user_is_active: { Args: never; Returns: boolean }
       current_user_responsavel_id: { Args: never; Returns: string }
       current_user_role: {
         Args: never
