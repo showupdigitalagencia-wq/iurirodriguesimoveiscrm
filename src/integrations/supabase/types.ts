@@ -141,6 +141,39 @@ export type Database = {
           },
         ]
       }
+      meta_form_mapping: {
+        Row: {
+          ativo: boolean
+          canal: Database["public"]["Enums"]["lead_canal"]
+          created_at: string
+          form_id: string
+          id: string
+          nome: string
+          regiao: Database["public"]["Enums"]["lead_regiao"]
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          canal: Database["public"]["Enums"]["lead_canal"]
+          created_at?: string
+          form_id: string
+          id?: string
+          nome: string
+          regiao: Database["public"]["Enums"]["lead_regiao"]
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          canal?: Database["public"]["Enums"]["lead_canal"]
+          created_at?: string
+          form_id?: string
+          id?: string
+          nome?: string
+          regiao?: Database["public"]["Enums"]["lead_regiao"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notificacoes: {
         Row: {
           created_at: string
