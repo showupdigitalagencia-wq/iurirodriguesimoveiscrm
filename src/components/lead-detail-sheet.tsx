@@ -15,7 +15,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Phone, MessageCircle, MapPin, Mail, Clock, MessageSquarePlus, CheckCircle2 } from "lucide-react";
+import { Phone, MessageCircle, MapPin, Mail, Clock, MessageSquarePlus, CheckCircle2, ArrowLeft } from "lucide-react";
 
 type HistoricoRow = {
   id: string;
@@ -28,6 +28,7 @@ interface Props {
   leadId: string | null;
   onClose: () => void;
   onUpdated?: () => void;
+  backLabel?: string;
 }
 
 export function LeadDetailSheet({ leadId, onClose, onUpdated }: Props) {
