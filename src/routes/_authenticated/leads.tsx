@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { etapaNome, canalNome, regiaoNome, type LeadRow, CANAIS, REGIOES, ETAPAS } from "@/lib/lead-helpers";
 import { format } from "date-fns";
@@ -11,6 +12,8 @@ import { Download, FileSpreadsheet, Upload } from "lucide-react";
 import { LeadDetailSheet } from "@/components/lead-detail-sheet";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
+
+type Resp = { id: string; nome: string };
 
 export const Route = createFileRoute("/_authenticated/leads")({
   head: () => ({ meta: [{ title: "Leads — CRM" }] }),
