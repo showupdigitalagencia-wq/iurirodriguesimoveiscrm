@@ -39,12 +39,17 @@ function AuthLayout() {
 
   useEffect(() => {
     let active = true;
-    supabase
-      .from("user_roles")
-      .select("role")
-      .eq("role", "admin")
-      .maybeSingle()
-      .then(({ data }) => { if (active) setIsAdmin(data?.role === "admin"); });
+    supabase.auth.getUser().then(({ data: userData }) => {
+      const userId = userData.user?.id;
+      if (!userId) return;
+      supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId)
+        .eq("role", "admin")
+        .maybeSingle()
+        .then(({ data }) => { if (active) setIsAdmin(data?.role === "admin"); });
+    });
 
     async function refresh() {
       const { data } = await supabase
