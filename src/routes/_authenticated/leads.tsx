@@ -8,6 +8,7 @@ import { ETAPAS, etapaNome, canalNome, regiaoNome, type LeadRow } from "@/lib/le
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Download } from "lucide-react";
+import { LeadDetailSheet } from "@/components/lead-detail-sheet";
 
 export const Route = createFileRoute("/_authenticated/leads")({
   head: () => ({ meta: [{ title: "Leads — CRM" }] }),
@@ -17,12 +18,16 @@ export const Route = createFileRoute("/_authenticated/leads")({
 function LeadsPage() {
   const [leads, setLeads] = useState<LeadRow[]>([]);
   const [q, setQ] = useState("");
+  const [openLead, setOpenLead] = useState<string | null>(null);
 
-  useEffect(() => {
-    supabase.from("leads").select("*").order("created_at", { ascending: false }).then(({ data }) => {
-      setLeads((data as LeadRow[]) ?? []);
-    });
-  }, []);
+  async function load() {
+    const { data } = await supabase.from("leads").select("*").order("created_at", { ascending: false });
+    setLeads((data as LeadRow[]) ?? []);
+  }
+
+
+  useEffect(() => { load(); }, []);
+
 
   const filtered = leads.filter((l) =>
     !q || l.nome.toLowerCase().includes(q.toLowerCase()) || l.telefone.includes(q));
@@ -67,7 +72,7 @@ function LeadsPage() {
           </TableHeader>
           <TableBody>
             {filtered.map((l) => (
-              <TableRow key={l.id}>
+              <TableRow key={l.id} className="cursor-pointer hover:bg-muted/40" onClick={() => setOpenLead(l.id)}>
                 <TableCell className="font-medium">{l.nome}</TableCell>
                 <TableCell>{l.telefone}</TableCell>
                 <TableCell>{regiaoNome(l.regiao)}</TableCell>
