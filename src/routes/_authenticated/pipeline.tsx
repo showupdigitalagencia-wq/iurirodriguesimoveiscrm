@@ -100,7 +100,7 @@ function Card({ lead, onOpen }: { lead: LeadRow; onOpen: (id: string) => void })
       className={`bg-card border border-border rounded-lg p-3 cursor-pointer hover:border-gold/40 transition-colors ${isDragging ? "opacity-50 cursor-grabbing" : ""}`}>
       <div className="flex items-start justify-between gap-2">
         <div className="font-medium text-sm truncate">{lead.nome}</div>
-        {!lead.first_response_at && lead.etapa !== "fechado_ganho" && lead.etapa !== "fechado_perdido" && (
+        {!lead.first_response_at && lead.etapa !== "fechado" && lead.etapa !== "descartado" && (
           <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${badgeColor}`}>
             {formatMinutes(urgency.minutes)}
           </span>
