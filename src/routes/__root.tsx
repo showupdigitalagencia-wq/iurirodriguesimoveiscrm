@@ -77,14 +77,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "Iuri rodrigues imóveis" },
+      { name: "description", content: "Pixel Perfect Copy captures and processes leads from Meta forms, integrating them with your CRM for streamlined lead management." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "Iuri rodrigues imóveis" },
+      { property: "og:description", content: "Pixel Perfect Copy captures and processes leads from Meta forms, integrating them with your CRM for streamlined lead management." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "Iuri rodrigues imóveis" },
+      { name: "twitter:description", content: "Pixel Perfect Copy captures and processes leads from Meta forms, integrating them with your CRM for streamlined lead management." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/sD1k1FgmUWbi2CD7ehEZEw511i82/social-images/social-1781289451678-1000507098.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/sD1k1FgmUWbi2CD7ehEZEw511i82/social-images/social-1781289451678-1000507098.webp" },
     ],
     links: [
       {
