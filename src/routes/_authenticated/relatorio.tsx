@@ -225,6 +225,20 @@ function RelatorioPage() {
               <div><Label className="text-xs">Até</Label><Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="mt-1 w-40" /></div>
             </div>
           )}
+          {isAdmin && (
+            <div className="ml-auto">
+              <Label className="text-xs">Corretor</Label>
+              <select
+                className="mt-1 h-9 rounded-md border border-input bg-background px-3 text-sm min-w-52"
+                value={respFilter}
+                onChange={(e) => setRespFilter(e.target.value)}
+              >
+                <option value="all">Todos os corretores</option>
+                <option value="compare">Comparar corretores</option>
+                {resps.map((r) => <option key={r.id} value={r.id}>{r.nome}</option>)}
+              </select>
+            </div>
+          )}
         </div>
       </section>
 
