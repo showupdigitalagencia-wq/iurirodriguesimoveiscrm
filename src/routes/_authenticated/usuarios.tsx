@@ -25,6 +25,7 @@ type UserRow = {
 };
 
 type Responsavel = { id: string; nome: string; canal: string };
+const NO_RESPONSAVEL = "sem-responsavel";
 
 function UsuariosPage() {
   const fnList = useServerFn(listUsers);
@@ -77,7 +78,7 @@ function UsuariosPage() {
         nome: String(fd.get("nome")), email: String(fd.get("email")),
         password: String(fd.get("password")),
         role: String(fd.get("role")) as "admin" | "corretor",
-        responsavel_id: respId || null,
+        responsavel_id: respId === NO_RESPONSAVEL ? null : respId,
       }});
       toast.success("Funcionário criado");
       setOpenNew(false);
@@ -103,7 +104,7 @@ function UsuariosPage() {
 
   async function changeResp(u: UserRow, responsavel_id: string) {
     try {
-      await fnUpdate({ data: { id: u.id, responsavel_id: responsavel_id || null } });
+      await fnUpdate({ data: { id: u.id, responsavel_id: responsavel_id === NO_RESPONSAVEL ? null : responsavel_id } });
       refresh();
     } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
   }
@@ -151,17 +152,17 @@ function UsuariosPage() {
                 <Select name="role" defaultValue="corretor">
                   <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="corretor">Corretor</SelectItem>
+                    <SelectItem value="corretor">Executivo</SelectItem>
                     <SelectItem value="admin">Administrador</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label>Vincular ao responsável (opcional)</Label>
-                <Select name="responsavel_id" defaultValue="">
+                <Label>Vincular ao responsável</Label>
+                <Select name="responsavel_id" defaultValue={NO_RESPONSAVEL}>
                   <SelectTrigger className="mt-1.5"><SelectValue placeholder="Nenhum" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Nenhum</SelectItem>
+                    <SelectItem value={NO_RESPONSAVEL}>Nenhum</SelectItem>
                     {responsaveis.map((r) => <SelectItem key={r.id} value={r.id}>{r.nome} ({r.canal})</SelectItem>)}
                   </SelectContent>
                 </Select>
@@ -197,16 +198,16 @@ function UsuariosPage() {
                   <Select value={u.role} onValueChange={(v) => changeRole(u, v as "admin" | "corretor")}>
                     <SelectTrigger className="w-36 h-8"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="corretor">Corretor</SelectItem>
+                      <SelectItem value="corretor">Executivo</SelectItem>
                       <SelectItem value="admin">Administrador</SelectItem>
                     </SelectContent>
                   </Select>
                 </td>
                 <td className="px-4 py-3">
-                  <Select value={u.responsavel_id ?? ""} onValueChange={(v) => changeResp(u, v)}>
+                  <Select value={u.responsavel_id ?? NO_RESPONSAVEL} onValueChange={(v) => changeResp(u, v)}>
                     <SelectTrigger className="w-44 h-8"><SelectValue placeholder="—" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">—</SelectItem>
+                      <SelectItem value={NO_RESPONSAVEL}>—</SelectItem>
                       {responsaveis.map((r) => <SelectItem key={r.id} value={r.id}>{r.nome}</SelectItem>)}
                     </SelectContent>
                   </Select>
