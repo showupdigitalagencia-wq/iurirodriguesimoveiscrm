@@ -83,22 +83,22 @@ function RelatorioPage() {
     nome: e.nome, qtd: inRange.filter((l) => l.etapa === e.id).length,
   }));
 
-  // Available months (descending)
+  // Available months (descending) — from scoped leads
   const availableMonths = useMemo(() => {
     const set = new Set<string>();
-    for (const l of leads) set.add(ymKey(new Date(l.created_at)));
+    for (const l of scopedLeads) set.add(ymKey(new Date(l.created_at)));
     return Array.from(set).sort().reverse();
-  }, [leads]);
+  }, [scopedLeads]);
 
   function toggleMonth(k: string) {
     setSelectedMonths((cur) => cur.includes(k) ? cur.filter((x) => x !== k) : [...cur, k]);
   }
 
-  // Month comparison data
+  // Month comparison data (uses scoped leads)
   const compareData = useMemo(() => {
     if (selectedMonths.length === 0) return [];
     return selectedMonths.slice().sort().map((k) => {
-      const ms = leads.filter((l) => ymKey(new Date(l.created_at)) === k);
+      const ms = scopedLeads.filter((l) => ymKey(new Date(l.created_at)) === k);
       const fechado = ms.filter((l) => l.etapa === "fechado").length;
       const perdido = ms.filter((l) => l.etapa === "descartado").length;
       return {
@@ -110,7 +110,7 @@ function RelatorioPage() {
         leads: ms,
       };
     });
-  }, [leads, selectedMonths]);
+  }, [scopedLeads, selectedMonths]);
 
   const melhorMes = compareData.reduce((acc, cur) => !acc || cur.total > acc.total ? cur : acc, null as typeof compareData[number] | null);
   const melhorConv = compareData.reduce((acc, cur) => !acc || cur.conversao > acc.conversao ? cur : acc, null as typeof compareData[number] | null);
@@ -131,17 +131,36 @@ function RelatorioPage() {
     return brokerCompare.reduce((a, b) => (Number(a.total) >= Number(b.total) ? a : b));
   }, [brokerCompare]);
 
-  // Yearly evolution (current year)
+  // Yearly evolution (current year). Compare mode → one series per corretor; otherwise total of scoped.
+  const compareBrokers = isAdmin && respFilter === "compare";
   const yearData = useMemo(() => {
     const y = new Date().getFullYear();
-    return MESES.map((label, i) => ({
-      mes: label,
-      total: leads.filter((l) => {
+    return MESES.map((label, i) => {
+      const monthLeads = scopedLeads.filter((l) => {
         const d = new Date(l.created_at);
         return d.getFullYear() === y && d.getMonth() === i;
-      }).length,
-    }));
-  }, [leads]);
+      });
+      const row: Record<string, string | number> = { mes: label, total: monthLeads.length };
+      if (compareBrokers) {
+        for (const r of resps) row[r.nome] = monthLeads.filter((l) => l.responsavel_id === r.id).length;
+      }
+      return row;
+    });
+  }, [scopedLeads, resps, compareBrokers]);
+
+  // Per-broker funnel for compare mode
+  const funnelCompare = useMemo(() => {
+    if (!compareBrokers) return [];
+    return ETAPAS.map((e) => {
+      const row: Record<string, string | number> = { nome: e.nome };
+      for (const r of resps) row[r.nome] = inRange.filter((l) => l.etapa === e.id && l.responsavel_id === r.id).length;
+      return row;
+    });
+  }, [compareBrokers, resps, inRange]);
+
+  const respLabel = respFilter === "all" || respFilter === "compare"
+    ? null
+    : resps.find((r) => r.id === respFilter)?.nome ?? null;
 
   return (
     <div className="p-4 md:p-8 space-y-4 md:space-y-6">
