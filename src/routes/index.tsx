@@ -1,29 +1,30 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Your App" },
-      { name: "description", content: "Replace this with a one-sentence description of your app." },
-      { property: "og:title", content: "Your App" },
-      { property: "og:description", content: "Replace this with a one-sentence description of your app." },
+      { title: "Iuri Rodrigues Imóveis — CRM" },
+      { name: "description", content: "Plataforma de gestão de leads da Iuri Rodrigues Imóveis." },
     ],
   }),
-  component: Index,
+  component: Home,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+function Home() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <main className="min-h-screen flex items-center justify-center bg-background px-4">
+      <div className="max-w-xl text-center">
+        <div className="inline-block px-4 py-1 rounded-full bg-gold/15 text-gold-foreground text-xs uppercase tracking-[0.3em] font-semibold">
+          Iuri Rodrigues Imóveis
+        </div>
+        <h1 className="mt-6 text-4xl md:text-5xl font-bold tracking-tight">CRM de Atendimento</h1>
+        <p className="mt-4 text-muted-foreground">Captação, distribuição e acompanhamento de leads com SLA, pipeline visual e relatórios.</p>
+        <div className="mt-8 flex flex-wrap gap-3 justify-center">
+          <Button variant="gold" size="lg" asChild><Link to="/auth">Acessar CRM</Link></Button>
+          <Button variant="outline" size="lg" asChild><Link to="/formulario">Formulário público</Link></Button>
+        </div>
+      </div>
+    </main>
   );
 }

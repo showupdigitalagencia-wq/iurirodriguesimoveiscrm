@@ -1,0 +1,112 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { DndContext, type DragEndEvent, PointerSensor, useSensor, useSensors, useDraggable, useDroppable } from "@dnd-kit/core";
+import { ETAPAS, urgencyForLead, formatMinutes, canalNome, type LeadRow } from "@/lib/lead-helpers";
+import { updateLeadEtapa, markFirstResponse } from "@/lib/leads.functions";
+import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
+import { Phone, MessageCircle } from "lucide-react";
+
+export const Route = createFileRoute("/_authenticated/pipeline")({
+  head: () => ({ meta: [{ title: "Pipeline — CRM" }] }),
+  component: PipelinePage,
+});
+
+function PipelinePage() {
+  const [leads, setLeads] = useState<LeadRow[]>([]);
+  const [, setTick] = useState(0);
+  const updateEtapa = useServerFn(updateLeadEtapa);
+  const markFirst = useServerFn(markFirstResponse);
+
+  useEffect(() => {
+    async function load() {
+      const { data } = await supabase.from("leads").select("*").order("created_at", { ascending: false });
+      setLeads((data as LeadRow[]) ?? []);
+    }
+    load();
+    const ch = supabase.channel("pipeline-leads")
+      .on("postgres_changes", { event: "*", schema: "public", table: "leads" }, load).subscribe();
+    const t = setInterval(() => setTick((x) => x + 1), 30000);
+    return () => { supabase.removeChannel(ch); clearInterval(t); };
+  }, []);
+
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
+
+  async function onDragEnd(event: DragEndEvent) {
+    const leadId = event.active.id as string;
+    const newEtapa = event.over?.id as LeadRow["etapa"] | undefined;
+    if (!newEtapa) return;
+    const lead = leads.find((l) => l.id === leadId);
+    if (!lead || lead.etapa === newEtapa) return;
+    setLeads((prev) => prev.map((l) => l.id === leadId ? { ...l, etapa: newEtapa } : l));
+    try {
+      await updateEtapa({ data: { id: leadId, etapa: newEtapa } });
+      if (newEtapa === "em_atendimento" && !lead.first_response_at) {
+        await markFirst({ data: { id: leadId } });
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha");
+    }
+  }
+
+  return (
+    <div className="p-6">
+      <header className="mb-6">
+        <h1 className="text-3xl font-bold tracking-tight">Pipeline</h1>
+        <p className="text-muted-foreground mt-1">Arraste os leads entre as etapas.</p>
+      </header>
+      <DndContext sensors={sensors} onDragEnd={onDragEnd}>
+        <div className="flex gap-4 overflow-x-auto pb-4">
+          {ETAPAS.map((etapa) => (
+            <Column key={etapa.id} id={etapa.id} title={etapa.nome}
+              leads={leads.filter((l) => l.etapa === etapa.id)} />
+          ))}
+        </div>
+      </DndContext>
+    </div>
+  );
+}
+
+function Column({ id, title, leads }: { id: string; title: string; leads: LeadRow[] }) {
+  const { setNodeRef, isOver } = useDroppable({ id });
+  return (
+    <div ref={setNodeRef} className={`min-w-[280px] w-[280px] bg-muted/40 rounded-xl p-3 ${isOver ? "ring-2 ring-gold" : ""}`}>
+      <div className="flex items-center justify-between mb-3 px-1">
+        <h3 className="text-sm font-semibold">{title}</h3>
+        <span className="text-xs bg-card border border-border rounded-full px-2 py-0.5">{leads.length}</span>
+      </div>
+      <div className="space-y-2">
+        {leads.map((lead) => <Card key={lead.id} lead={lead} />)}
+      </div>
+    </div>
+  );
+}
+
+function Card({ lead }: { lead: LeadRow }) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: lead.id });
+  const urgency = urgencyForLead(lead);
+  const style = transform ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` } : undefined;
+  const badgeColor = urgency.level === "critical" ? "bg-destructive text-destructive-foreground animate-pulse-red"
+    : urgency.level === "warning" ? "bg-gold text-gold-foreground animate-pulse-gold"
+    : "bg-muted text-muted-foreground";
+  return (
+    <div ref={setNodeRef} style={style} {...listeners} {...attributes}
+      className={`bg-card border border-border rounded-lg p-3 cursor-grab active:cursor-grabbing ${isDragging ? "opacity-50" : ""}`}>
+      <div className="flex items-start justify-between gap-2">
+        <div className="font-medium text-sm truncate">{lead.nome}</div>
+        {!lead.first_response_at && lead.etapa !== "fechado_ganho" && lead.etapa !== "fechado_perdido" && (
+          <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${badgeColor}`}>
+            {formatMinutes(urgency.minutes)}
+          </span>
+        )}
+      </div>
+      <div className="mt-2 text-xs text-muted-foreground flex items-center gap-1.5">
+        <Phone className="h-3 w-3" /> {lead.telefone}
+      </div>
+      <div className="mt-1 text-[11px] text-muted-foreground flex items-center gap-1.5">
+        <MessageCircle className="h-3 w-3" /> {canalNome(lead.canal)}
+      </div>
+    </div>
+  );
+}
