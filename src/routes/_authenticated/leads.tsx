@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { etapaNome, canalNome, regiaoNome, type LeadRow, CANAIS, REGIOES, ETAPAS } from "@/lib/lead-helpers";
 import { format } from "date-fns";
@@ -11,6 +12,8 @@ import { Download, FileSpreadsheet, Upload } from "lucide-react";
 import { LeadDetailSheet } from "@/components/lead-detail-sheet";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
+
+type Resp = { id: string; nome: string };
 
 export const Route = createFileRoute("/_authenticated/leads")({
   head: () => ({ meta: [{ title: "Leads — CRM" }] }),
@@ -40,9 +43,11 @@ function leadToRow(l: LeadRow) {
 
 function LeadsPage() {
   const [leads, setLeads] = useState<LeadRow[]>([]);
+  const [resps, setResps] = useState<Resp[]>([]);
   const [q, setQ] = useState("");
   const [openLead, setOpenLead] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [respFilter, setRespFilter] = useState<string>("all");
   const fileRef = useRef<HTMLInputElement>(null);
 
   async function load() {
@@ -52,6 +57,7 @@ function LeadsPage() {
 
   useEffect(() => {
     load();
+    supabase.from("responsaveis").select("id, nome").order("nome").then(({ data }) => setResps((data as Resp[]) ?? []));
     supabase.auth.getUser().then(({ data }) => {
       const uid = data.user?.id;
       if (!uid) return;
@@ -60,8 +66,12 @@ function LeadsPage() {
     });
   }, []);
 
-  const filtered = leads.filter((l) =>
-    !q || l.nome.toLowerCase().includes(q.toLowerCase()) || l.telefone.includes(q));
+  const filtered = leads.filter((l) => {
+    if (isAdmin && respFilter !== "all" && l.responsavel_id !== respFilter) return false;
+    if (q && !l.nome.toLowerCase().includes(q.toLowerCase()) && !l.telefone.includes(q)) return false;
+    return true;
+  });
+  const respFilterName = respFilter !== "all" ? resps.find((r) => r.id === respFilter)?.nome : null;
 
   function exportCsv() {
     const rows = filtered.map(leadToRow);
@@ -159,10 +169,27 @@ function LeadsPage() {
       <header className="grid grid-cols-1 gap-3 md:flex md:flex-wrap md:items-end md:gap-4 md:justify-between">
         <div className="min-w-0">
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Leads</h1>
-          <p className="text-muted-foreground text-sm mt-1">{filtered.length} de {leads.length} leads</p>
+          <p className="text-muted-foreground text-sm mt-1">
+            {respFilterName
+              ? `${filtered.length} leads de ${respFilterName}`
+              : `${filtered.length} de ${leads.length} leads`}
+          </p>
         </div>
         <div className="flex gap-2 flex-wrap">
           <Input placeholder="Buscar por nome ou telefone..." value={q} onChange={(e) => setQ(e.target.value)} className="w-full md:w-64 h-11 md:h-10" />
+          {isAdmin && (
+            <Select value={respFilter} onValueChange={setRespFilter}>
+              <SelectTrigger className="w-full md:w-52 h-11 md:h-10">
+                <SelectValue placeholder="Filtrar por corretor" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os corretores</SelectItem>
+                {resps.map((r) => (
+                  <SelectItem key={r.id} value={r.id}>{r.nome}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
           <Button variant="outline" onClick={exportCsv} className="h-11 md:h-10 flex-1 md:flex-none"><Download className="h-4 w-4" /> CSV</Button>
           <Button variant="outline" onClick={exportXlsx} className="h-11 md:h-10 flex-1 md:flex-none"><FileSpreadsheet className="h-4 w-4" /> Excel</Button>
           {isAdmin && (

@@ -31,15 +31,31 @@ function ymLabel(k: string) {
 function RelatorioPage() {
   const [leads, setLeads] = useState<LeadRow[]>([]);
   const [resps, setResps] = useState<Resp[]>([]);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [preset, setPreset] = useState<Preset>("30d");
   const [from, setFrom] = useState<string>("");
   const [to, setTo] = useState<string>("");
   const [selectedMonths, setSelectedMonths] = useState<string[]>([]);
+  // "all" | "compare" | <responsavel_id>
+  const [respFilter, setRespFilter] = useState<string>("all");
 
   useEffect(() => {
     supabase.from("leads").select("*").then(({ data }) => setLeads((data as LeadRow[]) ?? []));
-    supabase.from("responsaveis").select("id, nome").then(({ data }) => setResps((data as Resp[]) ?? []));
+    supabase.from("responsaveis").select("id, nome").order("nome").then(({ data }) => setResps((data as Resp[]) ?? []));
+    supabase.auth.getUser().then(({ data }) => {
+      const uid = data.user?.id;
+      if (!uid) return;
+      supabase.from("user_roles").select("role").eq("user_id", uid).eq("role", "admin").maybeSingle()
+        .then(({ data: r }) => setIsAdmin(r?.role === "admin"));
+    });
   }, []);
+
+  // Apply per-broker scoping (admin only). "compare" keeps all data; broker id narrows it.
+  const scopedLeads = useMemo(() => {
+    if (!isAdmin) return leads;
+    if (respFilter === "all" || respFilter === "compare") return leads;
+    return leads.filter((l) => l.responsavel_id === respFilter);
+  }, [leads, isAdmin, respFilter]);
 
   // Range filter
   const range = useMemo(() => {
@@ -52,10 +68,10 @@ function RelatorioPage() {
     return { start, end: now };
   }, [preset, from, to]);
 
-  const inRange = useMemo(() => leads.filter((l) => {
+  const inRange = useMemo(() => scopedLeads.filter((l) => {
     const t = new Date(l.created_at).getTime();
     return t >= range.start.getTime() && t <= range.end.getTime();
-  }), [leads, range]);
+  }), [scopedLeads, range]);
 
   const totalPeriodo = inRange.length;
   const fechadosPeriodo = inRange.filter((l) => l.etapa === "fechado").length;
@@ -67,22 +83,22 @@ function RelatorioPage() {
     nome: e.nome, qtd: inRange.filter((l) => l.etapa === e.id).length,
   }));
 
-  // Available months (descending)
+  // Available months (descending) — from scoped leads
   const availableMonths = useMemo(() => {
     const set = new Set<string>();
-    for (const l of leads) set.add(ymKey(new Date(l.created_at)));
+    for (const l of scopedLeads) set.add(ymKey(new Date(l.created_at)));
     return Array.from(set).sort().reverse();
-  }, [leads]);
+  }, [scopedLeads]);
 
   function toggleMonth(k: string) {
     setSelectedMonths((cur) => cur.includes(k) ? cur.filter((x) => x !== k) : [...cur, k]);
   }
 
-  // Month comparison data
+  // Month comparison data (uses scoped leads)
   const compareData = useMemo(() => {
     if (selectedMonths.length === 0) return [];
     return selectedMonths.slice().sort().map((k) => {
-      const ms = leads.filter((l) => ymKey(new Date(l.created_at)) === k);
+      const ms = scopedLeads.filter((l) => ymKey(new Date(l.created_at)) === k);
       const fechado = ms.filter((l) => l.etapa === "fechado").length;
       const perdido = ms.filter((l) => l.etapa === "descartado").length;
       return {
@@ -94,7 +110,7 @@ function RelatorioPage() {
         leads: ms,
       };
     });
-  }, [leads, selectedMonths]);
+  }, [scopedLeads, selectedMonths]);
 
   const melhorMes = compareData.reduce((acc, cur) => !acc || cur.total > acc.total ? cur : acc, null as typeof compareData[number] | null);
   const melhorConv = compareData.reduce((acc, cur) => !acc || cur.conversao > acc.conversao ? cur : acc, null as typeof compareData[number] | null);
@@ -115,23 +131,44 @@ function RelatorioPage() {
     return brokerCompare.reduce((a, b) => (Number(a.total) >= Number(b.total) ? a : b));
   }, [brokerCompare]);
 
-  // Yearly evolution (current year)
+  // Yearly evolution (current year). Compare mode → one series per corretor; otherwise total of scoped.
+  const compareBrokers = isAdmin && respFilter === "compare";
   const yearData = useMemo(() => {
     const y = new Date().getFullYear();
-    return MESES.map((label, i) => ({
-      mes: label,
-      total: leads.filter((l) => {
+    return MESES.map((label, i) => {
+      const monthLeads = scopedLeads.filter((l) => {
         const d = new Date(l.created_at);
         return d.getFullYear() === y && d.getMonth() === i;
-      }).length,
-    }));
-  }, [leads]);
+      });
+      const row: Record<string, string | number> = { mes: label, total: monthLeads.length };
+      if (compareBrokers) {
+        for (const r of resps) row[r.nome] = monthLeads.filter((l) => l.responsavel_id === r.id).length;
+      }
+      return row;
+    });
+  }, [scopedLeads, resps, compareBrokers]);
+
+  // Per-broker funnel for compare mode
+  const funnelCompare = useMemo(() => {
+    if (!compareBrokers) return [];
+    return ETAPAS.map((e) => {
+      const row: Record<string, string | number> = { nome: e.nome };
+      for (const r of resps) row[r.nome] = inRange.filter((l) => l.etapa === e.id && l.responsavel_id === r.id).length;
+      return row;
+    });
+  }, [compareBrokers, resps, inRange]);
+
+  const respLabel = respFilter === "all" || respFilter === "compare"
+    ? null
+    : resps.find((r) => r.id === respFilter)?.nome ?? null;
 
   return (
     <div className="p-4 md:p-8 space-y-4 md:space-y-6">
       <header>
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Relatórios</h1>
-        <p className="text-muted-foreground text-sm md:text-base mt-1">Análise avançada de desempenho</p>
+        <p className="text-muted-foreground text-sm md:text-base mt-1">
+          {respLabel ? `Análise de ${respLabel}` : compareBrokers ? "Comparando todos os corretores" : "Análise avançada de desempenho"}
+        </p>
       </header>
 
       {/* Filtros rápidos */}
@@ -157,6 +194,20 @@ function RelatorioPage() {
               <div><Label className="text-xs">Até</Label><Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="mt-1 h-11" /></div>
             </div>
           )}
+          {isAdmin && (
+            <div>
+              <Label className="text-xs">Corretor</Label>
+              <select
+                className="mt-1 w-full h-11 rounded-md border border-input bg-background px-3 text-sm"
+                value={respFilter}
+                onChange={(e) => setRespFilter(e.target.value)}
+              >
+                <option value="all">Todos os corretores</option>
+                <option value="compare">Comparar corretores</option>
+                {resps.map((r) => <option key={r.id} value={r.id}>{r.nome}</option>)}
+              </select>
+            </div>
+          )}
         </div>
         {/* Desktop: chips — inalterado */}
         <div className="hidden md:flex md:flex-wrap md:items-end md:gap-3">
@@ -172,6 +223,20 @@ function RelatorioPage() {
             <div className="flex gap-2 items-end">
               <div><Label className="text-xs">De</Label><Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="mt-1 w-40" /></div>
               <div><Label className="text-xs">Até</Label><Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="mt-1 w-40" /></div>
+            </div>
+          )}
+          {isAdmin && (
+            <div className="ml-auto">
+              <Label className="text-xs">Corretor</Label>
+              <select
+                className="mt-1 h-9 rounded-md border border-input bg-background px-3 text-sm min-w-52"
+                value={respFilter}
+                onChange={(e) => setRespFilter(e.target.value)}
+              >
+                <option value="all">Todos os corretores</option>
+                <option value="compare">Comparar corretores</option>
+                {resps.map((r) => <option key={r.id} value={r.id}>{r.nome}</option>)}
+              </select>
             </div>
           )}
         </div>
@@ -191,12 +256,24 @@ function RelatorioPage() {
         <div className="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
           <div className="min-w-[560px] md:min-w-0">
             <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={porEtapaPeriodo}>
-                <XAxis dataKey="nome" tick={{ fontSize: 10 }} angle={-25} textAnchor="end" height={70} />
-                <YAxis allowDecimals={false} />
-                <Tooltip />
-                <Bar dataKey="qtd" fill="#c9a35b" radius={[4, 4, 0, 0]} />
-              </BarChart>
+              {compareBrokers ? (
+                <BarChart data={funnelCompare}>
+                  <XAxis dataKey="nome" tick={{ fontSize: 10 }} angle={-25} textAnchor="end" height={70} />
+                  <YAxis allowDecimals={false} />
+                  <Tooltip />
+                  <Legend />
+                  {resps.map((r, i) => (
+                    <Bar key={r.id} dataKey={r.nome} fill={COLORS[i % COLORS.length]} radius={[4, 4, 0, 0]} />
+                  ))}
+                </BarChart>
+              ) : (
+                <BarChart data={porEtapaPeriodo}>
+                  <XAxis dataKey="nome" tick={{ fontSize: 10 }} angle={-25} textAnchor="end" height={70} />
+                  <YAxis allowDecimals={false} />
+                  <Tooltip />
+                  <Bar dataKey="qtd" fill="#c9a35b" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              )}
             </ResponsiveContainer>
           </div>
         </div>
@@ -213,7 +290,12 @@ function RelatorioPage() {
                 <XAxis dataKey="mes" />
                 <YAxis allowDecimals={false} />
                 <Tooltip />
-                <Line type="monotone" dataKey="total" stroke="#c9a35b" strokeWidth={2} dot={{ r: 4 }} />
+                <Legend />
+                {compareBrokers
+                  ? resps.map((r, i) => (
+                      <Line key={r.id} type="monotone" dataKey={r.nome} stroke={COLORS[i % COLORS.length]} strokeWidth={2} dot={{ r: 3 }} />
+                    ))
+                  : <Line type="monotone" dataKey="total" stroke="#c9a35b" strokeWidth={2} dot={{ r: 4 }} />}
               </LineChart>
             </ResponsiveContainer>
           </div>
