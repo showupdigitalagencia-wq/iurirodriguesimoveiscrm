@@ -11,7 +11,7 @@ export const updateLeadEtapa = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ id: z.string().uuid(), etapa: LeadEtapa }).parse(d))
   .handler(async ({ data, context }) => {
-    const patch: Record<string, unknown> = { etapa: data.etapa };
+    const patch: { etapa: typeof data.etapa; fechado_em?: string } = { etapa: data.etapa };
     if (data.etapa === "fechado_ganho" || data.etapa === "fechado_perdido") {
       patch.fechado_em = new Date().toISOString();
     }
@@ -19,7 +19,7 @@ export const updateLeadEtapa = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     await context.supabase.from("lead_historico").insert({
       lead_id: data.id, user_id: context.userId, acao: "mudou_etapa",
-      detalhe: { etapa: data.etapa },
+      detalhe: { etapa: data.etapa } as never,
     });
     return { ok: true };
   });
@@ -59,7 +59,7 @@ export const updateLead = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     await context.supabase.from("lead_historico").insert({
       lead_id: data.id, user_id: context.userId, acao: "editou_lead",
-      detalhe: data.patch as Record<string, unknown>,
+      detalhe: data.patch as never,
     });
     return { ok: true };
   });
@@ -70,7 +70,7 @@ export const addNote = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase.from("lead_historico").insert({
       lead_id: data.lead_id, user_id: context.userId, acao: "nota",
-      detalhe: { nota: data.nota },
+      detalhe: { nota: data.nota } as never,
     });
     if (error) throw new Error(error.message);
     return { ok: true };
