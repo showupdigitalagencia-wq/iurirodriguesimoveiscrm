@@ -1,18 +1,19 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 const Role = z.enum(["admin", "corretor"]);
 
-async function assertAdmin(supabase: { rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown }> }, userId: string) {
+async function assertAdmin(supabase: SupabaseClient, userId: string) {
   const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
   if (!data) throw new Error("Acesso restrito a administradores");
 }
 
-export const listUsers = createServerFn({ method: "GET" })
+export const listUsers = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.supabase as unknown as SupabaseClient, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data: authData, error: authErr } = await supabaseAdmin.auth.admin.listUsers({ perPage: 200 });
@@ -49,7 +50,7 @@ export const createUser = createServerFn({ method: "POST" })
     responsavel_id: z.string().uuid().nullable().optional(),
   }).parse(d))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.supabase as unknown as SupabaseClient, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
@@ -83,10 +84,10 @@ export const updateUser = createServerFn({ method: "POST" })
     ativo: z.boolean().optional(),
   }).parse(d))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.supabase as unknown as SupabaseClient, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const profilePatch: Record<string, unknown> = {};
+    const profilePatch: { nome?: string; responsavel_id?: string | null; ativo?: boolean } = {};
     if (data.nome !== undefined) profilePatch.nome = data.nome;
     if (data.responsavel_id !== undefined) profilePatch.responsavel_id = data.responsavel_id;
     if (data.ativo !== undefined) profilePatch.ativo = data.ativo;
@@ -116,7 +117,7 @@ export const resetUserPassword = createServerFn({ method: "POST" })
     password: z.string().min(6).max(128),
   }).parse(d))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.supabase as unknown as SupabaseClient, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.auth.admin.updateUserById(data.id, { password: data.password });
     if (error) throw new Error(error.message);
@@ -127,7 +128,7 @@ export const deleteUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.supabase as unknown as SupabaseClient, context.userId);
     if (data.id === context.userId) throw new Error("Você não pode excluir sua própria conta");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.auth.admin.deleteUser(data.id);
@@ -135,7 +136,7 @@ export const deleteUser = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-export const getMyRole = createServerFn({ method: "GET" })
+export const getMyRole = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { data } = await context.supabase
