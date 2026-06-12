@@ -53,7 +53,7 @@ export function urgencyForLead(lead: Pick<LeadRow, "created_at" | "first_respons
   level: "ok" | "warning" | "critical";
   minutes: number;
 } {
-  if (lead.etapa === "fechado_ganho" || lead.etapa === "fechado_perdido") {
+  if (lead.etapa === "fechado" || lead.etapa === "descartado") {
     return { level: "ok", minutes: 0 };
   }
   if (lead.first_response_at) return { level: "ok", minutes: 0 };
