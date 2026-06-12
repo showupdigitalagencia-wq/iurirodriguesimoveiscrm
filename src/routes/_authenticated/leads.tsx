@@ -93,6 +93,7 @@ function LeadsPage() {
           </TableBody>
         </Table>
       </div>
+      <LeadDetailSheet leadId={openLead} onClose={() => setOpenLead(null)} onUpdated={load} />
     </div>
   );
 }
