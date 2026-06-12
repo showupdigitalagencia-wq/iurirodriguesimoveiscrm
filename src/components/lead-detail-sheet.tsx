@@ -132,25 +132,53 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
 
   return (
     <Sheet open={!!leadId} onOpenChange={(o) => !o && onClose()}>
-      <SheetContent className="w-full sm:max-w-xl overflow-y-auto p-4 md:p-6 pb-[calc(env(safe-area-inset-bottom)+88px)] md:pb-6">
+      <SheetContent
+        className="w-full sm:max-w-xl overflow-y-auto p-0 pb-[calc(env(safe-area-inset-bottom)+88px)] md:pb-6"
+        onTouchStart={(e) => {
+          const t = e.touches[0];
+          touchStartRef.current = { x: t.clientX, y: t.clientY };
+        }}
+        onTouchEnd={(e) => {
+          const start = touchStartRef.current;
+          if (!start) return;
+          const t = e.changedTouches[0];
+          const dx = t.clientX - start.x;
+          const dy = Math.abs(t.clientY - start.y);
+          if (dx > 80 && dy < 60) onClose();
+          touchStartRef.current = null;
+        }}
+      >
         {lead ? (
           <>
-            <SheetHeader>
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <SheetTitle className="text-xl md:text-2xl truncate">{lead.nome}</SheetTitle>
-                  <SheetDescription className="flex items-center flex-wrap gap-2 mt-1">
-                    <Badge variant="outline">{etapaNome(lead.etapa)}</Badge>
-                    {urgency && urgency.level !== "ok" && (
-                      <Badge className={urgency.level === "critical" ? "bg-destructive" : "bg-gold text-gold-foreground"}>
-                        <Clock className="h-3 w-3 mr-1" /> {formatMinutes(urgency.minutes)} sem resposta
-                      </Badge>
-                    )}
-                    {lead.is_corretor && <Badge variant="secondary">Corretor</Badge>}
-                  </SheetDescription>
+            {/* Back button — mobile: barra dedicada com área de toque ≥44px */}
+            <button
+              type="button"
+              onClick={onClose}
+              className="md:hidden sticky top-0 z-10 w-full flex items-center gap-2 px-4 h-12 bg-background border-b border-border text-sm font-medium text-foreground"
+              style={{ paddingTop: "env(safe-area-inset-top)", minHeight: "calc(3rem + env(safe-area-inset-top))" }}
+              aria-label={backLabel}
+            >
+              <ArrowLeft className="h-5 w-5" />
+              <span className="truncate">{backLabel}</span>
+            </button>
+
+            <div className="p-4 md:p-6">
+              <SheetHeader>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <SheetTitle className="text-xl md:text-2xl truncate">{lead.nome}</SheetTitle>
+                    <SheetDescription className="flex items-center flex-wrap gap-2 mt-1">
+                      <Badge variant="outline">{etapaNome(lead.etapa)}</Badge>
+                      {urgency && urgency.level !== "ok" && (
+                        <Badge className={urgency.level === "critical" ? "bg-destructive" : "bg-gold text-gold-foreground"}>
+                          <Clock className="h-3 w-3 mr-1" /> {formatMinutes(urgency.minutes)} sem resposta
+                        </Badge>
+                      )}
+                      {lead.is_corretor && <Badge variant="secondary">Corretor</Badge>}
+                    </SheetDescription>
+                  </div>
                 </div>
-              </div>
-            </SheetHeader>
+              </SheetHeader>
 
             {/* Ações: inline no desktop, rodapé fixo no mobile */}
             <div className="hidden md:flex mt-4 flex-wrap gap-2">
