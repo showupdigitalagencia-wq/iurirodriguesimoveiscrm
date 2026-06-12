@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 
@@ -43,24 +42,14 @@ function AuthPage() {
           <div className="text-2xl font-bold text-gold mt-1">CRM Imóveis</div>
         </Link>
         <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
-          <div>
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div><Label htmlFor="li-email">Email</Label><Input id="li-email" name="email" type="email" required className="mt-1.5" /></div>
-                <div><Label htmlFor="li-pw">Senha</Label><Input id="li-pw" name="password" type="password" required className="mt-1.5" /></div>
-                <Button type="submit" variant="gold" className="w-full" disabled={loading}>{loading ? "Entrando..." : "Entrar"}</Button>
-              </form>
-            </TabsContent>
-            <TabsContent value="signup">
-              <form onSubmit={handleSignup} className="space-y-4">
-                <div><Label htmlFor="su-nome">Nome completo</Label><Input id="su-nome" name="nome" type="text" required className="mt-1.5" /></div>
-                <div><Label htmlFor="su-email">Email</Label><Input id="su-email" name="email" type="email" required className="mt-1.5" /></div>
-                <div><Label htmlFor="su-pw">Senha</Label><Input id="su-pw" name="password" type="password" required minLength={6} className="mt-1.5" /></div>
-                <Button type="submit" variant="gold" className="w-full" disabled={loading}>{loading ? "Criando..." : "Criar conta"}</Button>
-              </form>
-            </TabsContent>
-          </Tabs>
+          <h2 className="text-lg font-semibold mb-4 text-center">Entrar</h2>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div><Label htmlFor="li-email">Email</Label><Input id="li-email" name="email" type="email" required className="mt-1.5" /></div>
+            <div><Label htmlFor="li-pw">Senha</Label><Input id="li-pw" name="password" type="password" required className="mt-1.5" /></div>
+            <Button type="submit" variant="gold" className="w-full" disabled={loading}>{loading ? "Entrando..." : "Entrar"}</Button>
+          </form>
           <p className="text-xs text-muted-foreground text-center mt-4">
-            Acesso exclusivo para funcionários autorizados.
+            Acesso exclusivo. Novas contas são criadas apenas pelo Administrador.
           </p>
         </div>
       </div>
