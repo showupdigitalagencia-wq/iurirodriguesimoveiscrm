@@ -14,16 +14,258 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      configuracoes: {
+        Row: {
+          chave: string
+          updated_at: string
+          valor: Json
+        }
+        Insert: {
+          chave: string
+          updated_at?: string
+          valor: Json
+        }
+        Update: {
+          chave?: string
+          updated_at?: string
+          valor?: Json
+        }
+        Relationships: []
+      }
+      lead_historico: {
+        Row: {
+          acao: string
+          created_at: string
+          detalhe: Json | null
+          id: string
+          lead_id: string
+          user_id: string | null
+        }
+        Insert: {
+          acao: string
+          created_at?: string
+          detalhe?: Json | null
+          id?: string
+          lead_id: string
+          user_id?: string | null
+        }
+        Update: {
+          acao?: string
+          created_at?: string
+          detalhe?: Json | null
+          id?: string
+          lead_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_historico_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leads: {
+        Row: {
+          canal: Database["public"]["Enums"]["lead_canal"]
+          created_at: string
+          creci: string | null
+          email: string | null
+          etapa: Database["public"]["Enums"]["lead_etapa"]
+          faixa_valor: string | null
+          fechado_em: string | null
+          first_response_at: string | null
+          id: string
+          is_corretor: boolean
+          motivo_perda: string | null
+          nome: string
+          observacoes: string | null
+          origem: string | null
+          regiao: Database["public"]["Enums"]["lead_regiao"]
+          responsavel_id: string | null
+          telefone: string
+          tipo_imovel: string | null
+          updated_at: string
+        }
+        Insert: {
+          canal: Database["public"]["Enums"]["lead_canal"]
+          created_at?: string
+          creci?: string | null
+          email?: string | null
+          etapa?: Database["public"]["Enums"]["lead_etapa"]
+          faixa_valor?: string | null
+          fechado_em?: string | null
+          first_response_at?: string | null
+          id?: string
+          is_corretor?: boolean
+          motivo_perda?: string | null
+          nome: string
+          observacoes?: string | null
+          origem?: string | null
+          regiao: Database["public"]["Enums"]["lead_regiao"]
+          responsavel_id?: string | null
+          telefone: string
+          tipo_imovel?: string | null
+          updated_at?: string
+        }
+        Update: {
+          canal?: Database["public"]["Enums"]["lead_canal"]
+          created_at?: string
+          creci?: string | null
+          email?: string | null
+          etapa?: Database["public"]["Enums"]["lead_etapa"]
+          faixa_valor?: string | null
+          fechado_em?: string | null
+          first_response_at?: string | null
+          id?: string
+          is_corretor?: boolean
+          motivo_perda?: string | null
+          nome?: string
+          observacoes?: string | null
+          origem?: string | null
+          regiao?: Database["public"]["Enums"]["lead_regiao"]
+          responsavel_id?: string | null
+          telefone?: string
+          tipo_imovel?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "responsaveis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notificacoes: {
+        Row: {
+          created_at: string
+          destino: string
+          id: string
+          lead_id: string | null
+          payload: Json | null
+          resposta: Json | null
+          status: string
+          tipo: string
+        }
+        Insert: {
+          created_at?: string
+          destino: string
+          id?: string
+          lead_id?: string | null
+          payload?: Json | null
+          resposta?: Json | null
+          status?: string
+          tipo: string
+        }
+        Update: {
+          created_at?: string
+          destino?: string
+          id?: string
+          lead_id?: string | null
+          payload?: Json | null
+          resposta?: Json | null
+          status?: string
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notificacoes_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      responsaveis: {
+        Row: {
+          ativo: boolean
+          canal: Database["public"]["Enums"]["lead_canal"]
+          created_at: string
+          id: string
+          nome: string
+          updated_at: string
+          whatsapp: string
+        }
+        Insert: {
+          ativo?: boolean
+          canal: Database["public"]["Enums"]["lead_canal"]
+          created_at?: string
+          id?: string
+          nome: string
+          updated_at?: string
+          whatsapp: string
+        }
+        Update: {
+          ativo?: boolean
+          canal?: Database["public"]["Enums"]["lead_canal"]
+          created_at?: string
+          id?: string
+          nome?: string
+          updated_at?: string
+          whatsapp?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "corretor"
+      lead_canal: "denise" | "fabiola" | "renata" | "robson"
+      lead_etapa:
+        | "novos_leads"
+        | "em_atendimento"
+        | "visita_agendada"
+        | "proposta_enviada"
+        | "em_negociacao"
+        | "fechado_ganho"
+        | "fechado_perdido"
+      lead_regiao:
+        | "barra_da_tijuca"
+        | "recreio"
+        | "jacarepagua"
+        | "zona_sul"
+        | "zona_norte"
+        | "zona_oeste"
+        | "centro"
+        | "outras"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +392,28 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "corretor"],
+      lead_canal: ["denise", "fabiola", "renata", "robson"],
+      lead_etapa: [
+        "novos_leads",
+        "em_atendimento",
+        "visita_agendada",
+        "proposta_enviada",
+        "em_negociacao",
+        "fechado_ganho",
+        "fechado_perdido",
+      ],
+      lead_regiao: [
+        "barra_da_tijuca",
+        "recreio",
+        "jacarepagua",
+        "zona_sul",
+        "zona_norte",
+        "zona_oeste",
+        "centro",
+        "outras",
+      ],
+    },
   },
 } as const
