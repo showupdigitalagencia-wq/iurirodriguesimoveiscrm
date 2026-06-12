@@ -166,7 +166,9 @@ function RelatorioPage() {
     <div className="p-4 md:p-8 space-y-4 md:space-y-6">
       <header>
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Relatórios</h1>
-        <p className="text-muted-foreground text-sm md:text-base mt-1">Análise avançada de desempenho</p>
+        <p className="text-muted-foreground text-sm md:text-base mt-1">
+          {respLabel ? `Análise de ${respLabel}` : compareBrokers ? "Comparando todos os corretores" : "Análise avançada de desempenho"}
+        </p>
       </header>
 
       {/* Filtros rápidos */}
