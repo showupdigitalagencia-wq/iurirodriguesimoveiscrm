@@ -340,7 +340,9 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
                 )}
               </TabsContent>
             </Tabs>
+            </div>
           </>
+
         ) : (
           <div className="py-12 text-center text-muted-foreground">Carregando…</div>
         )}
