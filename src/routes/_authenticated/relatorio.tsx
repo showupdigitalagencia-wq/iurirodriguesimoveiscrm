@@ -31,15 +31,31 @@ function ymLabel(k: string) {
 function RelatorioPage() {
   const [leads, setLeads] = useState<LeadRow[]>([]);
   const [resps, setResps] = useState<Resp[]>([]);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [preset, setPreset] = useState<Preset>("30d");
   const [from, setFrom] = useState<string>("");
   const [to, setTo] = useState<string>("");
   const [selectedMonths, setSelectedMonths] = useState<string[]>([]);
+  // "all" | "compare" | <responsavel_id>
+  const [respFilter, setRespFilter] = useState<string>("all");
 
   useEffect(() => {
     supabase.from("leads").select("*").then(({ data }) => setLeads((data as LeadRow[]) ?? []));
-    supabase.from("responsaveis").select("id, nome").then(({ data }) => setResps((data as Resp[]) ?? []));
+    supabase.from("responsaveis").select("id, nome").order("nome").then(({ data }) => setResps((data as Resp[]) ?? []));
+    supabase.auth.getUser().then(({ data }) => {
+      const uid = data.user?.id;
+      if (!uid) return;
+      supabase.from("user_roles").select("role").eq("user_id", uid).eq("role", "admin").maybeSingle()
+        .then(({ data: r }) => setIsAdmin(r?.role === "admin"));
+    });
   }, []);
+
+  // Apply per-broker scoping (admin only). "compare" keeps all data; broker id narrows it.
+  const scopedLeads = useMemo(() => {
+    if (!isAdmin) return leads;
+    if (respFilter === "all" || respFilter === "compare") return leads;
+    return leads.filter((l) => l.responsavel_id === respFilter);
+  }, [leads, isAdmin, respFilter]);
 
   // Range filter
   const range = useMemo(() => {
@@ -52,10 +68,10 @@ function RelatorioPage() {
     return { start, end: now };
   }, [preset, from, to]);
 
-  const inRange = useMemo(() => leads.filter((l) => {
+  const inRange = useMemo(() => scopedLeads.filter((l) => {
     const t = new Date(l.created_at).getTime();
     return t >= range.start.getTime() && t <= range.end.getTime();
-  }), [leads, range]);
+  }), [scopedLeads, range]);
 
   const totalPeriodo = inRange.length;
   const fechadosPeriodo = inRange.filter((l) => l.etapa === "fechado").length;
