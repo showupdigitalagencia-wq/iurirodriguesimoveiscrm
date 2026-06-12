@@ -169,10 +169,27 @@ function LeadsPage() {
       <header className="grid grid-cols-1 gap-3 md:flex md:flex-wrap md:items-end md:gap-4 md:justify-between">
         <div className="min-w-0">
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Leads</h1>
-          <p className="text-muted-foreground text-sm mt-1">{filtered.length} de {leads.length} leads</p>
+          <p className="text-muted-foreground text-sm mt-1">
+            {respFilterName
+              ? `${filtered.length} leads de ${respFilterName}`
+              : `${filtered.length} de ${leads.length} leads`}
+          </p>
         </div>
         <div className="flex gap-2 flex-wrap">
           <Input placeholder="Buscar por nome ou telefone..." value={q} onChange={(e) => setQ(e.target.value)} className="w-full md:w-64 h-11 md:h-10" />
+          {isAdmin && (
+            <Select value={respFilter} onValueChange={setRespFilter}>
+              <SelectTrigger className="w-full md:w-52 h-11 md:h-10">
+                <SelectValue placeholder="Filtrar por corretor" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os corretores</SelectItem>
+                {resps.map((r) => (
+                  <SelectItem key={r.id} value={r.id}>{r.nome}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
           <Button variant="outline" onClick={exportCsv} className="h-11 md:h-10 flex-1 md:flex-none"><Download className="h-4 w-4" /> CSV</Button>
           <Button variant="outline" onClick={exportXlsx} className="h-11 md:h-10 flex-1 md:flex-none"><FileSpreadsheet className="h-4 w-4" /> Excel</Button>
           {isAdmin && (
