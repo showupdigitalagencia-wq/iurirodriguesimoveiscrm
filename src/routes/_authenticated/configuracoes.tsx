@@ -4,10 +4,22 @@ import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { CANAIS } from "@/lib/lead-helpers";
+import { CANAIS, REGIOES, type LeadCanal, type LeadRegiao } from "@/lib/lead-helpers";
+import { Trash2, Copy } from "lucide-react";
 
 type Resp = { id: string; canal: string; nome: string; whatsapp: string };
+type Mapping = {
+  id: string;
+  form_id: string;
+  nome: string;
+  regiao: LeadRegiao;
+  canal: LeadCanal;
+  ativo: boolean;
+};
 
 export const Route = createFileRoute("/_authenticated/configuracoes")({
   head: () => ({ meta: [{ title: "Configurações — CRM" }] }),
@@ -15,6 +27,33 @@ export const Route = createFileRoute("/_authenticated/configuracoes")({
 });
 
 function ConfigPage() {
+  return (
+    <div className="p-8 space-y-6 max-w-4xl">
+      <header>
+        <h1 className="text-3xl font-bold tracking-tight">Configurações</h1>
+        <p className="text-muted-foreground mt-1">Responsáveis, integrações e mapeamento de formulários.</p>
+      </header>
+      <Tabs defaultValue="responsaveis">
+        <TabsList>
+          <TabsTrigger value="responsaveis">Responsáveis</TabsTrigger>
+          <TabsTrigger value="integracoes">Integrações</TabsTrigger>
+          <TabsTrigger value="formularios">Formulários Meta</TabsTrigger>
+        </TabsList>
+        <TabsContent value="responsaveis" className="mt-6">
+          <ResponsaveisSection />
+        </TabsContent>
+        <TabsContent value="integracoes" className="mt-6">
+          <IntegracoesSection />
+        </TabsContent>
+        <TabsContent value="formularios" className="mt-6">
+          <FormulariosSection />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+function ResponsaveisSection() {
   const [resps, setResps] = useState<Resp[]>([]);
   const [saving, setSaving] = useState<string | null>(null);
 
@@ -35,40 +74,210 @@ function ConfigPage() {
   }
 
   return (
-    <div className="p-8 space-y-6 max-w-3xl">
-      <header>
-        <h1 className="text-3xl font-bold tracking-tight">Configurações</h1>
-        <p className="text-muted-foreground mt-1">Gerencie os responsáveis por canal de atendimento.</p>
-      </header>
-      <section className="bg-card border border-border rounded-xl p-6 space-y-4">
-        <h2 className="font-semibold">Responsáveis e WhatsApp</h2>
-        {resps.map((r) => (
-          <div key={r.id} className="grid md:grid-cols-[120px_1fr_1fr_auto] gap-3 items-end">
-            <div>
-              <Label className="text-xs text-muted-foreground">Canal</Label>
-              <div className="mt-1.5 px-3 py-2 bg-muted rounded-md text-sm">
-                {CANAIS.find((c) => c.id === r.canal)?.nome ?? r.canal}
-              </div>
+    <section className="bg-card border border-border rounded-xl p-6 space-y-4">
+      <h2 className="font-semibold">Responsáveis e WhatsApp</h2>
+      {resps.map((r) => (
+        <div key={r.id} className="grid md:grid-cols-[120px_1fr_1fr_auto] gap-3 items-end">
+          <div>
+            <Label className="text-xs text-muted-foreground">Canal</Label>
+            <div className="mt-1.5 px-3 py-2 bg-muted rounded-md text-sm">
+              {CANAIS.find((c) => c.id === r.canal)?.nome ?? r.canal}
             </div>
-            <div>
-              <Label>Nome</Label>
-              <Input value={r.nome} onChange={(e) => setResps((p) => p.map((x) => x.id === r.id ? { ...x, nome: e.target.value } : x))} className="mt-1.5" />
-            </div>
-            <div>
-              <Label>WhatsApp (com DDI 55)</Label>
-              <Input value={r.whatsapp} onChange={(e) => setResps((p) => p.map((x) => x.id === r.id ? { ...x, whatsapp: e.target.value } : x))} placeholder="5521900000000" className="mt-1.5" />
-            </div>
-            <Button variant="gold" onClick={() => save(r)} disabled={saving === r.id}>
-              {saving === r.id ? "..." : "Salvar"}
-            </Button>
           </div>
-        ))}
+          <div>
+            <Label>Nome</Label>
+            <Input value={r.nome} onChange={(e) => setResps((p) => p.map((x) => x.id === r.id ? { ...x, nome: e.target.value } : x))} className="mt-1.5" />
+          </div>
+          <div>
+            <Label>WhatsApp (com DDI 55)</Label>
+            <Input value={r.whatsapp} onChange={(e) => setResps((p) => p.map((x) => x.id === r.id ? { ...x, whatsapp: e.target.value } : x))} placeholder="5521900000000" className="mt-1.5" />
+          </div>
+          <Button variant="gold" onClick={() => save(r)} disabled={saving === r.id}>
+            {saving === r.id ? "..." : "Salvar"}
+          </Button>
+        </div>
+      ))}
+    </section>
+  );
+}
+
+function IntegracoesSection() {
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const webhookUrl = `${origin}/api/public/webhook`;
+  const leadUrl = `${origin}/api/public/lead`;
+
+  function copy(url: string) {
+    navigator.clipboard.writeText(url);
+    toast.success("URL copiada");
+  }
+
+  return (
+    <div className="space-y-6">
+      <section className="bg-card border border-border rounded-xl p-6 space-y-3">
+        <h2 className="font-semibold">Webhook genérico (Zapier / Make / Meta)</h2>
+        <p className="text-sm text-muted-foreground">
+          Use esta URL no Zapier ou Make com o trigger <strong>Facebook Lead Ads → New Lead</strong> e ação <strong>Webhooks → POST</strong>. Aceita qualquer JSON com campos como nome, telefone, email, regiao, form_id.
+        </p>
+        <div className="flex gap-2">
+          <Input readOnly value={webhookUrl} className="font-mono text-xs" />
+          <Button variant="outline" size="icon" onClick={() => copy(webhookUrl)}>
+            <Copy className="h-4 w-4" />
+          </Button>
+        </div>
       </section>
+
+      <section className="bg-card border border-border rounded-xl p-6 space-y-3">
+        <h2 className="font-semibold">Endpoint estruturado (formulário próprio)</h2>
+        <p className="text-sm text-muted-foreground">
+          Espera JSON com campos exatos: nome, telefone, regiao, tipo_imovel, faixa_valor.
+        </p>
+        <div className="flex gap-2">
+          <Input readOnly value={leadUrl} className="font-mono text-xs" />
+          <Button variant="outline" size="icon" onClick={() => copy(leadUrl)}>
+            <Copy className="h-4 w-4" />
+          </Button>
+        </div>
+      </section>
+
       <section className="bg-card border border-border rounded-xl p-6">
         <h2 className="font-semibold mb-2">Z-API</h2>
         <p className="text-sm text-muted-foreground">
-          As credenciais Z-API (Instance ID, Token, Client Token) estão armazenadas como segredos seguros no backend e usadas automaticamente para enviar mensagens. Para atualizar, peça ao administrador para rotacionar os segredos.
+          Credenciais Z-API armazenadas como segredos seguros no backend. Para atualizar, peça ao administrador para rotacionar os segredos.
         </p>
+      </section>
+    </div>
+  );
+}
+
+function FormulariosSection() {
+  const [items, setItems] = useState<Mapping[]>([]);
+  const [novo, setNovo] = useState<Omit<Mapping, "id">>({
+    form_id: "",
+    nome: "",
+    regiao: "barra_da_tijuca",
+    canal: "denise",
+    ativo: true,
+  });
+  const [loading, setLoading] = useState(false);
+
+  async function load() {
+    const { data } = await supabase
+      .from("meta_form_mapping")
+      .select("id, form_id, nome, regiao, canal, ativo")
+      .order("created_at", { ascending: false });
+    setItems((data as Mapping[]) ?? []);
+  }
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  async function adicionar() {
+    if (!novo.form_id.trim() || !novo.nome.trim()) {
+      toast.error("Preencha Form ID e nome");
+      return;
+    }
+    setLoading(true);
+    const { error } = await supabase.from("meta_form_mapping").insert(novo);
+    setLoading(false);
+    if (error) return toast.error(error.message);
+    toast.success("Mapeamento criado");
+    setNovo({ form_id: "", nome: "", regiao: "barra_da_tijuca", canal: "denise", ativo: true });
+    load();
+  }
+
+  async function atualizar(id: string, patch: Partial<Mapping>) {
+    const { error } = await supabase.from("meta_form_mapping").update(patch).eq("id", id);
+    if (error) toast.error(error.message);
+    else load();
+  }
+
+  async function remover(id: string) {
+    if (!confirm("Remover este mapeamento?")) return;
+    const { error } = await supabase.from("meta_form_mapping").delete().eq("id", id);
+    if (error) toast.error(error.message);
+    else {
+      toast.success("Removido");
+      load();
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      <section className="bg-card border border-border rounded-xl p-6 space-y-4">
+        <div>
+          <h2 className="font-semibold">Novo mapeamento</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Vincule cada <strong>Form ID</strong> do Meta a uma região e um responsável. Quando o webhook receber um lead com esse form_id, ele será roteado automaticamente.
+          </p>
+        </div>
+        <div className="grid md:grid-cols-[1fr_1fr_1fr_1fr_auto] gap-3 items-end">
+          <div>
+            <Label>Form ID (Meta)</Label>
+            <Input value={novo.form_id} onChange={(e) => setNovo({ ...novo, form_id: e.target.value })} placeholder="1234567890" className="mt-1.5" />
+          </div>
+          <div>
+            <Label>Nome do anúncio</Label>
+            <Input value={novo.nome} onChange={(e) => setNovo({ ...novo, nome: e.target.value })} placeholder="Barra - Lançamento X" className="mt-1.5" />
+          </div>
+          <div>
+            <Label>Região</Label>
+            <Select value={novo.regiao} onValueChange={(v) => setNovo({ ...novo, regiao: v as LeadRegiao })}>
+              <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {REGIOES.map((r) => <SelectItem key={r.id} value={r.id}>{r.nome}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Responsável</Label>
+            <Select value={novo.canal} onValueChange={(v) => setNovo({ ...novo, canal: v as LeadCanal })}>
+              <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {CANAIS.map((c) => <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button variant="gold" onClick={adicionar} disabled={loading}>Adicionar</Button>
+        </div>
+      </section>
+
+      <section className="bg-card border border-border rounded-xl p-6 space-y-3">
+        <h2 className="font-semibold">Mapeamentos ativos ({items.length})</h2>
+        {items.length === 0 && (
+          <p className="text-sm text-muted-foreground">Nenhum mapeamento cadastrado.</p>
+        )}
+        {items.map((m) => (
+          <div key={m.id} className="grid md:grid-cols-[1fr_1fr_1fr_1fr_auto_auto] gap-3 items-center border-t border-border pt-3 first:border-0 first:pt-0">
+            <div>
+              <div className="text-xs text-muted-foreground">Form ID</div>
+              <div className="font-mono text-sm">{m.form_id}</div>
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">Nome</div>
+              <div className="text-sm">{m.nome}</div>
+            </div>
+            <Select value={m.regiao} onValueChange={(v) => atualizar(m.id, { regiao: v as LeadRegiao })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {REGIOES.map((r) => <SelectItem key={r.id} value={r.id}>{r.nome}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Select value={m.canal} onValueChange={(v) => atualizar(m.id, { canal: v as LeadCanal })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {CANAIS.map((c) => <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <div className="flex items-center gap-2">
+              <Switch checked={m.ativo} onCheckedChange={(v) => atualizar(m.id, { ativo: v })} />
+              <span className="text-xs text-muted-foreground">{m.ativo ? "Ativo" : "Pausado"}</span>
+            </div>
+            <Button variant="ghost" size="icon" onClick={() => remover(m.id)}>
+              <Trash2 className="h-4 w-4 text-destructive" />
+            </Button>
+          </div>
+        ))}
       </section>
     </div>
   );
