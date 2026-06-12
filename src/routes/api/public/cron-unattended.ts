@@ -18,24 +18,28 @@ export const Route = createFileRoute("/api/public/cron-unattended")({
             headers: { "Content-Type": "application/json" },
           });
         }
-        const { sendZapiMessage } = await import("@/lib/notify.server");
+        const { sendOneSignalPush } = await import("@/lib/onesignal.server");
         let sent = 0;
         for (const lead of leads) {
           const { data: prev } = await supabaseAdmin
             .from("notificacoes").select("id").eq("lead_id", lead.id)
-            .eq("tipo", "whatsapp_alerta_sla")
+            .eq("tipo", "push_alerta_sla")
             .gte("created_at", new Date(Date.now() - 6 * 3600 * 1000).toISOString()).limit(1);
           if (prev && prev.length > 0) continue;
           if (!lead.responsavel_id) continue;
-          const { data: resp } = await supabaseAdmin
-            .from("responsaveis").select("whatsapp").eq("id", lead.responsavel_id).maybeSingle();
-          if (!resp?.whatsapp) continue;
-          const msg = `*⚠️ Lead sem resposta há mais de 1h*\n\n*Nome:* ${lead.nome}\n*Telefone:* ${lead.telefone}\n*Região:* ${lead.regiao}\n\nResponda o quanto antes pelo CRM.`;
-          const result = await sendZapiMessage(resp.whatsapp, msg);
+
+          const url = `https://iurirodriguesimoveiscrmcombr.lovable.app/leads?lead=${lead.id}`;
+          const result = await sendOneSignalPush({
+            externalId: lead.responsavel_id,
+            title: `⚠️ Lead sem resposta há +1h: ${lead.nome}`,
+            message: `${lead.telefone} · ${lead.regiao.replace(/_/g, " ")} — abra o CRM e responda.`,
+            url,
+            data: { lead_id: lead.id, alerta_sla: true },
+          });
           await supabaseAdmin.from("notificacoes").insert({
-            lead_id: lead.id, tipo: "whatsapp_alerta_sla", destino: resp.whatsapp,
+            lead_id: lead.id, tipo: "push_alerta_sla", destino: lead.responsavel_id,
             status: result.ok ? "enviado" : "falha",
-            payload: { message: msg },
+            payload: { url } as never,
             resposta: (result.resp ?? { error: result.error }) as never,
           });
           if (result.ok) sent++;

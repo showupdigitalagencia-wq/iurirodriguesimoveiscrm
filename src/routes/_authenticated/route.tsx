@@ -40,6 +40,8 @@ function AuthLayout() {
 
   useEffect(() => {
     let active = true;
+    // Inicializa OneSignal cedo (idempotente; guard-rails internos para preview/iframe)
+    import("@/lib/onesignal-client").then((m) => m.initOneSignal()).catch(() => null);
     supabase.auth.getUser().then(({ data: userData }) => {
       const userId = userData.user?.id;
       if (!userId) return;
