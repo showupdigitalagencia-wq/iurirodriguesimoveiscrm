@@ -43,9 +43,11 @@ function leadToRow(l: LeadRow) {
 
 function LeadsPage() {
   const [leads, setLeads] = useState<LeadRow[]>([]);
+  const [resps, setResps] = useState<Resp[]>([]);
   const [q, setQ] = useState("");
   const [openLead, setOpenLead] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [respFilter, setRespFilter] = useState<string>("all");
   const fileRef = useRef<HTMLInputElement>(null);
 
   async function load() {
@@ -55,6 +57,7 @@ function LeadsPage() {
 
   useEffect(() => {
     load();
+    supabase.from("responsaveis").select("id, nome").order("nome").then(({ data }) => setResps((data as Resp[]) ?? []));
     supabase.auth.getUser().then(({ data }) => {
       const uid = data.user?.id;
       if (!uid) return;
@@ -63,8 +66,12 @@ function LeadsPage() {
     });
   }, []);
 
-  const filtered = leads.filter((l) =>
-    !q || l.nome.toLowerCase().includes(q.toLowerCase()) || l.telefone.includes(q));
+  const filtered = leads.filter((l) => {
+    if (isAdmin && respFilter !== "all" && l.responsavel_id !== respFilter) return false;
+    if (q && !l.nome.toLowerCase().includes(q.toLowerCase()) && !l.telefone.includes(q)) return false;
+    return true;
+  });
+  const respFilterName = respFilter !== "all" ? resps.find((r) => r.id === respFilter)?.nome : null;
 
   function exportCsv() {
     const rows = filtered.map(leadToRow);
