@@ -21,6 +21,7 @@ const NAV = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/pipeline", label: "Pipeline", icon: Kanban },
   { to: "/leads", label: "Leads", icon: Users },
+  { to: "/corretores", label: "Corretores", icon: BadgeCheck },
   { to: "/relatorio", label: "Relatórios", icon: BarChart3 },
   { to: "/configuracoes", label: "Configurações", icon: Settings },
 ] as const;
