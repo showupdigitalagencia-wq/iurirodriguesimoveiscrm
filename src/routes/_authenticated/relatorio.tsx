@@ -128,15 +128,38 @@ function RelatorioPage() {
   }, [leads]);
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 md:p-8 space-y-4 md:space-y-6">
       <header>
-        <h1 className="text-3xl font-bold tracking-tight">Relatórios</h1>
-        <p className="text-muted-foreground mt-1">Análise avançada de desempenho</p>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Relatórios</h1>
+        <p className="text-muted-foreground text-sm md:text-base mt-1">Análise avançada de desempenho</p>
       </header>
 
       {/* Filtros rápidos */}
       <section className="bg-card border border-border rounded-xl p-4 space-y-3">
-        <div className="flex flex-wrap items-end gap-3">
+        {/* Mobile: dropdown compacto */}
+        <div className="md:hidden space-y-3">
+          <div>
+            <Label className="text-xs">Período</Label>
+            <select
+              className="mt-1 w-full h-11 rounded-md border border-input bg-background px-3 text-sm"
+              value={preset}
+              onChange={(e) => setPreset(e.target.value as Preset)}
+            >
+              <option value="7d">Últimos 7 dias</option>
+              <option value="15d">Últimos 15 dias</option>
+              <option value="30d">Últimos 30 dias</option>
+              <option value="custom">Personalizado</option>
+            </select>
+          </div>
+          {preset === "custom" && (
+            <div className="grid grid-cols-2 gap-2">
+              <div><Label className="text-xs">De</Label><Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="mt-1 h-11" /></div>
+              <div><Label className="text-xs">Até</Label><Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="mt-1 h-11" /></div>
+            </div>
+          )}
+        </div>
+        {/* Desktop: chips — inalterado */}
+        <div className="hidden md:flex md:flex-wrap md:items-end md:gap-3">
           <div className="flex gap-2">
             {([
               ["7d", "Últimos 7 dias"], ["15d", "Últimos 15 dias"],
@@ -155,7 +178,7 @@ function RelatorioPage() {
       </section>
 
       {/* Métricas do período */}
-      <div className="grid md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         <Card label="Total de leads" value={totalPeriodo} />
         <Card label="Fechados" value={fechadosPeriodo} />
         <Card label="Descartados" value={descartadosPeriodo} />
@@ -163,34 +186,42 @@ function RelatorioPage() {
       </div>
 
       {/* Funil do período */}
-      <div className="bg-card border border-border rounded-xl p-6">
-        <h3 className="font-semibold mb-4">Funil — período selecionado</h3>
-        <ResponsiveContainer width="100%" height={280}>
-          <BarChart data={porEtapaPeriodo}>
-            <XAxis dataKey="nome" tick={{ fontSize: 10 }} angle={-25} textAnchor="end" height={70} />
-            <YAxis allowDecimals={false} />
-            <Tooltip />
-            <Bar dataKey="qtd" fill="#c9a35b" radius={[4, 4, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
+      <div className="bg-card border border-border rounded-xl p-4 md:p-6">
+        <h3 className="font-semibold mb-3 md:mb-4">Funil — período selecionado</h3>
+        <div className="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
+          <div className="min-w-[560px] md:min-w-0">
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={porEtapaPeriodo}>
+                <XAxis dataKey="nome" tick={{ fontSize: 10 }} angle={-25} textAnchor="end" height={70} />
+                <YAxis allowDecimals={false} />
+                <Tooltip />
+                <Bar dataKey="qtd" fill="#c9a35b" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </div>
 
       {/* Evolução anual */}
-      <div className="bg-card border border-border rounded-xl p-6">
-        <h3 className="font-semibold mb-4">Evolução mensal — {new Date().getFullYear()}</h3>
-        <ResponsiveContainer width="100%" height={280}>
-          <LineChart data={yearData}>
-            <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-            <XAxis dataKey="mes" />
-            <YAxis allowDecimals={false} />
-            <Tooltip />
-            <Line type="monotone" dataKey="total" stroke="#c9a35b" strokeWidth={2} dot={{ r: 4 }} />
-          </LineChart>
-        </ResponsiveContainer>
+      <div className="bg-card border border-border rounded-xl p-4 md:p-6">
+        <h3 className="font-semibold mb-3 md:mb-4">Evolução mensal — {new Date().getFullYear()}</h3>
+        <div className="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
+          <div className="min-w-[640px] md:min-w-0">
+            <ResponsiveContainer width="100%" height={280}>
+              <LineChart data={yearData}>
+                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                <XAxis dataKey="mes" />
+                <YAxis allowDecimals={false} />
+                <Tooltip />
+                <Line type="monotone" dataKey="total" stroke="#c9a35b" strokeWidth={2} dot={{ r: 4 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </div>
 
       {/* Comparação entre meses */}
-      <section className="bg-card border border-border rounded-xl p-6 space-y-4">
+      <section className="bg-card border border-border rounded-xl p-4 md:p-6 space-y-4">
         <div>
           <h3 className="font-semibold">Comparar meses</h3>
           <p className="text-xs text-muted-foreground mt-1">Selecione 2 ou mais meses para comparar</p>
@@ -198,7 +229,7 @@ function RelatorioPage() {
         <div className="flex flex-wrap gap-2">
           {availableMonths.map((k) => (
             <Badge key={k} variant={selectedMonths.includes(k) ? "default" : "outline"}
-              className="cursor-pointer" onClick={() => toggleMonth(k)}>
+              className="cursor-pointer min-h-9 px-3 flex items-center" onClick={() => toggleMonth(k)}>
               {ymLabel(k)}
             </Badge>
           ))}
@@ -207,7 +238,7 @@ function RelatorioPage() {
 
         {compareData.length > 0 && (
           <>
-            <div className="grid md:grid-cols-3 gap-4 pt-2">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 pt-2">
               <Card label="Mês com mais leads" value={melhorMes ? `${melhorMes.mes} (${melhorMes.total})` : "—"} />
               <Card label="Melhor conversão" value={melhorConv ? `${melhorConv.mes} (${melhorConv.conversao}%)` : "—"} />
               <Card label="Melhor corretor" value={melhorCorretor ? `${melhorCorretor.nome} (${melhorCorretor.total})` : "—"} />
@@ -215,35 +246,43 @@ function RelatorioPage() {
 
             <div>
               <h4 className="text-sm font-medium mb-2">Total de leads por mês</h4>
-              <ResponsiveContainer width="100%" height={260}>
-                <BarChart data={compareData}>
-                  <XAxis dataKey="mes" />
-                  <YAxis allowDecimals={false} />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="total" name="Total" fill="#c9a35b" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="fechados" name="Fechados" fill="#6c512a" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              <div className="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
+                <div className="min-w-[560px] md:min-w-0">
+                  <ResponsiveContainer width="100%" height={260}>
+                    <BarChart data={compareData}>
+                      <XAxis dataKey="mes" />
+                      <YAxis allowDecimals={false} />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="total" name="Total" fill="#c9a35b" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="fechados" name="Fechados" fill="#6c512a" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
             </div>
 
             <div>
               <h4 className="text-sm font-medium mb-2">Desempenho por corretor</h4>
-              <ResponsiveContainer width="100%" height={Math.max(220, brokerCompare.length * 50)}>
-                <BarChart data={brokerCompare} layout="vertical">
-                  <XAxis type="number" allowDecimals={false} />
-                  <YAxis dataKey="nome" type="category" width={90} />
-                  <Tooltip />
-                  <Legend />
-                  {compareData.map((m, i) => (
-                    <Bar key={m.key} dataKey={m.mes} fill={COLORS[i % COLORS.length]} radius={[0, 4, 4, 0]} />
-                  ))}
-                </BarChart>
-              </ResponsiveContainer>
+              <div className="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
+                <div className="min-w-[560px] md:min-w-0">
+                  <ResponsiveContainer width="100%" height={Math.max(220, brokerCompare.length * 50)}>
+                    <BarChart data={brokerCompare} layout="vertical">
+                      <XAxis type="number" allowDecimals={false} />
+                      <YAxis dataKey="nome" type="category" width={90} />
+                      <Tooltip />
+                      <Legend />
+                      {compareData.map((m, i) => (
+                        <Bar key={m.key} dataKey={m.mes} fill={COLORS[i % COLORS.length]} radius={[0, 4, 4, 0]} />
+                      ))}
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+            <div className="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
+              <table className="w-full text-sm min-w-[560px]">
                 <thead className="bg-muted/40 text-xs uppercase">
                   <tr>
                     <th className="text-left px-3 py-2">Mês</th>
