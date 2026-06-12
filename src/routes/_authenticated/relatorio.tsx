@@ -194,6 +194,25 @@ function RelatorioPage() {
               <div><Label className="text-xs">Até</Label><Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="mt-1 h-11" /></div>
             </div>
           )}
+          {isAdmin && (
+            <div>
+              <Label className="text-xs">Corretor</Label>
+              <select
+                className="mt-1 w-full h-11 rounded-md border border-input bg-background px-3 text-sm"
+                value={respFilter}
+                onChange={(e) => setRespFilter(e.target.value)}
+              >
+                <option value="all">Todos os corretores</option>
+                <option value="compare">Comparar corretores</option>
+                {resps.map((r) => <option key={r.id} value={r.id}>{r.nome}</option>)}
+              </select>
+            </div>
+          )}
+        </div>
+              <div><Label className="text-xs">De</Label><Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="mt-1 h-11" /></div>
+              <div><Label className="text-xs">Até</Label><Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="mt-1 h-11" /></div>
+            </div>
+          )}
         </div>
         {/* Desktop: chips — inalterado */}
         <div className="hidden md:flex md:flex-wrap md:items-end md:gap-3">
