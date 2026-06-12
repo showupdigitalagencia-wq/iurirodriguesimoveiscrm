@@ -20,13 +20,13 @@ function DashboardPage() {
 
   const total = leads.length;
   const novos = leads.filter((l) => l.etapa === "novos_leads").length;
-  const ganhos = leads.filter((l) => l.etapa === "fechado_ganho").length;
+  const ganhos = leads.filter((l) => l.etapa === "fechado").length;
   const alertas = leads.filter((l) => urgencyForLead(l).level !== "ok").length;
 
   const cards = [
     { label: "Total de leads", value: total, icon: Users, color: "text-foreground" },
     { label: "Novos leads", value: novos, icon: Clock, color: "text-gold" },
-    { label: "Fechados ganhos", value: ganhos, icon: CheckCircle2, color: "text-green-600" },
+    { label: "Fechados", value: ganhos, icon: CheckCircle2, color: "text-green-600" },
     { label: "Em alerta de SLA", value: alertas, icon: AlertTriangle, color: "text-destructive" },
   ];
 

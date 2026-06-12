@@ -19,8 +19,8 @@ function RelatorioPage() {
 
   const porEtapa = ETAPAS.map((e) => ({ nome: e.nome, qtd: leads.filter((l) => l.etapa === e.id).length }));
   const porCanal = CANAIS.map((c) => ({ name: c.nome, value: leads.filter((l) => l.canal === c.id).length }));
-  const ganhos = leads.filter((l) => l.etapa === "fechado_ganho").length;
-  const perdidos = leads.filter((l) => l.etapa === "fechado_perdido").length;
+  const ganhos = leads.filter((l) => l.etapa === "fechado").length;
+  const perdidos = leads.filter((l) => l.etapa === "descartado").length;
   const taxa = ganhos + perdidos > 0 ? Math.round((ganhos / (ganhos + perdidos)) * 100) : 0;
 
   return (

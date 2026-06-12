@@ -8,11 +8,12 @@ export type LeadRegiao = Database["public"]["Enums"]["lead_regiao"];
 export const ETAPAS: { id: LeadEtapa; nome: string }[] = [
   { id: "novos_leads", nome: "Novos Leads" },
   { id: "em_atendimento", nome: "Em Atendimento" },
-  { id: "visita_agendada", nome: "Visita Agendada" },
-  { id: "proposta_enviada", nome: "Proposta Enviada" },
+  { id: "reuniao_agendada", nome: "Reunião Agendada" },
+  { id: "documentos_enviados", nome: "Documentos Enviados" },
   { id: "em_negociacao", nome: "Em Negociação" },
-  { id: "fechado_ganho", nome: "Fechado · Ganho" },
-  { id: "fechado_perdido", nome: "Fechado · Perdido" },
+  { id: "follow_up", nome: "Follow Up" },
+  { id: "fechado", nome: "Fechado" },
+  { id: "descartado", nome: "Descartado" },
 ];
 
 export const REGIOES: { id: LeadRegiao; nome: string }[] = [
@@ -52,7 +53,7 @@ export function urgencyForLead(lead: Pick<LeadRow, "created_at" | "first_respons
   level: "ok" | "warning" | "critical";
   minutes: number;
 } {
-  if (lead.etapa === "fechado_ganho" || lead.etapa === "fechado_perdido") {
+  if (lead.etapa === "fechado" || lead.etapa === "descartado") {
     return { level: "ok", minutes: 0 };
   }
   if (lead.first_response_at) return { level: "ok", minutes: 0 };

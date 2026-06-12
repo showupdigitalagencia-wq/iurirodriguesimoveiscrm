@@ -3,8 +3,8 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const LeadEtapa = z.enum([
-  "novos_leads", "em_atendimento", "visita_agendada",
-  "proposta_enviada", "em_negociacao", "fechado_ganho", "fechado_perdido",
+  "novos_leads", "em_atendimento", "reuniao_agendada",
+  "documentos_enviados", "em_negociacao", "follow_up", "fechado", "descartado",
 ]);
 
 export const updateLeadEtapa = createServerFn({ method: "POST" })
@@ -12,7 +12,7 @@ export const updateLeadEtapa = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ id: z.string().uuid(), etapa: LeadEtapa }).parse(d))
   .handler(async ({ data, context }) => {
     const patch: { etapa: typeof data.etapa; fechado_em?: string } = { etapa: data.etapa };
-    if (data.etapa === "fechado_ganho" || data.etapa === "fechado_perdido") {
+    if (data.etapa === "fechado" || data.etapa === "descartado") {
       patch.fechado_em = new Date().toISOString();
     }
     const { error } = await context.supabase.from("leads").update(patch).eq("id", data.id);

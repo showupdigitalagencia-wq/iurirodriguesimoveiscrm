@@ -329,11 +329,12 @@ export type Database = {
       lead_etapa:
         | "novos_leads"
         | "em_atendimento"
-        | "visita_agendada"
-        | "proposta_enviada"
+        | "reuniao_agendada"
+        | "documentos_enviados"
         | "em_negociacao"
-        | "fechado_ganho"
-        | "fechado_perdido"
+        | "follow_up"
+        | "fechado"
+        | "descartado"
       lead_regiao:
         | "barra_da_tijuca"
         | "recreio"
@@ -478,11 +479,12 @@ export const Constants = {
       lead_etapa: [
         "novos_leads",
         "em_atendimento",
-        "visita_agendada",
-        "proposta_enviada",
+        "reuniao_agendada",
+        "documentos_enviados",
         "em_negociacao",
-        "fechado_ganho",
-        "fechado_perdido",
+        "follow_up",
+        "fechado",
+        "descartado",
       ],
       lead_regiao: [
         "barra_da_tijuca",
