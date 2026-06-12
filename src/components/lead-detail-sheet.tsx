@@ -130,14 +130,14 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated }: Props) {
 
   return (
     <Sheet open={!!leadId} onOpenChange={(o) => !o && onClose()}>
-      <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
+      <SheetContent className="w-full sm:max-w-xl overflow-y-auto p-4 md:p-6 pb-[calc(env(safe-area-inset-bottom)+88px)] md:pb-6">
         {lead ? (
           <>
             <SheetHeader>
               <div className="flex items-start justify-between gap-3">
-                <div>
-                  <SheetTitle className="text-2xl">{lead.nome}</SheetTitle>
-                  <SheetDescription className="flex items-center gap-2 mt-1">
+                <div className="min-w-0">
+                  <SheetTitle className="text-xl md:text-2xl truncate">{lead.nome}</SheetTitle>
+                  <SheetDescription className="flex items-center flex-wrap gap-2 mt-1">
                     <Badge variant="outline">{etapaNome(lead.etapa)}</Badge>
                     {urgency && urgency.level !== "ok" && (
                       <Badge className={urgency.level === "critical" ? "bg-destructive" : "bg-gold text-gold-foreground"}>
@@ -150,7 +150,8 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated }: Props) {
               </div>
             </SheetHeader>
 
-            <div className="mt-4 flex flex-wrap gap-2">
+            {/* Ações: inline no desktop, rodapé fixo no mobile */}
+            <div className="hidden md:flex mt-4 flex-wrap gap-2">
               <Button asChild variant="gold" size="sm">
                 <a href={whatsappLink} target="_blank" rel="noreferrer">
                   <MessageCircle className="h-4 w-4" /> WhatsApp
@@ -165,6 +166,23 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated }: Props) {
                 </Button>
               )}
             </div>
+
+            <div className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-background border-t border-border px-3 py-2 pb-[calc(env(safe-area-inset-bottom)+8px)] flex gap-2">
+              <Button asChild variant="gold" className="flex-1 h-12">
+                <a href={whatsappLink} target="_blank" rel="noreferrer">
+                  <MessageCircle className="h-5 w-5" /> WhatsApp
+                </a>
+              </Button>
+              <Button asChild variant="outline" className="flex-1 h-12">
+                <a href={`tel:${lead.telefone}`}><Phone className="h-5 w-5" /> Ligar</a>
+              </Button>
+              {!lead.first_response_at && (
+                <Button onClick={markResponse} variant="outline" className="h-12 px-3" aria-label="Marcar resposta">
+                  <CheckCircle2 className="h-5 w-5" />
+                </Button>
+              )}
+            </div>
+
 
             <Separator className="my-5" />
 

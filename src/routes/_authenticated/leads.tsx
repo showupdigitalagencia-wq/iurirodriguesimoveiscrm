@@ -155,27 +155,54 @@ function LeadsPage() {
   }
 
   return (
-    <div className="p-8 space-y-6">
-      <header className="flex flex-wrap items-end gap-4 justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Leads</h1>
-          <p className="text-muted-foreground mt-1">{filtered.length} de {leads.length} leads</p>
+    <div className="p-4 md:p-8 space-y-4 md:space-y-6">
+      <header className="grid grid-cols-1 gap-3 md:flex md:flex-wrap md:items-end md:gap-4 md:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Leads</h1>
+          <p className="text-muted-foreground text-sm mt-1">{filtered.length} de {leads.length} leads</p>
         </div>
         <div className="flex gap-2 flex-wrap">
-          <Input placeholder="Buscar por nome ou telefone..." value={q} onChange={(e) => setQ(e.target.value)} className="w-64" />
-          <Button variant="outline" onClick={exportCsv}><Download className="h-4 w-4" /> CSV</Button>
-          <Button variant="outline" onClick={exportXlsx}><FileSpreadsheet className="h-4 w-4" /> Excel</Button>
+          <Input placeholder="Buscar por nome ou telefone..." value={q} onChange={(e) => setQ(e.target.value)} className="w-full md:w-64 h-11 md:h-10" />
+          <Button variant="outline" onClick={exportCsv} className="h-11 md:h-10 flex-1 md:flex-none"><Download className="h-4 w-4" /> CSV</Button>
+          <Button variant="outline" onClick={exportXlsx} className="h-11 md:h-10 flex-1 md:flex-none"><FileSpreadsheet className="h-4 w-4" /> Excel</Button>
           {isAdmin && (
             <>
               <input ref={fileRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleImport} />
-              <Button variant="gold" onClick={() => fileRef.current?.click()}>
+              <Button variant="gold" onClick={() => fileRef.current?.click()} className="h-11 md:h-10 w-full md:w-auto">
                 <Upload className="h-4 w-4" /> Importar CSV
               </Button>
             </>
           )}
         </div>
       </header>
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
+
+      {/* Mobile: cards empilhados */}
+      <div className="md:hidden space-y-3">
+        {filtered.map((l) => (
+          <button key={l.id} onClick={() => setOpenLead(l.id)}
+            className="w-full text-left bg-card border border-border rounded-xl p-4 active:scale-[0.99] transition-transform">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <div className="font-semibold truncate">{l.nome}</div>
+                <div className="text-sm text-muted-foreground truncate">{l.telefone}</div>
+              </div>
+              <span className="shrink-0 text-[11px] px-2 py-1 rounded-full bg-muted">{etapaNome(l.etapa)}</span>
+            </div>
+            <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
+              <span className="truncate">{regiaoNome(l.regiao)}</span>
+              <span className="shrink-0 ml-2">{format(new Date(l.created_at), "dd/MM HH:mm", { locale: ptBR })}</span>
+            </div>
+          </button>
+        ))}
+        {filtered.length === 0 && (
+          <div className="text-center text-muted-foreground py-8 bg-card border border-border rounded-xl">
+            Nenhum lead encontrado
+          </div>
+        )}
+      </div>
+
+      {/* Desktop: tabela — inalterado */}
+      <div className="hidden md:block bg-card border border-border rounded-xl overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>

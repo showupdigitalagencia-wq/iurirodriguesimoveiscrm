@@ -84,7 +84,8 @@ function AuthLayout() {
 
   return (
     <div className="min-h-screen flex bg-background">
-      <aside className="w-60 shrink-0 bg-sidebar text-sidebar-foreground flex flex-col">
+      {/* Desktop sidebar — inalterado */}
+      <aside className="hidden md:flex w-60 shrink-0 bg-sidebar text-sidebar-foreground flex-col">
         <div className="px-5 py-6 border-b border-sidebar-border">
           <div className="text-[10px] uppercase tracking-[0.3em] text-sidebar-foreground/60">Iuri Rodrigues</div>
           <div className="text-xl font-bold text-gold mt-0.5">CRM Imóveis</div>
@@ -113,9 +114,50 @@ function AuthLayout() {
           </Button>
         </div>
       </aside>
-      <main className="flex-1 overflow-auto">
-        <Outlet />
-      </main>
+
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Header compacto mobile */}
+        <header className="md:hidden sticky top-0 z-30 h-14 flex items-center justify-between px-4 bg-sidebar text-sidebar-foreground border-b border-sidebar-border">
+          <div className="min-w-0">
+            <div className="text-[9px] uppercase tracking-[0.25em] text-sidebar-foreground/60 truncate">Iuri Rodrigues</div>
+            <div className="text-base font-bold text-gold leading-tight truncate">CRM Imóveis</div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {pendentes > 0 && (
+              <span className="flex items-center gap-1 px-2 h-9 rounded-md bg-destructive/15 text-destructive text-xs font-medium">
+                <Bell className="h-3.5 w-3.5" /> {pendentes}
+              </span>
+            )}
+            <Button onClick={logout} variant="ghost" size="icon" className="h-11 w-11 text-sidebar-foreground hover:bg-sidebar-accent" aria-label="Sair">
+              <LogOut className="h-5 w-5" />
+            </Button>
+          </div>
+        </header>
+
+        <main className="flex-1 overflow-auto pb-20 md:pb-0">
+          <Outlet />
+        </main>
+
+        {/* Bottom nav mobile */}
+        <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-sidebar text-sidebar-foreground border-t border-sidebar-border pb-[env(safe-area-inset-bottom)]">
+          <ul className="flex items-stretch justify-around">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <li key={item.to} className="flex-1">
+                  <Link to={item.to}
+                    className="flex flex-col items-center justify-center gap-0.5 h-14 text-[10px] text-sidebar-foreground/80 hover:text-gold [&.active]:text-gold"
+                    activeProps={{ className: "active" }}>
+                    <Icon className="h-5 w-5" />
+                    <span className="leading-none truncate max-w-[64px]">{item.label}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+      </div>
+
       <Toaster richColors position="top-right" />
     </div>
   );
