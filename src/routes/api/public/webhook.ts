@@ -123,7 +123,7 @@ export const Route = createFileRoute("/api/public/webhook")({
           }
         }
         if (!mappingFound) {
-          regiao = detectRegiao(regiaoStr);
+          regiao = isCaptacaoCorretor ? "barra_da_tijuca" : detectRegiao(regiaoStr);
           canal = MAPA[regiao];
         }
 
@@ -134,14 +134,15 @@ export const Route = createFileRoute("/api/public/webhook")({
           nome,
           telefone: telefone.replace(/\D/g, ""),
           email: email ?? null,
-          is_corretor: false,
+          is_corretor: isCaptacaoCorretor,
           regiao,
           tipo_imovel: tipo_imovel ?? null,
           faixa_valor: faixa_valor ?? null,
           observacoes: observacoes ?? null,
           canal,
           responsavel_id: responsavel?.id ?? null,
-          origem: origem_in ?? (form_id ? "meta_ads" : "webhook"),
+          origem: origem_in ?? (isCaptacaoCorretor ? "captacao_corretores" : (form_id ? "meta_ads" : "webhook")),
+          dados_corretor,
         }).select("id").single();
 
         if (error || !lead) {
