@@ -1,49 +1,157 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ETAPAS, etapaNome, canalNome, regiaoNome, type LeadRow } from "@/lib/lead-helpers";
+import { etapaNome, canalNome, regiaoNome, type LeadRow, CANAIS, REGIOES, ETAPAS } from "@/lib/lead-helpers";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Download } from "lucide-react";
+import { Download, FileSpreadsheet, Upload } from "lucide-react";
 import { LeadDetailSheet } from "@/components/lead-detail-sheet";
+import * as XLSX from "xlsx";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/leads")({
   head: () => ({ meta: [{ title: "Leads — CRM" }] }),
   component: LeadsPage,
 });
 
+const EXPORT_HEADERS = [
+  "id","nome","telefone","email","is_corretor","creci","regiao","tipo_imovel","faixa_valor",
+  "observacoes","etapa","canal","responsavel_id","origem","motivo_perda",
+  "first_response_at","fechado_em","created_at","updated_at",
+] as const;
+
+function leadToRow(l: LeadRow) {
+  return {
+    id: l.id, nome: l.nome, telefone: l.telefone, email: l.email ?? "",
+    is_corretor: l.is_corretor ? "sim" : "não", creci: l.creci ?? "",
+    regiao: regiaoNome(l.regiao), tipo_imovel: l.tipo_imovel ?? "",
+    faixa_valor: l.faixa_valor ?? "", observacoes: l.observacoes ?? "",
+    etapa: etapaNome(l.etapa), canal: canalNome(l.canal),
+    responsavel_id: l.responsavel_id ?? "", origem: l.origem ?? "",
+    motivo_perda: l.motivo_perda ?? "",
+    first_response_at: l.first_response_at ?? "",
+    fechado_em: l.fechado_em ?? "",
+    created_at: l.created_at, updated_at: l.updated_at,
+  };
+}
+
 function LeadsPage() {
   const [leads, setLeads] = useState<LeadRow[]>([]);
   const [q, setQ] = useState("");
   const [openLead, setOpenLead] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   async function load() {
     const { data } = await supabase.from("leads").select("*").order("created_at", { ascending: false });
     setLeads((data as LeadRow[]) ?? []);
   }
 
-
-  useEffect(() => { load(); }, []);
-
+  useEffect(() => {
+    load();
+    supabase.auth.getUser().then(({ data }) => {
+      const uid = data.user?.id;
+      if (!uid) return;
+      supabase.from("user_roles").select("role").eq("user_id", uid).eq("role", "admin").maybeSingle()
+        .then(({ data: r }) => setIsAdmin(r?.role === "admin"));
+    });
+  }, []);
 
   const filtered = leads.filter((l) =>
     !q || l.nome.toLowerCase().includes(q.toLowerCase()) || l.telefone.includes(q));
 
   function exportCsv() {
-    const headers = ["Nome", "Telefone", "Email", "Região", "Canal", "Etapa", "Criado em"];
-    const rows = filtered.map((l) => [
-      l.nome, l.telefone, l.email ?? "", regiaoNome(l.regiao), canalNome(l.canal),
-      etapaNome(l.etapa), format(new Date(l.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR }),
-    ]);
-    const csv = [headers, ...rows].map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const rows = filtered.map(leadToRow);
+    const csv = [EXPORT_HEADERS.join(",")].concat(
+      rows.map((r) => EXPORT_HEADERS.map((h) => `"${String(r[h] ?? "").replace(/"/g, '""')}"`).join(","))
+    ).join("\n");
+    const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url; a.download = `leads-${Date.now()}.csv`; a.click();
     URL.revokeObjectURL(url);
+  }
+
+  function exportXlsx() {
+    const rows = filtered.map(leadToRow);
+    const ws = XLSX.utils.json_to_sheet(rows, { header: [...EXPORT_HEADERS] });
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Leads");
+    XLSX.writeFile(wb, `leads-${Date.now()}.xlsx`);
+  }
+
+  async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const lines = text.replace(/^\ufeff/, "").split(/\r?\n/).filter(Boolean);
+      if (lines.length < 2) { toast.error("CSV vazio"); return; }
+      const parseLine = (line: string): string[] => {
+        const out: string[] = []; let cur = ""; let inQ = false;
+        for (let i = 0; i < line.length; i++) {
+          const c = line[i];
+          if (inQ) {
+            if (c === '"' && line[i + 1] === '"') { cur += '"'; i++; }
+            else if (c === '"') inQ = false;
+            else cur += c;
+          } else {
+            if (c === ",") { out.push(cur); cur = ""; }
+            else if (c === '"') inQ = true;
+            else cur += c;
+          }
+        }
+        out.push(cur); return out;
+      };
+      const headers = parseLine(lines[0]).map((h) => h.trim().toLowerCase());
+      const idx = (name: string) => headers.indexOf(name);
+      const required = ["nome", "telefone", "regiao", "canal"];
+      for (const r of required) if (idx(r) === -1) { toast.error(`Coluna obrigatória ausente: ${r}`); return; }
+
+      const regiaoMap = new Map(REGIOES.map((r) => [r.nome.toLowerCase(), r.id] as const).concat(REGIOES.map((r) => [r.id.toLowerCase(), r.id] as const)));
+      const canalMap = new Map(CANAIS.map((c) => [c.nome.toLowerCase(), c.id] as const).concat(CANAIS.map((c) => [c.id.toLowerCase(), c.id] as const)));
+      const etapaMap = new Map(ETAPAS.map((e) => [e.nome.toLowerCase(), e.id] as const).concat(ETAPAS.map((e) => [e.id.toLowerCase(), e.id] as const)));
+
+      type LeadInsert = {
+        nome: string; telefone: string; email?: string | null;
+        regiao: LeadRow["regiao"]; canal: LeadRow["canal"]; etapa?: LeadRow["etapa"];
+        is_corretor?: boolean; creci?: string | null; tipo_imovel?: string | null;
+        faixa_valor?: string | null; observacoes?: string | null; origem?: string | null;
+      };
+      const records: LeadInsert[] = [];
+      for (let i = 1; i < lines.length; i++) {
+        const c = parseLine(lines[i]);
+        const get = (n: string) => { const j = idx(n); return j >= 0 ? (c[j] ?? "").trim() : ""; };
+        const regiaoRaw = get("regiao").toLowerCase();
+        const canalRaw = get("canal").toLowerCase();
+        const regiao = regiaoMap.get(regiaoRaw);
+        const canal = canalMap.get(canalRaw);
+        if (!regiao || !canal) { toast.error(`Linha ${i + 1}: região/canal inválidos`); return; }
+        const etapaRaw = get("etapa").toLowerCase();
+        const etapa = etapaRaw ? etapaMap.get(etapaRaw) : undefined;
+        records.push({
+          nome: get("nome"), telefone: get("telefone"),
+          email: get("email") || null,
+          regiao, canal, etapa,
+          is_corretor: ["sim", "true", "1", "yes"].includes(get("is_corretor").toLowerCase()),
+          creci: get("creci") || null,
+          tipo_imovel: get("tipo_imovel") || null,
+          faixa_valor: get("faixa_valor") || null,
+          observacoes: get("observacoes") || null,
+          origem: get("origem") || "import_csv",
+        });
+      }
+      const { error } = await supabase.from("leads").insert(records);
+      if (error) throw error;
+      toast.success(`${records.length} lead(s) importado(s)`);
+      load();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao importar");
+    }
   }
 
   return (
@@ -53,9 +161,18 @@ function LeadsPage() {
           <h1 className="text-3xl font-bold tracking-tight">Leads</h1>
           <p className="text-muted-foreground mt-1">{filtered.length} de {leads.length} leads</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Input placeholder="Buscar por nome ou telefone..." value={q} onChange={(e) => setQ(e.target.value)} className="w-64" />
-          <Button variant="gold" onClick={exportCsv}><Download className="h-4 w-4" /> Exportar</Button>
+          <Button variant="outline" onClick={exportCsv}><Download className="h-4 w-4" /> CSV</Button>
+          <Button variant="outline" onClick={exportXlsx}><FileSpreadsheet className="h-4 w-4" /> Excel</Button>
+          {isAdmin && (
+            <>
+              <input ref={fileRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleImport} />
+              <Button variant="gold" onClick={() => fileRef.current?.click()}>
+                <Upload className="h-4 w-4" /> Importar CSV
+              </Button>
+            </>
+          )}
         </div>
       </header>
       <div className="bg-card border border-border rounded-xl overflow-hidden">
