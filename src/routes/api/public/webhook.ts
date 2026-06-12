@@ -80,6 +80,24 @@ export const Route = createFileRoute("/api/public/webhook")({
         const form_id = pick(flat, ["form_id", "formid", "form"]);
         const origem_in = pick(flat, ["origem", "source"]);
 
+        // Captação de Corretores — campos específicos
+        const ja_corretor = pick(flat, ["ja_corretor","já_corretor","ja corretor","já corretor","voce_ja_atua_como_corretor_de_imoveis","você já atua como corretor de imóveis","voce ja atua como corretor de imoveis","atua_como_corretor"]);
+        const creci_ativo = pick(flat, ["creci_ativo","creci ativo","voce_possui_creci_ativo","você possui creci ativo","voce possui creci ativo","possui_creci"]);
+        const numero_creci = pick(flat, ["numero_creci","número_creci","numero do creci","número do creci","creci","numero_do_creci_ativo","número do creci ativo"]);
+        const disponibilidade_barra = pick(flat, ["disponibilidade_barra","disponibilidade barra","disponibilidade_para_atuar_na_barra_da_tijuca","disponibilidade para atuar na barra da tijuca","atuar_na_barra"]);
+        const disponibilidade_video = pick(flat, ["disponibilidade_video","disponibilidade videochamada","disponibilidade_para_videochamada_diariamente","disponibilidade para videochamada diariamente","videochamada","video_diaria"]);
+        const possui_veiculo = pick(flat, ["possui_veiculo","possui veículo","possui veiculo","possui_veiculo_para_locomocao","possui veículo para locomoção","possui veiculo para locomocao","veiculo","veículo"]);
+
+        const isCaptacaoCorretor = !!(ja_corretor || creci_ativo || numero_creci || disponibilidade_barra || disponibilidade_video || possui_veiculo);
+        const dados_corretor = isCaptacaoCorretor ? {
+          ja_corretor: ja_corretor ?? null,
+          creci_ativo: creci_ativo ?? null,
+          numero_creci: numero_creci ?? null,
+          disponibilidade_barra: disponibilidade_barra ?? null,
+          disponibilidade_video: disponibilidade_video ?? null,
+          possui_veiculo: possui_veiculo ?? null,
+        } : null;
+
         if (!telefone) {
           return new Response(JSON.stringify({ error: "Telefone obrigatório (campos aceitos: telefone, phone, celular, whatsapp)" }), {
             status: 400, headers: { "Content-Type": "application/json" },
