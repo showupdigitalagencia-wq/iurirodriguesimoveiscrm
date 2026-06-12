@@ -218,6 +218,41 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          id: string
+          nome: string
+          responsavel_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          id: string
+          nome?: string
+          responsavel_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          nome?: string
+          responsavel_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "responsaveis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       responsaveis: {
         Row: {
           ativo: boolean
@@ -274,6 +309,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      current_user_role: {
+        Args: never
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
