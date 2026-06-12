@@ -1,14 +1,22 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-type Regiao = "barra_da_tijuca" | "recreio" | "jacarepagua" | "zona_sul" | "zona_norte" | "zona_oeste" | "centro" | "outras";
+type Regiao = "barra_da_tijuca" | "recreio" | "belford_roxo" | "nilopolis" | "mesquita" | "jacarepagua" | "zona_sul" | "zona_norte" | "zona_oeste" | "centro" | "outras";
 
 const MAPA: Record<Regiao, "denise" | "fabiola" | "renata" | "robson"> = {
-  barra_da_tijuca: "denise", recreio: "fabiola", jacarepagua: "renata",
-  zona_sul: "denise", zona_norte: "robson", zona_oeste: "fabiola",
-  centro: "robson", outras: "denise",
+  barra_da_tijuca: "robson",
+  recreio: "fabiola",
+  belford_roxo: "renata",
+  nilopolis: "denise",
+  mesquita: "denise",
+  jacarepagua: "robson",
+  zona_sul: "robson",
+  zona_norte: "renata",
+  zona_oeste: "fabiola",
+  centro: "robson",
+  outras: "robson",
 };
 
-const REGIOES: Regiao[] = ["barra_da_tijuca", "recreio", "jacarepagua", "zona_sul", "zona_norte", "zona_oeste", "centro", "outras"];
+const REGIOES: Regiao[] = ["barra_da_tijuca", "recreio", "belford_roxo", "nilopolis", "mesquita", "jacarepagua", "zona_sul", "zona_norte", "zona_oeste", "centro", "outras"];
 
 // Pega valor de várias chaves possíveis (case-insensitive)
 function pick(obj: Record<string, unknown>, keys: string[]): string | undefined {
@@ -42,6 +50,9 @@ function detectRegiao(value: string | undefined): Regiao {
   const v = value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   if (v.includes("barra")) return "barra_da_tijuca";
   if (v.includes("recreio")) return "recreio";
+  if (v.includes("belford")) return "belford_roxo";
+  if (v.includes("nilopolis")) return "nilopolis";
+  if (v.includes("mesquita")) return "mesquita";
   if (v.includes("jacarepagua") || v.includes("jacare")) return "jacarepagua";
   if (v.includes("zona sul") || v.includes("zona_sul") || v.includes("sul")) return "zona_sul";
   if (v.includes("zona norte") || v.includes("zona_norte") || v.includes("norte")) return "zona_norte";

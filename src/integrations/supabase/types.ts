@@ -309,6 +309,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      current_user_responsavel_id: { Args: never; Returns: string }
       current_user_role: {
         Args: never
         Returns: Database["public"]["Enums"]["app_role"]
@@ -341,6 +342,9 @@ export type Database = {
         | "zona_oeste"
         | "centro"
         | "outras"
+        | "belford_roxo"
+        | "nilopolis"
+        | "mesquita"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -488,6 +492,9 @@ export const Constants = {
         "zona_oeste",
         "centro",
         "outras",
+        "belford_roxo",
+        "nilopolis",
+        "mesquita",
       ],
     },
   },

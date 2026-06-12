@@ -17,7 +17,10 @@ export const ETAPAS: { id: LeadEtapa; nome: string }[] = [
 
 export const REGIOES: { id: LeadRegiao; nome: string }[] = [
   { id: "barra_da_tijuca", nome: "Barra da Tijuca" },
-  { id: "recreio", nome: "Recreio" },
+  { id: "recreio", nome: "Recreio dos Bandeirantes" },
+  { id: "belford_roxo", nome: "Belford Roxo" },
+  { id: "nilopolis", nome: "Nilópolis" },
+  { id: "mesquita", nome: "Mesquita" },
   { id: "jacarepagua", nome: "Jacarepaguá" },
   { id: "zona_sul", nome: "Zona Sul" },
   { id: "zona_norte", nome: "Zona Norte" },

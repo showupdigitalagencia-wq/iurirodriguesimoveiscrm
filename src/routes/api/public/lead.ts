@@ -8,8 +8,8 @@ const LeadInput = z.object({
   is_corretor: z.boolean().optional().default(false),
   creci: z.string().max(40).optional().or(z.literal("")).transform((v) => (v ? v : undefined)),
   regiao: z.enum([
-    "barra_da_tijuca", "recreio", "jacarepagua", "zona_sul",
-    "zona_norte", "zona_oeste", "centro", "outras",
+    "barra_da_tijuca", "recreio", "belford_roxo", "nilopolis", "mesquita",
+    "jacarepagua", "zona_sul", "zona_norte", "zona_oeste", "centro", "outras",
   ]),
   tipo_imovel: z.string().max(80).optional(),
   faixa_valor: z.string().max(80).optional(),
@@ -17,9 +17,17 @@ const LeadInput = z.object({
 });
 
 const MAPA: Record<string, "denise" | "fabiola" | "renata" | "robson"> = {
-  barra_da_tijuca: "denise", recreio: "fabiola", jacarepagua: "renata",
-  zona_sul: "denise", zona_norte: "robson", zona_oeste: "fabiola",
-  centro: "robson", outras: "denise",
+  barra_da_tijuca: "robson",
+  recreio: "fabiola",
+  belford_roxo: "renata",
+  nilopolis: "denise",
+  mesquita: "denise",
+  jacarepagua: "robson",
+  zona_sul: "robson",
+  zona_norte: "renata",
+  zona_oeste: "fabiola",
+  centro: "robson",
+  outras: "robson",
 };
 
 export const Route = createFileRoute("/api/public/lead")({
