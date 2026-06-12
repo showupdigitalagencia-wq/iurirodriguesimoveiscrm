@@ -217,6 +217,24 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated }: Props) {
                         <p className="whitespace-pre-wrap">{lead.observacoes}</p>
                       </div>
                     )}
+                    {lead.is_corretor && lead.dados_corretor && (
+                      <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
+                        <div className="text-muted-foreground text-xs uppercase tracking-wide">Captação de corretor</div>
+                        {Object.entries({
+                          "Já é corretor": (lead.dados_corretor as Record<string, string | null>).ja_corretor,
+                          "CRECI ativo": (lead.dados_corretor as Record<string, string | null>).creci_ativo,
+                          "Nº CRECI": (lead.dados_corretor as Record<string, string | null>).numero_creci,
+                          "Disp. Barra da Tijuca": (lead.dados_corretor as Record<string, string | null>).disponibilidade_barra,
+                          "Disp. videochamada diária": (lead.dados_corretor as Record<string, string | null>).disponibilidade_video,
+                          "Possui veículo": (lead.dados_corretor as Record<string, string | null>).possui_veiculo,
+                        }).filter(([, v]) => v).map(([k, v]) => (
+                          <div key={k} className="flex justify-between gap-3 text-sm">
+                            <span className="text-muted-foreground">{k}</span>
+                            <span className="font-medium text-right">{v}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     <InfoRow label="Criado em" value={format(new Date(lead.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR })} />
                   </dl>
                 )}
