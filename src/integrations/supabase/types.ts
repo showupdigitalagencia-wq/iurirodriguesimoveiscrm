@@ -72,6 +72,7 @@ export type Database = {
           canal: Database["public"]["Enums"]["lead_canal"]
           created_at: string
           creci: string | null
+          dados_corretor: Json | null
           email: string | null
           etapa: Database["public"]["Enums"]["lead_etapa"]
           faixa_valor: string | null
@@ -93,6 +94,7 @@ export type Database = {
           canal: Database["public"]["Enums"]["lead_canal"]
           created_at?: string
           creci?: string | null
+          dados_corretor?: Json | null
           email?: string | null
           etapa?: Database["public"]["Enums"]["lead_etapa"]
           faixa_valor?: string | null
@@ -114,6 +116,7 @@ export type Database = {
           canal?: Database["public"]["Enums"]["lead_canal"]
           created_at?: string
           creci?: string | null
+          dados_corretor?: Json | null
           email?: string | null
           etapa?: Database["public"]["Enums"]["lead_etapa"]
           faixa_valor?: string | null
