@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Users, Clock, CheckCircle2 } from "lucide-react";
-import { ETAPAS, type LeadRow } from "@/lib/lead-helpers";
+import { ETAPAS, etapaColor, type LeadRow } from "@/lib/lead-helpers";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — Sistema NEXUS" }] }),
