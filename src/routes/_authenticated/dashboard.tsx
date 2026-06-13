@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Clock, CheckCircle2, AlertTriangle } from "lucide-react";
-import { ETAPAS, urgencyForLead, type LeadRow } from "@/lib/lead-helpers";
+import { Users, Clock, CheckCircle2 } from "lucide-react";
+import { ETAPAS, type LeadRow } from "@/lib/lead-helpers";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — Sistema NEXUS" }] }),
@@ -21,13 +21,13 @@ function DashboardPage() {
   const total = leads.length;
   const novos = leads.filter((l) => l.etapa === "novos_leads").length;
   const ganhos = leads.filter((l) => l.etapa === "fechado").length;
-  const alertas = leads.filter((l) => urgencyForLead(l).level !== "ok").length;
+  const emAtendimento = leads.filter((l) => l.etapa === "em_atendimento").length;
 
   const cards = [
     { label: "Total de leads", value: total, icon: Users, color: "text-foreground" },
     { label: "Novos leads", value: novos, icon: Clock, color: "text-gold" },
+    { label: "Em atendimento", value: emAtendimento, icon: Clock, color: "text-gold" },
     { label: "Fechados", value: ganhos, icon: CheckCircle2, color: "text-green-600" },
-    { label: "Em alerta de SLA", value: alertas, icon: AlertTriangle, color: "text-destructive" },
   ];
 
   const porEtapa = ETAPAS.map((e) => ({
