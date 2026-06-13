@@ -83,7 +83,7 @@ function AuthLayout() {
       {/* Desktop sidebar — inalterado */}
       <aside className="hidden md:flex w-60 shrink-0 bg-sidebar text-sidebar-foreground flex-col">
         <div className="px-5 py-6 border-b border-sidebar-border">
-          <div className="text-[10px] uppercase tracking-[0.3em] text-sidebar-foreground/60">Iuri Rodrigues</div>
+          <div className="text-[10px] uppercase tracking-[0.3em] text-sidebar-foreground/60">Iuri Rodrigues Imóveis</div>
           <div className="text-xl font-bold text-gold mt-0.5">Sistema NEXUS</div>
         </div>
         <nav className="flex-1 px-3 py-4 space-y-1">
