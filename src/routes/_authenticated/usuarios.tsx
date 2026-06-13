@@ -137,7 +137,7 @@ function UsuariosPage() {
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Usuários</h1>
-          <p className="text-sm text-muted-foreground">Gerencie funcionários, papéis e acessos ao CRM.</p>
+          <p className="text-sm text-muted-foreground">Gerencie funcionários, papéis e acessos ao sistema.</p>
         </div>
         <Dialog open={openNew} onOpenChange={setOpenNew}>
           <DialogTrigger asChild><Button variant="gold"><Plus className="h-4 w-4 mr-1" /> Novo funcionário</Button></DialogTrigger>

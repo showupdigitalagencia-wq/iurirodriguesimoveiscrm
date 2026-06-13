@@ -31,7 +31,7 @@ type CorretorLead = LeadRow & { dados_corretor: DadosCorretor | null };
 type Responsavel = { id: string; nome: string; canal: string };
 
 export const Route = createFileRoute("/_authenticated/corretores")({
-  head: () => ({ meta: [{ title: "Captação de Corretores — CRM" }] }),
+  head: () => ({ meta: [{ title: "Captação de Corretores — Sistema NEXUS" }] }),
   component: CorretoresPage,
 });
 

@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/_authenticated/relatorio")({
-  head: () => ({ meta: [{ title: "Relatórios — CRM" }] }),
+  head: () => ({ meta: [{ title: "Relatórios — Sistema NEXUS" }] }),
   component: RelatorioPage,
 });
 
