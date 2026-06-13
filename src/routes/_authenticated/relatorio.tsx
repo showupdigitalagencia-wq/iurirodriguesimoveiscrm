@@ -337,21 +337,25 @@ function RelatorioPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 pt-2">
               <Card label="Mês com mais leads" value={melhorMes ? `${melhorMes.mes} (${melhorMes.total})` : "—"} />
               <Card label="Melhor conversão" value={melhorConv ? `${melhorConv.mes} (${melhorConv.conversao}%)` : "—"} />
-              <Card label="Melhor corretor" value={melhorCorretor ? `${melhorCorretor.nome} (${melhorCorretor.total})` : "—"} />
+              <Card label="Melhor desempenho" value={melhorDesempenho ? `${melhorDesempenho.mes} (${melhorDesempenho.fechados} fechados)` : "—"} />
             </div>
 
             <div>
-              <h4 className="text-sm font-medium mb-2">Total de leads por mês</h4>
+              <h4 className="text-sm font-medium mb-2">Comparação completa do funil por mês</h4>
               <div className="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
-                <div className="min-w-[560px] md:min-w-0">
-                  <ResponsiveContainer width="100%" height={260}>
+                <div className="min-w-[720px] md:min-w-0">
+                  <ResponsiveContainer width="100%" height={320}>
                     <BarChart data={compareData}>
                       <XAxis dataKey="mes" />
                       <YAxis allowDecimals={false} />
                       <Tooltip />
                       <Legend />
                       <Bar dataKey="total" name="Total" fill="#c9a35b" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="fechados" name="Fechados" fill="#6c512a" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="em_atendimento" name="Em atendimento" fill="#d4b06a" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="reuniao_agendada" name="Reunião" fill="#a8893f" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="documentos_enviados" name="Documentos" fill="#8b6f3a" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="em_negociacao" name="Negociação" fill="#6c512a" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="fechados" name="Fechados" fill="#5a3f1f" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
