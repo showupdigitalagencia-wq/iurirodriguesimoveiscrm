@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { etapaNome, canalNome, regiaoNome, type LeadRow, CANAIS, REGIOES, ETAPAS } from "@/lib/lead-helpers";
+import { etapaNome, canalNome, regiaoNome, etapaColor, type LeadRow, CANAIS, REGIOES, ETAPAS } from "@/lib/lead-helpers";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Download, FileSpreadsheet, Upload, Trash2 } from "lucide-react";
