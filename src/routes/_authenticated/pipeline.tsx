@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { DndContext, type DragEndEvent, PointerSensor, useSensor, useSensors, useDraggable, useDroppable } from "@dnd-kit/core";
-import { ETAPAS, canalNome, type LeadRow } from "@/lib/lead-helpers";
+import { ETAPAS, canalNome, etapaColor, type LeadRow } from "@/lib/lead-helpers";
 import { updateLeadEtapa, markFirstResponse } from "@/lib/leads.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
