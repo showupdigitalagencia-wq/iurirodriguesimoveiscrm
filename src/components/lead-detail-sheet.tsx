@@ -332,7 +332,14 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
                   <Select value={lead.etapa} onValueChange={(v) => changeEtapa(v as LeadRow["etapa"])}>
                     <SelectTrigger className="mt-2"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {ETAPAS.map((e) => <SelectItem key={e.id} value={e.id}>{e.nome}</SelectItem>)}
+                      {ETAPAS.map((e) => (
+                        <SelectItem key={e.id} value={e.id}>
+                          <span className="inline-flex items-center gap-2">
+                            <span className={`h-2.5 w-2.5 rounded-full ${etapaColor(e.id).dot}`} />
+                            {e.nome}
+                          </span>
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
