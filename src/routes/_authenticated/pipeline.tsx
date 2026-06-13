@@ -74,13 +74,14 @@ function PipelinePage() {
 
 function Column({ id, title, leads, onOpen }: { id: string; title: string; leads: LeadRow[]; onOpen: (id: string) => void }) {
   const { setNodeRef, isOver } = useDroppable({ id });
+  const colors = etapaColor(id as LeadRow["etapa"]);
   return (
-    <div ref={setNodeRef} className={`min-w-[280px] w-[280px] bg-muted/40 rounded-xl p-3 ${isOver ? "ring-2 ring-gold" : ""}`}>
-      <div className="flex items-center justify-between mb-3 px-1">
+    <div ref={setNodeRef} className={`min-w-[280px] w-[280px] bg-muted/40 rounded-xl overflow-hidden ${isOver ? "ring-2 ring-gold" : ""}`}>
+      <div className={`flex items-center justify-between px-3 py-2 ${colors.bar} text-white`}>
         <h3 className="text-sm font-semibold">{title}</h3>
-        <span className="text-xs bg-card border border-border rounded-full px-2 py-0.5">{leads.length}</span>
+        <span className="text-xs bg-white/20 rounded-full px-2 py-0.5">{leads.length}</span>
       </div>
-      <div className="space-y-2">
+      <div className="space-y-2 p-3">
         {leads.map((lead) => <Card key={lead.id} lead={lead} onOpen={onOpen} />)}
       </div>
     </div>
@@ -90,10 +91,11 @@ function Column({ id, title, leads, onOpen }: { id: string; title: string; leads
 function Card({ lead, onOpen }: { lead: LeadRow; onOpen: (id: string) => void }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: lead.id });
   const style = transform ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` } : undefined;
+  const colors = etapaColor(lead.etapa);
   return (
     <div ref={setNodeRef} style={style} {...listeners} {...attributes}
       onClick={(e) => { if (!isDragging) { e.stopPropagation(); onOpen(lead.id); } }}
-      className={`bg-card border border-border rounded-lg p-3 cursor-pointer hover:border-gold/40 transition-colors ${isDragging ? "opacity-50 cursor-grabbing" : ""}`}>
+      className={`bg-card border border-border border-l-4 ${colors.border} rounded-lg p-3 cursor-pointer hover:border-gold/40 transition-colors ${isDragging ? "opacity-50 cursor-grabbing" : ""}`}>
       <div className="flex items-start justify-between gap-2">
         <div className="font-medium text-sm truncate">{lead.nome}</div>
       </div>
