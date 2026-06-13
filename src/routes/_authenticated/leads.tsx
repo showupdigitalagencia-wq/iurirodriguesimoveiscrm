@@ -251,20 +251,24 @@ function LeadsPage() {
       {/* Mobile: cards empilhados */}
       <div className="md:hidden space-y-3">
         {filtered.map((l) => (
-          <button key={l.id} onClick={() => setOpenLead(l.id)}
-            className="w-full text-left bg-card border border-border rounded-xl p-4 active:scale-[0.99] transition-transform">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0 flex-1">
-                <div className="font-semibold truncate">{l.nome}</div>
-                <div className="text-sm text-muted-foreground truncate">{l.telefone}</div>
+          <div key={l.id} className="bg-card border border-border rounded-xl p-4 flex items-start gap-3">
+            {isAdmin && (
+              <Checkbox checked={selected.has(l.id)} onCheckedChange={() => toggleOne(l.id)} className="mt-1" />
+            )}
+            <button onClick={() => setOpenLead(l.id)} className="flex-1 text-left">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="font-semibold truncate">{l.nome}</div>
+                  <div className="text-sm text-muted-foreground truncate">{l.telefone}</div>
+                </div>
+                <span className="shrink-0 text-[11px] px-2 py-1 rounded-full bg-muted">{etapaNome(l.etapa)}</span>
               </div>
-              <span className="shrink-0 text-[11px] px-2 py-1 rounded-full bg-muted">{etapaNome(l.etapa)}</span>
-            </div>
-            <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
-              <span className="truncate">{regiaoNome(l.regiao)}</span>
-              <span className="shrink-0 ml-2">{format(new Date(l.created_at), "dd/MM HH:mm", { locale: ptBR })}</span>
-            </div>
-          </button>
+              <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
+                <span className="truncate">{regiaoNome(l.regiao)}</span>
+                <span className="shrink-0 ml-2">{format(new Date(l.created_at), "dd/MM HH:mm", { locale: ptBR })}</span>
+              </div>
+            </button>
+          </div>
         ))}
         {filtered.length === 0 && (
           <div className="text-center text-muted-foreground py-8 bg-card border border-border rounded-xl">
