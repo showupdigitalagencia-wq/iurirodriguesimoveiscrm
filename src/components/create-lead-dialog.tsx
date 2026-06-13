@@ -97,6 +97,7 @@ export function CreateLeadDialog({ mode, isAdmin, responsaveis, onCreated, trigg
         email: form.email.trim() || null,
         regiao: form.regiao as never,
         canal: canal as never,
+        etapa: form.etapa as never,
         responsavel_id,
         is_corretor: mode === "corretor",
         observacoes: form.observacoes.trim() || null,
@@ -108,7 +109,7 @@ export function CreateLeadDialog({ mode, isAdmin, responsaveis, onCreated, trigg
       setOpen(false);
       setForm({
         nome: "", email: "", telefone: "", regiao: "barra_da_tijuca", responsavel_id: "",
-        observacoes: "", ja_corretor: "", creci_ativo: "", numero_creci: "",
+        etapa: "novos_leads", observacoes: "", ja_corretor: "", creci_ativo: "", numero_creci: "",
         disponibilidade_regiao: "", disponibilidade_video: "", possui_veiculo: "",
       });
       onCreated();
