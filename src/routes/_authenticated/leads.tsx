@@ -308,7 +308,7 @@ function LeadsPage() {
                 <TableCell className="cursor-pointer" onClick={() => setOpenLead(l.id)}>{regiaoNome(l.regiao)}</TableCell>
                 <TableCell className="cursor-pointer" onClick={() => setOpenLead(l.id)}>{canalNome(l.canal)}</TableCell>
                 <TableCell className="cursor-pointer" onClick={() => setOpenLead(l.id)}>
-                  <span className="text-xs px-2 py-1 rounded-full bg-muted">{etapaNome(l.etapa)}</span>
+                  <span className={`text-xs px-2 py-1 rounded-full border ${etapaColor(l.etapa).badge}`}>{etapaNome(l.etapa)}</span>
                 </TableCell>
                 <TableCell className="text-muted-foreground text-sm cursor-pointer" onClick={() => setOpenLead(l.id)}>
                   {format(new Date(l.created_at), "dd/MM/yy HH:mm", { locale: ptBR })}
