@@ -187,7 +187,7 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
                   <div className="min-w-0">
                     <SheetTitle className="text-xl md:text-2xl truncate">{lead.nome}</SheetTitle>
                     <SheetDescription className="flex items-center flex-wrap gap-2 mt-1">
-                      <Badge variant="outline">{etapaNome(lead.etapa)}</Badge>
+                      <span className={`inline-flex items-center text-xs font-semibold px-2.5 py-0.5 rounded-md border ${etapaColor(lead.etapa).badge}`}>{etapaNome(lead.etapa)}</span>
                       {lead.is_corretor && <Badge variant="secondary">Corretor</Badge>}
                     </SheetDescription>
                   </div>
