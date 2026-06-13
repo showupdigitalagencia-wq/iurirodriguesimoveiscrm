@@ -112,6 +112,8 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="en">
       <head>
         <HeadContent />
+        <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer />
+        <script dangerouslySetInnerHTML={{ __html: `window.OneSignalDeferred = window.OneSignalDeferred || [];\nOneSignalDeferred.push(async function(OneSignal) {\n  await OneSignal.init({\n    appId: "656d99b9-c2c6-452e-96a5-2847478a64dd",\n  });\n});` }} />
       </head>
       <body>
         {children}
