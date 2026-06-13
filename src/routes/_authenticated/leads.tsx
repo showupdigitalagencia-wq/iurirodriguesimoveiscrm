@@ -78,6 +78,23 @@ function LeadsPage() {
   });
   const respFilterName = respFilter !== "all" ? resps.find((r) => r.id === respFilter)?.nome : null;
 
+  function toggleOne(id: string) {
+    setSelected((s) => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n; });
+  }
+  function toggleAll() {
+    if (selected.size === filtered.length) setSelected(new Set());
+    else setSelected(new Set(filtered.map((l) => l.id)));
+  }
+  async function deleteSelected() {
+    const ids = Array.from(selected);
+    if (!ids.length) return;
+    const { error } = await supabase.from("leads").delete().in("id", ids);
+    if (error) { toast.error(error.message); return; }
+    toast.success(`${ids.length} excluído(s)`);
+    load();
+  }
+
+
   function exportCsv() {
     const rows = filtered.map(leadToRow);
     const csv = [EXPORT_HEADERS.join(",")].concat(
