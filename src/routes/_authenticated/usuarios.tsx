@@ -14,7 +14,7 @@ import { listUsers, createUser, updateUser, resetUserPassword, deleteUser, getMy
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/usuarios")({
-  head: () => ({ meta: [{ title: "Usuários — CRM Iuri Rodrigues" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Usuários — Sistema NEXUS" }, { name: "robots", content: "noindex" }] }),
   component: UsuariosPage,
 });
 

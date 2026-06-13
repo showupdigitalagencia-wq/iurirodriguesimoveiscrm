@@ -88,7 +88,7 @@ function AuthLayout() {
       <aside className="hidden md:flex w-60 shrink-0 bg-sidebar text-sidebar-foreground flex-col">
         <div className="px-5 py-6 border-b border-sidebar-border">
           <div className="text-[10px] uppercase tracking-[0.3em] text-sidebar-foreground/60">Iuri Rodrigues</div>
-          <div className="text-xl font-bold text-gold mt-0.5">CRM Imóveis</div>
+          <div className="text-xl font-bold text-gold mt-0.5">Sistema NEXUS</div>
         </div>
         <nav className="flex-1 px-3 py-4 space-y-1">
           {navItems.map((item) => {
@@ -123,7 +123,7 @@ function AuthLayout() {
         >
           <div className="min-w-0 py-2">
             <div className="text-[9px] uppercase tracking-[0.25em] text-sidebar-foreground/60 truncate">Iuri Rodrigues</div>
-            <div className="text-base font-bold text-gold leading-tight truncate">CRM Imóveis</div>
+            <div className="text-base font-bold text-gold leading-tight truncate">Sistema NEXUS</div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {pendentes > 0 && (

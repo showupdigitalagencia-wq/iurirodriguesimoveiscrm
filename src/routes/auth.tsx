@@ -8,7 +8,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
-  head: () => ({ meta: [{ title: "Acesso — CRM Iuri Rodrigues" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Acesso — Sistema NEXUS" }, { name: "robots", content: "noindex" }] }),
   component: AuthPage,
 });
 
@@ -39,7 +39,7 @@ function AuthPage() {
       <div className="w-full max-w-md">
         <Link to="/" className="block text-center mb-6">
           <div className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Iuri Rodrigues</div>
-          <div className="text-2xl font-bold text-gold mt-1">CRM Imóveis</div>
+          <div className="text-2xl font-bold text-gold mt-1">Sistema NEXUS</div>
         </Link>
         <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
           <h2 className="text-lg font-semibold mb-4 text-center">Entrar</h2>
