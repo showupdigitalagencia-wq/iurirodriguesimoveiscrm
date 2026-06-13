@@ -27,6 +27,7 @@ const NAV = [
 ] as const;
 
 const ADMIN_NAV = [
+  { to: "/tempo-acesso", label: "Tempo de Acesso", icon: Clock },
   { to: "/usuarios", label: "Usuários", icon: UserCog },
   { to: "/configuracoes", label: "Configurações", icon: Settings },
 ] as const;
