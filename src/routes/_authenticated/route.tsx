@@ -99,11 +99,6 @@ function AuthLayout() {
           })}
         </nav>
         <div className="p-3 border-t border-sidebar-border space-y-2">
-          {pendentes > 0 && (
-            <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-destructive/15 text-destructive text-xs font-medium animate-pulse-red">
-              <Bell className="h-3.5 w-3.5" /> {pendentes} em alerta
-            </div>
-          )}
           <Button onClick={logout} variant="ghost" size="sm" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent">
             <LogOut className="h-4 w-4" /> Sair
           </Button>
