@@ -51,16 +51,18 @@ function LeadsPage() {
   const [openLead, setOpenLead] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [respFilter, setRespFilter] = useState<string>("all");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   const fileRef = useRef<HTMLInputElement>(null);
 
   async function load() {
     const { data } = await supabase.from("leads").select("*").order("created_at", { ascending: false });
     setLeads((data as LeadRow[]) ?? []);
+    setSelected(new Set());
   }
 
   useEffect(() => {
     load();
-    supabase.from("responsaveis").select("id, nome").order("nome").then(({ data }) => setResps((data as Resp[]) ?? []));
+    supabase.from("responsaveis").select("id, nome, canal").order("nome").then(({ data }) => setResps((data as Resp[]) ?? []));
     supabase.auth.getUser().then(({ data }) => {
       const uid = data.user?.id;
       if (!uid) return;
