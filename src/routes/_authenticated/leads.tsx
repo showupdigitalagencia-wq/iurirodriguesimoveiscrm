@@ -214,16 +214,39 @@ function LeadsPage() {
           )}
           <Button variant="outline" onClick={exportCsv} className="h-11 md:h-10 flex-1 md:flex-none"><Download className="h-4 w-4" /> CSV</Button>
           <Button variant="outline" onClick={exportXlsx} className="h-11 md:h-10 flex-1 md:flex-none"><FileSpreadsheet className="h-4 w-4" /> Excel</Button>
+          <CreateLeadDialog mode="lead" isAdmin={isAdmin} responsaveis={resps} onCreated={load} />
           {isAdmin && (
             <>
               <input ref={fileRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleImport} />
-              <Button variant="gold" onClick={() => fileRef.current?.click()} className="h-11 md:h-10 w-full md:w-auto">
+              <Button variant="outline" onClick={() => fileRef.current?.click()} className="h-11 md:h-10 w-full md:w-auto">
                 <Upload className="h-4 w-4" /> Importar CSV
               </Button>
             </>
           )}
         </div>
       </header>
+
+      {/* Bulk delete bar */}
+      {isAdmin && selected.size > 0 && (
+        <div className="flex items-center justify-between bg-destructive/10 border border-destructive/30 rounded-lg p-3">
+          <span className="text-sm font-medium">{selected.size} selecionado(s)</span>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" size="sm"><Trash2 className="h-4 w-4" /> Excluir selecionados</Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Excluir {selected.size} item(s)?</AlertDialogTitle>
+                <AlertDialogDescription>Esta ação é permanente e não pode ser desfeita.</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={deleteSelected} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Excluir</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      )}
 
       {/* Mobile: cards empilhados */}
       <div className="md:hidden space-y-3">
