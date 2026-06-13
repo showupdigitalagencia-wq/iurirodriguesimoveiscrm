@@ -2,10 +2,10 @@ import { createFileRoute, Outlet, redirect, Link, useRouter } from "@tanstack/re
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useMemo, useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
-import { LayoutDashboard, Kanban, Users, BarChart3, Settings, LogOut, Bell, BadgeCheck, UserCog, BellRing } from "lucide-react";
+import { LayoutDashboard, Kanban, Users, BarChart3, Settings, LogOut, BadgeCheck, UserCog, BellRing, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { urgencyForLead, type LeadRow } from "@/lib/lead-helpers";
+import { endUserSession, startUserSession } from "@/lib/session-tracker";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
