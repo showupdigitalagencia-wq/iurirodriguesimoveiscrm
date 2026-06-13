@@ -74,6 +74,10 @@ function RelatorioPage() {
   }), [scopedLeads, range]);
 
   const totalPeriodo = inRange.length;
+  const emAtendimentoPeriodo = inRange.filter((l) => l.etapa === "em_atendimento").length;
+  const reuniaoPeriodo = inRange.filter((l) => l.etapa === "reuniao_agendada").length;
+  const documentosPeriodo = inRange.filter((l) => l.etapa === "documentos_enviados").length;
+  const negociacaoPeriodo = inRange.filter((l) => l.etapa === "em_negociacao").length;
   const fechadosPeriodo = inRange.filter((l) => l.etapa === "fechado").length;
   const descartadosPeriodo = inRange.filter((l) => l.etapa === "descartado").length;
   const taxaPeriodo = fechadosPeriodo + descartadosPeriodo > 0
@@ -94,7 +98,7 @@ function RelatorioPage() {
     setSelectedMonths((cur) => cur.includes(k) ? cur.filter((x) => x !== k) : [...cur, k]);
   }
 
-  // Month comparison data (uses scoped leads)
+  // Month comparison data (uses scoped leads) — agora com todas as etapas
   const compareData = useMemo(() => {
     if (selectedMonths.length === 0) return [];
     return selectedMonths.slice().sort().map((k) => {
@@ -105,7 +109,12 @@ function RelatorioPage() {
         mes: ymLabel(k),
         key: k,
         total: ms.length,
+        em_atendimento: ms.filter((l) => l.etapa === "em_atendimento").length,
+        reuniao_agendada: ms.filter((l) => l.etapa === "reuniao_agendada").length,
+        documentos_enviados: ms.filter((l) => l.etapa === "documentos_enviados").length,
+        em_negociacao: ms.filter((l) => l.etapa === "em_negociacao").length,
         fechados: fechado,
+        descartados: perdido,
         conversao: fechado + perdido > 0 ? Math.round((fechado / (fechado + perdido)) * 100) : 0,
         leads: ms,
       };
@@ -114,6 +123,7 @@ function RelatorioPage() {
 
   const melhorMes = compareData.reduce((acc, cur) => !acc || cur.total > acc.total ? cur : acc, null as typeof compareData[number] | null);
   const melhorConv = compareData.reduce((acc, cur) => !acc || cur.conversao > acc.conversao ? cur : acc, null as typeof compareData[number] | null);
+  const melhorDesempenho = compareData.reduce((acc, cur) => !acc || cur.fechados > acc.fechados ? cur : acc, null as typeof compareData[number] | null);
 
   // Per-broker per month
   const brokerCompare = useMemo(() => {
