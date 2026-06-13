@@ -61,9 +61,12 @@ function DashboardPage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3">
           {porEtapa.map(({ etapa, count }) => (
             <Link key={etapa.id} to="/pipeline"
-              className="flex items-center justify-between gap-2 p-3 min-h-11 rounded-md bg-muted/40 hover:bg-muted transition-colors">
-              <span className="text-sm truncate">{etapa.nome}</span>
-              <span className="font-semibold text-gold shrink-0">{count}</span>
+              className={`flex items-center justify-between gap-2 p-3 min-h-11 rounded-md border-l-4 ${etapaColor(etapa.id).border} bg-muted/40 hover:bg-muted transition-colors`}>
+              <span className="flex items-center gap-2 text-sm truncate">
+                <span className={`h-2.5 w-2.5 rounded-full ${etapaColor(etapa.id).dot}`} />
+                <span className="truncate">{etapa.nome}</span>
+              </span>
+              <span className="font-semibold shrink-0">{count}</span>
             </Link>
           ))}
         </div>
