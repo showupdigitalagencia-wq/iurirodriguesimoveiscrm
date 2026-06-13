@@ -33,18 +33,17 @@ const ADMIN_NAV = [
 
 function AuthLayout() {
   const router = useRouter();
-  const [pendentes, setPendentes] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
 
   const navItems = useMemo(() => isAdmin ? [...NAV, ...ADMIN_NAV] : NAV, [isAdmin]);
 
   useEffect(() => {
     let active = true;
-    // Inicializa OneSignal cedo (idempotente; guard-rails internos para preview/iframe)
     import("@/lib/onesignal-client").then((m) => m.initOneSignal()).catch(() => null);
     supabase.auth.getUser().then(({ data: userData }) => {
       const userId = userData.user?.id;
       if (!userId) return;
+      startUserSession(userId);
       supabase
         .from("user_roles")
         .select("role")
@@ -54,30 +53,26 @@ function AuthLayout() {
         .then(({ data }) => { if (active) setIsAdmin(data?.role === "admin"); });
     });
 
-    async function refresh() {
-      const { data } = await supabase
-        .from("leads")
-        .select("id, created_at, first_response_at, etapa")
-        .is("first_response_at", null)
-        .in("etapa", ["novos_leads", "em_atendimento"]);
-      if (!active) return;
-      const urgentes = (data ?? []).filter((l) => urgencyForLead(l as LeadRow).level !== "ok").length;
-      setPendentes(urgentes);
-    }
-    refresh();
-    const interval = setInterval(refresh, 60000);
     const channel = supabase
       .channel("leads-new")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "leads" }, (payload) => {
         const r = payload.new as { nome?: string };
         toast.success(`Novo lead: ${r.nome ?? "sem nome"}`);
-        refresh();
       })
       .subscribe();
-    return () => { active = false; clearInterval(interval); supabase.removeChannel(channel); };
+
+    const onUnload = () => { endUserSession(); };
+    window.addEventListener("beforeunload", onUnload);
+
+    return () => {
+      active = false;
+      supabase.removeChannel(channel);
+      window.removeEventListener("beforeunload", onUnload);
+    };
   }, []);
 
   async function logout() {
+    await endUserSession();
     await supabase.auth.signOut();
     router.navigate({ to: "/auth" });
   }
