@@ -14,6 +14,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedUsuariosRouteImport } from './routes/_authenticated/usuarios'
+import { Route as AuthenticatedTempoAcessoRouteImport } from './routes/_authenticated/tempo-acesso'
 import { Route as AuthenticatedRelatorioRouteImport } from './routes/_authenticated/relatorio'
 import { Route as AuthenticatedPipelineRouteImport } from './routes/_authenticated/pipeline'
 import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
@@ -49,6 +50,12 @@ const AuthenticatedUsuariosRoute = AuthenticatedUsuariosRouteImport.update({
   path: '/usuarios',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedTempoAcessoRoute =
+  AuthenticatedTempoAcessoRouteImport.update({
+    id: '/tempo-acesso',
+    path: '/tempo-acesso',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedRelatorioRoute = AuthenticatedRelatorioRouteImport.update({
   id: '/relatorio',
   path: '/relatorio',
@@ -113,6 +120,7 @@ export interface FileRoutesByFullPath {
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/pipeline': typeof AuthenticatedPipelineRoute
   '/relatorio': typeof AuthenticatedRelatorioRoute
+  '/tempo-acesso': typeof AuthenticatedTempoAcessoRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/api/public/cron-unattended': typeof ApiPublicCronUnattendedRoute
   '/api/public/lead': typeof ApiPublicLeadRoute
@@ -129,6 +137,7 @@ export interface FileRoutesByTo {
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/pipeline': typeof AuthenticatedPipelineRoute
   '/relatorio': typeof AuthenticatedRelatorioRoute
+  '/tempo-acesso': typeof AuthenticatedTempoAcessoRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/api/public/cron-unattended': typeof ApiPublicCronUnattendedRoute
   '/api/public/lead': typeof ApiPublicLeadRoute
@@ -147,6 +156,7 @@ export interface FileRoutesById {
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/_authenticated/pipeline': typeof AuthenticatedPipelineRoute
   '/_authenticated/relatorio': typeof AuthenticatedRelatorioRoute
+  '/_authenticated/tempo-acesso': typeof AuthenticatedTempoAcessoRoute
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
   '/api/public/cron-unattended': typeof ApiPublicCronUnattendedRoute
   '/api/public/lead': typeof ApiPublicLeadRoute
@@ -165,6 +175,7 @@ export interface FileRouteTypes {
     | '/notificacoes'
     | '/pipeline'
     | '/relatorio'
+    | '/tempo-acesso'
     | '/usuarios'
     | '/api/public/cron-unattended'
     | '/api/public/lead'
@@ -181,6 +192,7 @@ export interface FileRouteTypes {
     | '/notificacoes'
     | '/pipeline'
     | '/relatorio'
+    | '/tempo-acesso'
     | '/usuarios'
     | '/api/public/cron-unattended'
     | '/api/public/lead'
@@ -198,6 +210,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notificacoes'
     | '/_authenticated/pipeline'
     | '/_authenticated/relatorio'
+    | '/_authenticated/tempo-acesso'
     | '/_authenticated/usuarios'
     | '/api/public/cron-unattended'
     | '/api/public/lead'
@@ -249,6 +262,13 @@ declare module '@tanstack/react-router' {
       path: '/usuarios'
       fullPath: '/usuarios'
       preLoaderRoute: typeof AuthenticatedUsuariosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/tempo-acesso': {
+      id: '/_authenticated/tempo-acesso'
+      path: '/tempo-acesso'
+      fullPath: '/tempo-acesso'
+      preLoaderRoute: typeof AuthenticatedTempoAcessoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/relatorio': {
@@ -332,6 +352,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedNotificacoesRoute: typeof AuthenticatedNotificacoesRoute
   AuthenticatedPipelineRoute: typeof AuthenticatedPipelineRoute
   AuthenticatedRelatorioRoute: typeof AuthenticatedRelatorioRoute
+  AuthenticatedTempoAcessoRoute: typeof AuthenticatedTempoAcessoRoute
   AuthenticatedUsuariosRoute: typeof AuthenticatedUsuariosRoute
 }
 
@@ -343,6 +364,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedNotificacoesRoute: AuthenticatedNotificacoesRoute,
   AuthenticatedPipelineRoute: AuthenticatedPipelineRoute,
   AuthenticatedRelatorioRoute: AuthenticatedRelatorioRoute,
+  AuthenticatedTempoAcessoRoute: AuthenticatedTempoAcessoRoute,
   AuthenticatedUsuariosRoute: AuthenticatedUsuariosRoute,
 }
 
