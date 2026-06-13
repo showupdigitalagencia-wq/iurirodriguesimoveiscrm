@@ -47,6 +47,15 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
   const callFirst = useServerFn(markFirstResponse);
 
   useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      const uid = data.user?.id;
+      if (!uid) return;
+      supabase.from("user_roles").select("role").eq("user_id", uid).eq("role", "admin").maybeSingle()
+        .then(({ data: r }) => setIsAdmin(r?.role === "admin"));
+    });
+  }, []);
+
+  useEffect(() => {
     if (!leadId) { setLead(null); return; }
     let active = true;
     async function load() {
@@ -68,6 +77,15 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
     load();
     return () => { active = false; };
   }, [leadId]);
+
+  async function handleDelete() {
+    if (!leadId) return;
+    const { error } = await supabase.from("leads").delete().eq("id", leadId);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Excluído");
+    onUpdated?.();
+    onClose();
+  }
 
   async function reload() {
     if (!leadId) return;
