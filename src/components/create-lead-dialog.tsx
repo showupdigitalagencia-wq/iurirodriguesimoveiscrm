@@ -154,6 +154,31 @@ export function CreateLeadDialog({ mode, isAdmin, responsaveis, onCreated, trigg
             </div>
           )}
 
+          <div>
+            <Label>Etapa do pipeline *</Label>
+            <Select value={form.etapa} onValueChange={(v) => update("etapa", v as LeadEtapa)}>
+              <SelectTrigger>
+                <SelectValue>
+                  <span className="inline-flex items-center gap-2">
+                    <span className={`h-2.5 w-2.5 rounded-full ${etapaColor(form.etapa).dot}`} />
+                    {ETAPAS.find((e) => e.id === form.etapa)?.nome}
+                  </span>
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {ETAPAS.map((e) => (
+                  <SelectItem key={e.id} value={e.id}>
+                    <span className="inline-flex items-center gap-2">
+                      <span className={`h-2.5 w-2.5 rounded-full ${etapaColor(e.id).dot}`} />
+                      {e.nome}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+
           {mode === "corretor" ? (
             <>
               <div>
