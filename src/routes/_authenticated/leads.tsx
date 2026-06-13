@@ -261,7 +261,7 @@ function LeadsPage() {
                   <div className="font-semibold truncate">{l.nome}</div>
                   <div className="text-sm text-muted-foreground truncate">{l.telefone}</div>
                 </div>
-                <span className="shrink-0 text-[11px] px-2 py-1 rounded-full bg-muted">{etapaNome(l.etapa)}</span>
+                <span className={`shrink-0 text-[11px] px-2 py-1 rounded-full border ${etapaColor(l.etapa).badge}`}>{etapaNome(l.etapa)}</span>
               </div>
               <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
                 <span className="truncate">{regiaoNome(l.regiao)}</span>
