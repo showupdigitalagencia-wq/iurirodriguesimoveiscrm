@@ -22,7 +22,7 @@ type Mapping = {
 };
 
 export const Route = createFileRoute("/_authenticated/configuracoes")({
-  head: () => ({ meta: [{ title: "Configurações — CRM" }] }),
+  head: () => ({ meta: [{ title: "Configurações — Sistema NEXUS" }] }),
   component: ConfigPage,
 });
 

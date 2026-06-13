@@ -32,7 +32,7 @@ export const Route = createFileRoute("/api/public/cron-unattended")({
           const result = await sendOneSignalPush({
             externalId: lead.responsavel_id,
             title: `⚠️ Lead sem resposta há +1h: ${lead.nome}`,
-            message: `${lead.telefone} · ${lead.regiao.replace(/_/g, " ")} — abra o CRM e responda.`,
+            message: `${lead.telefone} · ${lead.regiao.replace(/_/g, " ")} — abra o sistema e responda.`,
             url,
             data: { lead_id: lead.id, alerta_sla: true },
           });

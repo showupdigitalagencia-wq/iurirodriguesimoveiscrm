@@ -5,7 +5,7 @@ import { Users, Clock, CheckCircle2, AlertTriangle } from "lucide-react";
 import { ETAPAS, urgencyForLead, type LeadRow } from "@/lib/lead-helpers";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard — CRM" }] }),
+  head: () => ({ meta: [{ title: "Dashboard — Sistema NEXUS" }] }),
   component: DashboardPage,
 });
 

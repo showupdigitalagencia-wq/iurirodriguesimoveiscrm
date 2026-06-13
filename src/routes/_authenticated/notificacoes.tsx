@@ -7,7 +7,7 @@ import { enablePushFor, disablePush, getPushStatus, initOneSignal } from "@/lib/
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/notificacoes")({
-  head: () => ({ meta: [{ title: "Notificações — CRM" }] }),
+  head: () => ({ meta: [{ title: "Notificações — Sistema NEXUS" }] }),
   component: NotificacoesPage,
 });
 
