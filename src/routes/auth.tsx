@@ -26,12 +26,16 @@ function AuthPage() {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data: signInData, error } = await supabase.auth.signInWithPassword({
       email: String(fd.get("email")), password: String(fd.get("password")),
     });
     setLoading(false);
     if (error) toast.error(error.message);
-    else { toast.success("Bem-vindo!"); navigate({ to: "/dashboard" }); }
+    else {
+      const uid = signInData.user?.id;
+      if (uid) { const { startUserSession } = await import("@/lib/session-tracker"); await startUserSession(uid); }
+      toast.success("Bem-vindo!"); navigate({ to: "/dashboard" });
+    }
   }
 
   return (
