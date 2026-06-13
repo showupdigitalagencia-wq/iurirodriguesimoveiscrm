@@ -116,11 +116,6 @@ function AuthLayout() {
             <div className="text-base font-bold text-gold leading-tight truncate">Sistema NEXUS</div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            {pendentes > 0 && (
-              <span className="flex items-center gap-1 px-2 h-9 rounded-md bg-destructive/15 text-destructive text-xs font-medium">
-                <Bell className="h-3.5 w-3.5" /> {pendentes}
-              </span>
-            )}
             <Button onClick={logout} variant="ghost" size="icon" className="h-11 w-11 text-sidebar-foreground hover:bg-sidebar-accent" aria-label="Sair">
               <LogOut className="h-5 w-5" />
             </Button>
