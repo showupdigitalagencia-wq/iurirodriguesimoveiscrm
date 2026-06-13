@@ -189,11 +189,6 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
                     <SheetTitle className="text-xl md:text-2xl truncate">{lead.nome}</SheetTitle>
                     <SheetDescription className="flex items-center flex-wrap gap-2 mt-1">
                       <Badge variant="outline">{etapaNome(lead.etapa)}</Badge>
-                      {urgency && urgency.level !== "ok" && (
-                        <Badge className={urgency.level === "critical" ? "bg-destructive" : "bg-gold text-gold-foreground"}>
-                          <Clock className="h-3 w-3 mr-1" /> {formatMinutes(urgency.minutes)} sem resposta
-                        </Badge>
-                      )}
                       {lead.is_corretor && <Badge variant="secondary">Corretor</Badge>}
                     </SheetDescription>
                   </div>
