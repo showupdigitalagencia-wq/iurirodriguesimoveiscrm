@@ -147,7 +147,6 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
     }
   }
 
-  const urgency = lead ? urgencyForLead(lead) : null;
   const whatsappLink = lead ? `https://wa.me/${lead.telefone.replace(/\D/g, "")}` : "#";
 
   return (
