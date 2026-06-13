@@ -255,6 +255,10 @@ function RelatorioPage() {
       {/* Métricas do período */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         <Card label="Total de leads" value={totalPeriodo} />
+        <Card label="Em atendimento" value={emAtendimentoPeriodo} />
+        <Card label="Reunião agendada" value={reuniaoPeriodo} />
+        <Card label="Documentos enviados" value={documentosPeriodo} />
+        <Card label="Em negociação" value={negociacaoPeriodo} />
         <Card label="Fechados" value={fechadosPeriodo} />
         <Card label="Descartados" value={descartadosPeriodo} />
         <Card label="Taxa de conversão" value={`${taxaPeriodo}%`} />
