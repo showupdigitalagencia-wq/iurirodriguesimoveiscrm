@@ -16,7 +16,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
 
-type Resp = { id: string; nome: string };
+type Resp = { id: string; nome: string; canal: string };
 
 export const Route = createFileRoute("/_authenticated/leads")({
   head: () => ({ meta: [{ title: "Leads — CRM" }] }),
