@@ -42,7 +42,7 @@ function AuthPage() {
     <main className="min-h-screen flex items-center justify-center px-4 bg-background">
       <div className="w-full max-w-md">
         <Link to="/" className="block text-center mb-6">
-          <div className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Iuri Rodrigues</div>
+          <div className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Iuri Rodrigues Imóveis</div>
           <div className="text-2xl font-bold text-gold mt-1">Sistema NEXUS</div>
         </Link>
         <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
