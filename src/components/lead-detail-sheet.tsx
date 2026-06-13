@@ -34,6 +34,7 @@ interface Props {
 
 export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Voltar" }: Props) {
   const [lead, setLead] = useState<LeadRow | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const [historico, setHistorico] = useState<HistoricoRow[]>([]);
   const [nota, setNota] = useState("");
