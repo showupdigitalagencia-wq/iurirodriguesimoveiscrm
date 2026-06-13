@@ -244,7 +244,28 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
               </TabsList>
 
               <TabsContent value="info" className="space-y-4 mt-4">
-                <div className="flex justify-end">
+                <div className="flex justify-between items-center gap-2">
+                  <div>
+                    {isAdmin && !editing && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="outline" size="sm" className="text-destructive border-destructive/40 hover:bg-destructive/10">
+                            <Trash2 className="h-4 w-4" /> Excluir
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Excluir permanentemente?</AlertDialogTitle>
+                            <AlertDialogDescription>Esta ação não pode ser desfeita. O lead e todo o histórico serão removidos do banco de dados.</AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Excluir</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
+                  </div>
                   {editing ? (
                     <div className="flex gap-2">
                       <Button variant="outline" size="sm" onClick={() => setEditing(false)}>Cancelar</Button>
