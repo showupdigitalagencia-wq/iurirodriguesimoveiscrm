@@ -272,8 +272,11 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
                           "Já é corretor": (lead.dados_corretor as Record<string, string | null>).ja_corretor,
                           "CRECI ativo": (lead.dados_corretor as Record<string, string | null>).creci_ativo,
                           "Nº CRECI": (lead.dados_corretor as Record<string, string | null>).numero_creci,
-                          "Disp. Barra da Tijuca": (lead.dados_corretor as Record<string, string | null>).disponibilidade_barra,
-                          "Disp. videochamada diária": (lead.dados_corretor as Record<string, string | null>).disponibilidade_video,
+                          "Disponibilidade Barra da Tijuca": (lead.dados_corretor as Record<string, string | null>).disponibilidade_barra,
+                          "Disponibilidade Recreio dos Bandeirantes": (lead.dados_corretor as Record<string, string | null>).disponibilidade_recreio,
+                          "Disponibilidade Belford Roxo": (lead.dados_corretor as Record<string, string | null>).disponibilidade_belford,
+                          "Disponibilidade Mesquita e Nilópolis": (lead.dados_corretor as Record<string, string | null>).disponibilidade_mesquita,
+                          "Disponibilidade videochamada diária": (lead.dados_corretor as Record<string, string | null>).disponibilidade_video,
                           "Possui veículo": (lead.dados_corretor as Record<string, string | null>).possui_veiculo,
                         }).filter(([, v]) => v).map(([k, v]) => (
                           <div key={k} className="flex justify-between gap-3 text-sm">
