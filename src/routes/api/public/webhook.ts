@@ -96,15 +96,21 @@ export const Route = createFileRoute("/api/public/webhook")({
         const creci_ativo = pick(flat, ["creci_ativo","creci ativo","voce_possui_creci_ativo","você possui creci ativo","voce possui creci ativo","possui_creci"]);
         const numero_creci = pick(flat, ["numero_creci","número_creci","numero do creci","número do creci","creci","numero_do_creci_ativo","número do creci ativo"]);
         const disponibilidade_barra = pick(flat, ["disponibilidade_barra","disponibilidade barra","disponibilidade_para_atuar_na_barra_da_tijuca","disponibilidade para atuar na barra da tijuca","atuar_na_barra"]);
+        const disponibilidade_recreio = pick(flat, ["disponibilidade_recreio","disponibilidade recreio","disponibilidade_para_atuar_no_recreio","disponibilidade para atuar no recreio","atuar_no_recreio"]);
+        const disponibilidade_belford = pick(flat, ["disponibilidade_belford","disponibilidade belford","disponibilidade_para_atuar_em_belford_roxo","disponibilidade para atuar em belford roxo","atuar_em_belford"]);
+        const disponibilidade_mesquita = pick(flat, ["disponibilidade_mesquita","disponibilidade mesquita","disponibilidade_para_atuar_em_mesquita_e_nilopolis","disponibilidade para atuar em mesquita e nilópolis","atuar_em_mesquita"]);
         const disponibilidade_video = pick(flat, ["disponibilidade_video","disponibilidade videochamada","disponibilidade_para_videochamada_diariamente","disponibilidade para videochamada diariamente","videochamada","video_diaria"]);
         const possui_veiculo = pick(flat, ["possui_veiculo","possui veículo","possui veiculo","possui_veiculo_para_locomocao","possui veículo para locomoção","possui veiculo para locomocao","veiculo","veículo"]);
 
-        const isCaptacaoCorretor = !!(ja_corretor || creci_ativo || numero_creci || disponibilidade_barra || disponibilidade_video || possui_veiculo);
+        const isCaptacaoCorretor = !!(ja_corretor || creci_ativo || numero_creci || disponibilidade_barra || disponibilidade_recreio || disponibilidade_belford || disponibilidade_mesquita || disponibilidade_video || possui_veiculo);
         const dados_corretor = isCaptacaoCorretor ? {
           ja_corretor: ja_corretor ?? null,
           creci_ativo: creci_ativo ?? null,
           numero_creci: numero_creci ?? null,
           disponibilidade_barra: disponibilidade_barra ?? null,
+          disponibilidade_recreio: disponibilidade_recreio ?? null,
+          disponibilidade_belford: disponibilidade_belford ?? null,
+          disponibilidade_mesquita: disponibilidade_mesquita ?? null,
           disponibilidade_video: disponibilidade_video ?? null,
           possui_veiculo: possui_veiculo ?? null,
         } : null;
@@ -134,8 +140,16 @@ export const Route = createFileRoute("/api/public/webhook")({
           }
         }
         if (!mappingFound) {
-          regiao = isCaptacaoCorretor ? "barra_da_tijuca" : detectRegiao(regiaoStr);
-          canal = MAPA[regiao];
+          if (isCaptacaoCorretor) {
+            // mapeamento por campo de disponibilidade
+            if (disponibilidade_recreio) { regiao = "recreio"; canal = "fabiola"; }
+            else if (disponibilidade_belford) { regiao = "belford_roxo"; canal = "renata"; }
+            else if (disponibilidade_mesquita) { regiao = "mesquita"; canal = "denise"; }
+            else { regiao = "barra_da_tijuca"; canal = "robson"; }
+          } else {
+            regiao = detectRegiao(regiaoStr);
+            canal = MAPA[regiao];
+          }
         }
 
         const { data: responsavel } = await supabaseAdmin

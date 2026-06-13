@@ -21,12 +21,12 @@ const NAV = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/pipeline", label: "Pipeline", icon: Kanban },
   { to: "/leads", label: "Leads", icon: Users },
+  { to: "/corretores", label: "Corretores", icon: BadgeCheck },
   { to: "/relatorio", label: "Relatórios", icon: BarChart3 },
   { to: "/notificacoes", label: "Notificações", icon: BellRing },
 ] as const;
 
 const ADMIN_NAV = [
-  { to: "/corretores", label: "Corretores", icon: BadgeCheck },
   { to: "/usuarios", label: "Usuários", icon: UserCog },
   { to: "/configuracoes", label: "Configurações", icon: Settings },
 ] as const;

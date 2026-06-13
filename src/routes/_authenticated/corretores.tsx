@@ -1,27 +1,34 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { canalNome, type LeadRow } from "@/lib/lead-helpers";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Download, BadgeCheck, XCircle, HelpCircle, Users, Car, MapPin } from "lucide-react";
+import { Download, BadgeCheck, XCircle, HelpCircle, Users, Car, MapPin, Trash2 } from "lucide-react";
 import { LeadDetailSheet } from "@/components/lead-detail-sheet";
+import { CreateLeadDialog } from "@/components/create-lead-dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 type DadosCorretor = {
   ja_corretor?: string | null;
   creci_ativo?: string | null;
   numero_creci?: string | null;
   disponibilidade_barra?: string | null;
+  disponibilidade_recreio?: string | null;
+  disponibilidade_belford?: string | null;
+  disponibilidade_mesquita?: string | null;
   disponibilidade_video?: string | null;
   possui_veiculo?: string | null;
 };
 
 type CorretorLead = LeadRow & { dados_corretor: DadosCorretor | null };
-type Responsavel = { id: string; nome: string };
+type Responsavel = { id: string; nome: string; canal: string };
 
 export const Route = createFileRoute("/_authenticated/corretores")({
   head: () => ({ meta: [{ title: "Captação de Corretores — CRM" }] }),
@@ -47,47 +54,42 @@ function YesNo({ value }: { value?: string | null }) {
 }
 
 function CorretoresPage() {
-  const navigate = useNavigate();
-  const [authChecked, setAuthChecked] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [leads, setLeads] = useState<CorretorLead[]>([]);
   const [responsaveis, setResponsaveis] = useState<Responsavel[]>([]);
   const [q, setQ] = useState("");
   const [respFilter, setRespFilter] = useState<string>("todos");
   const [openLead, setOpenLead] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    let active = true;
     supabase.auth.getUser().then(async ({ data: userData }) => {
       const userId = userData.user?.id;
-      if (!userId) { if (active) { setAuthChecked(true); navigate({ to: "/auth" }); } return; }
+      if (!userId) return;
       const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId).eq("role", "admin").maybeSingle();
-      if (!active) return;
-      const admin = data?.role === "admin";
-      setIsAdmin(admin);
-      setAuthChecked(true);
-      if (!admin) navigate({ to: "/dashboard" });
+      setIsAdmin(data?.role === "admin");
     });
-    return () => { active = false; };
-  }, [navigate]);
+  }, []);
 
   async function load() {
     const [{ data: ls }, { data: rs }] = await Promise.all([
       supabase.from("leads").select("*").eq("is_corretor", true).order("created_at", { ascending: false }),
-      supabase.from("responsaveis").select("id, nome").order("nome"),
+      supabase.from("responsaveis").select("id, nome, canal").order("nome"),
     ]);
     setLeads((ls as CorretorLead[]) ?? []);
     setResponsaveis((rs as Responsavel[]) ?? []);
+    setSelected(new Set());
   }
 
-  useEffect(() => { if (isAdmin) load(); }, [isAdmin]);
+  useEffect(() => { load(); }, []);
 
   const respMap = useMemo(() => Object.fromEntries(responsaveis.map((r) => [r.id, r.nome])), [responsaveis]);
 
   const scoped = useMemo(() => {
+    if (!isAdmin) return leads; // RLS already filtered
     if (respFilter === "todos") return leads;
     return leads.filter((l) => l.responsavel_id === respFilter);
-  }, [leads, respFilter]);
+  }, [leads, respFilter, isAdmin]);
 
   const filtered = scoped.filter((l) =>
     !q || l.nome.toLowerCase().includes(q.toLowerCase()) || l.telefone.includes(q));
@@ -95,7 +97,10 @@ function CorretoresPage() {
   const metrics = useMemo(() => {
     const total = scoped.length;
     const creciAtivo = scoped.filter((l) => isYes(l.dados_corretor?.creci_ativo)).length;
-    const dispRegiao = scoped.filter((l) => isYes(l.dados_corretor?.disponibilidade_barra) || isYes(l.dados_corretor?.disponibilidade_video)).length;
+    const dispRegiao = scoped.filter((l) => {
+      const d = l.dados_corretor;
+      return isYes(d?.disponibilidade_barra) || isYes(d?.disponibilidade_recreio) || isYes(d?.disponibilidade_belford) || isYes(d?.disponibilidade_mesquita);
+    }).length;
     const veiculo = scoped.filter((l) => isYes(l.dados_corretor?.possui_veiculo)).length;
     return { total, creciAtivo, dispRegiao, veiculo };
   }, [scoped]);
@@ -106,10 +111,30 @@ function CorretoresPage() {
     return m;
   }, [leads, responsaveis]);
 
+  function toggleOne(id: string) {
+    setSelected((s) => {
+      const n = new Set(s);
+      if (n.has(id)) n.delete(id); else n.add(id);
+      return n;
+    });
+  }
+  function toggleAll() {
+    if (selected.size === filtered.length) setSelected(new Set());
+    else setSelected(new Set(filtered.map((l) => l.id)));
+  }
+  async function deleteSelected() {
+    const ids = Array.from(selected);
+    if (!ids.length) return;
+    const { error } = await supabase.from("leads").delete().in("id", ids);
+    if (error) { toast.error(error.message); return; }
+    toast.success(`${ids.length} excluído(s)`);
+    load();
+  }
+
   function exportCsv() {
     const headers = [
       "Nome", "Telefone", "Email", "Executivo", "Já corretor", "CRECI ativo", "Nº CRECI",
-      "Disp. Barra", "Disp. Video", "Possui veículo", "Canal", "Criado em",
+      "Disp. Barra", "Disp. Recreio", "Disp. Belford", "Disp. Mesquita/Niló.", "Disp. Video", "Possui veículo", "Canal", "Criado em",
     ];
     const rows = filtered.map((l) => {
       const d = l.dados_corretor ?? {};
@@ -117,23 +142,21 @@ function CorretoresPage() {
         l.nome, l.telefone, l.email ?? "",
         l.responsavel_id ? (respMap[l.responsavel_id] ?? "") : "",
         d.ja_corretor ?? "", d.creci_ativo ?? "", d.numero_creci ?? "",
-        d.disponibilidade_barra ?? "", d.disponibilidade_video ?? "", d.possui_veiculo ?? "",
+        d.disponibilidade_barra ?? "", d.disponibilidade_recreio ?? "", d.disponibilidade_belford ?? "", d.disponibilidade_mesquita ?? "",
+        d.disponibilidade_video ?? "", d.possui_veiculo ?? "",
         canalNome(l.canal), format(new Date(l.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR }),
       ];
     });
     const csv = [headers, ...rows].map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url; a.download = `corretores-${Date.now()}.csv`; a.click();
     URL.revokeObjectURL(url);
   }
 
-  if (!authChecked || !isAdmin) {
-    return <div className="p-8 text-muted-foreground">Verificando acesso...</div>;
-  }
-
   const respLabel = respFilter === "todos" ? "Todos" : (respMap[respFilter] ?? "—");
+  const allSelected = filtered.length > 0 && selected.size === filtered.length;
 
   return (
     <div className="p-4 md:p-8 space-y-6">
@@ -141,37 +164,53 @@ function CorretoresPage() {
         <div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Captação de Corretores</h1>
           <p className="text-muted-foreground mt-1 text-sm">
-            {filtered.length} de {scoped.length} candidatos {respFilter !== "todos" && `de ${respLabel}`}
+            {filtered.length} de {scoped.length} candidatos {isAdmin && respFilter !== "todos" && `de ${respLabel}`}
           </p>
         </div>
-        <div className="flex gap-2 w-full md:w-auto">
+        <div className="flex gap-2 w-full md:w-auto flex-wrap">
           <Input placeholder="Buscar por nome ou telefone..." value={q} onChange={(e) => setQ(e.target.value)} className="flex-1 md:w-64 h-11" />
-          <Button variant="gold" onClick={exportCsv} className="h-11"><Download className="h-4 w-4" /> Exportar</Button>
+          <CreateLeadDialog mode="corretor" isAdmin={isAdmin} responsaveis={responsaveis} onCreated={load} />
+          {isAdmin && (
+            <Button variant="outline" onClick={exportCsv} className="h-11"><Download className="h-4 w-4" /> Exportar</Button>
+          )}
         </div>
       </header>
 
-      {/* Filtro por executivo */}
-      <div className="flex flex-wrap gap-2">
-        <Button
-          variant={respFilter === "todos" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setRespFilter("todos")}
-          className="h-11"
-        >
-          Todos <span className="ml-1.5 text-xs opacity-70">({countsByResp["todos"] ?? 0})</span>
-        </Button>
-        {responsaveis.map((r) => (
-          <Button
-            key={r.id}
-            variant={respFilter === r.id ? "default" : "outline"}
-            size="sm"
-            onClick={() => setRespFilter(r.id)}
-            className="h-11"
-          >
-            {r.nome} <span className="ml-1.5 text-xs opacity-70">({countsByResp[r.id] ?? 0})</span>
+      {/* Filtro por executivo — admin only */}
+      {isAdmin && (
+        <div className="flex flex-wrap gap-2">
+          <Button variant={respFilter === "todos" ? "default" : "outline"} size="sm" onClick={() => setRespFilter("todos")} className="h-11">
+            Todos <span className="ml-1.5 text-xs opacity-70">({countsByResp["todos"] ?? 0})</span>
           </Button>
-        ))}
-      </div>
+          {responsaveis.map((r) => (
+            <Button key={r.id} variant={respFilter === r.id ? "default" : "outline"} size="sm" onClick={() => setRespFilter(r.id)} className="h-11">
+              {r.nome} <span className="ml-1.5 text-xs opacity-70">({countsByResp[r.id] ?? 0})</span>
+            </Button>
+          ))}
+        </div>
+      )}
+
+      {/* Bulk delete bar */}
+      {isAdmin && selected.size > 0 && (
+        <div className="flex items-center justify-between bg-destructive/10 border border-destructive/30 rounded-lg p-3">
+          <span className="text-sm font-medium">{selected.size} selecionado(s)</span>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" size="sm"><Trash2 className="h-4 w-4" /> Excluir selecionados</Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Excluir {selected.size} item(s)?</AlertDialogTitle>
+                <AlertDialogDescription>Esta ação é permanente e não pode ser desfeita.</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={deleteSelected} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Excluir</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      )}
 
       {/* Métricas */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -186,25 +225,30 @@ function CorretoresPage() {
         {filtered.map((l) => {
           const d = l.dados_corretor ?? {};
           return (
-            <Card key={l.id} className="cursor-pointer active:bg-muted/40" onClick={() => setOpenLead(l.id)}>
+            <Card key={l.id} className="active:bg-muted/40">
               <CardContent className="p-4 space-y-2">
-                <div className="flex justify-between items-start gap-2">
-                  <div className="min-w-0">
-                    <div className="font-semibold truncate">{l.nome}</div>
-                    <div className="text-xs text-muted-foreground">{l.telefone}</div>
-                    {l.email && <div className="text-xs text-muted-foreground truncate">{l.email}</div>}
+                <div className="flex items-start gap-2">
+                  {isAdmin && (
+                    <Checkbox checked={selected.has(l.id)} onCheckedChange={() => toggleOne(l.id)} onClick={(e) => e.stopPropagation()} className="mt-1" />
+                  )}
+                  <div className="flex-1 cursor-pointer" onClick={() => setOpenLead(l.id)}>
+                    <div className="flex justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="font-semibold truncate">{l.nome}</div>
+                        <div className="text-xs text-muted-foreground">{l.telefone}</div>
+                        {l.email && <div className="text-xs text-muted-foreground truncate">{l.email}</div>}
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="text-xs text-muted-foreground">{l.responsavel_id ? respMap[l.responsavel_id] : "—"}</div>
+                        <div className="text-[10px] text-muted-foreground mt-0.5">{format(new Date(l.created_at), "dd/MM/yy HH:mm", { locale: ptBR })}</div>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-x-3 gap-y-1 pt-2 border-t border-border mt-2">
+                      <div className="text-xs"><span className="text-muted-foreground">CRECI: </span><YesNo value={d.creci_ativo} /></div>
+                      <div className="text-xs"><span className="text-muted-foreground">Nº: </span>{d.numero_creci ?? "—"}</div>
+                      <div className="text-xs col-span-2"><span className="text-muted-foreground">Veículo: </span><YesNo value={d.possui_veiculo} /></div>
+                    </div>
                   </div>
-                  <div className="text-right shrink-0">
-                    <div className="text-xs text-muted-foreground">{l.responsavel_id ? respMap[l.responsavel_id] : "—"}</div>
-                    <div className="text-[10px] text-muted-foreground mt-0.5">{format(new Date(l.created_at), "dd/MM/yy HH:mm", { locale: ptBR })}</div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-x-3 gap-y-1 pt-2 border-t border-border">
-                  <div className="text-xs"><span className="text-muted-foreground">CRECI: </span><YesNo value={d.creci_ativo} /></div>
-                  <div className="text-xs"><span className="text-muted-foreground">Nº: </span>{d.numero_creci ?? "—"}</div>
-                  <div className="text-xs"><span className="text-muted-foreground">Barra: </span><YesNo value={d.disponibilidade_barra} /></div>
-                  <div className="text-xs"><span className="text-muted-foreground">Video: </span><YesNo value={d.disponibilidade_video} /></div>
-                  <div className="text-xs col-span-2"><span className="text-muted-foreground">Veículo: </span><YesNo value={d.possui_veiculo} /></div>
                 </div>
               </CardContent>
             </Card>
@@ -220,14 +264,17 @@ function CorretoresPage() {
         <Table>
           <TableHeader>
             <TableRow>
+              {isAdmin && (
+                <TableHead className="w-10">
+                  <Checkbox checked={allSelected} onCheckedChange={toggleAll} />
+                </TableHead>
+              )}
               <TableHead>Nome</TableHead>
               <TableHead>Contato</TableHead>
               <TableHead>Executivo</TableHead>
               <TableHead>Já corretor</TableHead>
               <TableHead>CRECI</TableHead>
               <TableHead>Nº CRECI</TableHead>
-              <TableHead>Barra</TableHead>
-              <TableHead>Video</TableHead>
               <TableHead>Veículo</TableHead>
               <TableHead>Recebido</TableHead>
             </TableRow>
@@ -236,9 +283,14 @@ function CorretoresPage() {
             {filtered.map((l) => {
               const d = l.dados_corretor ?? {};
               return (
-                <TableRow key={l.id} className="cursor-pointer hover:bg-muted/40" onClick={() => setOpenLead(l.id)}>
-                  <TableCell className="font-medium">{l.nome}</TableCell>
-                  <TableCell className="text-sm">
+                <TableRow key={l.id} className="hover:bg-muted/40">
+                  {isAdmin && (
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <Checkbox checked={selected.has(l.id)} onCheckedChange={() => toggleOne(l.id)} />
+                    </TableCell>
+                  )}
+                  <TableCell className="font-medium cursor-pointer" onClick={() => setOpenLead(l.id)}>{l.nome}</TableCell>
+                  <TableCell className="text-sm cursor-pointer" onClick={() => setOpenLead(l.id)}>
                     <div>{l.telefone}</div>
                     {l.email && <div className="text-muted-foreground text-xs">{l.email}</div>}
                   </TableCell>
@@ -246,8 +298,6 @@ function CorretoresPage() {
                   <TableCell><YesNo value={d.ja_corretor} /></TableCell>
                   <TableCell><YesNo value={d.creci_ativo} /></TableCell>
                   <TableCell className="text-sm">{d.numero_creci ?? <span className="text-muted-foreground">—</span>}</TableCell>
-                  <TableCell><YesNo value={d.disponibilidade_barra} /></TableCell>
-                  <TableCell><YesNo value={d.disponibilidade_video} /></TableCell>
                   <TableCell><YesNo value={d.possui_veiculo} /></TableCell>
                   <TableCell className="text-muted-foreground text-sm whitespace-nowrap">
                     {format(new Date(l.created_at), "dd/MM/yy HH:mm", { locale: ptBR })}
@@ -256,7 +306,7 @@ function CorretoresPage() {
               );
             })}
             {filtered.length === 0 && (
-              <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8">
+              <TableRow><TableCell colSpan={isAdmin ? 9 : 8} className="text-center text-muted-foreground py-8">
                 Nenhuma captação encontrada.
               </TableCell></TableRow>
             )}

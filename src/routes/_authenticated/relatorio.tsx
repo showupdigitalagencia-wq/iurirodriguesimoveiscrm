@@ -74,6 +74,10 @@ function RelatorioPage() {
   }), [scopedLeads, range]);
 
   const totalPeriodo = inRange.length;
+  const emAtendimentoPeriodo = inRange.filter((l) => l.etapa === "em_atendimento").length;
+  const reuniaoPeriodo = inRange.filter((l) => l.etapa === "reuniao_agendada").length;
+  const documentosPeriodo = inRange.filter((l) => l.etapa === "documentos_enviados").length;
+  const negociacaoPeriodo = inRange.filter((l) => l.etapa === "em_negociacao").length;
   const fechadosPeriodo = inRange.filter((l) => l.etapa === "fechado").length;
   const descartadosPeriodo = inRange.filter((l) => l.etapa === "descartado").length;
   const taxaPeriodo = fechadosPeriodo + descartadosPeriodo > 0
@@ -94,7 +98,7 @@ function RelatorioPage() {
     setSelectedMonths((cur) => cur.includes(k) ? cur.filter((x) => x !== k) : [...cur, k]);
   }
 
-  // Month comparison data (uses scoped leads)
+  // Month comparison data (uses scoped leads) — agora com todas as etapas
   const compareData = useMemo(() => {
     if (selectedMonths.length === 0) return [];
     return selectedMonths.slice().sort().map((k) => {
@@ -105,7 +109,12 @@ function RelatorioPage() {
         mes: ymLabel(k),
         key: k,
         total: ms.length,
+        em_atendimento: ms.filter((l) => l.etapa === "em_atendimento").length,
+        reuniao_agendada: ms.filter((l) => l.etapa === "reuniao_agendada").length,
+        documentos_enviados: ms.filter((l) => l.etapa === "documentos_enviados").length,
+        em_negociacao: ms.filter((l) => l.etapa === "em_negociacao").length,
         fechados: fechado,
+        descartados: perdido,
         conversao: fechado + perdido > 0 ? Math.round((fechado / (fechado + perdido)) * 100) : 0,
         leads: ms,
       };
@@ -114,6 +123,7 @@ function RelatorioPage() {
 
   const melhorMes = compareData.reduce((acc, cur) => !acc || cur.total > acc.total ? cur : acc, null as typeof compareData[number] | null);
   const melhorConv = compareData.reduce((acc, cur) => !acc || cur.conversao > acc.conversao ? cur : acc, null as typeof compareData[number] | null);
+  const melhorDesempenho = compareData.reduce((acc, cur) => !acc || cur.fechados > acc.fechados ? cur : acc, null as typeof compareData[number] | null);
 
   // Per-broker per month
   const brokerCompare = useMemo(() => {
@@ -245,6 +255,10 @@ function RelatorioPage() {
       {/* Métricas do período */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         <Card label="Total de leads" value={totalPeriodo} />
+        <Card label="Em atendimento" value={emAtendimentoPeriodo} />
+        <Card label="Reunião agendada" value={reuniaoPeriodo} />
+        <Card label="Documentos enviados" value={documentosPeriodo} />
+        <Card label="Em negociação" value={negociacaoPeriodo} />
         <Card label="Fechados" value={fechadosPeriodo} />
         <Card label="Descartados" value={descartadosPeriodo} />
         <Card label="Taxa de conversão" value={`${taxaPeriodo}%`} />
@@ -323,21 +337,25 @@ function RelatorioPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 pt-2">
               <Card label="Mês com mais leads" value={melhorMes ? `${melhorMes.mes} (${melhorMes.total})` : "—"} />
               <Card label="Melhor conversão" value={melhorConv ? `${melhorConv.mes} (${melhorConv.conversao}%)` : "—"} />
-              <Card label="Melhor corretor" value={melhorCorretor ? `${melhorCorretor.nome} (${melhorCorretor.total})` : "—"} />
+              <Card label="Melhor desempenho" value={melhorDesempenho ? `${melhorDesempenho.mes} (${melhorDesempenho.fechados} fechados)` : "—"} />
             </div>
 
             <div>
-              <h4 className="text-sm font-medium mb-2">Total de leads por mês</h4>
+              <h4 className="text-sm font-medium mb-2">Comparação completa do funil por mês</h4>
               <div className="overflow-x-auto -mx-4 md:mx-0 px-4 md:px-0">
-                <div className="min-w-[560px] md:min-w-0">
-                  <ResponsiveContainer width="100%" height={260}>
+                <div className="min-w-[720px] md:min-w-0">
+                  <ResponsiveContainer width="100%" height={320}>
                     <BarChart data={compareData}>
                       <XAxis dataKey="mes" />
                       <YAxis allowDecimals={false} />
                       <Tooltip />
                       <Legend />
                       <Bar dataKey="total" name="Total" fill="#c9a35b" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="fechados" name="Fechados" fill="#6c512a" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="em_atendimento" name="Em atendimento" fill="#d4b06a" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="reuniao_agendada" name="Reunião" fill="#a8893f" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="documentos_enviados" name="Documentos" fill="#8b6f3a" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="em_negociacao" name="Negociação" fill="#6c512a" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="fechados" name="Fechados" fill="#5a3f1f" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>

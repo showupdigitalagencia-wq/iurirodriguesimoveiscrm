@@ -5,15 +5,18 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
 import { etapaNome, canalNome, regiaoNome, type LeadRow, CANAIS, REGIOES, ETAPAS } from "@/lib/lead-helpers";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Download, FileSpreadsheet, Upload } from "lucide-react";
+import { Download, FileSpreadsheet, Upload, Trash2 } from "lucide-react";
 import { LeadDetailSheet } from "@/components/lead-detail-sheet";
+import { CreateLeadDialog } from "@/components/create-lead-dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
 
-type Resp = { id: string; nome: string };
+type Resp = { id: string; nome: string; canal: string };
 
 export const Route = createFileRoute("/_authenticated/leads")({
   head: () => ({ meta: [{ title: "Leads — CRM" }] }),
@@ -48,16 +51,18 @@ function LeadsPage() {
   const [openLead, setOpenLead] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [respFilter, setRespFilter] = useState<string>("all");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   const fileRef = useRef<HTMLInputElement>(null);
 
   async function load() {
     const { data } = await supabase.from("leads").select("*").order("created_at", { ascending: false });
     setLeads((data as LeadRow[]) ?? []);
+    setSelected(new Set());
   }
 
   useEffect(() => {
     load();
-    supabase.from("responsaveis").select("id, nome").order("nome").then(({ data }) => setResps((data as Resp[]) ?? []));
+    supabase.from("responsaveis").select("id, nome, canal").order("nome").then(({ data }) => setResps((data as Resp[]) ?? []));
     supabase.auth.getUser().then(({ data }) => {
       const uid = data.user?.id;
       if (!uid) return;
@@ -72,6 +77,23 @@ function LeadsPage() {
     return true;
   });
   const respFilterName = respFilter !== "all" ? resps.find((r) => r.id === respFilter)?.nome : null;
+
+  function toggleOne(id: string) {
+    setSelected((s) => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n; });
+  }
+  function toggleAll() {
+    if (selected.size === filtered.length) setSelected(new Set());
+    else setSelected(new Set(filtered.map((l) => l.id)));
+  }
+  async function deleteSelected() {
+    const ids = Array.from(selected);
+    if (!ids.length) return;
+    const { error } = await supabase.from("leads").delete().in("id", ids);
+    if (error) { toast.error(error.message); return; }
+    toast.success(`${ids.length} excluído(s)`);
+    load();
+  }
+
 
   function exportCsv() {
     const rows = filtered.map(leadToRow);
@@ -192,10 +214,11 @@ function LeadsPage() {
           )}
           <Button variant="outline" onClick={exportCsv} className="h-11 md:h-10 flex-1 md:flex-none"><Download className="h-4 w-4" /> CSV</Button>
           <Button variant="outline" onClick={exportXlsx} className="h-11 md:h-10 flex-1 md:flex-none"><FileSpreadsheet className="h-4 w-4" /> Excel</Button>
+          <CreateLeadDialog mode="lead" isAdmin={isAdmin} responsaveis={resps} onCreated={load} />
           {isAdmin && (
             <>
               <input ref={fileRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleImport} />
-              <Button variant="gold" onClick={() => fileRef.current?.click()} className="h-11 md:h-10 w-full md:w-auto">
+              <Button variant="outline" onClick={() => fileRef.current?.click()} className="h-11 md:h-10 w-full md:w-auto">
                 <Upload className="h-4 w-4" /> Importar CSV
               </Button>
             </>
@@ -203,23 +226,49 @@ function LeadsPage() {
         </div>
       </header>
 
+      {/* Bulk delete bar */}
+      {isAdmin && selected.size > 0 && (
+        <div className="flex items-center justify-between bg-destructive/10 border border-destructive/30 rounded-lg p-3">
+          <span className="text-sm font-medium">{selected.size} selecionado(s)</span>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" size="sm"><Trash2 className="h-4 w-4" /> Excluir selecionados</Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Excluir {selected.size} item(s)?</AlertDialogTitle>
+                <AlertDialogDescription>Esta ação é permanente e não pode ser desfeita.</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={deleteSelected} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Excluir</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      )}
+
       {/* Mobile: cards empilhados */}
       <div className="md:hidden space-y-3">
         {filtered.map((l) => (
-          <button key={l.id} onClick={() => setOpenLead(l.id)}
-            className="w-full text-left bg-card border border-border rounded-xl p-4 active:scale-[0.99] transition-transform">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0 flex-1">
-                <div className="font-semibold truncate">{l.nome}</div>
-                <div className="text-sm text-muted-foreground truncate">{l.telefone}</div>
+          <div key={l.id} className="bg-card border border-border rounded-xl p-4 flex items-start gap-3">
+            {isAdmin && (
+              <Checkbox checked={selected.has(l.id)} onCheckedChange={() => toggleOne(l.id)} className="mt-1" />
+            )}
+            <button onClick={() => setOpenLead(l.id)} className="flex-1 text-left">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="font-semibold truncate">{l.nome}</div>
+                  <div className="text-sm text-muted-foreground truncate">{l.telefone}</div>
+                </div>
+                <span className="shrink-0 text-[11px] px-2 py-1 rounded-full bg-muted">{etapaNome(l.etapa)}</span>
               </div>
-              <span className="shrink-0 text-[11px] px-2 py-1 rounded-full bg-muted">{etapaNome(l.etapa)}</span>
-            </div>
-            <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
-              <span className="truncate">{regiaoNome(l.regiao)}</span>
-              <span className="shrink-0 ml-2">{format(new Date(l.created_at), "dd/MM HH:mm", { locale: ptBR })}</span>
-            </div>
-          </button>
+              <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
+                <span className="truncate">{regiaoNome(l.regiao)}</span>
+                <span className="shrink-0 ml-2">{format(new Date(l.created_at), "dd/MM HH:mm", { locale: ptBR })}</span>
+              </div>
+            </button>
+          </div>
         ))}
         {filtered.length === 0 && (
           <div className="text-center text-muted-foreground py-8 bg-card border border-border rounded-xl">
@@ -233,6 +282,11 @@ function LeadsPage() {
         <Table>
           <TableHeader>
             <TableRow>
+              {isAdmin && (
+                <TableHead className="w-10">
+                  <Checkbox checked={filtered.length > 0 && selected.size === filtered.length} onCheckedChange={toggleAll} />
+                </TableHead>
+              )}
               <TableHead>Nome</TableHead>
               <TableHead>Telefone</TableHead>
               <TableHead>Região</TableHead>
@@ -243,21 +297,26 @@ function LeadsPage() {
           </TableHeader>
           <TableBody>
             {filtered.map((l) => (
-              <TableRow key={l.id} className="cursor-pointer hover:bg-muted/40" onClick={() => setOpenLead(l.id)}>
-                <TableCell className="font-medium">{l.nome}</TableCell>
-                <TableCell>{l.telefone}</TableCell>
-                <TableCell>{regiaoNome(l.regiao)}</TableCell>
-                <TableCell>{canalNome(l.canal)}</TableCell>
-                <TableCell>
+              <TableRow key={l.id} className="hover:bg-muted/40">
+                {isAdmin && (
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <Checkbox checked={selected.has(l.id)} onCheckedChange={() => toggleOne(l.id)} />
+                  </TableCell>
+                )}
+                <TableCell className="font-medium cursor-pointer" onClick={() => setOpenLead(l.id)}>{l.nome}</TableCell>
+                <TableCell className="cursor-pointer" onClick={() => setOpenLead(l.id)}>{l.telefone}</TableCell>
+                <TableCell className="cursor-pointer" onClick={() => setOpenLead(l.id)}>{regiaoNome(l.regiao)}</TableCell>
+                <TableCell className="cursor-pointer" onClick={() => setOpenLead(l.id)}>{canalNome(l.canal)}</TableCell>
+                <TableCell className="cursor-pointer" onClick={() => setOpenLead(l.id)}>
                   <span className="text-xs px-2 py-1 rounded-full bg-muted">{etapaNome(l.etapa)}</span>
                 </TableCell>
-                <TableCell className="text-muted-foreground text-sm">
+                <TableCell className="text-muted-foreground text-sm cursor-pointer" onClick={() => setOpenLead(l.id)}>
                   {format(new Date(l.created_at), "dd/MM/yy HH:mm", { locale: ptBR })}
                 </TableCell>
               </TableRow>
             ))}
             {filtered.length === 0 && (
-              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+              <TableRow><TableCell colSpan={isAdmin ? 7 : 6} className="text-center text-muted-foreground py-8">
                 Nenhum lead encontrado
               </TableCell></TableRow>
             )}

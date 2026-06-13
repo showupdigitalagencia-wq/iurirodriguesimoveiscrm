@@ -15,7 +15,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Phone, MessageCircle, MapPin, Mail, Clock, MessageSquarePlus, CheckCircle2, ArrowLeft } from "lucide-react";
+import { Phone, MessageCircle, MapPin, Mail, Clock, MessageSquarePlus, CheckCircle2, ArrowLeft, Trash2 } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 type HistoricoRow = {
   id: string;
@@ -33,6 +34,7 @@ interface Props {
 
 export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Voltar" }: Props) {
   const [lead, setLead] = useState<LeadRow | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const [historico, setHistorico] = useState<HistoricoRow[]>([]);
   const [nota, setNota] = useState("");
@@ -43,6 +45,15 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
   const callEtapa = useServerFn(updateLeadEtapa);
   const callNote = useServerFn(addNote);
   const callFirst = useServerFn(markFirstResponse);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      const uid = data.user?.id;
+      if (!uid) return;
+      supabase.from("user_roles").select("role").eq("user_id", uid).eq("role", "admin").maybeSingle()
+        .then(({ data: r }) => setIsAdmin(r?.role === "admin"));
+    });
+  }, []);
 
   useEffect(() => {
     if (!leadId) { setLead(null); return; }
@@ -66,6 +77,15 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
     load();
     return () => { active = false; };
   }, [leadId]);
+
+  async function handleDelete() {
+    if (!leadId) return;
+    const { error } = await supabase.from("leads").delete().eq("id", leadId);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Excluído");
+    onUpdated?.();
+    onClose();
+  }
 
   async function reload() {
     if (!leadId) return;
@@ -224,7 +244,28 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
               </TabsList>
 
               <TabsContent value="info" className="space-y-4 mt-4">
-                <div className="flex justify-end">
+                <div className="flex justify-between items-center gap-2">
+                  <div>
+                    {isAdmin && !editing && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="outline" size="sm" className="text-destructive border-destructive/40 hover:bg-destructive/10">
+                            <Trash2 className="h-4 w-4" /> Excluir
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Excluir permanentemente?</AlertDialogTitle>
+                            <AlertDialogDescription>Esta ação não pode ser desfeita. O lead e todo o histórico serão removidos do banco de dados.</AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Excluir</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
+                  </div>
                   {editing ? (
                     <div className="flex gap-2">
                       <Button variant="outline" size="sm" onClick={() => setEditing(false)}>Cancelar</Button>
@@ -272,8 +313,11 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
                           "Já é corretor": (lead.dados_corretor as Record<string, string | null>).ja_corretor,
                           "CRECI ativo": (lead.dados_corretor as Record<string, string | null>).creci_ativo,
                           "Nº CRECI": (lead.dados_corretor as Record<string, string | null>).numero_creci,
-                          "Disp. Barra da Tijuca": (lead.dados_corretor as Record<string, string | null>).disponibilidade_barra,
-                          "Disp. videochamada diária": (lead.dados_corretor as Record<string, string | null>).disponibilidade_video,
+                          "Disponibilidade Barra da Tijuca": (lead.dados_corretor as Record<string, string | null>).disponibilidade_barra,
+                          "Disponibilidade Recreio dos Bandeirantes": (lead.dados_corretor as Record<string, string | null>).disponibilidade_recreio,
+                          "Disponibilidade Belford Roxo": (lead.dados_corretor as Record<string, string | null>).disponibilidade_belford,
+                          "Disponibilidade Mesquita e Nilópolis": (lead.dados_corretor as Record<string, string | null>).disponibilidade_mesquita,
+                          "Disponibilidade videochamada diária": (lead.dados_corretor as Record<string, string | null>).disponibilidade_video,
                           "Possui veículo": (lead.dados_corretor as Record<string, string | null>).possui_veiculo,
                         }).filter(([, v]) => v).map(([k, v]) => (
                           <div key={k} className="flex justify-between gap-3 text-sm">
