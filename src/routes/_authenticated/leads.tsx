@@ -282,6 +282,11 @@ function LeadsPage() {
         <Table>
           <TableHeader>
             <TableRow>
+              {isAdmin && (
+                <TableHead className="w-10">
+                  <Checkbox checked={filtered.length > 0 && selected.size === filtered.length} onCheckedChange={toggleAll} />
+                </TableHead>
+              )}
               <TableHead>Nome</TableHead>
               <TableHead>Telefone</TableHead>
               <TableHead>Região</TableHead>
@@ -292,21 +297,26 @@ function LeadsPage() {
           </TableHeader>
           <TableBody>
             {filtered.map((l) => (
-              <TableRow key={l.id} className="cursor-pointer hover:bg-muted/40" onClick={() => setOpenLead(l.id)}>
-                <TableCell className="font-medium">{l.nome}</TableCell>
-                <TableCell>{l.telefone}</TableCell>
-                <TableCell>{regiaoNome(l.regiao)}</TableCell>
-                <TableCell>{canalNome(l.canal)}</TableCell>
-                <TableCell>
+              <TableRow key={l.id} className="hover:bg-muted/40">
+                {isAdmin && (
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <Checkbox checked={selected.has(l.id)} onCheckedChange={() => toggleOne(l.id)} />
+                  </TableCell>
+                )}
+                <TableCell className="font-medium cursor-pointer" onClick={() => setOpenLead(l.id)}>{l.nome}</TableCell>
+                <TableCell className="cursor-pointer" onClick={() => setOpenLead(l.id)}>{l.telefone}</TableCell>
+                <TableCell className="cursor-pointer" onClick={() => setOpenLead(l.id)}>{regiaoNome(l.regiao)}</TableCell>
+                <TableCell className="cursor-pointer" onClick={() => setOpenLead(l.id)}>{canalNome(l.canal)}</TableCell>
+                <TableCell className="cursor-pointer" onClick={() => setOpenLead(l.id)}>
                   <span className="text-xs px-2 py-1 rounded-full bg-muted">{etapaNome(l.etapa)}</span>
                 </TableCell>
-                <TableCell className="text-muted-foreground text-sm">
+                <TableCell className="text-muted-foreground text-sm cursor-pointer" onClick={() => setOpenLead(l.id)}>
                   {format(new Date(l.created_at), "dd/MM/yy HH:mm", { locale: ptBR })}
                 </TableCell>
               </TableRow>
             ))}
             {filtered.length === 0 && (
-              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+              <TableRow><TableCell colSpan={isAdmin ? 7 : 6} className="text-center text-muted-foreground py-8">
                 Nenhum lead encontrado
               </TableCell></TableRow>
             )}
