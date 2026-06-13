@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { DndContext, type DragEndEvent, PointerSensor, useSensor, useSensors, useDraggable, useDroppable } from "@dnd-kit/core";
-import { ETAPAS, urgencyForLead, formatMinutes, canalNome, type LeadRow } from "@/lib/lead-helpers";
+import { ETAPAS, canalNome, type LeadRow } from "@/lib/lead-helpers";
 import { updateLeadEtapa, markFirstResponse } from "@/lib/leads.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -89,22 +89,13 @@ function Column({ id, title, leads, onOpen }: { id: string; title: string; leads
 
 function Card({ lead, onOpen }: { lead: LeadRow; onOpen: (id: string) => void }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: lead.id });
-  const urgency = urgencyForLead(lead);
   const style = transform ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` } : undefined;
-  const badgeColor = urgency.level === "critical" ? "bg-destructive text-destructive-foreground animate-pulse-red"
-    : urgency.level === "warning" ? "bg-gold text-gold-foreground animate-pulse-gold"
-    : "bg-muted text-muted-foreground";
   return (
     <div ref={setNodeRef} style={style} {...listeners} {...attributes}
       onClick={(e) => { if (!isDragging) { e.stopPropagation(); onOpen(lead.id); } }}
       className={`bg-card border border-border rounded-lg p-3 cursor-pointer hover:border-gold/40 transition-colors ${isDragging ? "opacity-50 cursor-grabbing" : ""}`}>
       <div className="flex items-start justify-between gap-2">
         <div className="font-medium text-sm truncate">{lead.nome}</div>
-        {!lead.first_response_at && lead.etapa !== "fechado" && lead.etapa !== "descartado" && (
-          <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${badgeColor}`}>
-            {formatMinutes(urgency.minutes)}
-          </span>
-        )}
       </div>
       <div className="mt-2 text-xs text-muted-foreground flex items-center gap-1.5">
         <Phone className="h-3 w-3" /> {lead.telefone}

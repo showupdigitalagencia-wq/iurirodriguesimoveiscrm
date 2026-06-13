@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { ETAPAS, CANAIS, etapaNome, canalNome, regiaoNome, urgencyForLead, formatMinutes, type LeadRow } from "@/lib/lead-helpers";
+import { ETAPAS, CANAIS, etapaNome, canalNome, regiaoNome, type LeadRow } from "@/lib/lead-helpers";
 import { updateLead, updateLeadEtapa, addNote, markFirstResponse } from "@/lib/leads.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -147,7 +147,6 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
     }
   }
 
-  const urgency = lead ? urgencyForLead(lead) : null;
   const whatsappLink = lead ? `https://wa.me/${lead.telefone.replace(/\D/g, "")}` : "#";
 
   return (
@@ -189,11 +188,6 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
                     <SheetTitle className="text-xl md:text-2xl truncate">{lead.nome}</SheetTitle>
                     <SheetDescription className="flex items-center flex-wrap gap-2 mt-1">
                       <Badge variant="outline">{etapaNome(lead.etapa)}</Badge>
-                      {urgency && urgency.level !== "ok" && (
-                        <Badge className={urgency.level === "critical" ? "bg-destructive" : "bg-gold text-gold-foreground"}>
-                          <Clock className="h-3 w-3 mr-1" /> {formatMinutes(urgency.minutes)} sem resposta
-                        </Badge>
-                      )}
                       {lead.is_corretor && <Badge variant="secondary">Corretor</Badge>}
                     </SheetDescription>
                   </div>

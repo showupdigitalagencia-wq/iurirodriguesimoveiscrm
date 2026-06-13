@@ -2,10 +2,10 @@ import { createFileRoute, Outlet, redirect, Link, useRouter } from "@tanstack/re
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useMemo, useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
-import { LayoutDashboard, Kanban, Users, BarChart3, Settings, LogOut, Bell, BadgeCheck, UserCog, BellRing } from "lucide-react";
+import { LayoutDashboard, Kanban, Users, BarChart3, Settings, LogOut, BadgeCheck, UserCog, BellRing, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { urgencyForLead, type LeadRow } from "@/lib/lead-helpers";
+import { endUserSession, startUserSession } from "@/lib/session-tracker";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -27,24 +27,24 @@ const NAV = [
 ] as const;
 
 const ADMIN_NAV = [
+  { to: "/tempo-acesso", label: "Tempo de Acesso", icon: Clock },
   { to: "/usuarios", label: "Usuários", icon: UserCog },
   { to: "/configuracoes", label: "Configurações", icon: Settings },
 ] as const;
 
 function AuthLayout() {
   const router = useRouter();
-  const [pendentes, setPendentes] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
 
   const navItems = useMemo(() => isAdmin ? [...NAV, ...ADMIN_NAV] : NAV, [isAdmin]);
 
   useEffect(() => {
     let active = true;
-    // Inicializa OneSignal cedo (idempotente; guard-rails internos para preview/iframe)
     import("@/lib/onesignal-client").then((m) => m.initOneSignal()).catch(() => null);
     supabase.auth.getUser().then(({ data: userData }) => {
       const userId = userData.user?.id;
       if (!userId) return;
+      startUserSession(userId);
       supabase
         .from("user_roles")
         .select("role")
@@ -54,30 +54,26 @@ function AuthLayout() {
         .then(({ data }) => { if (active) setIsAdmin(data?.role === "admin"); });
     });
 
-    async function refresh() {
-      const { data } = await supabase
-        .from("leads")
-        .select("id, created_at, first_response_at, etapa")
-        .is("first_response_at", null)
-        .in("etapa", ["novos_leads", "em_atendimento"]);
-      if (!active) return;
-      const urgentes = (data ?? []).filter((l) => urgencyForLead(l as LeadRow).level !== "ok").length;
-      setPendentes(urgentes);
-    }
-    refresh();
-    const interval = setInterval(refresh, 60000);
     const channel = supabase
       .channel("leads-new")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "leads" }, (payload) => {
         const r = payload.new as { nome?: string };
         toast.success(`Novo lead: ${r.nome ?? "sem nome"}`);
-        refresh();
       })
       .subscribe();
-    return () => { active = false; clearInterval(interval); supabase.removeChannel(channel); };
+
+    const onUnload = () => { endUserSession(); };
+    window.addEventListener("beforeunload", onUnload);
+
+    return () => {
+      active = false;
+      supabase.removeChannel(channel);
+      window.removeEventListener("beforeunload", onUnload);
+    };
   }, []);
 
   async function logout() {
+    await endUserSession();
     await supabase.auth.signOut();
     router.navigate({ to: "/auth" });
   }
@@ -104,11 +100,6 @@ function AuthLayout() {
           })}
         </nav>
         <div className="p-3 border-t border-sidebar-border space-y-2">
-          {pendentes > 0 && (
-            <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-destructive/15 text-destructive text-xs font-medium animate-pulse-red">
-              <Bell className="h-3.5 w-3.5" /> {pendentes} em alerta
-            </div>
-          )}
           <Button onClick={logout} variant="ghost" size="sm" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent">
             <LogOut className="h-4 w-4" /> Sair
           </Button>
@@ -126,11 +117,6 @@ function AuthLayout() {
             <div className="text-base font-bold text-gold leading-tight truncate">Sistema NEXUS</div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            {pendentes > 0 && (
-              <span className="flex items-center gap-1 px-2 h-9 rounded-md bg-destructive/15 text-destructive text-xs font-medium">
-                <Bell className="h-3.5 w-3.5" /> {pendentes}
-              </span>
-            )}
             <Button onClick={logout} variant="ghost" size="icon" className="h-11 w-11 text-sidebar-foreground hover:bg-sidebar-accent" aria-label="Sair">
               <LogOut className="h-5 w-5" />
             </Button>
