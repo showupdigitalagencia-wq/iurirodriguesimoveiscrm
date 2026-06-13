@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { REGIOES } from "@/lib/lead-helpers";
+import { REGIOES, ETAPAS, etapaColor, type LeadEtapa } from "@/lib/lead-helpers";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
@@ -41,6 +41,7 @@ export function CreateLeadDialog({ mode, isAdmin, responsaveis, onCreated, trigg
     nome: "", email: "", telefone: "",
     regiao: "barra_da_tijuca",
     responsavel_id: "",
+    etapa: "novos_leads" as LeadEtapa,
     observacoes: "",
     ja_corretor: "",
     creci_ativo: "",
@@ -96,6 +97,7 @@ export function CreateLeadDialog({ mode, isAdmin, responsaveis, onCreated, trigg
         email: form.email.trim() || null,
         regiao: form.regiao as never,
         canal: canal as never,
+        etapa: form.etapa as never,
         responsavel_id,
         is_corretor: mode === "corretor",
         observacoes: form.observacoes.trim() || null,
@@ -107,7 +109,7 @@ export function CreateLeadDialog({ mode, isAdmin, responsaveis, onCreated, trigg
       setOpen(false);
       setForm({
         nome: "", email: "", telefone: "", regiao: "barra_da_tijuca", responsavel_id: "",
-        observacoes: "", ja_corretor: "", creci_ativo: "", numero_creci: "",
+        etapa: "novos_leads", observacoes: "", ja_corretor: "", creci_ativo: "", numero_creci: "",
         disponibilidade_regiao: "", disponibilidade_video: "", possui_veiculo: "",
       });
       onCreated();
@@ -151,6 +153,31 @@ export function CreateLeadDialog({ mode, isAdmin, responsaveis, onCreated, trigg
               </Select>
             </div>
           )}
+
+          <div>
+            <Label>Etapa do pipeline *</Label>
+            <Select value={form.etapa} onValueChange={(v) => update("etapa", v as LeadEtapa)}>
+              <SelectTrigger>
+                <SelectValue>
+                  <span className="inline-flex items-center gap-2">
+                    <span className={`h-2.5 w-2.5 rounded-full ${etapaColor(form.etapa).dot}`} />
+                    {ETAPAS.find((e) => e.id === form.etapa)?.nome}
+                  </span>
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {ETAPAS.map((e) => (
+                  <SelectItem key={e.id} value={e.id}>
+                    <span className="inline-flex items-center gap-2">
+                      <span className={`h-2.5 w-2.5 rounded-full ${etapaColor(e.id).dot}`} />
+                      {e.nome}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
 
           {mode === "corretor" ? (
             <>
