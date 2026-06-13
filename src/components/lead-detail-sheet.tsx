@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { ETAPAS, CANAIS, etapaNome, canalNome, regiaoNome, type LeadRow } from "@/lib/lead-helpers";
+import { ETAPAS, CANAIS, etapaNome, canalNome, regiaoNome, etapaColor, type LeadRow } from "@/lib/lead-helpers";
 import { updateLead, updateLeadEtapa, addNote, markFirstResponse } from "@/lib/leads.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -187,7 +187,7 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
                   <div className="min-w-0">
                     <SheetTitle className="text-xl md:text-2xl truncate">{lead.nome}</SheetTitle>
                     <SheetDescription className="flex items-center flex-wrap gap-2 mt-1">
-                      <Badge variant="outline">{etapaNome(lead.etapa)}</Badge>
+                      <span className={`inline-flex items-center text-xs font-semibold px-2.5 py-0.5 rounded-md border ${etapaColor(lead.etapa).badge}`}>{etapaNome(lead.etapa)}</span>
                       {lead.is_corretor && <Badge variant="secondary">Corretor</Badge>}
                     </SheetDescription>
                   </div>
@@ -332,7 +332,14 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
                   <Select value={lead.etapa} onValueChange={(v) => changeEtapa(v as LeadRow["etapa"])}>
                     <SelectTrigger className="mt-2"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {ETAPAS.map((e) => <SelectItem key={e.id} value={e.id}>{e.nome}</SelectItem>)}
+                      {ETAPAS.map((e) => (
+                        <SelectItem key={e.id} value={e.id}>
+                          <span className="inline-flex items-center gap-2">
+                            <span className={`h-2.5 w-2.5 rounded-full ${etapaColor(e.id).dot}`} />
+                            {e.nome}
+                          </span>
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>

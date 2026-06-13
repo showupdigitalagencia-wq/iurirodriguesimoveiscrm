@@ -79,3 +79,23 @@ export function regiaoNome(id: LeadRegiao): string {
 export function canalNome(id: LeadCanal): string {
   return CANAIS.find((c) => c.id === id)?.nome ?? id;
 }
+
+export const ETAPA_COLORS: Record<LeadEtapa, {
+  badge: string;     // bg + text + border for badges/pills
+  bar: string;       // solid bg for column headers / side bars
+  border: string;    // border color for card left border
+  dot: string;       // bg color for small swatches
+}> = {
+  novos_leads:         { badge: "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30",       bar: "bg-blue-500",   border: "border-l-blue-500",   dot: "bg-blue-500" },
+  em_atendimento:      { badge: "bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-500/15 dark:text-orange-300 dark:border-orange-500/30", bar: "bg-orange-500", border: "border-l-orange-500", dot: "bg-orange-500" },
+  reuniao_agendada:    { badge: "bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-500/15 dark:text-yellow-300 dark:border-yellow-500/30", bar: "bg-yellow-500", border: "border-l-yellow-500", dot: "bg-yellow-500" },
+  documentos_enviados: { badge: "bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-500/15 dark:text-purple-300 dark:border-purple-500/30", bar: "bg-purple-500", border: "border-l-purple-500", dot: "bg-purple-500" },
+  em_negociacao:       { badge: "bg-pink-100 text-pink-800 border-pink-200 dark:bg-pink-500/15 dark:text-pink-300 dark:border-pink-500/30",       bar: "bg-pink-500",   border: "border-l-pink-500",   dot: "bg-pink-500" },
+  follow_up:           { badge: "bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-500/15 dark:text-gray-300 dark:border-gray-500/30",       bar: "bg-gray-500",   border: "border-l-gray-500",   dot: "bg-gray-500" },
+  fechado:             { badge: "bg-green-100 text-green-800 border-green-200 dark:bg-green-500/15 dark:text-green-300 dark:border-green-500/30", bar: "bg-green-500",  border: "border-l-green-500",  dot: "bg-green-500" },
+  descartado:          { badge: "bg-red-100 text-red-800 border-red-200 dark:bg-red-500/15 dark:text-red-300 dark:border-red-500/30",             bar: "bg-red-500",    border: "border-l-red-500",    dot: "bg-red-500" },
+};
+
+export function etapaColor(id: LeadEtapa) {
+  return ETAPA_COLORS[id] ?? ETAPA_COLORS.novos_leads;
+}

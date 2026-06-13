@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { etapaNome, canalNome, regiaoNome, type LeadRow, CANAIS, REGIOES, ETAPAS } from "@/lib/lead-helpers";
+import { etapaNome, canalNome, regiaoNome, etapaColor, type LeadRow, CANAIS, REGIOES, ETAPAS } from "@/lib/lead-helpers";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Download, FileSpreadsheet, Upload, Trash2 } from "lucide-react";
@@ -261,7 +261,7 @@ function LeadsPage() {
                   <div className="font-semibold truncate">{l.nome}</div>
                   <div className="text-sm text-muted-foreground truncate">{l.telefone}</div>
                 </div>
-                <span className="shrink-0 text-[11px] px-2 py-1 rounded-full bg-muted">{etapaNome(l.etapa)}</span>
+                <span className={`shrink-0 text-[11px] px-2 py-1 rounded-full border ${etapaColor(l.etapa).badge}`}>{etapaNome(l.etapa)}</span>
               </div>
               <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
                 <span className="truncate">{regiaoNome(l.regiao)}</span>
@@ -308,7 +308,7 @@ function LeadsPage() {
                 <TableCell className="cursor-pointer" onClick={() => setOpenLead(l.id)}>{regiaoNome(l.regiao)}</TableCell>
                 <TableCell className="cursor-pointer" onClick={() => setOpenLead(l.id)}>{canalNome(l.canal)}</TableCell>
                 <TableCell className="cursor-pointer" onClick={() => setOpenLead(l.id)}>
-                  <span className="text-xs px-2 py-1 rounded-full bg-muted">{etapaNome(l.etapa)}</span>
+                  <span className={`text-xs px-2 py-1 rounded-full border ${etapaColor(l.etapa).badge}`}>{etapaNome(l.etapa)}</span>
                 </TableCell>
                 <TableCell className="text-muted-foreground text-sm cursor-pointer" onClick={() => setOpenLead(l.id)}>
                   {format(new Date(l.created_at), "dd/MM/yy HH:mm", { locale: ptBR })}
