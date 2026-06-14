@@ -2,7 +2,8 @@
 // Nunca importe este arquivo em código de cliente.
 
 type SendArgs = {
-  externalId: string;
+  externalId?: string;
+  externalIds?: string[];
   title: string;
   message: string;
   url?: string;
@@ -14,10 +15,13 @@ export async function sendOneSignalPush(args: SendArgs): Promise<{ ok: boolean; 
   const restKey = process.env.ONESIGNAL_REST_API_KEY;
   if (!appId || !restKey) return { ok: false, error: "OneSignal não configurado" };
 
+  const ids = args.externalIds ?? (args.externalId ? [args.externalId] : []);
+  if (ids.length === 0) return { ok: false, error: "Nenhum destinatário" };
+
   const body = {
     app_id: appId,
     target_channel: "push",
-    include_aliases: { external_id: [args.externalId] },
+    include_aliases: { external_id: ids },
     headings: { en: args.title, pt: args.title },
     contents: { en: args.message, pt: args.message },
     url: args.url,
