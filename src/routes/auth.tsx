@@ -9,18 +9,29 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Acesso — Sistema NEXUS" }, { name: "robots", content: "noindex" }] }),
+  validateSearch: (s: Record<string, unknown>) => ({ redirect: typeof s.redirect === "string" ? s.redirect : undefined }),
   component: AuthPage,
 });
 
 function AuthPage() {
   const navigate = useNavigate();
+  const { redirect: redirectTo } = Route.useSearch();
   const [loading, setLoading] = useState(false);
+
+  function goAfterAuth() {
+    if (redirectTo && redirectTo.startsWith("/")) {
+      window.location.assign(redirectTo);
+    } else {
+      navigate({ to: "/dashboard" });
+    }
+  }
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      if (data.user) navigate({ to: "/dashboard" });
+      if (data.user) goAfterAuth();
     });
-  }, [navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -34,7 +45,7 @@ function AuthPage() {
     else {
       const uid = signInData.user?.id;
       if (uid) { const { startUserSession } = await import("@/lib/session-tracker"); await startUserSession(uid); }
-      toast.success("Bem-vindo!"); navigate({ to: "/dashboard" });
+      toast.success("Bem-vindo!"); goAfterAuth();
     }
   }
 
