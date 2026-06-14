@@ -52,6 +52,7 @@ export async function sendOneSignalPush(args: SendArgs): Promise<{ ok: boolean; 
       status: resp.status,
       ok: resp.ok,
       externalIds: ids,
+      segments,
       response: json,
     });
     if (!resp.ok) return { ok: false, resp: json, error: `HTTP ${resp.status}` };
