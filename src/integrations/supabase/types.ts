@@ -224,6 +224,7 @@ export type Database = {
           created_at: string
           id: string
           nome: string
+          onesignal_external_id: string | null
           responsavel_id: string | null
           updated_at: string
         }
@@ -232,6 +233,7 @@ export type Database = {
           created_at?: string
           id: string
           nome?: string
+          onesignal_external_id?: string | null
           responsavel_id?: string | null
           updated_at?: string
         }
@@ -240,6 +242,7 @@ export type Database = {
           created_at?: string
           id?: string
           nome?: string
+          onesignal_external_id?: string | null
           responsavel_id?: string | null
           updated_at?: string
         }
@@ -260,6 +263,7 @@ export type Database = {
           created_at: string
           id: string
           nome: string
+          onesignal_external_id: string | null
           updated_at: string
           whatsapp: string
         }
@@ -269,6 +273,7 @@ export type Database = {
           created_at?: string
           id?: string
           nome: string
+          onesignal_external_id?: string | null
           updated_at?: string
           whatsapp: string
         }
@@ -278,6 +283,7 @@ export type Database = {
           created_at?: string
           id?: string
           nome?: string
+          onesignal_external_id?: string | null
           updated_at?: string
           whatsapp?: string
         }

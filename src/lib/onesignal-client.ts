@@ -65,8 +65,8 @@ export async function initOneSignal(): Promise<any | null> {
   return OneSignal;
 }
 
-/** Solicita permissão e vincula corretor via external_id. */
-export async function enablePushFor(externalId: string): Promise<{ ok: boolean; reason?: string }> {
+/** Solicita permissão e vincula usuário/corretor via external_id. */
+export async function enablePushFor(externalId: string): Promise<{ ok: boolean; externalId?: string; reason?: string }> {
   const OneSignal = await initOneSignal();
   if (!OneSignal) return { ok: false, reason: "SDK indisponível (preview/iframe ou App ID ausente)" };
 
@@ -83,10 +83,16 @@ export async function enablePushFor(externalId: string): Promise<{ ok: boolean; 
 
   try {
     await OneSignal.login(externalId);
+    await OneSignal.User?.PushSubscription?.optIn?.();
   } catch (e) {
     return { ok: false, reason: e instanceof Error ? e.message : "Falha ao vincular usuário" };
   }
-  return { ok: true };
+  console.info("[OneSignal] Notificações ativadas", {
+    externalId,
+    subscriptionId: OneSignal.User?.PushSubscription?.id ?? null,
+    optedIn: !!OneSignal.User?.PushSubscription?.optedIn,
+  });
+  return { ok: true, externalId };
 }
 
 export async function disablePush(): Promise<void> {

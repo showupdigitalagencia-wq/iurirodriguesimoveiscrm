@@ -153,7 +153,7 @@ export const Route = createFileRoute("/api/public/webhook")({
         }
 
         const { data: responsavel } = await supabaseAdmin
-          .from("responsaveis").select("id, whatsapp, nome").eq("canal", canal).maybeSingle();
+          .from("responsaveis").select("id, whatsapp, nome, onesignal_external_id").eq("canal", canal).maybeSingle();
 
         const { data: lead, error } = await supabaseAdmin.from("leads").insert({
           nome,
@@ -182,7 +182,7 @@ export const Route = createFileRoute("/api/public/webhook")({
           const title = "Novo Lead chegou!";
           const responsavelNome = responsavel?.nome ?? "Não atribuído";
           const message = `Nome: ${nome} | Tel: ${telefone} | Região: ${regiaoLabel} | Responsável: ${responsavelNome}`;
-          const url = `https://iurirodriguesimoveiscrmcombr.lovable.app/leads?lead=${lead.id}`;
+          const url = `${new URL(request.url).origin}/leads?lead=${lead.id}`;
           const data = { lead_id: lead.id, regiao, canal, is_corretor: isCaptacaoCorretor };
 
           // Envia SEMPRE para o responsável + todos os admins simultaneamente
@@ -190,22 +190,53 @@ export const Route = createFileRoute("/api/public/webhook")({
             .from("user_roles").select("user_id").eq("role", "admin");
           const adminIds = (adminRoles ?? []).map((r) => r.user_id);
           const { data: adminProfiles } = adminIds.length
-            ? await supabaseAdmin.from("profiles").select("responsavel_id").in("id", adminIds)
-            : { data: [] as { responsavel_id: string | null }[] };
+            ? await supabaseAdmin
+              .from("profiles")
+              .select("id, onesignal_external_id, responsavel_id, responsaveis:responsavel_id(onesignal_external_id)")
+              .in("id", adminIds)
+            : { data: [] as { id: string; onesignal_external_id: string | null; responsavel_id: string | null; responsaveis: { onesignal_external_id: string | null } | null }[] };
+
+          const responsavelExternalId = responsavel?.onesignal_external_id ?? null;
+          const adminExternalIds = (adminProfiles ?? []).flatMap((p) => {
+            const resp = p.responsaveis as { onesignal_external_id: string | null } | null;
+            return [p.onesignal_external_id, resp?.onesignal_external_id].filter((x): x is string => !!x);
+          });
 
           const externalIds = Array.from(new Set([
-            ...(responsavel?.id ? [responsavel.id] : []),
-            ...adminIds,
-            ...(adminProfiles ?? []).map((p) => p.responsavel_id).filter((x): x is string => !!x),
+            ...(responsavelExternalId ? [responsavelExternalId] : []),
+            ...adminExternalIds,
           ]));
+
+          console.info("[Webhook OneSignal] Lead recebido", {
+            leadId: lead.id,
+            canal,
+            regiao,
+            responsavelEncontrado: !!responsavel,
+            responsavel: responsavel ? { id: responsavel.id, nome: responsavel.nome } : null,
+            responsavelExternalIdEncontrado: !!responsavelExternalId,
+            adminsEncontrados: adminIds.length,
+            adminExternalIdsEncontrados: adminExternalIds.length,
+            externalIds,
+            env: {
+              hasOneSignalAppId: !!process.env.ONESIGNAL_APP_ID,
+              hasOneSignalRestApiKey: !!process.env.ONESIGNAL_REST_API_KEY,
+            },
+          });
 
           const result = externalIds.length
             ? await sendOneSignalPush({ externalIds, title, message, url, data })
             : { ok: false, error: "Nenhum destinatário" } as { ok: boolean; resp?: unknown; error?: string };
 
+          console.info("[Webhook OneSignal] Resultado do envio", {
+            leadId: lead.id,
+            ok: result.ok,
+            error: result.error ?? null,
+            response: result.resp ?? null,
+          });
+
           const destino = [
-            responsavel?.id ? `responsavel:${responsavel.id}` : null,
-            adminIds.length ? `admins:${adminIds.length}` : null,
+            responsavelExternalId ? `responsavel:${responsavelExternalId}` : null,
+            adminExternalIds.length ? `admins:${adminExternalIds.length}` : null,
           ].filter(Boolean).join(",");
 
           await supabaseAdmin.from("notificacoes").insert({

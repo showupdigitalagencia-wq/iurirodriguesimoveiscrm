@@ -13,7 +13,10 @@ type SendArgs = {
 export async function sendOneSignalPush(args: SendArgs): Promise<{ ok: boolean; resp?: unknown; error?: string }> {
   const appId = process.env.ONESIGNAL_APP_ID;
   const restKey = process.env.ONESIGNAL_REST_API_KEY;
-  if (!appId || !restKey) return { ok: false, error: "OneSignal não configurado" };
+  if (!appId || !restKey) {
+    console.error("[OneSignal] Variáveis ausentes", { hasAppId: !!appId, hasRestKey: !!restKey });
+    return { ok: false, error: "OneSignal não configurado" };
+  }
 
   const ids = args.externalIds ?? (args.externalId ? [args.externalId] : []);
   if (ids.length === 0) return { ok: false, error: "Nenhum destinatário" };
@@ -39,6 +42,12 @@ export async function sendOneSignalPush(args: SendArgs): Promise<{ ok: boolean; 
       body: JSON.stringify(body),
     });
     const json = (await resp.json().catch(() => ({}))) as Record<string, unknown>;
+    console.info("[OneSignal] Resposta REST API", {
+      status: resp.status,
+      ok: resp.ok,
+      externalIds: ids,
+      response: json,
+    });
     if (!resp.ok) return { ok: false, resp: json, error: `HTTP ${resp.status}` };
     // OneSignal devolve `errors` mesmo em 200 quando ninguém recebeu
     if (json.errors) return { ok: false, resp: json, error: JSON.stringify(json.errors) };
