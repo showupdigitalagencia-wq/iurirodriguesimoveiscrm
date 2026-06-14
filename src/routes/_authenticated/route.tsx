@@ -2,8 +2,9 @@ import { createFileRoute, Outlet, redirect, Link, useRouter } from "@tanstack/re
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useMemo, useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
-import { LayoutDashboard, Kanban, Users, BarChart3, Settings, LogOut, BadgeCheck, UserCog, BellRing, Clock, CalendarDays } from "lucide-react";
+import { LayoutDashboard, Kanban, Users, BarChart3, Settings, LogOut, BadgeCheck, UserCog, BellRing, Clock, CalendarDays, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { toast } from "sonner";
 import { endUserSession, startUserSession } from "@/lib/session-tracker";
 
