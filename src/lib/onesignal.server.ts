@@ -2,7 +2,8 @@
 // Nunca importe este arquivo em código de cliente.
 
 type SendArgs = {
-  externalId: string;
+  externalId?: string;
+  externalIds?: string[];
   title: string;
   message: string;
   url?: string;
