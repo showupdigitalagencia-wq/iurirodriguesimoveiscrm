@@ -117,10 +117,16 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
           tipo: form.tipo,
           lead_ids: Array.from(form.lead_ids),
           responsavel_ids: Array.from(form.resp_ids),
+          usar_meet: form.usar_meet,
         },
       });
       toast.success("Reunião agendada");
       onCreated?.(res.id);
+
+      const finalLocal = res.local ?? form.local;
+      if (form.usar_meet && !res.local) {
+        toast.warning("Google Meet não criado: nenhum corretor selecionado tem conta Google conectada.");
+      }
 
       const selectedLeads = leads.filter((l) => form.lead_ids.has(l.id) && onlyDigits(l.telefone));
       const corretorNome = (() => {
@@ -132,14 +138,14 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
         const l = selectedLeads[0];
         const url = buildWaUrl({
           tipo: form.tipo, leadNome: l.nome, telefone: l.telefone,
-          data: form.data, hora: form.hora, local: form.local, corretor: corretorNome,
+          data: form.data, hora: form.hora, local: finalLocal, corretor: corretorNome,
         });
         window.open(url, "_blank", "noopener,noreferrer");
         onOpenChange(false);
       } else if (selectedLeads.length > 1) {
         setConfirmacao({
           leads: selectedLeads, tipo: form.tipo,
-          data: form.data, hora: form.hora, local: form.local, corretor: corretorNome,
+          data: form.data, hora: form.hora, local: finalLocal, corretor: corretorNome,
         });
       } else {
         onOpenChange(false);
