@@ -11,40 +11,52 @@ import { createReuniao } from "@/lib/reunioes.functions";
 import { startGoogleOAuth, getGoogleStatus } from "@/lib/google.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { MessageCircle, Video, CheckCircle2 } from "lucide-react";
+import { MessageCircle, Video, CheckCircle2, Copy, Users } from "lucide-react";
 
+type Tipo = "individual" | "institucional" | "alinhamento";
 type LeadOpt = { id: string; nome: string; telefone: string };
 type RespOpt = { id: string; nome: string; canal: string };
+
+const GROUP_WA_URL = "https://chat.whatsapp.com/GCRzxSX7Ou51J8qgNjLiyu";
 
 function onlyDigits(s: string): string {
   return (s ?? "").replace(/\D+/g, "");
 }
 
-function isMobileDevice(): boolean {
-  if (typeof navigator === "undefined") return false;
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(navigator.userAgent);
+function formatBR(date: string): string {
+  const [y, m, d] = date.split("-");
+  return `${d}/${m}/${y}`;
 }
 
-function buildWaUrl(opts: {
-  tipo: "individual" | "institucional";
+function buildLeadMessage(opts: {
+  tipo: Tipo;
   leadNome: string;
-  telefone: string;
   data: string;
   hora: string;
   local: string;
   corretor: string;
 }): string {
-  const { tipo, leadNome, telefone, data, hora, local, corretor } = opts;
-  const [y, m, d] = data.split("-");
-  const dataBR = `${d}/${m}/${y}`;
-  const msg = tipo === "institucional"
-    ? `Olá ${leadNome}! 😊 Você está convidado para uma REUNIÃO INSTITUCIONAL! 🏢✨ Com nosso Diretor Geral IURI RODRIGUES! 📅 Data: ${dataBR} 🕐 Hora: ${hora} 📍 Link: ${local || "a definir"} Confirme sua presença! Iuri Rodrigues Imóveis`
-    : `Olá ${leadNome}! 😊 Sua reunião foi agendada! 📅 Data: ${dataBR} 🕐 Hora: ${hora} 📍 Link: ${local || "a definir"} 👤 Corretor: ${corretor} Iuri Rodrigues Imóveis`;
-  const phone = onlyDigits(telefone);
-  const encoded = encodeURIComponent(msg);
-  return isMobileDevice()
-    ? `https://wa.me/${phone}?text=${encoded}`
-    : `https://web.whatsapp.com/send?phone=${phone}&text=${encoded}`;
+  const { tipo, leadNome, data, hora, local, corretor } = opts;
+  const dataBR = formatBR(data);
+  const link = local || "a definir";
+  if (tipo === "institucional") {
+    return `Olá ${leadNome}! 😊\n\nVocê está convidado para uma REUNIÃO INSTITUCIONAL! 🏢✨\nCom nosso Diretor Geral IURI RODRIGUES!\n\n📅 Data: ${dataBR}\n🕐 Hora: ${hora}\n📍 Link Google Meet: ${link}\n\nConfirme sua presença!\n\nIuri Rodrigues Imóveis 🏢`;
+  }
+  return `Olá ${leadNome}! 😊\n\nSua reunião foi agendada!\n\n📅 Data: ${dataBR}\n🕐 Hora: ${hora}\n📍 Link Google Meet: ${link}\n👤 Corretor: ${corretor}\n\nIuri Rodrigues Imóveis 🏢`;
+}
+
+function buildGroupMessage(opts: { data: string; hora: string; local: string }): string {
+  const dataBR = formatBR(opts.data);
+  return `⚠️ REUNIÃO DE ALINHAMENTO\n\nAtenção equipe! 👥\n\n📅 Data: ${dataBR}\n🕐 Hora: ${opts.hora}\n📍 Link Google Meet: ${opts.local || "a definir"}\n\nPresença de TODOS obrigatória!\n\n— Iuri Rodrigues\nDiretor Geral | Iuri Rodrigues Imóveis 🏢`;
+}
+
+async function copyText(text: string) {
+  try {
+    await navigator.clipboard.writeText(text);
+    toast.success("Mensagem copiada");
+  } catch {
+    toast.error("Falha ao copiar");
+  }
 }
 
 interface Props {
@@ -60,13 +72,14 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
   const checkStatus = useServerFn(getGoogleStatus);
   const [leads, setLeads] = useState<LeadOpt[]>([]);
   const [resps, setResps] = useState<RespOpt[]>([]);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [saving, setSaving] = useState(false);
   const [googleConnected, setGoogleConnected] = useState<boolean | null>(null);
   const [googleEmail, setGoogleEmail] = useState<string | null>(null);
   const [connectingGoogle, setConnectingGoogle] = useState(false);
   const [confirmacao, setConfirmacao] = useState<null | {
     leads: LeadOpt[];
-    tipo: "individual" | "institucional";
+    tipo: Tipo;
     data: string;
     hora: string;
     local: string;
@@ -77,7 +90,7 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
     data: "",
     hora: "",
     duracao: 60,
-    tipo: "individual" as "individual" | "institucional",
+    tipo: "individual" as Tipo,
     descricao: "",
     lead_ids: new Set<string>(),
     resp_ids: new Set<string>(),
@@ -99,10 +112,15 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
       .then(({ data }) => setLeads((data as LeadOpt[]) ?? []));
     supabase.from("responsaveis").select("id, nome, canal").order("nome")
       .then(({ data }) => setResps((data as RespOpt[]) ?? []));
+    supabase.auth.getUser().then(async ({ data }) => {
+      const uid = data.user?.id;
+      if (!uid) return setIsAdmin(false);
+      const { data: r } = await supabase.from("user_roles").select("role").eq("user_id", uid).eq("role", "admin").maybeSingle();
+      setIsAdmin(!!r);
+    });
     refreshGoogleStatus();
   }, [open]);
 
-  // Listen for popup OAuth callback
   useEffect(() => {
     if (!open) return;
     function onMsg(e: MessageEvent) {
@@ -150,7 +168,6 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
         setConnectingGoogle(false);
         return;
       }
-      // Poll in case the popup is closed without sending a message
       const timer = setInterval(() => {
         if (w.closed) {
           clearInterval(timer);
@@ -197,28 +214,17 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
         toast.warning("Google Meet não foi gerado. Verifique a conexão Google.");
       }
 
-      const selectedLeads = leads.filter((l) => form.lead_ids.has(l.id) && onlyDigits(l.telefone));
-      const corretorNome = (() => {
-        const first = resps.find((r) => form.resp_ids.has(r.id));
-        return first?.nome ?? "";
-      })();
+      const selectedLeads = leads.filter((l) => form.lead_ids.has(l.id));
+      const corretorNome = resps.find((r) => form.resp_ids.has(r.id))?.nome ?? "";
 
-      if (selectedLeads.length === 1) {
-        const l = selectedLeads[0];
-        const url = buildWaUrl({
-          tipo: form.tipo, leadNome: l.nome, telefone: l.telefone,
-          data: form.data, hora: form.hora, local: finalLocal, corretor: corretorNome,
-        });
-        window.open(url, "_blank", "noopener,noreferrer");
-        onOpenChange(false);
-      } else if (selectedLeads.length > 1) {
-        setConfirmacao({
-          leads: selectedLeads, tipo: form.tipo,
-          data: form.data, hora: form.hora, local: finalLocal, corretor: corretorNome,
-        });
-      } else {
-        onOpenChange(false);
-      }
+      setConfirmacao({
+        leads: selectedLeads,
+        tipo: form.tipo,
+        data: form.data,
+        hora: form.hora,
+        local: finalLocal,
+        corretor: corretorNome,
+      });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Falha ao agendar");
     } finally {
@@ -226,37 +232,86 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
     }
   }
 
-  if (confirmacao) {
+  // Confirmation modal — alinhamento
+  if (confirmacao && confirmacao.tipo === "alinhamento") {
+    const msg = buildGroupMessage({ data: confirmacao.data, hora: confirmacao.hora, local: confirmacao.local });
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>✅ Reunião agendada com sucesso!</DialogTitle>
-            <DialogDescription>Envie a confirmação para cada lead:</DialogDescription>
+            <DialogTitle>⚠️ Reunião de Alinhamento agendada</DialogTitle>
+            <DialogDescription>Envie a mensagem para o grupo da equipe</DialogDescription>
+          </DialogHeader>
+          <div className="bg-muted rounded-md p-3 text-sm whitespace-pre-wrap break-words">{msg}</div>
+          <div className="flex flex-col gap-2">
+            <Button variant="gold" onClick={() => copyText(msg)}>
+              <Copy className="h-4 w-4 mr-1" /> Copiar mensagem
+            </Button>
+            <Button asChild variant="default">
+              <a href={GROUP_WA_URL} target="_blank" rel="noopener noreferrer">
+                <Users className="h-4 w-4 mr-1" /> Enviar para Grupo WhatsApp
+              </a>
+            </Button>
+            <Button variant="outline" onClick={() => onOpenChange(false)}>Fechar</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // Confirmation modal — individual/institucional
+  if (confirmacao) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>✅ Reunião agendada! Envie a confirmação</DialogTitle>
+            <DialogDescription>
+              Copie a mensagem e envie pelo WhatsApp para cada lead.
+            </DialogDescription>
           </DialogHeader>
           {confirmacao.local && (
             <div className="text-xs bg-muted rounded-md p-2 break-all">
               <strong>Link Meet:</strong> {confirmacao.local}
             </div>
           )}
-          <div className="space-y-2">
-            {confirmacao.leads.map((l) => {
-              const url = buildWaUrl({
-                tipo: confirmacao.tipo, leadNome: l.nome, telefone: l.telefone,
-                data: confirmacao.data, hora: confirmacao.hora, local: confirmacao.local, corretor: confirmacao.corretor,
-              });
-              return (
-                <div key={l.id} className="flex items-center justify-between gap-2 border border-border rounded-md p-2">
-                  <span className="text-sm truncate">{l.nome}</span>
-                  <Button asChild size="sm" variant="gold">
-                    <a href={url} target="_blank" rel="noopener noreferrer">
-                      <MessageCircle className="h-4 w-4" /> WhatsApp
-                    </a>
-                  </Button>
-                </div>
-              );
-            })}
-          </div>
+          {confirmacao.leads.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Nenhum lead selecionado.</p>
+          ) : (
+            <div className="space-y-3">
+              {confirmacao.leads.map((l) => {
+                const tel = onlyDigits(l.telefone);
+                const phone = tel.startsWith("55") || tel.length < 11 ? tel : `55${tel}`;
+                const waUrl = `https://wa.me/${phone}`;
+                const msg = buildLeadMessage({
+                  tipo: confirmacao.tipo,
+                  leadNome: l.nome,
+                  data: confirmacao.data,
+                  hora: confirmacao.hora,
+                  local: confirmacao.local,
+                  corretor: confirmacao.corretor,
+                });
+                return (
+                  <div key={l.id} className="border border-border rounded-md p-3 space-y-2">
+                    <div className="text-sm font-medium">{l.nome} <span className="text-muted-foreground text-xs">— {l.telefone}</span></div>
+                    <div className="bg-muted rounded-md p-2 text-xs whitespace-pre-wrap break-words max-h-40 overflow-y-auto">{msg}</div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button size="sm" variant="outline" onClick={() => copyText(msg)}>
+                        <Copy className="h-4 w-4 mr-1" /> Copiar
+                      </Button>
+                      {tel && (
+                        <Button asChild size="sm" variant="gold">
+                          <a href={waUrl} target="_blank" rel="noopener noreferrer">
+                            <MessageCircle className="h-4 w-4 mr-1" /> Abrir WhatsApp
+                          </a>
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
           <div className="flex justify-end pt-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>Fechar</Button>
           </div>
@@ -323,28 +378,35 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
 
           <div>
             <Label>Tipo</Label>
-            <RadioGroup value={form.tipo} onValueChange={(v) => setForm({ ...form, tipo: v as typeof form.tipo })} className="flex gap-4 mt-2">
+            <RadioGroup value={form.tipo} onValueChange={(v) => setForm({ ...form, tipo: v as Tipo })} className="flex flex-wrap gap-4 mt-2">
               <label className="flex items-center gap-2 cursor-pointer">
                 <RadioGroupItem value="individual" /> <span>Individual</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <RadioGroupItem value="institucional" /> <span>Institucional</span>
               </label>
+              {isAdmin && (
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <RadioGroupItem value="alinhamento" /> <span className="text-red-600 font-medium">Alinhamento</span>
+                </label>
+              )}
             </RadioGroup>
           </div>
 
-          <div>
-            <Label>Leads participantes</Label>
-            <div className="mt-2 max-h-40 overflow-y-auto border border-border rounded-md p-2 space-y-1">
-              {leads.length === 0 && <p className="text-xs text-muted-foreground">Nenhum lead disponível</p>}
-              {leads.map((l) => (
-                <label key={l.id} className="flex items-center gap-2 text-sm cursor-pointer py-1 px-1 hover:bg-muted rounded">
-                  <Checkbox checked={form.lead_ids.has(l.id)} onCheckedChange={() => setForm({ ...form, lead_ids: toggle(form.lead_ids, l.id) })} />
-                  <span className="truncate">{l.nome} <span className="text-muted-foreground text-xs">— {l.telefone}</span></span>
-                </label>
-              ))}
+          {form.tipo !== "alinhamento" && (
+            <div>
+              <Label>Leads participantes</Label>
+              <div className="mt-2 max-h-40 overflow-y-auto border border-border rounded-md p-2 space-y-1">
+                {leads.length === 0 && <p className="text-xs text-muted-foreground">Nenhum lead disponível</p>}
+                {leads.map((l) => (
+                  <label key={l.id} className="flex items-center gap-2 text-sm cursor-pointer py-1 px-1 hover:bg-muted rounded">
+                    <Checkbox checked={form.lead_ids.has(l.id)} onCheckedChange={() => setForm({ ...form, lead_ids: toggle(form.lead_ids, l.id) })} />
+                    <span className="truncate">{l.nome} <span className="text-muted-foreground text-xs">— {l.telefone}</span></span>
+                  </label>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           <div>
             <Label>Corretores participantes</Label>
