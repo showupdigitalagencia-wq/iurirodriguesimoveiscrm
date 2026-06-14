@@ -10,9 +10,33 @@ import { useServerFn } from "@tanstack/react-start";
 import { createReuniao } from "@/lib/reunioes.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { MessageCircle } from "lucide-react";
 
 type LeadOpt = { id: string; nome: string; telefone: string };
 type RespOpt = { id: string; nome: string; canal: string };
+
+function onlyDigits(s: string): string {
+  return (s ?? "").replace(/\D+/g, "");
+}
+
+function buildWaUrl(opts: {
+  tipo: "individual" | "institucional";
+  leadNome: string;
+  telefone: string;
+  data: string;
+  hora: string;
+  local: string;
+  corretor: string;
+}): string {
+  const { tipo, leadNome, telefone, data, hora, local, corretor } = opts;
+  const [y, m, d] = data.split("-");
+  const dataBR = `${d}/${m}/${y}`;
+  const msg = tipo === "institucional"
+    ? `Olá ${leadNome}! 😊 Você está convidado para uma REUNIÃO INSTITUCIONAL! 🏢✨ Com nosso Diretor Geral IURI RODRIGUES! 📅 Data: ${dataBR} 🕐 Hora: ${hora} 📍 Local/Link: ${local || "a definir"} Confirme sua presença! Iuri Rodrigues Imóveis`
+    : `Olá ${leadNome}! 😊 Sua reunião foi agendada! 📅 Data: ${dataBR} 🕐 Hora: ${hora} 📍 Local/Link: ${local || "a definir"} 👤 Corretor: ${corretor} Iuri Rodrigues Imóveis`;
+  const phone = onlyDigits(telefone);
+  return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+}
 
 interface Props {
   open: boolean;
@@ -26,6 +50,14 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
   const [leads, setLeads] = useState<LeadOpt[]>([]);
   const [resps, setResps] = useState<RespOpt[]>([]);
   const [saving, setSaving] = useState(false);
+  const [confirmacao, setConfirmacao] = useState<null | {
+    leads: LeadOpt[];
+    tipo: "individual" | "institucional";
+    data: string;
+    hora: string;
+    local: string;
+    corretor: string;
+  }>(null);
   const [form, setForm] = useState({
     titulo: "",
     data: "",
@@ -56,6 +88,7 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
         tipo: "individual", descricao: "",
         lead_ids: new Set<string>(), resp_ids: new Set<string>(),
       });
+      setConfirmacao(null);
     }
   }, [open, defaultLeadId]);
 
@@ -87,12 +120,68 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
       });
       toast.success("Reunião agendada");
       onCreated?.(res.id);
-      onOpenChange(false);
+
+      const selectedLeads = leads.filter((l) => form.lead_ids.has(l.id) && onlyDigits(l.telefone));
+      const corretorNome = (() => {
+        const first = resps.find((r) => form.resp_ids.has(r.id));
+        return first?.nome ?? "";
+      })();
+
+      if (selectedLeads.length === 1) {
+        const l = selectedLeads[0];
+        const url = buildWaUrl({
+          tipo: form.tipo, leadNome: l.nome, telefone: l.telefone,
+          data: form.data, hora: form.hora, local: form.local, corretor: corretorNome,
+        });
+        window.open(url, "_blank", "noopener,noreferrer");
+        onOpenChange(false);
+      } else if (selectedLeads.length > 1) {
+        setConfirmacao({
+          leads: selectedLeads, tipo: form.tipo,
+          data: form.data, hora: form.hora, local: form.local, corretor: corretorNome,
+        });
+      } else {
+        onOpenChange(false);
+      }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Falha ao agendar");
     } finally {
       setSaving(false);
     }
+  }
+
+  if (confirmacao) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>✅ Reunião agendada com sucesso!</DialogTitle>
+            <DialogDescription>Envie a confirmação para cada lead:</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            {confirmacao.leads.map((l) => {
+              const url = buildWaUrl({
+                tipo: confirmacao.tipo, leadNome: l.nome, telefone: l.telefone,
+                data: confirmacao.data, hora: confirmacao.hora, local: confirmacao.local, corretor: confirmacao.corretor,
+              });
+              return (
+                <div key={l.id} className="flex items-center justify-between gap-2 border border-border rounded-md p-2">
+                  <span className="text-sm truncate">{l.nome}</span>
+                  <Button asChild size="sm" variant="gold">
+                    <a href={url} target="_blank" rel="noopener noreferrer">
+                      <MessageCircle className="h-4 w-4" /> WhatsApp
+                    </a>
+                  </Button>
+                </div>
+              );
+            })}
+          </div>
+          <div className="flex justify-end pt-2">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>Fechar</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
   }
 
   return (
@@ -102,6 +191,7 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
           <DialogTitle>Agendar Reunião</DialogTitle>
           <DialogDescription>Preencha os detalhes da reunião</DialogDescription>
         </DialogHeader>
+
 
         <div className="space-y-4">
           <div>
