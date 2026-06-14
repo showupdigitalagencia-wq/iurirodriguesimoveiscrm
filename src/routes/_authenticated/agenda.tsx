@@ -97,9 +97,9 @@ function AgendaPage() {
 }
 
 function colorFor(tipo: ReuniaoRow["tipo"]) {
-  return tipo === "institucional"
-    ? "bg-gold/90 text-gold-foreground border-gold"
-    : "bg-blue-500 text-white border-blue-600";
+  if (tipo === "alinhamento") return "bg-red-600 text-white border-red-700";
+  if (tipo === "institucional") return "bg-gold/90 text-gold-foreground border-gold";
+  return "bg-blue-500 text-white border-blue-600";
 }
 
 function MonthGrid({ cursor, from, reunioes, onOpen }: { cursor: Date; from: Date; reunioes: ReuniaoRow[]; onOpen: (id: string) => void }) {
