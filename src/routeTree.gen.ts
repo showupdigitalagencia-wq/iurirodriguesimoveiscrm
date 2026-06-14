@@ -22,10 +22,12 @@ import { Route as AuthenticatedLeadsRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCorretoresRouteImport } from './routes/_authenticated/corretores'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
+import { Route as AuthenticatedAgendaRouteImport } from './routes/_authenticated/agenda'
 import { Route as ApiPublicWebhookRouteImport } from './routes/api/public/webhook'
 import { Route as ApiPublicOnesignalTestRouteImport } from './routes/api/public/onesignal-test'
 import { Route as ApiPublicLeadRouteImport } from './routes/api/public/lead'
 import { Route as ApiPublicCronUnattendedRouteImport } from './routes/api/public/cron-unattended'
+import { Route as ApiPublicCronReuniaoLembretesRouteImport } from './routes/api/public/cron-reuniao-lembretes'
 import { Route as AuthenticatedLeadsLeadIdRouteImport } from './routes/_authenticated/leads.$leadId'
 
 const FormularioRoute = FormularioRouteImport.update({
@@ -95,6 +97,11 @@ const AuthenticatedConfiguracoesRoute =
     path: '/configuracoes',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAgendaRoute = AuthenticatedAgendaRouteImport.update({
+  id: '/agenda',
+  path: '/agenda',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const ApiPublicWebhookRoute = ApiPublicWebhookRouteImport.update({
   id: '/api/public/webhook',
   path: '/api/public/webhook',
@@ -115,6 +122,12 @@ const ApiPublicCronUnattendedRoute = ApiPublicCronUnattendedRouteImport.update({
   path: '/api/public/cron-unattended',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCronReuniaoLembretesRoute =
+  ApiPublicCronReuniaoLembretesRouteImport.update({
+    id: '/api/public/cron-reuniao-lembretes',
+    path: '/api/public/cron-reuniao-lembretes',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedLeadsLeadIdRoute =
   AuthenticatedLeadsLeadIdRouteImport.update({
     id: '/$leadId',
@@ -126,6 +139,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/formulario': typeof FormularioRoute
+  '/agenda': typeof AuthenticatedAgendaRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -136,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/tempo-acesso': typeof AuthenticatedTempoAcessoRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
+  '/api/public/cron-reuniao-lembretes': typeof ApiPublicCronReuniaoLembretesRoute
   '/api/public/cron-unattended': typeof ApiPublicCronUnattendedRoute
   '/api/public/lead': typeof ApiPublicLeadRoute
   '/api/public/onesignal-test': typeof ApiPublicOnesignalTestRoute
@@ -145,6 +160,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/formulario': typeof FormularioRoute
+  '/agenda': typeof AuthenticatedAgendaRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -155,6 +171,7 @@ export interface FileRoutesByTo {
   '/tempo-acesso': typeof AuthenticatedTempoAcessoRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
+  '/api/public/cron-reuniao-lembretes': typeof ApiPublicCronReuniaoLembretesRoute
   '/api/public/cron-unattended': typeof ApiPublicCronUnattendedRoute
   '/api/public/lead': typeof ApiPublicLeadRoute
   '/api/public/onesignal-test': typeof ApiPublicOnesignalTestRoute
@@ -166,6 +183,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/formulario': typeof FormularioRoute
+  '/_authenticated/agenda': typeof AuthenticatedAgendaRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/_authenticated/corretores': typeof AuthenticatedCorretoresRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -176,6 +194,7 @@ export interface FileRoutesById {
   '/_authenticated/tempo-acesso': typeof AuthenticatedTempoAcessoRoute
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
   '/_authenticated/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
+  '/api/public/cron-reuniao-lembretes': typeof ApiPublicCronReuniaoLembretesRoute
   '/api/public/cron-unattended': typeof ApiPublicCronUnattendedRoute
   '/api/public/lead': typeof ApiPublicLeadRoute
   '/api/public/onesignal-test': typeof ApiPublicOnesignalTestRoute
@@ -187,6 +206,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/formulario'
+    | '/agenda'
     | '/configuracoes'
     | '/corretores'
     | '/dashboard'
@@ -197,6 +217,7 @@ export interface FileRouteTypes {
     | '/tempo-acesso'
     | '/usuarios'
     | '/leads/$leadId'
+    | '/api/public/cron-reuniao-lembretes'
     | '/api/public/cron-unattended'
     | '/api/public/lead'
     | '/api/public/onesignal-test'
@@ -206,6 +227,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/formulario'
+    | '/agenda'
     | '/configuracoes'
     | '/corretores'
     | '/dashboard'
@@ -216,6 +238,7 @@ export interface FileRouteTypes {
     | '/tempo-acesso'
     | '/usuarios'
     | '/leads/$leadId'
+    | '/api/public/cron-reuniao-lembretes'
     | '/api/public/cron-unattended'
     | '/api/public/lead'
     | '/api/public/onesignal-test'
@@ -226,6 +249,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/formulario'
+    | '/_authenticated/agenda'
     | '/_authenticated/configuracoes'
     | '/_authenticated/corretores'
     | '/_authenticated/dashboard'
@@ -236,6 +260,7 @@ export interface FileRouteTypes {
     | '/_authenticated/tempo-acesso'
     | '/_authenticated/usuarios'
     | '/_authenticated/leads/$leadId'
+    | '/api/public/cron-reuniao-lembretes'
     | '/api/public/cron-unattended'
     | '/api/public/lead'
     | '/api/public/onesignal-test'
@@ -247,6 +272,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   FormularioRoute: typeof FormularioRoute
+  ApiPublicCronReuniaoLembretesRoute: typeof ApiPublicCronReuniaoLembretesRoute
   ApiPublicCronUnattendedRoute: typeof ApiPublicCronUnattendedRoute
   ApiPublicLeadRoute: typeof ApiPublicLeadRoute
   ApiPublicOnesignalTestRoute: typeof ApiPublicOnesignalTestRoute
@@ -346,6 +372,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConfiguracoesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/agenda': {
+      id: '/_authenticated/agenda'
+      path: '/agenda'
+      fullPath: '/agenda'
+      preLoaderRoute: typeof AuthenticatedAgendaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/public/webhook': {
       id: '/api/public/webhook'
       path: '/api/public/webhook'
@@ -374,6 +407,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronUnattendedRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron-reuniao-lembretes': {
+      id: '/api/public/cron-reuniao-lembretes'
+      path: '/api/public/cron-reuniao-lembretes'
+      fullPath: '/api/public/cron-reuniao-lembretes'
+      preLoaderRoute: typeof ApiPublicCronReuniaoLembretesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/leads/$leadId': {
       id: '/_authenticated/leads/$leadId'
       path: '/$leadId'
@@ -396,6 +436,7 @@ const AuthenticatedLeadsRouteWithChildren =
   AuthenticatedLeadsRoute._addFileChildren(AuthenticatedLeadsRouteChildren)
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAgendaRoute: typeof AuthenticatedAgendaRoute
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
   AuthenticatedCorretoresRoute: typeof AuthenticatedCorretoresRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
@@ -408,6 +449,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAgendaRoute: AuthenticatedAgendaRoute,
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
   AuthenticatedCorretoresRoute: AuthenticatedCorretoresRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
@@ -427,6 +469,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   FormularioRoute: FormularioRoute,
+  ApiPublicCronReuniaoLembretesRoute: ApiPublicCronReuniaoLembretesRoute,
   ApiPublicCronUnattendedRoute: ApiPublicCronUnattendedRoute,
   ApiPublicLeadRoute: ApiPublicLeadRoute,
   ApiPublicOnesignalTestRoute: ApiPublicOnesignalTestRoute,
