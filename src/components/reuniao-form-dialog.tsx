@@ -8,15 +8,21 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useServerFn } from "@tanstack/react-start";
 import { createReuniao } from "@/lib/reunioes.functions";
+import { startGoogleOAuth, getGoogleStatus } from "@/lib/google.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Video, CheckCircle2 } from "lucide-react";
 
 type LeadOpt = { id: string; nome: string; telefone: string };
 type RespOpt = { id: string; nome: string; canal: string };
 
 function onlyDigits(s: string): string {
   return (s ?? "").replace(/\D+/g, "");
+}
+
+function isMobileDevice(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(navigator.userAgent);
 }
 
 function buildWaUrl(opts: {
@@ -32,10 +38,13 @@ function buildWaUrl(opts: {
   const [y, m, d] = data.split("-");
   const dataBR = `${d}/${m}/${y}`;
   const msg = tipo === "institucional"
-    ? `Olá ${leadNome}! 😊 Você está convidado para uma REUNIÃO INSTITUCIONAL! 🏢✨ Com nosso Diretor Geral IURI RODRIGUES! 📅 Data: ${dataBR} 🕐 Hora: ${hora} 📍 Local/Link: ${local || "a definir"} Confirme sua presença! Iuri Rodrigues Imóveis`
-    : `Olá ${leadNome}! 😊 Sua reunião foi agendada! 📅 Data: ${dataBR} 🕐 Hora: ${hora} 📍 Local/Link: ${local || "a definir"} 👤 Corretor: ${corretor} Iuri Rodrigues Imóveis`;
+    ? `Olá ${leadNome}! 😊 Você está convidado para uma REUNIÃO INSTITUCIONAL! 🏢✨ Com nosso Diretor Geral IURI RODRIGUES! 📅 Data: ${dataBR} 🕐 Hora: ${hora} 📍 Link: ${local || "a definir"} Confirme sua presença! Iuri Rodrigues Imóveis`
+    : `Olá ${leadNome}! 😊 Sua reunião foi agendada! 📅 Data: ${dataBR} 🕐 Hora: ${hora} 📍 Link: ${local || "a definir"} 👤 Corretor: ${corretor} Iuri Rodrigues Imóveis`;
   const phone = onlyDigits(telefone);
-  return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+  const encoded = encodeURIComponent(msg);
+  return isMobileDevice()
+    ? `https://wa.me/${phone}?text=${encoded}`
+    : `https://web.whatsapp.com/send?phone=${phone}&text=${encoded}`;
 }
 
 interface Props {
@@ -47,9 +56,14 @@ interface Props {
 
 export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated }: Props) {
   const call = useServerFn(createReuniao);
+  const startOAuth = useServerFn(startGoogleOAuth);
+  const checkStatus = useServerFn(getGoogleStatus);
   const [leads, setLeads] = useState<LeadOpt[]>([]);
   const [resps, setResps] = useState<RespOpt[]>([]);
   const [saving, setSaving] = useState(false);
+  const [googleConnected, setGoogleConnected] = useState<boolean | null>(null);
+  const [googleEmail, setGoogleEmail] = useState<string | null>(null);
+  const [connectingGoogle, setConnectingGoogle] = useState(false);
   const [confirmacao, setConfirmacao] = useState<null | {
     leads: LeadOpt[];
     tipo: "individual" | "institucional";
@@ -63,13 +77,21 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
     data: "",
     hora: "",
     duracao: 60,
-    local: "",
-    usar_meet: false,
     tipo: "individual" as "individual" | "institucional",
     descricao: "",
     lead_ids: new Set<string>(),
     resp_ids: new Set<string>(),
   });
+
+  async function refreshGoogleStatus() {
+    try {
+      const s = await checkStatus();
+      setGoogleConnected(s.connected);
+      setGoogleEmail(s.email);
+    } catch {
+      setGoogleConnected(false);
+    }
+  }
 
   useEffect(() => {
     if (!open) return;
@@ -77,6 +99,25 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
       .then(({ data }) => setLeads((data as LeadOpt[]) ?? []));
     supabase.from("responsaveis").select("id, nome, canal").order("nome")
       .then(({ data }) => setResps((data as RespOpt[]) ?? []));
+    refreshGoogleStatus();
+  }, [open]);
+
+  // Listen for popup OAuth callback
+  useEffect(() => {
+    if (!open) return;
+    function onMsg(e: MessageEvent) {
+      const d = e.data;
+      if (!d || d.type !== "google-oauth") return;
+      if (d.status === "connected") {
+        toast.success("Google conectado!");
+        refreshGoogleStatus();
+      } else {
+        toast.error(`Falha ao conectar: ${d.reason ?? "erro"}`);
+      }
+      setConnectingGoogle(false);
+    }
+    window.addEventListener("message", onMsg);
+    return () => window.removeEventListener("message", onMsg);
   }, [open]);
 
   useEffect(() => {
@@ -85,7 +126,7 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
     }
     if (!open) {
       setForm({
-        titulo: "", data: "", hora: "", duracao: 60, local: "", usar_meet: false,
+        titulo: "", data: "", hora: "", duracao: 60,
         tipo: "individual", descricao: "",
         lead_ids: new Set<string>(), resp_ids: new Set<string>(),
       });
@@ -99,9 +140,37 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
     return n;
   }
 
+  async function handleConnectGoogle() {
+    setConnectingGoogle(true);
+    try {
+      const { url } = await startOAuth();
+      const w = window.open(url, "google-oauth", "width=520,height=640,menubar=no,toolbar=no");
+      if (!w) {
+        toast.error("Permita pop-ups para conectar o Google");
+        setConnectingGoogle(false);
+        return;
+      }
+      // Poll in case the popup is closed without sending a message
+      const timer = setInterval(() => {
+        if (w.closed) {
+          clearInterval(timer);
+          setConnectingGoogle(false);
+          refreshGoogleStatus();
+        }
+      }, 800);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao iniciar conexão");
+      setConnectingGoogle(false);
+    }
+  }
+
   async function submit() {
     if (!form.titulo.trim() || !form.data || !form.hora) {
       toast.error("Preencha título, data e hora");
+      return;
+    }
+    if (!googleConnected) {
+      toast.error("Conecte sua conta Google para gerar o link do Meet");
       return;
     }
     setSaving(true);
@@ -113,19 +182,19 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
           descricao: form.descricao || null,
           data_inicio: iso,
           duracao_min: Number(form.duracao) || 60,
-          local: form.local || null,
+          local: null,
           tipo: form.tipo,
           lead_ids: Array.from(form.lead_ids),
           responsavel_ids: Array.from(form.resp_ids),
-          usar_meet: form.usar_meet,
+          usar_meet: true,
         },
       });
       toast.success("Reunião agendada");
       onCreated?.(res.id);
 
-      const finalLocal = res.local ?? form.local;
-      if (form.usar_meet && !res.local) {
-        toast.warning("Google Meet não criado: nenhum corretor selecionado tem conta Google conectada.");
+      const finalLocal = res.local ?? "";
+      if (!res.local) {
+        toast.warning("Google Meet não foi gerado. Verifique a conexão Google.");
       }
 
       const selectedLeads = leads.filter((l) => form.lead_ids.has(l.id) && onlyDigits(l.telefone));
@@ -165,6 +234,11 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
             <DialogTitle>✅ Reunião agendada com sucesso!</DialogTitle>
             <DialogDescription>Envie a confirmação para cada lead:</DialogDescription>
           </DialogHeader>
+          {confirmacao.local && (
+            <div className="text-xs bg-muted rounded-md p-2 break-all">
+              <strong>Link Meet:</strong> {confirmacao.local}
+            </div>
+          )}
           <div className="space-y-2">
             {confirmacao.leads.map((l) => {
               const url = buildWaUrl({
@@ -199,7 +273,6 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
           <DialogDescription>Preencha os detalhes da reunião</DialogDescription>
         </DialogHeader>
 
-
         <div className="space-y-4">
           <div>
             <Label>Título</Label>
@@ -222,21 +295,30 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
             <Input type="number" min={5} max={1440} value={form.duracao} onChange={(e) => setForm({ ...form, duracao: Number(e.target.value) })} />
           </div>
 
-          <div>
-            <Label>Local ou link</Label>
-            <Input
-              value={form.local}
-              onChange={(e) => setForm({ ...form, local: e.target.value })}
-              placeholder={form.usar_meet ? "Será gerado automaticamente pelo Google Meet" : "Endereço, sala ou URL da videochamada"}
-              disabled={form.usar_meet}
-            />
-            <label className="mt-2 flex items-center gap-2 text-sm cursor-pointer">
-              <Checkbox
-                checked={form.usar_meet}
-                onCheckedChange={(v) => setForm({ ...form, usar_meet: !!v, local: v ? "" : form.local })}
-              />
-              <span>Usar Google Meet (cria evento no Calendar dos corretores conectados)</span>
-            </label>
+          <div className="border border-border rounded-md p-3 bg-muted/40">
+            <div className="flex items-center gap-2 mb-2">
+              <Video className="h-4 w-4 text-primary" />
+              <span className="font-medium text-sm">Local: Google Meet</span>
+            </div>
+            {googleConnected === null ? (
+              <p className="text-xs text-muted-foreground">Verificando conexão Google...</p>
+            ) : googleConnected ? (
+              <div className="flex items-start gap-2 text-xs text-muted-foreground">
+                <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5" />
+                <span>
+                  Google conectado{googleEmail ? ` (${googleEmail})` : ""}. O link do Meet será gerado automaticamente ao agendar.
+                </span>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-xs text-muted-foreground">
+                  Você precisa conectar sua conta Google para gerar o link do Meet.
+                </p>
+                <Button type="button" variant="gold" size="sm" onClick={handleConnectGoogle} disabled={connectingGoogle}>
+                  {connectingGoogle ? "Conectando..." : "Conectar Google Meet"}
+                </Button>
+              </div>
+            )}
           </div>
 
           <div>
@@ -283,7 +365,9 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
 
           <div className="flex gap-2 justify-end pt-2">
             <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>Cancelar</Button>
-            <Button variant="gold" onClick={submit} disabled={saving}>{saving ? "Salvando..." : "Agendar"}</Button>
+            <Button variant="gold" onClick={submit} disabled={saving || !googleConnected}>
+              {saving ? "Salvando..." : "Agendar"}
+            </Button>
           </div>
         </div>
       </DialogContent>
