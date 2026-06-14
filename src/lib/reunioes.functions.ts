@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const TipoSchema = z.enum(["individual", "institucional"]);
+const TipoSchema = z.enum(["individual", "institucional", "alinhamento"]);
 const StatusSchema = z.enum(["agendada", "realizada", "cancelada"]);
 
 export type ReuniaoTipo = z.infer<typeof TipoSchema>;
