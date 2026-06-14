@@ -10,6 +10,8 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { CANAIS, REGIOES, type LeadCanal, type LeadRegiao } from "@/lib/lead-helpers";
 import { Trash2, Copy } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { startGoogleOAuth, getGoogleStatus, disconnectGoogle } from "@/lib/google.functions";
 
 type Resp = { id: string; canal: string; nome: string; whatsapp: string };
 type Mapping = {
@@ -52,6 +54,7 @@ function ConfigPage() {
           <p className="text-muted-foreground mt-1">Gerencie sua conta.</p>
         </header>
         <MinhaContaSection />
+        <GoogleConnectSection />
       </div>
     );
   }
@@ -71,6 +74,7 @@ function ConfigPage() {
         </TabsList>
         <TabsContent value="conta" className="mt-6 space-y-6">
           <MinhaContaSection />
+          <GoogleConnectSection />
         </TabsContent>
         <TabsContent value="responsaveis" className="mt-6">
           <ResponsaveisSection />
