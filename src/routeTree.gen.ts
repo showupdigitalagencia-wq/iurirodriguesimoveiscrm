@@ -23,6 +23,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedCorretoresRouteImport } from './routes/_authenticated/corretores'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as ApiPublicWebhookRouteImport } from './routes/api/public/webhook'
+import { Route as ApiPublicOnesignalTestRouteImport } from './routes/api/public/onesignal-test'
 import { Route as ApiPublicLeadRouteImport } from './routes/api/public/lead'
 import { Route as ApiPublicCronUnattendedRouteImport } from './routes/api/public/cron-unattended'
 
@@ -98,6 +99,11 @@ const ApiPublicWebhookRoute = ApiPublicWebhookRouteImport.update({
   path: '/api/public/webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicOnesignalTestRoute = ApiPublicOnesignalTestRouteImport.update({
+  id: '/api/public/onesignal-test',
+  path: '/api/public/onesignal-test',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicLeadRoute = ApiPublicLeadRouteImport.update({
   id: '/api/public/lead',
   path: '/api/public/lead',
@@ -124,6 +130,7 @@ export interface FileRoutesByFullPath {
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/api/public/cron-unattended': typeof ApiPublicCronUnattendedRoute
   '/api/public/lead': typeof ApiPublicLeadRoute
+  '/api/public/onesignal-test': typeof ApiPublicOnesignalTestRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -141,6 +148,7 @@ export interface FileRoutesByTo {
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/api/public/cron-unattended': typeof ApiPublicCronUnattendedRoute
   '/api/public/lead': typeof ApiPublicLeadRoute
+  '/api/public/onesignal-test': typeof ApiPublicOnesignalTestRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
 }
 export interface FileRoutesById {
@@ -160,6 +168,7 @@ export interface FileRoutesById {
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
   '/api/public/cron-unattended': typeof ApiPublicCronUnattendedRoute
   '/api/public/lead': typeof ApiPublicLeadRoute
+  '/api/public/onesignal-test': typeof ApiPublicOnesignalTestRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
 }
 export interface FileRouteTypes {
@@ -179,6 +188,7 @@ export interface FileRouteTypes {
     | '/usuarios'
     | '/api/public/cron-unattended'
     | '/api/public/lead'
+    | '/api/public/onesignal-test'
     | '/api/public/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -196,6 +206,7 @@ export interface FileRouteTypes {
     | '/usuarios'
     | '/api/public/cron-unattended'
     | '/api/public/lead'
+    | '/api/public/onesignal-test'
     | '/api/public/webhook'
   id:
     | '__root__'
@@ -214,6 +225,7 @@ export interface FileRouteTypes {
     | '/_authenticated/usuarios'
     | '/api/public/cron-unattended'
     | '/api/public/lead'
+    | '/api/public/onesignal-test'
     | '/api/public/webhook'
   fileRoutesById: FileRoutesById
 }
@@ -224,6 +236,7 @@ export interface RootRouteChildren {
   FormularioRoute: typeof FormularioRoute
   ApiPublicCronUnattendedRoute: typeof ApiPublicCronUnattendedRoute
   ApiPublicLeadRoute: typeof ApiPublicLeadRoute
+  ApiPublicOnesignalTestRoute: typeof ApiPublicOnesignalTestRoute
   ApiPublicWebhookRoute: typeof ApiPublicWebhookRoute
 }
 
@@ -327,6 +340,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/onesignal-test': {
+      id: '/api/public/onesignal-test'
+      path: '/api/public/onesignal-test'
+      fullPath: '/api/public/onesignal-test'
+      preLoaderRoute: typeof ApiPublicOnesignalTestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/lead': {
       id: '/api/public/lead'
       path: '/api/public/lead'
@@ -378,6 +398,7 @@ const rootRouteChildren: RootRouteChildren = {
   FormularioRoute: FormularioRoute,
   ApiPublicCronUnattendedRoute: ApiPublicCronUnattendedRoute,
   ApiPublicLeadRoute: ApiPublicLeadRoute,
+  ApiPublicOnesignalTestRoute: ApiPublicOnesignalTestRoute,
   ApiPublicWebhookRoute: ApiPublicWebhookRoute,
 }
 export const routeTree = rootRouteImport
