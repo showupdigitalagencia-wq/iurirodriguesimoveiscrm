@@ -150,6 +150,40 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
     }
   }
 
+  if (confirmacao) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>✅ Reunião agendada com sucesso!</DialogTitle>
+            <DialogDescription>Envie a confirmação para cada lead:</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            {confirmacao.leads.map((l) => {
+              const url = buildWaUrl({
+                tipo: confirmacao.tipo, leadNome: l.nome, telefone: l.telefone,
+                data: confirmacao.data, hora: confirmacao.hora, local: confirmacao.local, corretor: confirmacao.corretor,
+              });
+              return (
+                <div key={l.id} className="flex items-center justify-between gap-2 border border-border rounded-md p-2">
+                  <span className="text-sm truncate">{l.nome}</span>
+                  <Button asChild size="sm" variant="gold">
+                    <a href={url} target="_blank" rel="noopener noreferrer">
+                      <MessageCircle className="h-4 w-4" /> WhatsApp
+                    </a>
+                  </Button>
+                </div>
+              );
+            })}
+          </div>
+          <div className="flex justify-end pt-2">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>Fechar</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
@@ -157,6 +191,7 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
           <DialogTitle>Agendar Reunião</DialogTitle>
           <DialogDescription>Preencha os detalhes da reunião</DialogDescription>
         </DialogHeader>
+
 
         <div className="space-y-4">
           <div>
