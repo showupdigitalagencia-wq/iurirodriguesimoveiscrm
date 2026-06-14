@@ -208,6 +208,8 @@ export const Route = createFileRoute("/api/public/webhook")({
             ...adminExternalIds,
           ]));
 
+          const useFallback = !responsavelExternalId;
+
           console.info("[Webhook OneSignal] Lead recebido", {
             leadId: lead.id, canal, regiao, form_id,
             responsavel: responsavel ? { id: responsavel.id, nome: responsavel.nome } : null,
@@ -215,29 +217,42 @@ export const Route = createFileRoute("/api/public/webhook")({
             adminsCount: adminIds.length,
             adminExternalIds,
             externalIds,
+            useFallback,
+            fallbackReason: useFallback ? `Responsável '${canal}' sem onesignal_external_id cadastrado` : null,
           });
 
-          const result = externalIds.length
-            ? await sendOneSignalPush({ externalIds, title, message, url, data })
-            : { ok: false as const, error: "Nenhum destinatário com onesignal_external_id", resp: null };
+          let result: { ok: boolean; resp?: unknown; error?: string };
+          if (useFallback) {
+            // Fallback: garante entrega via segmento 'All' quando o responsável ainda não ativou push
+            result = await sendOneSignalPush({ segments: ["All"], title, message, url, data });
+          } else if (externalIds.length) {
+            result = await sendOneSignalPush({ externalIds, title, message, url, data });
+          } else {
+            result = { ok: false, error: "Nenhum destinatário" };
+          }
 
           console.info("[Webhook OneSignal] Resultado do envio", {
-            leadId: lead.id, ok: result.ok, error: result.error ?? null,
-            response: "resp" in result ? result.resp : null,
+            leadId: lead.id,
+            tentouEnviarPara: useFallback ? "segment:All (fallback)" : `externalIds:${externalIds.join(",")}`,
+            ok: result.ok,
+            error: result.error ?? null,
+            response: result.resp ?? null,
           });
 
-          const destino = [
-            responsavelExternalId ? `responsavel:${responsavelExternalId}` : null,
-            adminExternalIds.length ? `admins:${adminExternalIds.length}` : null,
-          ].filter(Boolean).join(",") || "nenhum";
+          const destino = useFallback
+            ? `fallback:segment:All (responsavel ${canal} sem external_id)`
+            : ([
+                responsavelExternalId ? `responsavel:${responsavelExternalId}` : null,
+                adminExternalIds.length ? `admins:${adminExternalIds.length}` : null,
+              ].filter(Boolean).join(",") || "nenhum");
 
           await supabaseAdmin.from("notificacoes").insert({
             lead_id: lead.id,
             tipo: "push_novo_lead",
             destino,
             status: result.ok ? "enviado" : "falha",
-            payload: { title, message, url, externalIds } as never,
-            resposta: (("resp" in result ? result.resp : null) ?? { error: result.error }) as never,
+            payload: { title, message, url, externalIds, useFallback } as never,
+            resposta: (result.resp ?? { error: result.error }) as never,
           });
         }
 
