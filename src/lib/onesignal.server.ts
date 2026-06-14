@@ -4,6 +4,7 @@
 type SendArgs = {
   externalId?: string;
   externalIds?: string[];
+  segments?: string[];
   title: string;
   message: string;
   url?: string;
@@ -19,18 +20,23 @@ export async function sendOneSignalPush(args: SendArgs): Promise<{ ok: boolean; 
   }
 
   const ids = args.externalIds ?? (args.externalId ? [args.externalId] : []);
-  if (ids.length === 0) return { ok: false, error: "Nenhum destinatário" };
+  const segments = args.segments ?? [];
+  if (ids.length === 0 && segments.length === 0) return { ok: false, error: "Nenhum destinatário" };
 
-  const body = {
+  const body: Record<string, unknown> = {
     app_id: appId,
     target_channel: "push",
-    include_aliases: { external_id: ids },
     headings: { en: args.title, pt: args.title },
     contents: { en: args.message, pt: args.message },
     url: args.url,
     data: args.data ?? {},
     web_url: args.url,
   };
+  if (ids.length) {
+    body.include_aliases = { external_id: ids };
+    body.include_external_user_ids = ids;
+  }
+  if (segments.length) body.included_segments = segments;
 
   try {
     const resp = await fetch("https://api.onesignal.com/notifications?c=push", {
