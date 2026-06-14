@@ -225,6 +225,9 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
               <Button asChild variant="outline" className="flex-1 h-12">
                 <a href={`tel:${lead.telefone}`}><Phone className="h-5 w-5" /> Ligar</a>
               </Button>
+              <Button onClick={() => setAgendarOpen(true)} variant="outline" className="h-12 px-3" aria-label="Agendar reunião">
+                <CalendarPlus className="h-5 w-5" />
+              </Button>
               {!lead.first_response_at && (
                 <Button onClick={markResponse} variant="outline" className="h-12 px-3" aria-label="Marcar resposta">
                   <CheckCircle2 className="h-5 w-5" />
@@ -397,6 +400,12 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
           <div className="py-12 text-center text-muted-foreground">Carregando…</div>
         )}
       </SheetContent>
+      <ReuniaoFormDialog
+        open={agendarOpen}
+        onOpenChange={setAgendarOpen}
+        defaultLeadId={leadId}
+        onCreated={() => { reload(); }}
+      />
     </Sheet>
   );
 }
