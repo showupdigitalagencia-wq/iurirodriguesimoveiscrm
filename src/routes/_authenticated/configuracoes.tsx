@@ -52,6 +52,7 @@ function ConfigPage() {
           <p className="text-muted-foreground mt-1">Gerencie sua conta.</p>
         </header>
         <MinhaContaSection />
+        <GoogleConnectSection />
       </div>
     );
   }
