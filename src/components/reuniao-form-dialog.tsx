@@ -50,6 +50,14 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
   const [leads, setLeads] = useState<LeadOpt[]>([]);
   const [resps, setResps] = useState<RespOpt[]>([]);
   const [saving, setSaving] = useState(false);
+  const [confirmacao, setConfirmacao] = useState<null | {
+    leads: LeadOpt[];
+    tipo: "individual" | "institucional";
+    data: string;
+    hora: string;
+    local: string;
+    corretor: string;
+  }>(null);
   const [form, setForm] = useState({
     titulo: "",
     data: "",
