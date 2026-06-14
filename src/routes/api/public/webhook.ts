@@ -178,11 +178,9 @@ export const Route = createFileRoute("/api/public/webhook")({
 
         {
           const { sendOneSignalPush } = await import("@/lib/onesignal.server");
-          const regiaoLabel = regiao.replace(/_/g, " ");
-          const title = "Novo Lead chegou!";
-          const responsavelNome = responsavel?.nome ?? "Não atribuído";
-          const message = `Nome: ${nome} | Tel: ${telefone} | Região: ${regiaoLabel} | Responsável: ${responsavelNome}`;
-          const url = `${new URL(request.url).origin}/leads?lead=${lead.id}`;
+          const title = "Novo Lead!";
+          const message = "Teste de notificação";
+          const url = "https://iurirodriguesimoveiscrm.lovable.app/leads";
           const data = { lead_id: lead.id, regiao, canal, is_corretor: isCaptacaoCorretor };
 
           // Envia SEMPRE para o responsável + todos os admins simultaneamente
@@ -226,10 +224,9 @@ export const Route = createFileRoute("/api/public/webhook")({
           const result = await sendOneSignalPush({
             externalIds: externalIds.length ? externalIds : undefined,
             segments: ["Subscribed Users"],
-            title: "Novo Lead!",
-            message: "Teste de notificação",
+            title,
+            message,
             url,
-            data,
           });
 
           console.info("[Webhook OneSignal] Resultado do envio", {
@@ -250,7 +247,7 @@ export const Route = createFileRoute("/api/public/webhook")({
             tipo: "push_novo_lead",
             destino: destino || "segment:Subscribed Users",
             status: result.ok ? "enviado" : "falha",
-            payload: { title: "Novo Lead!", message: "Teste de notificação", url, externalIds, segments: ["Subscribed Users"] } as never,
+            payload: { title, message, url, externalIds, segments: ["Subscribed Users"] } as never,
             resposta: (result.resp ?? { error: result.error }) as never,
           });
         }
