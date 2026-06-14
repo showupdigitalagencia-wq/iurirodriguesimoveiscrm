@@ -33,12 +33,16 @@ function ConfigPage() {
         <h1 className="text-3xl font-bold tracking-tight">Configurações</h1>
         <p className="text-muted-foreground mt-1">Responsáveis, integrações e mapeamento de formulários.</p>
       </header>
-      <Tabs defaultValue="responsaveis">
+      <Tabs defaultValue="conta">
         <TabsList>
+          <TabsTrigger value="conta">Minha Conta</TabsTrigger>
           <TabsTrigger value="responsaveis">Responsáveis</TabsTrigger>
           <TabsTrigger value="integracoes">Integrações</TabsTrigger>
           <TabsTrigger value="formularios">Formulários Meta</TabsTrigger>
         </TabsList>
+        <TabsContent value="conta" className="mt-6">
+          <MinhaContaSection />
+        </TabsContent>
         <TabsContent value="responsaveis" className="mt-6">
           <ResponsaveisSection />
         </TabsContent>
