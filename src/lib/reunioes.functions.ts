@@ -215,7 +215,7 @@ export const createReuniao = createServerFn({ method: "POST" })
       console.error("[Reuniao] push falhou", e);
     }
 
-    return { id: reuniaoId };
+    return { id: reuniaoId, local: finalLocal };
   });
 
 export const updateReuniaoStatus = createServerFn({ method: "POST" })
