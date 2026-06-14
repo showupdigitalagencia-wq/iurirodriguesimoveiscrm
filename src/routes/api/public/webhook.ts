@@ -182,7 +182,7 @@ export const Route = createFileRoute("/api/public/webhook")({
           const title = "Novo Lead chegou!";
           const responsavelNome = responsavel?.nome ?? "Não atribuído";
           const message = `Nome: ${nome} | Tel: ${telefone} | Região: ${regiaoLabel} | Responsável: ${responsavelNome}`;
-          const url = `https://iurirodriguesimoveiscrmcombr.lovable.app/leads?lead=${lead.id}`;
+          const url = `${new URL(request.url).origin}/leads?lead=${lead.id}`;
           const data = { lead_id: lead.id, regiao, canal, is_corretor: isCaptacaoCorretor };
 
           // Envia SEMPRE para o responsável + todos os admins simultaneamente
