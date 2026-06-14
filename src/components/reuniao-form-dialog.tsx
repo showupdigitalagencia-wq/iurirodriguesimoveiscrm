@@ -120,7 +120,29 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
       });
       toast.success("Reunião agendada");
       onCreated?.(res.id);
-      onOpenChange(false);
+
+      const selectedLeads = leads.filter((l) => form.lead_ids.has(l.id) && onlyDigits(l.telefone));
+      const corretorNome = (() => {
+        const first = resps.find((r) => form.resp_ids.has(r.id));
+        return first?.nome ?? "";
+      })();
+
+      if (selectedLeads.length === 1) {
+        const l = selectedLeads[0];
+        const url = buildWaUrl({
+          tipo: form.tipo, leadNome: l.nome, telefone: l.telefone,
+          data: form.data, hora: form.hora, local: form.local, corretor: corretorNome,
+        });
+        window.open(url, "_blank", "noopener,noreferrer");
+        onOpenChange(false);
+      } else if (selectedLeads.length > 1) {
+        setConfirmacao({
+          leads: selectedLeads, tipo: form.tipo,
+          data: form.data, hora: form.hora, local: form.local, corretor: corretorNome,
+        });
+      } else {
+        onOpenChange(false);
+      }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Falha ao agendar");
     } finally {
