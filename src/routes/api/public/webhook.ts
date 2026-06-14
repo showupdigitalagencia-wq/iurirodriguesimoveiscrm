@@ -176,29 +176,43 @@ export const Route = createFileRoute("/api/public/webhook")({
           });
         }
 
-        if (responsavel?.id) {
-          const { sendOneSignalPush, formatPushLead } = await import("@/lib/onesignal.server");
-          const { title, message } = formatPushLead({
-            nome, telefone, email,
-            regiao,
-            tipo_imovel,
-            faixa_valor,
-            observacoes,
-            is_corretor: isCaptacaoCorretor,
-            dados_corretor,
-          });
+        {
+          const { sendOneSignalPush } = await import("@/lib/onesignal.server");
+          const regiaoLabel = regiao.replace(/_/g, " ");
+          const title = "Novo Lead chegou!";
+          const message = `Nome: ${nome} | Tel: ${telefone} | Região: ${regiaoLabel}`;
           const url = `https://iurirodriguesimoveiscrmcombr.lovable.app/leads?lead=${lead.id}`;
-          const result = await sendOneSignalPush({
-            externalId: responsavel.id,
-            title,
-            message,
-            url,
-            data: { lead_id: lead.id, regiao, canal, is_corretor: isCaptacaoCorretor },
-          });
+          const data = { lead_id: lead.id, regiao, canal, is_corretor: isCaptacaoCorretor };
+
+          let destino = responsavel?.id ?? null;
+          let result = responsavel?.id
+            ? await sendOneSignalPush({ externalId: responsavel.id, title, message, url, data })
+            : { ok: false, error: "Sem responsável" } as { ok: boolean; resp?: unknown; error?: string };
+
+          // Fallback: nenhum dispositivo do responsável → envia para todos os admins
+          const recipients = (result.resp as { recipients?: number } | undefined)?.recipients ?? 0;
+          if (!result.ok || recipients === 0) {
+            const { data: adminRoles } = await supabaseAdmin
+              .from("user_roles").select("user_id").eq("role", "admin");
+            const adminIds = (adminRoles ?? []).map((r) => r.user_id);
+            if (adminIds.length) {
+              const { data: adminProfiles } = await supabaseAdmin
+                .from("profiles").select("responsavel_id").in("id", adminIds);
+              const externalIds = Array.from(new Set([
+                ...adminIds,
+                ...(adminProfiles ?? []).map((p) => p.responsavel_id).filter((x): x is string => !!x),
+              ]));
+              if (externalIds.length) {
+                destino = "admins";
+                result = await sendOneSignalPush({ externalIds, title, message, url, data });
+              }
+            }
+          }
+
           await supabaseAdmin.from("notificacoes").insert({
             lead_id: lead.id,
             tipo: "push_novo_lead",
-            destino: responsavel.id,
+            destino,
             status: result.ok ? "enviado" : "falha",
             payload: { title, message, url } as never,
             resposta: (result.resp ?? { error: result.error }) as never,
