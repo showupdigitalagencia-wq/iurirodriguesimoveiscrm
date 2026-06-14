@@ -380,3 +380,94 @@ function FormulariosSection() {
     </div>
   );
 }
+
+function GoogleConnectSection() {
+  const startOAuth = useServerFn(startGoogleOAuth);
+  const status = useServerFn(getGoogleStatus);
+  const disconnect = useServerFn(disconnectGoogle);
+  const [loading, setLoading] = useState(true);
+  const [connected, setConnected] = useState(false);
+  const [email, setEmail] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function refresh() {
+    setLoading(true);
+    try {
+      const s = await status();
+      setConnected(s.connected);
+      setEmail(s.email);
+    } catch {
+      setConnected(false);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    refresh();
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const g = params.get("google");
+      if (g === "connected") {
+        toast.success("Conta Google conectada com sucesso");
+        window.history.replaceState({}, "", window.location.pathname);
+      } else if (g === "error") {
+        toast.error(`Falha ao conectar Google: ${params.get("reason") ?? "erro"}`);
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+    }
+  }, []);
+
+  async function handleConnect() {
+    setBusy(true);
+    try {
+      const { url } = await startOAuth();
+      window.location.href = url;
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao iniciar conexão");
+      setBusy(false);
+    }
+  }
+
+  async function handleDisconnect() {
+    if (!confirm("Desconectar sua conta Google?")) return;
+    setBusy(true);
+    try {
+      await disconnect();
+      toast.success("Conta Google desconectada");
+      await refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao desconectar");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section className="bg-card border border-border rounded-xl p-6 max-w-md space-y-3">
+      <div>
+        <h2 className="font-semibold">Google Calendar / Meet</h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          Conecte sua conta Google para que as reuniões agendadas com Google Meet sejam criadas automaticamente no seu Calendar.
+        </p>
+      </div>
+      {loading ? (
+        <p className="text-sm text-muted-foreground">Carregando...</p>
+      ) : connected ? (
+        <div className="flex items-center justify-between gap-3">
+          <div className="text-sm">
+            <div className="font-medium">Conectado</div>
+            {email && <div className="text-muted-foreground text-xs">{email}</div>}
+          </div>
+          <Button variant="outline" onClick={handleDisconnect} disabled={busy}>
+            Desconectar
+          </Button>
+        </div>
+      ) : (
+        <Button variant="gold" onClick={handleConnect} disabled={busy}>
+          {busy ? "Abrindo..." : "Conectar Google"}
+        </Button>
+      )}
+    </section>
+  );
+}
