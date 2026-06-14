@@ -10,9 +10,33 @@ import { useServerFn } from "@tanstack/react-start";
 import { createReuniao } from "@/lib/reunioes.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { MessageCircle } from "lucide-react";
 
 type LeadOpt = { id: string; nome: string; telefone: string };
 type RespOpt = { id: string; nome: string; canal: string };
+
+function onlyDigits(s: string): string {
+  return (s ?? "").replace(/\D+/g, "");
+}
+
+function buildWaUrl(opts: {
+  tipo: "individual" | "institucional";
+  leadNome: string;
+  telefone: string;
+  data: string;
+  hora: string;
+  local: string;
+  corretor: string;
+}): string {
+  const { tipo, leadNome, telefone, data, hora, local, corretor } = opts;
+  const [y, m, d] = data.split("-");
+  const dataBR = `${d}/${m}/${y}`;
+  const msg = tipo === "institucional"
+    ? `Olá ${leadNome}! 😊 Você está convidado para uma REUNIÃO INSTITUCIONAL! 🏢✨ Com nosso Diretor Geral IURI RODRIGUES! 📅 Data: ${dataBR} 🕐 Hora: ${hora} 📍 Local/Link: ${local || "a definir"} Confirme sua presença! Iuri Rodrigues Imóveis`
+    : `Olá ${leadNome}! 😊 Sua reunião foi agendada! 📅 Data: ${dataBR} 🕐 Hora: ${hora} 📍 Local/Link: ${local || "a definir"} 👤 Corretor: ${corretor} Iuri Rodrigues Imóveis`;
+  const phone = onlyDigits(telefone);
+  return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+}
 
 interface Props {
   open: boolean;
