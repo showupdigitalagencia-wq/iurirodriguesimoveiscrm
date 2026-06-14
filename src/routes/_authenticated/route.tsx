@@ -39,7 +39,7 @@ function AuthLayout() {
   const router = useRouter();
   const [isAdmin, setIsAdmin] = useState(false);
 
-  const navItems = useMemo(() => isAdmin ? [...NAV, ...ADMIN_NAV] : NAV, [isAdmin]);
+  const navItems = useMemo(() => isAdmin ? [...NAV, ...ADMIN_NAV, ...CONFIG_NAV] : [...NAV, ...CONFIG_NAV], [isAdmin]);
 
   useEffect(() => {
     let active = true;
