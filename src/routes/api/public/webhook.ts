@@ -212,7 +212,7 @@ export const Route = createFileRoute("/api/public/webhook")({
           await supabaseAdmin.from("notificacoes").insert({
             lead_id: lead.id,
             tipo: "push_novo_lead",
-            destino,
+            destino: destino ?? "",
             status: result.ok ? "enviado" : "falha",
             payload: { title, message, url } as never,
             resposta: (result.resp ?? { error: result.error }) as never,
