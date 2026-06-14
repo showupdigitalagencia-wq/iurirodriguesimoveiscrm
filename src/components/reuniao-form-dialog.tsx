@@ -64,6 +64,7 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
     hora: "",
     duracao: 60,
     local: "",
+    usar_meet: false,
     tipo: "individual" as "individual" | "institucional",
     descricao: "",
     lead_ids: new Set<string>(),
@@ -84,7 +85,7 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
     }
     if (!open) {
       setForm({
-        titulo: "", data: "", hora: "", duracao: 60, local: "",
+        titulo: "", data: "", hora: "", duracao: 60, local: "", usar_meet: false,
         tipo: "individual", descricao: "",
         lead_ids: new Set<string>(), resp_ids: new Set<string>(),
       });
@@ -116,10 +117,16 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
           tipo: form.tipo,
           lead_ids: Array.from(form.lead_ids),
           responsavel_ids: Array.from(form.resp_ids),
+          usar_meet: form.usar_meet,
         },
       });
       toast.success("Reunião agendada");
       onCreated?.(res.id);
+
+      const finalLocal = res.local ?? form.local;
+      if (form.usar_meet && !res.local) {
+        toast.warning("Google Meet não criado: nenhum corretor selecionado tem conta Google conectada.");
+      }
 
       const selectedLeads = leads.filter((l) => form.lead_ids.has(l.id) && onlyDigits(l.telefone));
       const corretorNome = (() => {
@@ -131,14 +138,14 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
         const l = selectedLeads[0];
         const url = buildWaUrl({
           tipo: form.tipo, leadNome: l.nome, telefone: l.telefone,
-          data: form.data, hora: form.hora, local: form.local, corretor: corretorNome,
+          data: form.data, hora: form.hora, local: finalLocal, corretor: corretorNome,
         });
         window.open(url, "_blank", "noopener,noreferrer");
         onOpenChange(false);
       } else if (selectedLeads.length > 1) {
         setConfirmacao({
           leads: selectedLeads, tipo: form.tipo,
-          data: form.data, hora: form.hora, local: form.local, corretor: corretorNome,
+          data: form.data, hora: form.hora, local: finalLocal, corretor: corretorNome,
         });
       } else {
         onOpenChange(false);
@@ -217,7 +224,19 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
 
           <div>
             <Label>Local ou link</Label>
-            <Input value={form.local} onChange={(e) => setForm({ ...form, local: e.target.value })} placeholder="Endereço, sala ou URL da videochamada" />
+            <Input
+              value={form.local}
+              onChange={(e) => setForm({ ...form, local: e.target.value })}
+              placeholder={form.usar_meet ? "Será gerado automaticamente pelo Google Meet" : "Endereço, sala ou URL da videochamada"}
+              disabled={form.usar_meet}
+            />
+            <label className="mt-2 flex items-center gap-2 text-sm cursor-pointer">
+              <Checkbox
+                checked={form.usar_meet}
+                onCheckedChange={(v) => setForm({ ...form, usar_meet: !!v, local: v ? "" : form.local })}
+              />
+              <span>Usar Google Meet (cria evento no Calendar dos corretores conectados)</span>
+            </label>
           </div>
 
           <div>

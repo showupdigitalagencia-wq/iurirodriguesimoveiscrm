@@ -26,6 +26,7 @@ import { Route as AuthenticatedAgendaRouteImport } from './routes/_authenticated
 import { Route as ApiPublicWebhookRouteImport } from './routes/api/public/webhook'
 import { Route as ApiPublicOnesignalTestRouteImport } from './routes/api/public/onesignal-test'
 import { Route as ApiPublicLeadRouteImport } from './routes/api/public/lead'
+import { Route as ApiPublicGoogleOauthCallbackRouteImport } from './routes/api/public/google-oauth-callback'
 import { Route as ApiPublicCronUnattendedRouteImport } from './routes/api/public/cron-unattended'
 import { Route as ApiPublicCronReuniaoLembretesRouteImport } from './routes/api/public/cron-reuniao-lembretes'
 import { Route as AuthenticatedLeadsLeadIdRouteImport } from './routes/_authenticated/leads.$leadId'
@@ -117,6 +118,12 @@ const ApiPublicLeadRoute = ApiPublicLeadRouteImport.update({
   path: '/api/public/lead',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicGoogleOauthCallbackRoute =
+  ApiPublicGoogleOauthCallbackRouteImport.update({
+    id: '/api/public/google-oauth-callback',
+    path: '/api/public/google-oauth-callback',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCronUnattendedRoute = ApiPublicCronUnattendedRouteImport.update({
   id: '/api/public/cron-unattended',
   path: '/api/public/cron-unattended',
@@ -152,6 +159,7 @@ export interface FileRoutesByFullPath {
   '/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
   '/api/public/cron-reuniao-lembretes': typeof ApiPublicCronReuniaoLembretesRoute
   '/api/public/cron-unattended': typeof ApiPublicCronUnattendedRoute
+  '/api/public/google-oauth-callback': typeof ApiPublicGoogleOauthCallbackRoute
   '/api/public/lead': typeof ApiPublicLeadRoute
   '/api/public/onesignal-test': typeof ApiPublicOnesignalTestRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
@@ -173,6 +181,7 @@ export interface FileRoutesByTo {
   '/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
   '/api/public/cron-reuniao-lembretes': typeof ApiPublicCronReuniaoLembretesRoute
   '/api/public/cron-unattended': typeof ApiPublicCronUnattendedRoute
+  '/api/public/google-oauth-callback': typeof ApiPublicGoogleOauthCallbackRoute
   '/api/public/lead': typeof ApiPublicLeadRoute
   '/api/public/onesignal-test': typeof ApiPublicOnesignalTestRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
@@ -196,6 +205,7 @@ export interface FileRoutesById {
   '/_authenticated/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
   '/api/public/cron-reuniao-lembretes': typeof ApiPublicCronReuniaoLembretesRoute
   '/api/public/cron-unattended': typeof ApiPublicCronUnattendedRoute
+  '/api/public/google-oauth-callback': typeof ApiPublicGoogleOauthCallbackRoute
   '/api/public/lead': typeof ApiPublicLeadRoute
   '/api/public/onesignal-test': typeof ApiPublicOnesignalTestRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
@@ -219,6 +229,7 @@ export interface FileRouteTypes {
     | '/leads/$leadId'
     | '/api/public/cron-reuniao-lembretes'
     | '/api/public/cron-unattended'
+    | '/api/public/google-oauth-callback'
     | '/api/public/lead'
     | '/api/public/onesignal-test'
     | '/api/public/webhook'
@@ -240,6 +251,7 @@ export interface FileRouteTypes {
     | '/leads/$leadId'
     | '/api/public/cron-reuniao-lembretes'
     | '/api/public/cron-unattended'
+    | '/api/public/google-oauth-callback'
     | '/api/public/lead'
     | '/api/public/onesignal-test'
     | '/api/public/webhook'
@@ -262,6 +274,7 @@ export interface FileRouteTypes {
     | '/_authenticated/leads/$leadId'
     | '/api/public/cron-reuniao-lembretes'
     | '/api/public/cron-unattended'
+    | '/api/public/google-oauth-callback'
     | '/api/public/lead'
     | '/api/public/onesignal-test'
     | '/api/public/webhook'
@@ -274,6 +287,7 @@ export interface RootRouteChildren {
   FormularioRoute: typeof FormularioRoute
   ApiPublicCronReuniaoLembretesRoute: typeof ApiPublicCronReuniaoLembretesRoute
   ApiPublicCronUnattendedRoute: typeof ApiPublicCronUnattendedRoute
+  ApiPublicGoogleOauthCallbackRoute: typeof ApiPublicGoogleOauthCallbackRoute
   ApiPublicLeadRoute: typeof ApiPublicLeadRoute
   ApiPublicOnesignalTestRoute: typeof ApiPublicOnesignalTestRoute
   ApiPublicWebhookRoute: typeof ApiPublicWebhookRoute
@@ -400,6 +414,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicLeadRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/google-oauth-callback': {
+      id: '/api/public/google-oauth-callback'
+      path: '/api/public/google-oauth-callback'
+      fullPath: '/api/public/google-oauth-callback'
+      preLoaderRoute: typeof ApiPublicGoogleOauthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cron-unattended': {
       id: '/api/public/cron-unattended'
       path: '/api/public/cron-unattended'
@@ -471,6 +492,7 @@ const rootRouteChildren: RootRouteChildren = {
   FormularioRoute: FormularioRoute,
   ApiPublicCronReuniaoLembretesRoute: ApiPublicCronReuniaoLembretesRoute,
   ApiPublicCronUnattendedRoute: ApiPublicCronUnattendedRoute,
+  ApiPublicGoogleOauthCallbackRoute: ApiPublicGoogleOauthCallbackRoute,
   ApiPublicLeadRoute: ApiPublicLeadRoute,
   ApiPublicOnesignalTestRoute: ApiPublicOnesignalTestRoute,
   ApiPublicWebhookRoute: ApiPublicWebhookRoute,
@@ -478,13 +500,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

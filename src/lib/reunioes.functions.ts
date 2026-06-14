@@ -36,6 +36,7 @@ const CreateInput = z.object({
   tipo: TipoSchema,
   lead_ids: z.array(z.string().uuid()).default([]),
   responsavel_ids: z.array(z.string().uuid()).default([]),
+  usar_meet: z.boolean().optional().default(false),
 });
 
 export const listReunioes = createServerFn({ method: "POST" })
@@ -116,6 +117,53 @@ export const createReuniao = createServerFn({ method: "POST" })
       await supabaseAdmin.from("reuniao_participantes" as never).insert(rows as never);
     }
 
+    // Google Meet: cria evento no Calendar de cada corretor conectado
+    let finalLocal = data.local ?? null;
+    if (data.usar_meet && data.responsavel_ids.length) {
+      try {
+        const { createCalendarEventWithMeet } = await import("@/lib/google.server");
+        const [{ data: profilesRows }, { data: leadsRows }] = await Promise.all([
+          supabaseAdmin
+            .from("profiles")
+            .select("id, responsavel_id")
+            .in("responsavel_id", data.responsavel_ids),
+          data.lead_ids.length
+            ? supabaseAdmin.from("leads").select("email").in("id", data.lead_ids)
+            : Promise.resolve({ data: [] as { email: string | null }[] }),
+        ]);
+        const attendeesEmails = ((leadsRows ?? []) as { email: string | null }[])
+          .map((l) => l.email)
+          .filter((e): e is string => !!e && /.+@.+\..+/.test(e));
+        const userIds = ((profilesRows ?? []) as { id: string; responsavel_id: string }[])
+          .map((p) => p.id);
+        let primaryMeetLink: string | null = null;
+        for (const uid of userIds) {
+          const ev = await createCalendarEventWithMeet({
+            userId: uid,
+            summary: data.titulo,
+            description: data.descricao ?? null,
+            startISO: data.data_inicio,
+            durationMin: data.duracao_min,
+            attendeesEmails,
+          });
+          if (ev?.meetLink && !primaryMeetLink) primaryMeetLink = ev.meetLink;
+        }
+        if (primaryMeetLink) {
+          finalLocal = primaryMeetLink;
+          await supabaseAdmin
+            .from("reunioes" as never)
+            .update({ local: primaryMeetLink } as never)
+            .eq("id", reuniaoId);
+        } else {
+          console.warn("[Reuniao] usar_meet=true mas nenhum corretor conectado ao Google");
+        }
+      } catch (e) {
+        console.error("[Reuniao] Google Meet falhou", e);
+      }
+    }
+
+
+
     // Move leads para reuniao_agendada
     if (data.lead_ids.length) {
       await supabaseAdmin.from("leads").update({ etapa: "reuniao_agendada" }).in("id", data.lead_ids);
@@ -167,7 +215,7 @@ export const createReuniao = createServerFn({ method: "POST" })
       console.error("[Reuniao] push falhou", e);
     }
 
-    return { id: reuniaoId };
+    return { id: reuniaoId, local: finalLocal };
   });
 
 export const updateReuniaoStatus = createServerFn({ method: "POST" })
