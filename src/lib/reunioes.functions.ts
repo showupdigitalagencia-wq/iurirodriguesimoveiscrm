@@ -117,16 +117,18 @@ export const createReuniao = createServerFn({ method: "POST" })
       await supabaseAdmin.from("reuniao_participantes" as never).insert(rows as never);
     }
 
-    // Google Meet: cria evento no Calendar de cada corretor conectado
+    // Google Meet: cria evento no Calendar do criador e dos corretores conectados
     let finalLocal = data.local ?? null;
-    if (data.usar_meet && data.responsavel_ids.length) {
+    if (data.usar_meet) {
       try {
         const { createCalendarEventWithMeet } = await import("@/lib/google.server");
         const [{ data: profilesRows }, { data: leadsRows }] = await Promise.all([
-          supabaseAdmin
-            .from("profiles")
-            .select("id, responsavel_id")
-            .in("responsavel_id", data.responsavel_ids),
+          data.responsavel_ids.length
+            ? supabaseAdmin
+                .from("profiles")
+                .select("id, responsavel_id")
+                .in("responsavel_id", data.responsavel_ids)
+            : Promise.resolve({ data: [] as { id: string; responsavel_id: string }[] }),
           data.lead_ids.length
             ? supabaseAdmin.from("leads").select("email").in("id", data.lead_ids)
             : Promise.resolve({ data: [] as { email: string | null }[] }),
@@ -134,8 +136,11 @@ export const createReuniao = createServerFn({ method: "POST" })
         const attendeesEmails = ((leadsRows ?? []) as { email: string | null }[])
           .map((l) => l.email)
           .filter((e): e is string => !!e && /.+@.+\..+/.test(e));
-        const userIds = ((profilesRows ?? []) as { id: string; responsavel_id: string }[])
-          .map((p) => p.id);
+        // Inclui criador primeiro para garantir tentativa com a conta do logado
+        const userIds = Array.from(new Set([
+          context.userId,
+          ...((profilesRows ?? []) as { id: string; responsavel_id: string }[]).map((p) => p.id),
+        ]));
         let primaryMeetLink: string | null = null;
         for (const uid of userIds) {
           const ev = await createCalendarEventWithMeet({
