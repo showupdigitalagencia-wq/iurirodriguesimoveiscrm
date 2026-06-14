@@ -15,8 +15,9 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Phone, MessageCircle, MapPin, Mail, Clock, MessageSquarePlus, CheckCircle2, ArrowLeft, Trash2 } from "lucide-react";
+import { Phone, MessageCircle, MapPin, Mail, Clock, MessageSquarePlus, CheckCircle2, ArrowLeft, Trash2, CalendarPlus } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { ReuniaoFormDialog } from "@/components/reuniao-form-dialog";
 
 type HistoricoRow = {
   id: string;
@@ -40,6 +41,7 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
   const [nota, setNota] = useState("");
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ nome: "", email: "", telefone: "", observacoes: "", canal: "denise" as LeadRow["canal"] });
+  const [agendarOpen, setAgendarOpen] = useState(false);
 
   const callUpdate = useServerFn(updateLead);
   const callEtapa = useServerFn(updateLeadEtapa);
@@ -204,6 +206,9 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
               <Button asChild variant="outline" size="sm">
                 <a href={`tel:${lead.telefone}`}><Phone className="h-4 w-4" /> Ligar</a>
               </Button>
+              <Button onClick={() => setAgendarOpen(true)} variant="outline" size="sm">
+                <CalendarPlus className="h-4 w-4" /> Agendar reunião
+              </Button>
               {!lead.first_response_at && (
                 <Button onClick={markResponse} variant="outline" size="sm">
                   <CheckCircle2 className="h-4 w-4" /> Marcar resposta
@@ -219,6 +224,9 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
               </Button>
               <Button asChild variant="outline" className="flex-1 h-12">
                 <a href={`tel:${lead.telefone}`}><Phone className="h-5 w-5" /> Ligar</a>
+              </Button>
+              <Button onClick={() => setAgendarOpen(true)} variant="outline" className="h-12 px-3" aria-label="Agendar reunião">
+                <CalendarPlus className="h-5 w-5" />
               </Button>
               {!lead.first_response_at && (
                 <Button onClick={markResponse} variant="outline" className="h-12 px-3" aria-label="Marcar resposta">
@@ -392,6 +400,12 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
           <div className="py-12 text-center text-muted-foreground">Carregando…</div>
         )}
       </SheetContent>
+      <ReuniaoFormDialog
+        open={agendarOpen}
+        onOpenChange={setAgendarOpen}
+        defaultLeadId={leadId}
+        onCreated={() => { reload(); }}
+      />
     </Sheet>
   );
 }

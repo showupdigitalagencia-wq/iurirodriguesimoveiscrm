@@ -289,6 +289,126 @@ export type Database = {
         }
         Relationships: []
       }
+      reuniao_lembretes: {
+        Row: {
+          enviado_em: string
+          id: string
+          reuniao_id: string
+          tipo: Database["public"]["Enums"]["reuniao_lembrete_tipo"]
+        }
+        Insert: {
+          enviado_em?: string
+          id?: string
+          reuniao_id: string
+          tipo: Database["public"]["Enums"]["reuniao_lembrete_tipo"]
+        }
+        Update: {
+          enviado_em?: string
+          id?: string
+          reuniao_id?: string
+          tipo?: Database["public"]["Enums"]["reuniao_lembrete_tipo"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reuniao_lembretes_reuniao_id_fkey"
+            columns: ["reuniao_id"]
+            isOneToOne: false
+            referencedRelation: "reunioes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reuniao_participantes: {
+        Row: {
+          created_at: string
+          id: string
+          lead_id: string | null
+          responsavel_id: string | null
+          reuniao_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          responsavel_id?: string | null
+          reuniao_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          responsavel_id?: string | null
+          reuniao_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reuniao_participantes_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reuniao_participantes_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "responsaveis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reuniao_participantes_reuniao_id_fkey"
+            columns: ["reuniao_id"]
+            isOneToOne: false
+            referencedRelation: "reunioes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reunioes: {
+        Row: {
+          created_at: string
+          criado_por: string | null
+          data_inicio: string
+          descricao: string | null
+          duracao_min: number
+          id: string
+          local: string | null
+          resultado: string | null
+          status: Database["public"]["Enums"]["reuniao_status"]
+          tipo: Database["public"]["Enums"]["reuniao_tipo"]
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          criado_por?: string | null
+          data_inicio: string
+          descricao?: string | null
+          duracao_min?: number
+          id?: string
+          local?: string | null
+          resultado?: string | null
+          status?: Database["public"]["Enums"]["reuniao_status"]
+          tipo?: Database["public"]["Enums"]["reuniao_tipo"]
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          criado_por?: string | null
+          data_inicio?: string
+          descricao?: string | null
+          duracao_min?: number
+          id?: string
+          local?: string | null
+          resultado?: string | null
+          status?: Database["public"]["Enums"]["reuniao_status"]
+          tipo?: Database["public"]["Enums"]["reuniao_tipo"]
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -380,6 +500,9 @@ export type Database = {
         | "belford_roxo"
         | "nilopolis"
         | "mesquita"
+      reuniao_lembrete_tipo: "1d" | "1h" | "15min"
+      reuniao_status: "agendada" | "realizada" | "cancelada"
+      reuniao_tipo: "individual" | "institucional"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -532,6 +655,9 @@ export const Constants = {
         "nilopolis",
         "mesquita",
       ],
+      reuniao_lembrete_tipo: ["1d", "1h", "15min"],
+      reuniao_status: ["agendada", "realizada", "cancelada"],
+      reuniao_tipo: ["individual", "institucional"],
     },
   },
 } as const
