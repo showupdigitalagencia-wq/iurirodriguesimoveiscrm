@@ -30,6 +30,31 @@ const NAV = [
   { to: "/notificacoes", label: "Notificações", icon: BellRing },
 ] as const;
 
+const NAV = [
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/pipeline", label: "Pipeline", icon: Kanban },
+  { to: "/leads", label: "Leads", icon: Users },
+  { to: "/agenda", label: "Agenda", icon: CalendarDays },
+  { to: "/corretores", label: "Corretores", icon: BadgeCheck },
+  { to: "/relatorio", label: "Relatórios", icon: BarChart3 },
+  { to: "/notificacoes", label: "Notificações", icon: BellRing },
+] as const;
+
+// Itens visíveis na bottom bar mobile (máx 5)
+const MOBILE_BOTTOM = [
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/pipeline", label: "Pipeline", icon: Kanban },
+  { to: "/leads", label: "Leads", icon: Users },
+  { to: "/agenda", label: "Agenda", icon: CalendarDays },
+  { to: "/corretores", label: "Corretores", icon: BadgeCheck },
+] as const;
+
+// Ícones do topo mobile (direita)
+const MOBILE_TOP_ICONS = [
+  { to: "/notificacoes", label: "Notificações", icon: BellRing },
+  { to: "/configuracoes", label: "Configurações", icon: Settings },
+] as const;
+
 const ADMIN_NAV = [
   { to: "/tempo-acesso", label: "Tempo de Acesso", icon: Clock },
   { to: "/usuarios", label: "Usuários", icon: UserCog },
