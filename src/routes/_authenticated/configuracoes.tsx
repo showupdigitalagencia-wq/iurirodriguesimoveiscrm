@@ -69,8 +69,9 @@ function ConfigPage() {
           <TabsTrigger value="integracoes">Integrações</TabsTrigger>
           <TabsTrigger value="formularios">Formulários Meta</TabsTrigger>
         </TabsList>
-        <TabsContent value="conta" className="mt-6">
+        <TabsContent value="conta" className="mt-6 space-y-6">
           <MinhaContaSection />
+          <GoogleConnectSection />
         </TabsContent>
         <TabsContent value="responsaveis" className="mt-6">
           <ResponsaveisSection />
