@@ -178,12 +178,16 @@ export const Route = createFileRoute("/api/public/webhook")({
 
         {
           const { sendOneSignalPush } = await import("@/lib/onesignal.server");
-          const title = "Novo Lead!";
-          const message = "Teste de notificação";
-          const url = "https://iurirodriguesimoveiscrm.lovable.app/leads";
+          const regiaoLabel = regiao.replace(/_/g, " ");
+          const title = "Novo Lead chegou!";
+          const message = `Nome: ${nome} | Tel: ${telefone} | Região: ${regiaoLabel}`;
+          const url = `https://iurirodriguesimoveiscrm.lovable.app/leads/${lead.id}`;
           const data = { lead_id: lead.id, regiao, canal, is_corretor: isCaptacaoCorretor };
 
-          // Envia SEMPRE para o responsável + todos os admins simultaneamente
+          // Responsável do form/canal recebe individualmente
+          const responsavelExternalId = responsavel?.onesignal_external_id ?? null;
+
+          // Admins recebem TODOS os leads
           const { data: adminRoles } = await supabaseAdmin
             .from("user_roles").select("user_id").eq("role", "admin");
           const adminIds = (adminRoles ?? []).map((r) => r.user_id);
@@ -194,7 +198,6 @@ export const Route = createFileRoute("/api/public/webhook")({
               .in("id", adminIds)
             : { data: [] as { id: string; onesignal_external_id: string | null; responsavel_id: string | null; responsaveis: { onesignal_external_id: string | null } | null }[] };
 
-          const responsavelExternalId = responsavel?.onesignal_external_id ?? null;
           const adminExternalIds = (adminProfiles ?? []).flatMap((p) => {
             const resp = p.responsaveis as { onesignal_external_id: string | null } | null;
             return [p.onesignal_external_id, resp?.onesignal_external_id].filter((x): x is string => !!x);
@@ -206,49 +209,35 @@ export const Route = createFileRoute("/api/public/webhook")({
           ]));
 
           console.info("[Webhook OneSignal] Lead recebido", {
-            leadId: lead.id,
-            canal,
-            regiao,
-            responsavelEncontrado: !!responsavel,
+            leadId: lead.id, canal, regiao, form_id,
             responsavel: responsavel ? { id: responsavel.id, nome: responsavel.nome } : null,
-            responsavelExternalIdEncontrado: !!responsavelExternalId,
-            adminsEncontrados: adminIds.length,
-            adminExternalIdsEncontrados: adminExternalIds.length,
+            responsavelExternalId,
+            adminsCount: adminIds.length,
+            adminExternalIds,
             externalIds,
-            env: {
-              hasOneSignalAppId: !!process.env.ONESIGNAL_APP_ID,
-              hasOneSignalRestApiKey: !!process.env.ONESIGNAL_REST_API_KEY,
-            },
           });
 
-          const result = await sendOneSignalPush({
-            externalIds: externalIds.length ? externalIds : undefined,
-            segments: ["All"],
-            title,
-            message,
-            url,
-          });
+          const result = externalIds.length
+            ? await sendOneSignalPush({ externalIds, title, message, url, data })
+            : { ok: false as const, error: "Nenhum destinatário com onesignal_external_id", resp: null };
 
           console.info("[Webhook OneSignal] Resultado do envio", {
-            leadId: lead.id,
-            ok: result.ok,
-            error: result.error ?? null,
-            response: result.resp ?? null,
+            leadId: lead.id, ok: result.ok, error: result.error ?? null,
+            response: "resp" in result ? result.resp : null,
           });
 
           const destino = [
             responsavelExternalId ? `responsavel:${responsavelExternalId}` : null,
             adminExternalIds.length ? `admins:${adminExternalIds.length}` : null,
-            "segment:All",
-          ].filter(Boolean).join(",");
+          ].filter(Boolean).join(",") || "nenhum";
 
           await supabaseAdmin.from("notificacoes").insert({
             lead_id: lead.id,
             tipo: "push_novo_lead",
-            destino: destino || "segment:All",
+            destino,
             status: result.ok ? "enviado" : "falha",
-            payload: { title, message, url, externalIds, segments: ["All"] } as never,
-            resposta: (result.resp ?? { error: result.error }) as never,
+            payload: { title, message, url, externalIds } as never,
+            resposta: (("resp" in result ? result.resp : null) ?? { error: result.error }) as never,
           });
         }
 
