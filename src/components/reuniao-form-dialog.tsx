@@ -224,7 +224,19 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
 
           <div>
             <Label>Local ou link</Label>
-            <Input value={form.local} onChange={(e) => setForm({ ...form, local: e.target.value })} placeholder="Endereço, sala ou URL da videochamada" />
+            <Input
+              value={form.local}
+              onChange={(e) => setForm({ ...form, local: e.target.value })}
+              placeholder={form.usar_meet ? "Será gerado automaticamente pelo Google Meet" : "Endereço, sala ou URL da videochamada"}
+              disabled={form.usar_meet}
+            />
+            <label className="mt-2 flex items-center gap-2 text-sm cursor-pointer">
+              <Checkbox
+                checked={form.usar_meet}
+                onCheckedChange={(v) => setForm({ ...form, usar_meet: !!v, local: v ? "" : form.local })}
+              />
+              <span>Usar Google Meet (cria evento no Calendar dos corretores conectados)</span>
+            </label>
           </div>
 
           <div>
