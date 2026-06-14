@@ -130,17 +130,27 @@ function AuthLayout() {
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Header compacto mobile — respeita safe-area do iPhone */}
+        {/* Header mobile: logo à esquerda, ícones à direita */}
         <header
-          className="md:hidden sticky top-0 z-30 flex items-center justify-between px-4 bg-sidebar text-sidebar-foreground border-b border-sidebar-border"
-          style={{ paddingTop: "env(safe-area-inset-top)", minHeight: "calc(3.5rem + env(safe-area-inset-top))" }}
+          className="md:hidden sticky top-0 z-30 flex items-center justify-between px-3 bg-sidebar text-sidebar-foreground border-b border-sidebar-border"
+          style={{ paddingTop: "env(safe-area-inset-top)", minHeight: "calc(3.25rem + env(safe-area-inset-top))" }}
         >
           <div className="min-w-0 py-2">
             <div className="text-[9px] uppercase tracking-[0.25em] text-sidebar-foreground/60 truncate">Iuri Rodrigues Imóveis</div>
-            <div className="text-base font-bold text-gold leading-tight truncate">Sistema NEXUS</div>
+            <div className="text-sm font-bold text-gold leading-tight truncate">Sistema NEXUS</div>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <Button onClick={logout} variant="ghost" size="icon" className="h-11 w-11 text-sidebar-foreground hover:bg-sidebar-accent" aria-label="Sair">
+          <div className="flex items-center gap-1 shrink-0">
+            {MOBILE_TOP_ICONS.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link key={item.to} to={item.to} aria-label={item.label}
+                  className="inline-flex items-center justify-center h-10 w-10 rounded-md text-sidebar-foreground/90 hover:bg-sidebar-accent [&.active]:text-gold"
+                  activeProps={{ className: "active" }}>
+                  <Icon className="h-5 w-5" />
+                </Link>
+              );
+            })}
+            <Button onClick={logout} variant="ghost" size="icon" className="h-10 w-10 text-sidebar-foreground hover:bg-sidebar-accent" aria-label="Sair">
               <LogOut className="h-5 w-5" />
             </Button>
           </div>
@@ -150,22 +160,92 @@ function AuthLayout() {
           <Outlet />
         </main>
 
-        {/* Bottom nav mobile */}
+        {/* Bottom nav mobile — 5 itens principais + menu '...' para secundários */}
         <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-sidebar text-sidebar-foreground border-t border-sidebar-border pb-[env(safe-area-inset-bottom)]">
-          <ul className="flex items-stretch justify-around">
-            {navItems.map((item) => {
+          <ul className="grid grid-cols-5 items-stretch">
+            {MOBILE_BOTTOM.slice(0, 4).map((item) => {
               const Icon = item.icon;
               return (
-                <li key={item.to} className="flex-1">
+                <li key={item.to}>
                   <Link to={item.to}
-                    className="flex flex-col items-center justify-center gap-0.5 h-14 text-[10px] text-sidebar-foreground/80 hover:text-gold [&.active]:text-gold"
+                    className="flex flex-col items-center justify-center gap-1 h-16 text-[10px] font-medium text-sidebar-foreground/80 hover:text-gold [&.active]:text-gold"
                     activeProps={{ className: "active" }}>
                     <Icon className="h-5 w-5" />
-                    <span className="leading-none truncate max-w-[64px]">{item.label}</span>
+                    <span className="leading-none truncate max-w-[68px]">{item.label}</span>
                   </Link>
                 </li>
               );
             })}
+            {/* 5º slot: Corretores OU menu '...' (se admin tem extras) */}
+            {isAdmin ? (
+              <li>
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <button
+                      className="flex flex-col items-center justify-center gap-1 h-16 w-full text-[10px] font-medium text-sidebar-foreground/80 hover:text-gold"
+                      aria-label="Mais"
+                    >
+                      <MoreHorizontal className="h-5 w-5" />
+                      <span className="leading-none">Mais</span>
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent side="bottom" className="bg-sidebar text-sidebar-foreground border-sidebar-border">
+                    <SheetHeader>
+                      <SheetTitle className="text-gold">Menu</SheetTitle>
+                    </SheetHeader>
+                    <ul className="mt-4 grid gap-1">
+                      {[MOBILE_BOTTOM[4], { to: "/relatorio", label: "Relatórios", icon: BarChart3 }, ...ADMIN_NAV].map((item) => {
+                        const Icon = item.icon;
+                        return (
+                          <li key={item.to}>
+                            <Link to={item.to}
+                              className="flex items-center gap-3 px-3 py-3 rounded-md text-sm hover:bg-sidebar-accent [&.active]:bg-sidebar-accent [&.active]:text-gold"
+                              activeProps={{ className: "active" }}>
+                              <Icon className="h-5 w-5" />
+                              {item.label}
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </SheetContent>
+                </Sheet>
+              </li>
+            ) : (
+              <li>
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <button
+                      className="flex flex-col items-center justify-center gap-1 h-16 w-full text-[10px] font-medium text-sidebar-foreground/80 hover:text-gold"
+                      aria-label="Mais"
+                    >
+                      <MoreHorizontal className="h-5 w-5" />
+                      <span className="leading-none">Mais</span>
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent side="bottom" className="bg-sidebar text-sidebar-foreground border-sidebar-border">
+                    <SheetHeader>
+                      <SheetTitle className="text-gold">Menu</SheetTitle>
+                    </SheetHeader>
+                    <ul className="mt-4 grid gap-1">
+                      {[MOBILE_BOTTOM[4], { to: "/relatorio", label: "Relatórios", icon: BarChart3 }].map((item) => {
+                        const Icon = item.icon;
+                        return (
+                          <li key={item.to}>
+                            <Link to={item.to}
+                              className="flex items-center gap-3 px-3 py-3 rounded-md text-sm hover:bg-sidebar-accent [&.active]:bg-sidebar-accent [&.active]:text-gold"
+                              activeProps={{ className: "active" }}>
+                              <Icon className="h-5 w-5" />
+                              {item.label}
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </SheetContent>
+                </Sheet>
+              </li>
+            )}
           </ul>
         </nav>
       </div>
