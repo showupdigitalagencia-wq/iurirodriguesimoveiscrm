@@ -180,7 +180,8 @@ export const Route = createFileRoute("/api/public/webhook")({
           const { sendOneSignalPush } = await import("@/lib/onesignal.server");
           const regiaoLabel = regiao.replace(/_/g, " ");
           const title = "Novo Lead chegou!";
-          const message = `Nome: ${nome} | Tel: ${telefone} | Região: ${regiaoLabel}`;
+          const responsavelNome = responsavel?.nome ?? "Não atribuído";
+          const message = `Nome: ${nome} | Tel: ${telefone} | Região: ${regiaoLabel} | Responsável: ${responsavelNome}`;
           const url = `https://iurirodriguesimoveiscrmcombr.lovable.app/leads?lead=${lead.id}`;
           const data = { lead_id: lead.id, regiao, canal, is_corretor: isCaptacaoCorretor };
 
