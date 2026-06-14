@@ -36,6 +36,7 @@ const CreateInput = z.object({
   tipo: TipoSchema,
   lead_ids: z.array(z.string().uuid()).default([]),
   responsavel_ids: z.array(z.string().uuid()).default([]),
+  usar_meet: z.boolean().optional().default(false),
 });
 
 export const listReunioes = createServerFn({ method: "POST" })
