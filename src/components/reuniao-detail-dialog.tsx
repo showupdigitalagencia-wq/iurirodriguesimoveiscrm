@@ -147,10 +147,25 @@ export function ReuniaoDetailDialog({ reuniaoId, onClose, onChanged }: Props) {
                   <Users className="h-3.5 w-3.5" /> Leads
                 </div>
                 {r.participantes_leads.length === 0 ? <p className="text-muted-foreground text-xs">Nenhum</p> : (
-                  <ul className="space-y-1">
-                    {r.participantes_leads.map((l) => (
-                      <li key={l.id} className="text-sm">{l.nome} <span className="text-muted-foreground text-xs">— {l.telefone}</span></li>
-                    ))}
+                  <ul className="space-y-2">
+                    {r.participantes_leads.map((l) => {
+                      const corretores = r.participantes_corretores.map((c) => c.nome).join(", ");
+                      const msg = buildWhatsAppMessage(r.tipo, l.nome, new Date(r.data_inicio), r.local, corretores);
+                      const tel = onlyDigits(l.telefone);
+                      const href = `https://wa.me/${tel.startsWith("55") || tel.length < 11 ? tel : "55" + tel}?text=${encodeURIComponent(msg)}`;
+                      return (
+                        <li key={l.id} className="flex items-center justify-between gap-2">
+                          <span className="text-sm truncate">{l.nome} <span className="text-muted-foreground text-xs">— {l.telefone}</span></span>
+                          {tel && (
+                            <Button asChild size="sm" variant="outline" className="shrink-0">
+                              <a href={href} target="_blank" rel="noopener noreferrer">
+                                <MessageCircle className="h-4 w-4 mr-1" /> Enviar confirmação
+                              </a>
+                            </Button>
+                          )}
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
               </div>
