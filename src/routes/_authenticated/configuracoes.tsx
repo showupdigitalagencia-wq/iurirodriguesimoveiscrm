@@ -381,3 +381,104 @@ function FormulariosSection() {
   );
 }
 
+
+function GoogleConnectSection() {
+  const startOAuth = useServerFn(startGoogleOAuth);
+  const status = useServerFn(getGoogleStatus);
+  const disconnect = useServerFn(disconnectGoogle);
+  const [loading, setLoading] = useState(true);
+  const [connected, setConnected] = useState(false);
+  const [email, setEmail] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function refresh() {
+    setLoading(true);
+    try {
+      const s = await status();
+      setConnected(s.connected);
+      setEmail(s.email);
+    } catch {
+      setConnected(false);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    refresh();
+    function onMsg(e: MessageEvent) {
+      const d = e.data;
+      if (!d || d.type !== "google-oauth") return;
+      if (d.status === "connected") {
+        toast.success("Google conectado");
+        refresh();
+      } else {
+        toast.error(`Falha ao conectar: ${d.reason ?? "erro"}`);
+      }
+      setBusy(false);
+    }
+    window.addEventListener("message", onMsg);
+    return () => window.removeEventListener("message", onMsg);
+  }, []);
+
+  async function handleConnect() {
+    setBusy(true);
+    try {
+      const { url } = await startOAuth();
+      const w = window.open(url, "google-oauth", "width=520,height=640,menubar=no,toolbar=no");
+      if (!w) {
+        toast.error("Permita pop-ups para conectar o Google");
+        setBusy(false);
+        return;
+      }
+      const timer = setInterval(() => {
+        if (w.closed) { clearInterval(timer); setBusy(false); refresh(); }
+      }, 800);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao iniciar conexão");
+      setBusy(false);
+    }
+  }
+
+  async function handleDisconnect() {
+    if (!confirm("Desconectar sua conta Google?")) return;
+    setBusy(true);
+    try {
+      await disconnect();
+      toast.success("Conta Google desconectada");
+      await refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao desconectar");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section className="bg-card border border-border rounded-xl p-6 max-w-md space-y-3">
+      <div>
+        <h2 className="font-semibold">Google Calendar / Meet</h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          Conecte sua conta Google para gerar links do Google Meet automaticamente nas reuniões.
+        </p>
+      </div>
+      {loading ? (
+        <p className="text-sm text-muted-foreground">Carregando...</p>
+      ) : connected ? (
+        <div className="flex items-center justify-between gap-3">
+          <div className="text-sm">
+            <div className="font-medium">Conectado</div>
+            {email && <div className="text-muted-foreground text-xs">{email}</div>}
+          </div>
+          <Button variant="outline" onClick={handleDisconnect} disabled={busy}>
+            Desconectar
+          </Button>
+        </div>
+      ) : (
+        <Button variant="gold" onClick={handleConnect} disabled={busy}>
+          {busy ? "Conectando..." : "Conectar Google"}
+        </Button>
+      )}
+    </section>
+  );
+}
