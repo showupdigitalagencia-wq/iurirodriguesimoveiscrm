@@ -88,6 +88,7 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
         tipo: "individual", descricao: "",
         lead_ids: new Set<string>(), resp_ids: new Set<string>(),
       });
+      setConfirmacao(null);
     }
   }, [open, defaultLeadId]);
 
