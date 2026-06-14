@@ -181,7 +181,7 @@ export const createReuniao = createServerFn({ method: "POST" })
       await supabaseAdmin.from("lead_historico").insert(historicoRows);
     }
 
-    // Notificação push para todos os corretores + admins
+    // Notificação push para TODOS via segment "All"
     try {
       const { sendOneSignalPush } = await import("@/lib/onesignal.server");
       const { data: profileCriador } = await supabaseAdmin
@@ -191,31 +191,22 @@ export const createReuniao = createServerFn({ method: "POST" })
       const dt = new Date(data.data_inicio);
       const dataStr = dt.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
       const horaStr = dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-      const tipoLabel = data.tipo === "institucional" ? "Institucional" : "Individual";
 
-      const [{ data: allResp }, { data: adminRoles }] = await Promise.all([
-        supabaseAdmin.from("responsaveis").select("onesignal_external_id"),
-        supabaseAdmin.from("user_roles").select("user_id").eq("role", "admin"),
-      ]);
-      const adminIds = (adminRoles ?? []).map((r) => r.user_id);
-      const { data: adminProfiles } = adminIds.length
-        ? await supabaseAdmin.from("profiles").select("onesignal_external_id").in("id", adminIds)
-        : { data: [] as { onesignal_external_id: string | null }[] };
-
-      const externalIds = Array.from(new Set([
-        ...((allResp ?? []).map((r) => r.onesignal_external_id).filter((x): x is string => !!x)),
-        ...((adminProfiles ?? []).map((p) => p.onesignal_external_id).filter((x): x is string => !!x)),
-      ]));
-
-      const title = "Nova reunião agendada";
-      const message = `Agendada por ${nomeCriador} | ${dataStr} às ${horaStr} | ${tipoLabel}`;
-      const url = `https://iurirodriguesimoveiscrm.lovable.app/agenda?open=${reuniaoId}`;
-
-      if (externalIds.length) {
-        await sendOneSignalPush({ externalIds, title, message, url, data: { reuniao_id: reuniaoId } });
+      let title: string;
+      let message: string;
+      if (data.tipo === "institucional") {
+        title = "🏢 Reunião Institucional!";
+        message = `Com Diretor IURI RODRIGUES | ${dataStr} às ${horaStr}`;
+      } else if (data.tipo === "alinhamento") {
+        title = "⚠️ Reunião de Alinhamento!";
+        message = `Reunião obrigatória com toda equipe | ${dataStr} às ${horaStr}`;
       } else {
-        await sendOneSignalPush({ segments: ["All"], title, message, url, data: { reuniao_id: reuniaoId } });
+        title = "📅 Nova Reunião Agendada!";
+        message = `Individual | ${dataStr} às ${horaStr} | Por: ${nomeCriador}`;
       }
+      const url = `https://iurirodriguesimoveiscrm.lovable.app/agenda`;
+
+      await sendOneSignalPush({ segments: ["All"], title, message, url, data: { reuniao_id: reuniaoId } });
     } catch (e) {
       console.error("[Reuniao] push falhou", e);
     }
