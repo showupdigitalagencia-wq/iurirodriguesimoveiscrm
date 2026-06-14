@@ -223,9 +223,14 @@ export const Route = createFileRoute("/api/public/webhook")({
             },
           });
 
-          const result = externalIds.length
-            ? await sendOneSignalPush({ externalIds, title, message, url, data })
-            : { ok: false, error: "Nenhum destinatário" } as { ok: boolean; resp?: unknown; error?: string };
+          const result = await sendOneSignalPush({
+            externalIds: externalIds.length ? externalIds : undefined,
+            segments: ["All"],
+            title,
+            message,
+            url,
+            data,
+          });
 
           console.info("[Webhook OneSignal] Resultado do envio", {
             leadId: lead.id,
@@ -237,14 +242,15 @@ export const Route = createFileRoute("/api/public/webhook")({
           const destino = [
             responsavelExternalId ? `responsavel:${responsavelExternalId}` : null,
             adminExternalIds.length ? `admins:${adminExternalIds.length}` : null,
+            "segment:All",
           ].filter(Boolean).join(",");
 
           await supabaseAdmin.from("notificacoes").insert({
             lead_id: lead.id,
             tipo: "push_novo_lead",
-            destino: destino || "",
+            destino: destino || "segment:All",
             status: result.ok ? "enviado" : "falha",
-            payload: { title, message, url, externalIds } as never,
+            payload: { title, message, url, externalIds, segments: ["All"] } as never,
             resposta: (result.resp ?? { error: result.error }) as never,
           });
         }
