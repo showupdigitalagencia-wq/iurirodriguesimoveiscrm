@@ -29,6 +29,9 @@ const NAV = [
 const ADMIN_NAV = [
   { to: "/tempo-acesso", label: "Tempo de Acesso", icon: Clock },
   { to: "/usuarios", label: "Usuários", icon: UserCog },
+] as const;
+
+const CONFIG_NAV = [
   { to: "/configuracoes", label: "Configurações", icon: Settings },
 ] as const;
 
@@ -36,7 +39,7 @@ function AuthLayout() {
   const router = useRouter();
   const [isAdmin, setIsAdmin] = useState(false);
 
-  const navItems = useMemo(() => isAdmin ? [...NAV, ...ADMIN_NAV] : NAV, [isAdmin]);
+  const navItems = useMemo(() => isAdmin ? [...NAV, ...ADMIN_NAV, ...CONFIG_NAV] : [...NAV, ...CONFIG_NAV], [isAdmin]);
 
   useEffect(() => {
     let active = true;
