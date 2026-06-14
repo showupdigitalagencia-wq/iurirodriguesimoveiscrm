@@ -225,9 +225,9 @@ export const Route = createFileRoute("/api/public/webhook")({
 
           const result = await sendOneSignalPush({
             externalIds: externalIds.length ? externalIds : undefined,
-            segments: ["All"],
-            title,
-            message,
+            segments: ["Subscribed Users"],
+            title: "Novo Lead!",
+            message: "Teste de notificação",
             url,
             data,
           });
@@ -242,15 +242,15 @@ export const Route = createFileRoute("/api/public/webhook")({
           const destino = [
             responsavelExternalId ? `responsavel:${responsavelExternalId}` : null,
             adminExternalIds.length ? `admins:${adminExternalIds.length}` : null,
-            "segment:All",
+            "segment:Subscribed Users",
           ].filter(Boolean).join(",");
 
           await supabaseAdmin.from("notificacoes").insert({
             lead_id: lead.id,
             tipo: "push_novo_lead",
-            destino: destino || "segment:All",
+            destino: destino || "segment:Subscribed Users",
             status: result.ok ? "enviado" : "falha",
-            payload: { title, message, url, externalIds, segments: ["All"] } as never,
+            payload: { title: "Novo Lead!", message: "Teste de notificação", url, externalIds, segments: ["Subscribed Users"] } as never,
             resposta: (result.resp ?? { error: result.error }) as never,
           });
         }
