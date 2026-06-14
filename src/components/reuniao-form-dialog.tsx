@@ -85,7 +85,7 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
     }
     if (!open) {
       setForm({
-        titulo: "", data: "", hora: "", duracao: 60, local: "",
+        titulo: "", data: "", hora: "", duracao: 60, local: "", usar_meet: false,
         tipo: "individual", descricao: "",
         lead_ids: new Set<string>(), resp_ids: new Set<string>(),
       });
