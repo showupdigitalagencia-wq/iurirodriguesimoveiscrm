@@ -223,9 +223,14 @@ export const Route = createFileRoute("/api/public/webhook")({
             },
           });
 
-          const result = externalIds.length
-            ? await sendOneSignalPush({ externalIds, title, message, url, data })
-            : { ok: false, error: "Nenhum destinatário" } as { ok: boolean; resp?: unknown; error?: string };
+          const result = await sendOneSignalPush({
+            externalIds: externalIds.length ? externalIds : undefined,
+            segments: ["All"],
+            title,
+            message,
+            url,
+            data,
+          });
 
           console.info("[Webhook OneSignal] Resultado do envio", {
             leadId: lead.id,
