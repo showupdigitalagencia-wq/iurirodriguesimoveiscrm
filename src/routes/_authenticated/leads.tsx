@@ -20,6 +20,7 @@ type Resp = { id: string; nome: string; canal: string };
 
 export const Route = createFileRoute("/_authenticated/leads")({
   head: () => ({ meta: [{ title: "Leads — Sistema NEXUS" }] }),
+  validateSearch: (s: Record<string, unknown>) => ({ open: typeof s.open === "string" ? s.open : undefined }),
   component: LeadsPage,
 });
 
@@ -45,10 +46,12 @@ function leadToRow(l: LeadRow) {
 }
 
 function LeadsPage() {
+  const search = Route.useSearch();
+  const navigate = Route.useNavigate();
   const [leads, setLeads] = useState<LeadRow[]>([]);
   const [resps, setResps] = useState<Resp[]>([]);
   const [q, setQ] = useState("");
-  const [openLead, setOpenLead] = useState<string | null>(null);
+  const [openLead, setOpenLead] = useState<string | null>(search.open ?? null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [respFilter, setRespFilter] = useState<string>("all");
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -70,6 +73,10 @@ function LeadsPage() {
         .then(({ data: r }) => setIsAdmin(r?.role === "admin"));
     });
   }, []);
+
+  useEffect(() => {
+    if (search.open) setOpenLead(search.open);
+  }, [search.open]);
 
   const filtered = leads.filter((l) => {
     if (isAdmin && respFilter !== "all" && l.responsavel_id !== respFilter) return false;
@@ -323,7 +330,7 @@ function LeadsPage() {
           </TableBody>
         </Table>
       </div>
-      <LeadDetailSheet leadId={openLead} onClose={() => setOpenLead(null)} onUpdated={load} backLabel="Voltar aos Leads" />
+      <LeadDetailSheet leadId={openLead} onClose={() => { setOpenLead(null); if (search.open) navigate({ to: "/leads", search: {} }); }} onUpdated={load} backLabel="Voltar aos Leads" />
     </div>
   );
 }
