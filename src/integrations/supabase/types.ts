@@ -535,7 +535,7 @@ export type Database = {
         | "mesquita"
       reuniao_lembrete_tipo: "1d" | "1h" | "15min"
       reuniao_status: "agendada" | "realizada" | "cancelada"
-      reuniao_tipo: "individual" | "institucional"
+      reuniao_tipo: "individual" | "institucional" | "alinhamento"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -690,7 +690,7 @@ export const Constants = {
       ],
       reuniao_lembrete_tipo: ["1d", "1h", "15min"],
       reuniao_status: ["agendada", "realizada", "cancelada"],
-      reuniao_tipo: ["individual", "institucional"],
+      reuniao_tipo: ["individual", "institucional", "alinhamento"],
     },
   },
 } as const

@@ -1,0 +1,1 @@
+ALTER TYPE public.reuniao_tipo ADD VALUE IF NOT EXISTS 'alinhamento';
