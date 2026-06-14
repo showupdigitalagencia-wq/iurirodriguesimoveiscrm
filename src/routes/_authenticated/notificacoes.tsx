@@ -1,9 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Bell, BellOff, CheckCircle2, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { enablePushFor, disablePush, getPushStatus, initOneSignal } from "@/lib/onesignal-client";
+import { savePushExternalId } from "@/lib/push.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/notificacoes")({
@@ -12,9 +14,13 @@ export const Route = createFileRoute("/_authenticated/notificacoes")({
 });
 
 function NotificacoesPage() {
+  const saveExternalId = useServerFn(savePushExternalId);
   const [loading, setLoading] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [role, setRole] = useState<"admin" | "corretor" | null>(null);
   const [responsavelId, setResponsavelId] = useState<string | null>(null);
   const [responsavelNome, setResponsavelNome] = useState<string | null>(null);
+  const [savedExternalId, setSavedExternalId] = useState<string | null>(null);
   const [status, setStatus] = useState<{ permission: string; optedIn: boolean; externalId?: string } | null>(null);
   const [supported, setSupported] = useState(true);
 
@@ -28,39 +34,58 @@ function NotificacoesPage() {
       const { data: userData } = await supabase.auth.getUser();
       const uid = userData.user?.id;
       if (!uid) return;
+      setUserId(uid);
       const { data: prof } = await supabase
         .from("profiles")
-        .select("responsavel_id, responsaveis:responsavel_id(id, nome)")
+        .select("responsavel_id, onesignal_external_id, responsaveis:responsavel_id(id, nome, onesignal_external_id)")
         .eq("id", uid)
         .maybeSingle();
-      const resp = (prof?.responsaveis as { id: string; nome: string } | null) ?? null;
+      const { data: userRole } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", uid)
+        .maybeSingle();
+      const resp = (prof?.responsaveis as { id: string; nome: string; onesignal_external_id: string | null } | null) ?? null;
+      setRole((userRole?.role as "admin" | "corretor" | undefined) ?? null);
       setResponsavelId(resp?.id ?? null);
       setResponsavelNome(resp?.nome ?? null);
+      setSavedExternalId(resp?.onesignal_external_id ?? prof?.onesignal_external_id ?? null);
       await initOneSignal().catch(() => null);
       setStatus(await getPushStatus());
     })();
   }, []);
 
   async function handleEnable() {
-    if (!responsavelId) {
+    if (!responsavelId && role !== "admin") {
       toast.error("Seu usuário não está vinculado a um corretor. Peça ao admin para vincular em Configurações.");
       return;
     }
+    const externalId = responsavelId ?? userId;
+    if (!externalId) return toast.error("Sessão expirada");
     setLoading(true);
-    const result = await enablePushFor(responsavelId);
-    setLoading(false);
-    if (result.ok) {
-      toast.success("Notificações ativadas neste dispositivo!");
-      setStatus(await getPushStatus());
-    } else {
-      toast.error(result.reason ?? "Falha ao ativar");
+    try {
+      const result = await enablePushFor(externalId);
+      if (result.ok) {
+        await saveExternalId({ data: { enabled: true, externalId: result.externalId ?? externalId, responsavelId } });
+        setSavedExternalId(result.externalId ?? externalId);
+        toast.success("Notificações ativadas neste dispositivo!");
+        setStatus(await getPushStatus());
+      } else {
+        toast.error(result.reason ?? "Falha ao ativar");
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao salvar identificador do OneSignal");
+    } finally {
+      setLoading(false);
     }
   }
 
   async function handleDisable() {
     setLoading(true);
     await disablePush();
+    await saveExternalId({ data: { enabled: false, externalId: null, responsavelId } }).catch(() => null);
     setLoading(false);
+    setSavedExternalId(null);
     toast.success("Notificações desativadas");
     setStatus(await getPushStatus());
   }
@@ -116,6 +141,7 @@ function NotificacoesPage() {
           <div className="space-y-1 text-muted-foreground">
             <div>Permissão do navegador: <strong>{status?.permission ?? "—"}</strong></div>
             <div>Inscrito no OneSignal: <strong>{status?.optedIn ? "sim" : "não"}</strong></div>
+            <div>External ID salvo no sistema: <strong>{savedExternalId ? `${savedExternalId.slice(0, 8)}…` : "não"}</strong></div>
             {status?.externalId && (
               <div className="flex items-center gap-1 text-emerald-600">
                 <CheckCircle2 className="h-3.5 w-3.5" /> Vinculado ao corretor: {status.externalId.slice(0, 8)}…
@@ -127,7 +153,7 @@ function NotificacoesPage() {
         <div className="flex gap-2">
           <Button
             onClick={handleEnable}
-            disabled={loading || !responsavelId || isPreview || !supported}
+            disabled={loading || (!responsavelId && role !== "admin") || isPreview || !supported}
             variant="gold"
             className="flex-1"
           >
