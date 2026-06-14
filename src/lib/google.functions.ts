@@ -40,5 +40,3 @@ export const disconnectGoogle = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
-
-export const _schemas = { z };
