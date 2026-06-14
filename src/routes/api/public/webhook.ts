@@ -184,37 +184,35 @@ export const Route = createFileRoute("/api/public/webhook")({
           const url = `https://iurirodriguesimoveiscrmcombr.lovable.app/leads?lead=${lead.id}`;
           const data = { lead_id: lead.id, regiao, canal, is_corretor: isCaptacaoCorretor };
 
-          let destino = responsavel?.id ?? null;
-          let result = responsavel?.id
-            ? await sendOneSignalPush({ externalId: responsavel.id, title, message, url, data })
-            : { ok: false, error: "Sem responsável" } as { ok: boolean; resp?: unknown; error?: string };
+          // Envia SEMPRE para o responsável + todos os admins simultaneamente
+          const { data: adminRoles } = await supabaseAdmin
+            .from("user_roles").select("user_id").eq("role", "admin");
+          const adminIds = (adminRoles ?? []).map((r) => r.user_id);
+          const { data: adminProfiles } = adminIds.length
+            ? await supabaseAdmin.from("profiles").select("responsavel_id").in("id", adminIds)
+            : { data: [] as { responsavel_id: string | null }[] };
 
-          // Fallback: nenhum dispositivo do responsável → envia para todos os admins
-          const recipients = (result.resp as { recipients?: number } | undefined)?.recipients ?? 0;
-          if (!result.ok || recipients === 0) {
-            const { data: adminRoles } = await supabaseAdmin
-              .from("user_roles").select("user_id").eq("role", "admin");
-            const adminIds = (adminRoles ?? []).map((r) => r.user_id);
-            if (adminIds.length) {
-              const { data: adminProfiles } = await supabaseAdmin
-                .from("profiles").select("responsavel_id").in("id", adminIds);
-              const externalIds = Array.from(new Set([
-                ...adminIds,
-                ...(adminProfiles ?? []).map((p) => p.responsavel_id).filter((x): x is string => !!x),
-              ]));
-              if (externalIds.length) {
-                destino = "admins";
-                result = await sendOneSignalPush({ externalIds, title, message, url, data });
-              }
-            }
-          }
+          const externalIds = Array.from(new Set([
+            ...(responsavel?.id ? [responsavel.id] : []),
+            ...adminIds,
+            ...(adminProfiles ?? []).map((p) => p.responsavel_id).filter((x): x is string => !!x),
+          ]));
+
+          const result = externalIds.length
+            ? await sendOneSignalPush({ externalIds, title, message, url, data })
+            : { ok: false, error: "Nenhum destinatário" } as { ok: boolean; resp?: unknown; error?: string };
+
+          const destino = [
+            responsavel?.id ? `responsavel:${responsavel.id}` : null,
+            adminIds.length ? `admins:${adminIds.length}` : null,
+          ].filter(Boolean).join(",");
 
           await supabaseAdmin.from("notificacoes").insert({
             lead_id: lead.id,
             tipo: "push_novo_lead",
-            destino: destino ?? "",
+            destino: destino || "",
             status: result.ok ? "enviado" : "falha",
-            payload: { title, message, url } as never,
+            payload: { title, message, url, externalIds } as never,
             resposta: (result.resp ?? { error: result.error }) as never,
           });
         }
