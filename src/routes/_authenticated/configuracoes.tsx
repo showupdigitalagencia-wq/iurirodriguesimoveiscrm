@@ -33,12 +33,16 @@ function ConfigPage() {
         <h1 className="text-3xl font-bold tracking-tight">Configurações</h1>
         <p className="text-muted-foreground mt-1">Responsáveis, integrações e mapeamento de formulários.</p>
       </header>
-      <Tabs defaultValue="responsaveis">
+      <Tabs defaultValue="conta">
         <TabsList>
+          <TabsTrigger value="conta">Minha Conta</TabsTrigger>
           <TabsTrigger value="responsaveis">Responsáveis</TabsTrigger>
           <TabsTrigger value="integracoes">Integrações</TabsTrigger>
           <TabsTrigger value="formularios">Formulários Meta</TabsTrigger>
         </TabsList>
+        <TabsContent value="conta" className="mt-6">
+          <MinhaContaSection />
+        </TabsContent>
         <TabsContent value="responsaveis" className="mt-6">
           <ResponsaveisSection />
         </TabsContent>
@@ -50,6 +54,67 @@ function ConfigPage() {
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+function MinhaContaSection() {
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (newPassword.length < 6) return toast.error("A nova senha deve ter no mínimo 6 caracteres");
+    if (newPassword !== confirmPassword) return toast.error("A nova senha e a confirmação não coincidem");
+
+    setSaving(true);
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const email = userData.user?.email;
+      if (!email) {
+        toast.error("Sessão expirada");
+        return;
+      }
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password: currentPassword });
+      if (signInError) {
+        toast.error("Senha atual incorreta");
+        return;
+      }
+      const { error: updError } = await supabase.auth.updateUser({ password: newPassword });
+      if (updError) {
+        toast.error(updError.message);
+        return;
+      }
+      toast.success("Senha alterada com sucesso");
+      setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <section className="bg-card border border-border rounded-xl p-6 max-w-md">
+      <h2 className="font-semibold mb-1">Alterar senha</h2>
+      <p className="text-sm text-muted-foreground mb-4">Informe sua senha atual e escolha uma nova.</p>
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <div>
+          <Label>Senha atual</Label>
+          <Input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required autoComplete="current-password" className="mt-1.5" />
+        </div>
+        <div>
+          <Label>Nova senha (mín. 6)</Label>
+          <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required minLength={6} maxLength={128} autoComplete="new-password" className="mt-1.5" />
+        </div>
+        <div>
+          <Label>Confirmar nova senha</Label>
+          <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required minLength={6} maxLength={128} autoComplete="new-password" className="mt-1.5" />
+        </div>
+        <Button type="submit" variant="gold" disabled={saving}>
+          {saving ? "Salvando..." : "Salvar nova senha"}
+        </Button>
+      </form>
+    </section>
   );
 }
 
