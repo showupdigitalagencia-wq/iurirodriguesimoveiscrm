@@ -26,6 +26,7 @@ import { Route as ApiPublicWebhookRouteImport } from './routes/api/public/webhoo
 import { Route as ApiPublicOnesignalTestRouteImport } from './routes/api/public/onesignal-test'
 import { Route as ApiPublicLeadRouteImport } from './routes/api/public/lead'
 import { Route as ApiPublicCronUnattendedRouteImport } from './routes/api/public/cron-unattended'
+import { Route as AuthenticatedLeadsLeadIdRouteImport } from './routes/_authenticated/leads.$leadId'
 
 const FormularioRoute = FormularioRouteImport.update({
   id: '/formulario',
@@ -114,6 +115,12 @@ const ApiPublicCronUnattendedRoute = ApiPublicCronUnattendedRouteImport.update({
   path: '/api/public/cron-unattended',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedLeadsLeadIdRoute =
+  AuthenticatedLeadsLeadIdRouteImport.update({
+    id: '/$leadId',
+    path: '/$leadId',
+    getParentRoute: () => AuthenticatedLeadsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -122,12 +129,13 @@ export interface FileRoutesByFullPath {
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/leads': typeof AuthenticatedLeadsRoute
+  '/leads': typeof AuthenticatedLeadsRouteWithChildren
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/pipeline': typeof AuthenticatedPipelineRoute
   '/relatorio': typeof AuthenticatedRelatorioRoute
   '/tempo-acesso': typeof AuthenticatedTempoAcessoRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
+  '/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
   '/api/public/cron-unattended': typeof ApiPublicCronUnattendedRoute
   '/api/public/lead': typeof ApiPublicLeadRoute
   '/api/public/onesignal-test': typeof ApiPublicOnesignalTestRoute
@@ -140,12 +148,13 @@ export interface FileRoutesByTo {
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/leads': typeof AuthenticatedLeadsRoute
+  '/leads': typeof AuthenticatedLeadsRouteWithChildren
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/pipeline': typeof AuthenticatedPipelineRoute
   '/relatorio': typeof AuthenticatedRelatorioRoute
   '/tempo-acesso': typeof AuthenticatedTempoAcessoRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
+  '/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
   '/api/public/cron-unattended': typeof ApiPublicCronUnattendedRoute
   '/api/public/lead': typeof ApiPublicLeadRoute
   '/api/public/onesignal-test': typeof ApiPublicOnesignalTestRoute
@@ -160,12 +169,13 @@ export interface FileRoutesById {
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/_authenticated/corretores': typeof AuthenticatedCorretoresRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/_authenticated/leads': typeof AuthenticatedLeadsRoute
+  '/_authenticated/leads': typeof AuthenticatedLeadsRouteWithChildren
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/_authenticated/pipeline': typeof AuthenticatedPipelineRoute
   '/_authenticated/relatorio': typeof AuthenticatedRelatorioRoute
   '/_authenticated/tempo-acesso': typeof AuthenticatedTempoAcessoRoute
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
+  '/_authenticated/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
   '/api/public/cron-unattended': typeof ApiPublicCronUnattendedRoute
   '/api/public/lead': typeof ApiPublicLeadRoute
   '/api/public/onesignal-test': typeof ApiPublicOnesignalTestRoute
@@ -186,6 +196,7 @@ export interface FileRouteTypes {
     | '/relatorio'
     | '/tempo-acesso'
     | '/usuarios'
+    | '/leads/$leadId'
     | '/api/public/cron-unattended'
     | '/api/public/lead'
     | '/api/public/onesignal-test'
@@ -204,6 +215,7 @@ export interface FileRouteTypes {
     | '/relatorio'
     | '/tempo-acesso'
     | '/usuarios'
+    | '/leads/$leadId'
     | '/api/public/cron-unattended'
     | '/api/public/lead'
     | '/api/public/onesignal-test'
@@ -223,6 +235,7 @@ export interface FileRouteTypes {
     | '/_authenticated/relatorio'
     | '/_authenticated/tempo-acesso'
     | '/_authenticated/usuarios'
+    | '/_authenticated/leads/$leadId'
     | '/api/public/cron-unattended'
     | '/api/public/lead'
     | '/api/public/onesignal-test'
@@ -361,14 +374,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronUnattendedRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/leads/$leadId': {
+      id: '/_authenticated/leads/$leadId'
+      path: '/$leadId'
+      fullPath: '/leads/$leadId'
+      preLoaderRoute: typeof AuthenticatedLeadsLeadIdRouteImport
+      parentRoute: typeof AuthenticatedLeadsRoute
+    }
   }
 }
+
+interface AuthenticatedLeadsRouteChildren {
+  AuthenticatedLeadsLeadIdRoute: typeof AuthenticatedLeadsLeadIdRoute
+}
+
+const AuthenticatedLeadsRouteChildren: AuthenticatedLeadsRouteChildren = {
+  AuthenticatedLeadsLeadIdRoute: AuthenticatedLeadsLeadIdRoute,
+}
+
+const AuthenticatedLeadsRouteWithChildren =
+  AuthenticatedLeadsRoute._addFileChildren(AuthenticatedLeadsRouteChildren)
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
   AuthenticatedCorretoresRoute: typeof AuthenticatedCorretoresRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedLeadsRoute: typeof AuthenticatedLeadsRoute
+  AuthenticatedLeadsRoute: typeof AuthenticatedLeadsRouteWithChildren
   AuthenticatedNotificacoesRoute: typeof AuthenticatedNotificacoesRoute
   AuthenticatedPipelineRoute: typeof AuthenticatedPipelineRoute
   AuthenticatedRelatorioRoute: typeof AuthenticatedRelatorioRoute
@@ -380,7 +411,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
   AuthenticatedCorretoresRoute: AuthenticatedCorretoresRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedLeadsRoute: AuthenticatedLeadsRoute,
+  AuthenticatedLeadsRoute: AuthenticatedLeadsRouteWithChildren,
   AuthenticatedNotificacoesRoute: AuthenticatedNotificacoesRoute,
   AuthenticatedPipelineRoute: AuthenticatedPipelineRoute,
   AuthenticatedRelatorioRoute: AuthenticatedRelatorioRoute,
@@ -404,13 +435,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
