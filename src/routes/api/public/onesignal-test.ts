@@ -84,10 +84,10 @@ export const Route = createFileRoute("/api/public/onesignal-test")({
         const url = "https://api.onesignal.com/notifications?c=push";
         const body = {
           app_id: appId,
-          target_channel: "push",
-          included_segments: ["Subscribed Users", "All"],
-          headings: { en: title, pt: title },
-          contents: { en: message, pt: message },
+          included_segments: ["Subscribed Users"],
+          headings: { en: title },
+          contents: { en: message },
+          url: "https://iurirodriguesimoveiscrm.lovable.app/leads",
         };
 
         const result = await callOneSignal(url, {

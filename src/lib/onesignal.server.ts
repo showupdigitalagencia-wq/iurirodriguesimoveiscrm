@@ -36,14 +36,12 @@ export async function sendOneSignalPush(args: SendArgs): Promise<{ ok: boolean; 
 
   const body: Record<string, unknown> = {
     app_id: appId,
-    target_channel: "push",
-    headings: { en: args.title, pt: args.title },
-    contents: { en: args.message, pt: args.message },
+    headings: { en: args.title },
+    contents: { en: args.message },
     url: args.url,
-    data: args.data ?? {},
-    web_url: args.url,
   };
-  if (ids.length) {
+  if (args.data) body.data = args.data;
+  if (ids.length && segments.length === 0) {
     body.include_aliases = { external_id: ids };
     body.include_external_user_ids = ids;
   }
