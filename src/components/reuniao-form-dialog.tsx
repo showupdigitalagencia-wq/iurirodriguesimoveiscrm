@@ -64,6 +64,7 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
     hora: "",
     duracao: 60,
     local: "",
+    usar_meet: false,
     tipo: "individual" as "individual" | "institucional",
     descricao: "",
     lead_ids: new Set<string>(),
