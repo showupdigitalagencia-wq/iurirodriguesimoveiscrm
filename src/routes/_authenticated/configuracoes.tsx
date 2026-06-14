@@ -27,6 +27,35 @@ export const Route = createFileRoute("/_authenticated/configuracoes")({
 });
 
 function ConfigPage() {
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getUser().then(({ data }) => {
+      const uid = data.user?.id;
+      if (!uid) { if (active) setIsAdmin(false); return; }
+      supabase.from("user_roles").select("role").eq("user_id", uid).eq("role", "admin").maybeSingle()
+        .then(({ data }) => { if (active) setIsAdmin(!!data); });
+    });
+    return () => { active = false; };
+  }, []);
+
+  if (isAdmin === null) {
+    return <div className="p-8 text-muted-foreground">Carregando...</div>;
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="p-8 space-y-6 max-w-4xl">
+        <header>
+          <h1 className="text-3xl font-bold tracking-tight">Configurações</h1>
+          <p className="text-muted-foreground mt-1">Gerencie sua conta.</p>
+        </header>
+        <MinhaContaSection />
+      </div>
+    );
+  }
+
   return (
     <div className="p-8 space-y-6 max-w-4xl">
       <header>
