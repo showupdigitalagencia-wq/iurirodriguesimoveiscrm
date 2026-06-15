@@ -178,7 +178,7 @@ function UsuariosPage() {
                 </Select>
               </div>
               <div>
-                <Label>Vincular ao responsável</Label>
+                <Label>Executivo responsável <span className="text-xs text-muted-foreground">(obrigatório p/ Corretor)</span></Label>
                 <Select name="responsavel_id" defaultValue={NO_RESPONSAVEL}>
                   <SelectTrigger className="mt-1.5"><SelectValue placeholder="Nenhum" /></SelectTrigger>
                   <SelectContent>
