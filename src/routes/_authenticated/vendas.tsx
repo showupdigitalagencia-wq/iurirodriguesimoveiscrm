@@ -37,14 +37,15 @@ const TABS = [
 
 function VendasLayout() {
   return (
-    <div className="p-4 md:p-6 space-y-4">
+    <div className="p-3 md:p-6 space-y-4 pb-24 md:pb-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Corretores de Vendas</h1>
-          <p className="text-sm text-muted-foreground">Pipeline de compra e locação</p>
+        <div className="min-w-0">
+          <h1 className="text-xl md:text-2xl font-bold truncate">Corretores de Vendas</h1>
+          <p className="text-xs md:text-sm text-muted-foreground">Pipeline de compra e locação</p>
         </div>
       </div>
-      <nav className="flex gap-1 border-b">
+      {/* Tabs desktop */}
+      <nav className="hidden md:flex gap-1 border-b overflow-x-auto">
         {TABS.map((t) => {
           const Icon = t.icon;
           return (
@@ -53,7 +54,7 @@ function VendasLayout() {
               to={t.to}
               activeOptions={{ exact: t.exact }}
               activeProps={{ className: "border-gold text-gold" }}
-              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm border-b-2 border-transparent text-muted-foreground hover:text-foreground"
+              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm border-b-2 border-transparent text-muted-foreground hover:text-foreground min-h-[44px]"
             >
               <Icon className="h-4 w-4" /> {t.label}
             </Link>
@@ -61,6 +62,24 @@ function VendasLayout() {
         })}
       </nav>
       <Outlet />
+      {/* Bottom nav mobile */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t flex justify-around items-stretch h-16 pb-[env(safe-area-inset-bottom)]">
+        {TABS.map((t) => {
+          const Icon = t.icon;
+          return (
+            <Link
+              key={t.to}
+              to={t.to}
+              activeOptions={{ exact: t.exact }}
+              activeProps={{ className: "text-gold" }}
+              className="flex-1 inline-flex flex-col items-center justify-center gap-0.5 text-[11px] text-muted-foreground min-h-[44px]"
+            >
+              <Icon className="h-5 w-5" />
+              <span>{t.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
     </div>
   );
 }
