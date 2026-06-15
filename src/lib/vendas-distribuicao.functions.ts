@@ -108,7 +108,7 @@ export const atribuirLead = createServerFn({ method: "POST" })
         atribuido_por: context.userId,
       } as never)
       .eq("id", data.lead_id)
-      .select("nome, telefone")
+      .select("nome, telefone, regiao")
       .single();
     if (error) throw new Error(error.message);
 
