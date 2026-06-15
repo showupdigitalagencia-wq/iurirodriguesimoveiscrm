@@ -20,11 +20,16 @@ export type ReuniaoRow = {
   resultado: string | null;
   criado_por: string | null;
   created_at: string;
+  recorrente?: boolean;
 };
 
 export type ReuniaoDetail = ReuniaoRow & {
-  participantes_leads: { id: string; nome: string; telefone: string }[];
+  participantes_leads: { id: string; nome: string; telefone: string; added_by: string | null }[];
   participantes_corretores: { id: string; nome: string; canal: string }[];
+  my_role: "admin" | "corretor" | "corretor_vendas" | string;
+  my_user_id: string;
+  my_responsavel_id: string | null;
+  is_executivo: boolean;
 };
 
 const CreateInput = z.object({
