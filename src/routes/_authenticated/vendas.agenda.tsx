@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,14 +12,18 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { addDays, addMonths, endOfMonth, endOfWeek, format, isSameDay, isSameMonth, startOfMonth, startOfWeek, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarCheck2, ChevronLeft, ChevronRight, Loader2, Plus, Trash2, Link2, Link2Off } from "lucide-react";
+import { CalendarCheck2, ChevronLeft, ChevronRight, Loader2, Plus, Trash2, Link2, Link2Off, MapPin } from "lucide-react";
 import { addBloqueio, addRecorrente, listDisponibilidade, removeDisponibilidade, type DisponibilidadeRow } from "@/lib/disponibilidade.functions";
 import { disconnectGoogle, getGoogleStatus, startGoogleOAuth } from "@/lib/google.functions";
+import { createVisita, deleteVisita, listMyVendasLeads, listVisitas, type VisitaRow } from "@/lib/visitas.functions";
 
 export const Route = createFileRoute("/_authenticated/vendas/agenda")({
   head: () => ({ meta: [{ title: "Minha Agenda — Vendas" }] }),
   component: AgendaCorretorPage,
 });
+
+type VisitaItem = VisitaRow & { vendas_leads: { nome: string; telefone: string } | null };
+type LeadOption = { id: string; nome: string; telefone: string; etapa: string };
 
 const DIAS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 type View = "dia" | "semana" | "mes";
