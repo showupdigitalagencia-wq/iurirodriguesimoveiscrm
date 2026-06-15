@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS vendas_acesso boolean NOT NULL DEFAULT false;

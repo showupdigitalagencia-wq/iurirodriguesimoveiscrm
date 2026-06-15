@@ -260,6 +260,7 @@ export type Database = {
           onesignal_external_id: string | null
           responsavel_id: string | null
           updated_at: string
+          vendas_acesso: boolean
         }
         Insert: {
           ativo?: boolean
@@ -269,6 +270,7 @@ export type Database = {
           onesignal_external_id?: string | null
           responsavel_id?: string | null
           updated_at?: string
+          vendas_acesso?: boolean
         }
         Update: {
           ativo?: boolean
@@ -278,6 +280,7 @@ export type Database = {
           onesignal_external_id?: string | null
           responsavel_id?: string | null
           updated_at?: string
+          vendas_acesso?: boolean
         }
         Relationships: [
           {
