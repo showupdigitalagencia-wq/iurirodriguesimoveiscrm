@@ -331,10 +331,15 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
                       </Select>
                     </Field>
                     <Field label="Responsável / Executivo">
-                      <Select value={form.canal} onValueChange={(v) => setForm({ ...form, canal: v as LeadRow["canal"] })}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
+                      <Select
+                        value={form.responsavel_id || ""}
+                        onValueChange={(v) => setForm({ ...form, responsavel_id: v })}
+                      >
+                        <SelectTrigger><SelectValue placeholder="Selecione um executivo" /></SelectTrigger>
                         <SelectContent>
-                          {CANAIS.map((c) => <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>)}
+                          {responsaveis.map((r) => (
+                            <SelectItem key={r.id} value={r.id}>{r.nome}</SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </Field>
