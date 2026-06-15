@@ -58,7 +58,7 @@ function LeadsPage() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   async function load() {
-    const { data } = await supabase.from("leads").select("*").order("created_at", { ascending: false });
+    const { data } = await supabase.from("leads").select("*").neq("etapa", "fechado").order("created_at", { ascending: false });
     setLeads((data as LeadRow[]) ?? []);
     setSelected(new Set());
   }

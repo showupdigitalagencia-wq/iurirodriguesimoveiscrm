@@ -73,7 +73,7 @@ function CorretoresPage() {
 
   async function load() {
     const [{ data: ls }, { data: rs }] = await Promise.all([
-      supabase.from("leads").select("*").eq("is_corretor", true).order("created_at", { ascending: false }),
+      supabase.from("leads").select("*").eq("etapa", "fechado").order("fechado_em", { ascending: false, nullsFirst: false }),
       supabase.from("responsaveis").select("id, nome, canal").order("nome"),
     ]);
     setLeads((ls as CorretorLead[]) ?? []);
@@ -162,9 +162,9 @@ function CorretoresPage() {
     <div className="p-4 md:p-8 space-y-6">
       <header className="flex flex-wrap items-end gap-4 justify-between">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Captação de Corretores</h1>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Corretores do Time</h1>
           <p className="text-muted-foreground mt-1 text-sm">
-            {filtered.length} de {scoped.length} candidatos {isAdmin && respFilter !== "todos" && `de ${respLabel}`}
+            {filtered.length} de {scoped.length} corretores contratados {isAdmin && respFilter !== "todos" && `de ${respLabel}`}
           </p>
         </div>
         <div className="flex gap-2 w-full md:w-auto flex-wrap">
@@ -184,7 +184,7 @@ function CorretoresPage() {
           </Button>
           {responsaveis.map((r) => (
             <Button key={r.id} variant={respFilter === r.id ? "default" : "outline"} size="sm" onClick={() => setRespFilter(r.id)} className="h-11">
-              {r.nome} <span className="ml-1.5 text-xs opacity-70">({countsByResp[r.id] ?? 0})</span>
+              <span className="text-[10px] font-bold text-gold mr-1">EXEC.</span>{r.nome} <span className="ml-1.5 text-xs opacity-70">({countsByResp[r.id] ?? 0})</span>
             </Button>
           ))}
         </div>
@@ -289,12 +289,17 @@ function CorretoresPage() {
                       <Checkbox checked={selected.has(l.id)} onCheckedChange={() => toggleOne(l.id)} />
                     </TableCell>
                   )}
-                  <TableCell className="font-medium cursor-pointer" onClick={() => setOpenLead(l.id)}>{l.nome}</TableCell>
+                  <TableCell className="font-medium cursor-pointer" onClick={() => setOpenLead(l.id)}>
+                    <div className="flex items-center gap-2">
+                      <span>{l.nome}</span>
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 dark:bg-blue-500/15 dark:text-blue-300">CORRETOR</span>
+                    </div>
+                  </TableCell>
                   <TableCell className="text-sm cursor-pointer" onClick={() => setOpenLead(l.id)}>
                     <div>{l.telefone}</div>
                     {l.email && <div className="text-muted-foreground text-xs">{l.email}</div>}
                   </TableCell>
-                  <TableCell className="text-sm">{l.responsavel_id ? respMap[l.responsavel_id] : <span className="text-muted-foreground">—</span>}</TableCell>
+                  <TableCell className="text-sm">{l.responsavel_id ? <span><span className="text-[10px] font-bold text-gold mr-1">EXEC.</span>{respMap[l.responsavel_id]}</span> : <span className="text-muted-foreground">—</span>}</TableCell>
                   <TableCell><YesNo value={d.ja_corretor} /></TableCell>
                   <TableCell><YesNo value={d.creci_ativo} /></TableCell>
                   <TableCell className="text-sm">{d.numero_creci ?? <span className="text-muted-foreground">—</span>}</TableCell>
