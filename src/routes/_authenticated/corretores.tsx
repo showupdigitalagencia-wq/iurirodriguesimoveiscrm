@@ -184,7 +184,7 @@ function CorretoresPage() {
           </Button>
           {responsaveis.map((r) => (
             <Button key={r.id} variant={respFilter === r.id ? "default" : "outline"} size="sm" onClick={() => setRespFilter(r.id)} className="h-11">
-              {r.nome} <span className="ml-1.5 text-xs opacity-70">({countsByResp[r.id] ?? 0})</span>
+              <span className="text-[10px] font-bold text-gold mr-1">EXEC.</span>{r.nome} <span className="ml-1.5 text-xs opacity-70">({countsByResp[r.id] ?? 0})</span>
             </Button>
           ))}
         </div>
