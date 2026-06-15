@@ -45,17 +45,24 @@ export const updateLead = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({
     id: z.string().uuid(),
     patch: z.object({
-      nome: z.string().optional(),
-      email: z.string().email().nullable().optional(),
-      telefone: z.string().optional(),
-      observacoes: z.string().nullable().optional(),
+      nome: z.string().min(1).max(200).optional(),
+      email: z.string().email().max(255).nullable().optional(),
+      telefone: z.string().min(1).max(40).optional(),
+      observacoes: z.string().max(5000).nullable().optional(),
       canal: z.enum(["denise", "fabiola", "renata", "robson"]).optional(),
       responsavel_id: z.string().uuid().nullable().optional(),
-      motivo_perda: z.string().nullable().optional(),
+      motivo_perda: z.string().max(2000).nullable().optional(),
+      regiao: z.string().min(1).max(60).optional(),
+      etapa: LeadEtapa.optional(),
+      dados_corretor: z.record(z.string(), z.string().nullable()).nullable().optional(),
     }),
   }).parse(d))
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase.from("leads").update(data.patch).eq("id", data.id);
+    const patch = { ...data.patch } as Record<string, unknown>;
+    if (data.patch.etapa === "fechado" || data.patch.etapa === "descartado") {
+      patch.fechado_em = new Date().toISOString();
+    }
+    const { error } = await context.supabase.from("leads").update(patch as never).eq("id", data.id);
     if (error) throw new Error(error.message);
     await context.supabase.from("lead_historico").insert({
       lead_id: data.id, user_id: context.userId, acao: "editou_lead",
