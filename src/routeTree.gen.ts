@@ -20,6 +20,7 @@ import { Route as AuthenticatedRelatorioRouteImport } from './routes/_authentica
 import { Route as AuthenticatedPipelineRouteImport } from './routes/_authenticated/pipeline'
 import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
 import { Route as AuthenticatedLeadsRouteImport } from './routes/_authenticated/leads'
+import { Route as AuthenticatedExecutivosRouteImport } from './routes/_authenticated/executivos'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCorretoresRouteImport } from './routes/_authenticated/corretores'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
@@ -35,6 +36,7 @@ import { Route as AuthenticatedVendasPipelineRouteImport } from './routes/_authe
 import { Route as AuthenticatedVendasLeadsRouteImport } from './routes/_authenticated/vendas.leads'
 import { Route as AuthenticatedVendasAgendaRouteImport } from './routes/_authenticated/vendas.agenda'
 import { Route as AuthenticatedLeadsLeadIdRouteImport } from './routes/_authenticated/leads.$leadId'
+import { Route as AuthenticatedExecutivosIdRouteImport } from './routes/_authenticated/executivos.$id'
 
 const FormularioRoute = FormularioRouteImport.update({
   id: '/formulario',
@@ -90,6 +92,11 @@ const AuthenticatedNotificacoesRoute =
 const AuthenticatedLeadsRoute = AuthenticatedLeadsRouteImport.update({
   id: '/leads',
   path: '/leads',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedExecutivosRoute = AuthenticatedExecutivosRouteImport.update({
+  id: '/executivos',
+  path: '/executivos',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -175,6 +182,12 @@ const AuthenticatedLeadsLeadIdRoute =
     path: '/$leadId',
     getParentRoute: () => AuthenticatedLeadsRoute,
   } as any)
+const AuthenticatedExecutivosIdRoute =
+  AuthenticatedExecutivosIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedExecutivosRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -184,6 +197,7 @@ export interface FileRoutesByFullPath {
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/executivos': typeof AuthenticatedExecutivosRouteWithChildren
   '/leads': typeof AuthenticatedLeadsRouteWithChildren
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/pipeline': typeof AuthenticatedPipelineRoute
@@ -191,6 +205,7 @@ export interface FileRoutesByFullPath {
   '/tempo-acesso': typeof AuthenticatedTempoAcessoRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/vendas': typeof AuthenticatedVendasRouteWithChildren
+  '/executivos/$id': typeof AuthenticatedExecutivosIdRoute
   '/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
   '/vendas/agenda': typeof AuthenticatedVendasAgendaRoute
   '/vendas/leads': typeof AuthenticatedVendasLeadsRoute
@@ -211,12 +226,14 @@ export interface FileRoutesByTo {
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/executivos': typeof AuthenticatedExecutivosRouteWithChildren
   '/leads': typeof AuthenticatedLeadsRouteWithChildren
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/pipeline': typeof AuthenticatedPipelineRoute
   '/relatorio': typeof AuthenticatedRelatorioRoute
   '/tempo-acesso': typeof AuthenticatedTempoAcessoRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
+  '/executivos/$id': typeof AuthenticatedExecutivosIdRoute
   '/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
   '/vendas/agenda': typeof AuthenticatedVendasAgendaRoute
   '/vendas/leads': typeof AuthenticatedVendasLeadsRoute
@@ -239,6 +256,7 @@ export interface FileRoutesById {
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/_authenticated/corretores': typeof AuthenticatedCorretoresRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/executivos': typeof AuthenticatedExecutivosRouteWithChildren
   '/_authenticated/leads': typeof AuthenticatedLeadsRouteWithChildren
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/_authenticated/pipeline': typeof AuthenticatedPipelineRoute
@@ -246,6 +264,7 @@ export interface FileRoutesById {
   '/_authenticated/tempo-acesso': typeof AuthenticatedTempoAcessoRoute
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
   '/_authenticated/vendas': typeof AuthenticatedVendasRouteWithChildren
+  '/_authenticated/executivos/$id': typeof AuthenticatedExecutivosIdRoute
   '/_authenticated/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
   '/_authenticated/vendas/agenda': typeof AuthenticatedVendasAgendaRoute
   '/_authenticated/vendas/leads': typeof AuthenticatedVendasLeadsRoute
@@ -268,6 +287,7 @@ export interface FileRouteTypes {
     | '/configuracoes'
     | '/corretores'
     | '/dashboard'
+    | '/executivos'
     | '/leads'
     | '/notificacoes'
     | '/pipeline'
@@ -275,6 +295,7 @@ export interface FileRouteTypes {
     | '/tempo-acesso'
     | '/usuarios'
     | '/vendas'
+    | '/executivos/$id'
     | '/leads/$leadId'
     | '/vendas/agenda'
     | '/vendas/leads'
@@ -295,12 +316,14 @@ export interface FileRouteTypes {
     | '/configuracoes'
     | '/corretores'
     | '/dashboard'
+    | '/executivos'
     | '/leads'
     | '/notificacoes'
     | '/pipeline'
     | '/relatorio'
     | '/tempo-acesso'
     | '/usuarios'
+    | '/executivos/$id'
     | '/leads/$leadId'
     | '/vendas/agenda'
     | '/vendas/leads'
@@ -322,6 +345,7 @@ export interface FileRouteTypes {
     | '/_authenticated/configuracoes'
     | '/_authenticated/corretores'
     | '/_authenticated/dashboard'
+    | '/_authenticated/executivos'
     | '/_authenticated/leads'
     | '/_authenticated/notificacoes'
     | '/_authenticated/pipeline'
@@ -329,6 +353,7 @@ export interface FileRouteTypes {
     | '/_authenticated/tempo-acesso'
     | '/_authenticated/usuarios'
     | '/_authenticated/vendas'
+    | '/_authenticated/executivos/$id'
     | '/_authenticated/leads/$leadId'
     | '/_authenticated/vendas/agenda'
     | '/_authenticated/vendas/leads'
@@ -432,6 +457,13 @@ declare module '@tanstack/react-router' {
       path: '/leads'
       fullPath: '/leads'
       preLoaderRoute: typeof AuthenticatedLeadsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/executivos': {
+      id: '/_authenticated/executivos'
+      path: '/executivos'
+      fullPath: '/executivos'
+      preLoaderRoute: typeof AuthenticatedExecutivosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
@@ -539,8 +571,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLeadsLeadIdRouteImport
       parentRoute: typeof AuthenticatedLeadsRoute
     }
+    '/_authenticated/executivos/$id': {
+      id: '/_authenticated/executivos/$id'
+      path: '/$id'
+      fullPath: '/executivos/$id'
+      preLoaderRoute: typeof AuthenticatedExecutivosIdRouteImport
+      parentRoute: typeof AuthenticatedExecutivosRoute
+    }
   }
 }
+
+interface AuthenticatedExecutivosRouteChildren {
+  AuthenticatedExecutivosIdRoute: typeof AuthenticatedExecutivosIdRoute
+}
+
+const AuthenticatedExecutivosRouteChildren: AuthenticatedExecutivosRouteChildren =
+  {
+    AuthenticatedExecutivosIdRoute: AuthenticatedExecutivosIdRoute,
+  }
+
+const AuthenticatedExecutivosRouteWithChildren =
+  AuthenticatedExecutivosRoute._addFileChildren(
+    AuthenticatedExecutivosRouteChildren,
+  )
 
 interface AuthenticatedLeadsRouteChildren {
   AuthenticatedLeadsLeadIdRoute: typeof AuthenticatedLeadsLeadIdRoute
@@ -575,6 +628,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
   AuthenticatedCorretoresRoute: typeof AuthenticatedCorretoresRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedExecutivosRoute: typeof AuthenticatedExecutivosRouteWithChildren
   AuthenticatedLeadsRoute: typeof AuthenticatedLeadsRouteWithChildren
   AuthenticatedNotificacoesRoute: typeof AuthenticatedNotificacoesRoute
   AuthenticatedPipelineRoute: typeof AuthenticatedPipelineRoute
@@ -589,6 +643,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
   AuthenticatedCorretoresRoute: AuthenticatedCorretoresRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedExecutivosRoute: AuthenticatedExecutivosRouteWithChildren,
   AuthenticatedLeadsRoute: AuthenticatedLeadsRouteWithChildren,
   AuthenticatedNotificacoesRoute: AuthenticatedNotificacoesRoute,
   AuthenticatedPipelineRoute: AuthenticatedPipelineRoute,
