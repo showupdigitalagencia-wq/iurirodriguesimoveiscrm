@@ -100,6 +100,7 @@ function colorFor(r: Pick<ReuniaoRow, "tipo" | "status">) {
   if (r.status === "cancelada") return "bg-red-600 text-white border-red-700 line-through";
   if (r.tipo === "alinhamento") return "bg-purple-600 text-white border-purple-700";
   if (r.tipo === "institucional") return "bg-gold/90 text-gold-foreground border-gold";
+  if (r.tipo === "mentoria") return "bg-blue-900 text-white border-blue-950";
   return "bg-blue-500 text-white border-blue-600";
 }
 
