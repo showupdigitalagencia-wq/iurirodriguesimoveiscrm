@@ -563,34 +563,49 @@ export const createReuniao = createServerFn({ method: "POST" })
       await supabaseAdmin.from("lead_historico").insert(historicoRows);
     }
 
-    // Notificação push para TODOS via segment "All"
+    // Notificação push apenas para corretores adicionados explicitamente
     try {
       const { sendOneSignalPush } = await import("@/lib/onesignal.server");
-      const { data: profileCriador } = await supabaseAdmin
-        .from("profiles").select("nome").eq("id", context.userId).maybeSingle();
-      const nomeCriador = profileCriador?.nome ?? "Sistema";
+      const { data: perfisPush } = pushUserIds.length
+        ? await supabaseAdmin.from("profiles").select("onesignal_external_id").in("id", pushUserIds)
+        : { data: [] };
+      const externalIds = ((perfisPush ?? []) as { onesignal_external_id: string | null }[])
+        .map((p) => p.onesignal_external_id)
+        .filter((id): id is string => !!id);
 
       const dt = new Date(data.data_inicio);
       const dataStr = dt.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit", year: "numeric" });
       const horaStr = dt.toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" });
-
-      let title: string;
-      let message: string;
-      if (data.tipo === "institucional") {
-        title = "🏢 Reunião Institucional!";
-        message = `Com Diretor IURI RODRIGUES | ${dataStr} às ${horaStr}`;
-      } else if (data.tipo === "alinhamento") {
-        title = "⚠️ Reunião de Alinhamento!";
-        message = `Reunião obrigatória com toda equipe | ${dataStr} às ${horaStr}`;
-      } else {
-        title = "📅 Nova Reunião Agendada!";
-        message = `Individual | ${dataStr} às ${horaStr} | Por: ${nomeCriador}`;
-      }
       const url = `https://iurirodriguesimoveiscrm.lovable.app/agenda`;
 
-      await sendOneSignalPush({ segments: ["All"], title, message, url, data: { reuniao_id: reuniaoId } });
+      if (externalIds.length) {
+        await sendOneSignalPush({
+          externalIds,
+          title: "📅 Você foi adicionado a uma reunião",
+          message: `${data.titulo} | ${dataStr} às ${horaStr}`,
+          url,
+          data: { reuniao_id: reuniaoId },
+        });
+      }
     } catch (e) {
       console.error("[Reuniao] push falhou", e);
+    }
+
+    try {
+      if (data.lead_ids.length) {
+        const { sendZapiMessage } = await import("@/lib/notify.server");
+        const { data: leadsZap } = await supabaseAdmin.from("leads").select("nome, telefone").in("id", data.lead_ids);
+        const dt = new Date(data.data_inicio);
+        const dataStr = dt.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
+        const horaStr = dt.toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" });
+        for (const lead of (leadsZap ?? []) as { nome: string; telefone: string }[]) {
+          const phone = lead.telefone.replace(/\D+/g, "");
+          if (!phone) continue;
+          await sendZapiMessage(phone.startsWith("55") ? phone : `55${phone}`, `Olá ${lead.nome}! Sua reunião foi confirmada para ${dataStr} às ${horaStr}. Link: ${finalLocal ?? "a definir"}`);
+        }
+      }
+    } catch (e) {
+      console.error("[Reuniao] WhatsApp lead falhou", e);
     }
 
     return { id: reuniaoId, local: finalLocal, invitedEmails, leadsSemEmail };
