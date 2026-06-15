@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useServerFn } from "@tanstack/react-start";
-import { getReuniao, updateReuniaoStatus, deleteReuniao, addLeadToReuniao, type ReuniaoDetail, type ReuniaoStatus } from "@/lib/reunioes.functions";
+import { getReuniao, updateReuniaoStatus, deleteReuniao, addLeadToReuniao, addUserToReuniao, type ReuniaoDetail, type ReuniaoStatus } from "@/lib/reunioes.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -69,10 +69,14 @@ export function ReuniaoDetailDialog({ reuniaoId, onClose, onChanged }: Props) {
   const [addOpen, setAddOpen] = useState(false);
   const [myLeads, setMyLeads] = useState<LeadOpt[]>([]);
   const [selectedLeadId, setSelectedLeadId] = useState<string>("");
+  const [addUserOpen, setAddUserOpen] = useState(false);
+  const [allUsers, setAllUsers] = useState<{ id: string; nome: string; role: string }[]>([]);
+  const [selectedUserId, setSelectedUserId] = useState<string>("");
   const callGet = useServerFn(getReuniao);
   const callStatus = useServerFn(updateReuniaoStatus);
   const callDelete = useServerFn(deleteReuniao);
   const callAddLead = useServerFn(addLeadToReuniao);
+  const callAddUser = useServerFn(addUserToReuniao);
 
   useEffect(() => {
     if (!reuniaoId) { setR(null); return; }
@@ -128,6 +132,32 @@ export function ReuniaoDetailDialog({ reuniaoId, onClose, onChanged }: Props) {
         const phone = tel.startsWith("55") || tel.length < 11 ? tel : `55${tel}`;
         window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, "_blank", "noopener");
       }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha");
+    }
+  }
+
+  async function openAddUser() {
+    setAddUserOpen(true);
+    setSelectedUserId("");
+    const { data: roles } = await supabase.from("user_roles").select("user_id, role");
+    const ids = (roles ?? []).map((r) => r.user_id);
+    const { data: profs } = await supabase.from("profiles").select("id, nome").in("id", ids);
+    const rolesById = new Map((roles ?? []).map((r) => [r.user_id, r.role]));
+    setAllUsers(((profs ?? []) as { id: string; nome: string }[])
+      .map((p) => ({ ...p, role: rolesById.get(p.id) ?? "" }))
+      .sort((a, b) => a.nome.localeCompare(b.nome)));
+  }
+
+  async function submitAddUser() {
+    if (!reuniaoId || !selectedUserId) return;
+    try {
+      await callAddUser({ data: { reuniao_id: reuniaoId, user_id: selectedUserId } });
+      toast.success("Participante adicionado e notificado");
+      setAddUserOpen(false);
+      onChanged?.();
+      const fresh = await callGet({ data: { id: reuniaoId } });
+      setR(fresh);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Falha");
     }
@@ -266,12 +296,32 @@ export function ReuniaoDetailDialog({ reuniaoId, onClose, onChanged }: Props) {
 
               <div>
                 <div className="flex items-center gap-2 text-xs uppercase text-muted-foreground mb-2">
-                  <Users className="h-3.5 w-3.5" /> Corretores
+                  <Users className="h-3.5 w-3.5" /> Corretores / Executivos
                 </div>
                 {r.participantes_corretores.length === 0 ? <p className="text-muted-foreground text-xs">Nenhum</p> : (
                   <ul className="space-y-1">
                     {r.participantes_corretores.map((c) => (
                       <li key={c.id} className="text-sm">{c.nome}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2 text-xs uppercase text-muted-foreground">
+                    <Users className="h-3.5 w-3.5" /> Participantes internos
+                  </div>
+                  {isAdmin && (
+                    <Button size="sm" variant="gold" onClick={openAddUser}>
+                      <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar participante
+                    </Button>
+                  )}
+                </div>
+                {(r.participantes_usuarios ?? []).length === 0 ? <p className="text-muted-foreground text-xs">Nenhum</p> : (
+                  <ul className="space-y-1">
+                    {(r.participantes_usuarios ?? []).map((u) => (
+                      <li key={u.id} className="text-sm">{u.nome}</li>
                     ))}
                   </ul>
                 )}
@@ -329,6 +379,39 @@ export function ReuniaoDetailDialog({ reuniaoId, onClose, onChanged }: Props) {
                     <Button variant="outline" onClick={() => setAddOpen(false)}>Cancelar</Button>
                     <Button variant="gold" onClick={submitAddLead} disabled={!selectedLeadId}>
                       Adicionar e enviar WhatsApp
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            {/* Add internal user modal (admin only) */}
+            <Dialog open={addUserOpen} onOpenChange={setAddUserOpen}>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Adicionar participante</DialogTitle>
+                  <DialogDescription>Admin, executivo ou corretor.</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-3">
+                  <div className="max-h-72 overflow-y-auto border border-border rounded-md divide-y divide-border">
+                    {allUsers.length === 0 && <p className="p-3 text-xs text-muted-foreground">Carregando...</p>}
+                    {allUsers.map((u) => (
+                      <label key={u.id} className="flex items-center gap-2 p-2 cursor-pointer hover:bg-muted text-sm">
+                        <input
+                          type="radio"
+                          name="user"
+                          checked={selectedUserId === u.id}
+                          onChange={() => setSelectedUserId(u.id)}
+                        />
+                        <span className="flex-1 truncate">{u.nome}</span>
+                        <Badge variant="outline" className="text-[10px]">{u.role}</Badge>
+                      </label>
+                    ))}
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button variant="outline" onClick={() => setAddUserOpen(false)}>Cancelar</Button>
+                    <Button variant="gold" onClick={submitAddUser} disabled={!selectedUserId}>
+                      Adicionar e notificar
                     </Button>
                   </div>
                 </div>
