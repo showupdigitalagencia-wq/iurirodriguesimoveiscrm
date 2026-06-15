@@ -252,11 +252,13 @@ function CorretoresPage() {
                 </div>
                 {l.telefone && (
                   <a
-                    href={`tel:${l.telefone.replace(/[^+\d]/g, "")}`}
+                    href={`https://wa.me/${l.telefone.replace(/[^\d]/g, "")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
                     className="inline-flex items-center justify-center gap-2 w-full h-10 rounded-md bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 active:bg-emerald-800"
                   >
-                    <Phone className="h-4 w-4" /> Ligar
+                    <MessageCircle className="h-4 w-4" /> WhatsApp
                   </a>
                 )}
               </CardContent>
