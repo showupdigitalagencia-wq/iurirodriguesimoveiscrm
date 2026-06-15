@@ -128,3 +128,48 @@ export const listMyVendasLeads = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     return { items: (data ?? []) as { id: string; nome: string; telefone: string; etapa: string }[] };
   });
+
+export const createReuniaoOnlineVenda = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: {
+    lead_id: string;
+    data_inicio: string;
+    duracao_min?: number;
+    observacoes?: string;
+  }) => input)
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+
+    const { data: lead } = await supabase
+      .from("vendas_leads")
+      .select("nome, telefone, email")
+      .eq("id", data.lead_id)
+      .maybeSingle();
+    const leadRow = lead as { nome: string; telefone: string; email: string | null } | null;
+
+    let meetLink: string | null = null;
+    let googleEventId: string | null = null;
+    try {
+      const { createCalendarEventWithMeet } = await import("@/lib/google.server");
+      const attendees = leadRow?.email && /.+@.+\..+/.test(leadRow.email) ? [leadRow.email] : [];
+      const r = await createCalendarEventWithMeet({
+        userId,
+        summary: `Reunião Online: ${leadRow?.nome ?? "Lead"}`,
+        description: data.observacoes ?? null,
+        startISO: data.data_inicio,
+        durationMin: data.duracao_min ?? 45,
+        attendeesEmails: attendees,
+      });
+      meetLink = r?.meetLink ?? null;
+      googleEventId = r?.eventId ?? null;
+    } catch (e) {
+      console.warn("[vendas] reunião online google meet falhou", e);
+    }
+
+    await supabase
+      .from("vendas_leads")
+      .update({ etapa: "proposta_enviada" })
+      .eq("id", data.lead_id);
+
+    return { meetLink, googleEventId, lead: leadRow };
+  });
