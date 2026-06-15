@@ -11,7 +11,7 @@ import { createReuniao } from "@/lib/reunioes.functions";
 import { startGoogleOAuth, getGoogleStatus } from "@/lib/google.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { MessageCircle, Video, CheckCircle2, Copy, Users } from "lucide-react";
+import { MessageCircle, Video, CheckCircle2, Users } from "lucide-react";
 
 type Tipo = "individual" | "institucional" | "alinhamento";
 type LeadOpt = { id: string; nome: string; telefone: string };
