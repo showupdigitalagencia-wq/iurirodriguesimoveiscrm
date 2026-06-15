@@ -111,6 +111,14 @@ function UsuariosPage() {
     } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
   }
 
+  async function toggleVendasAcesso(u: UserRow) {
+    try {
+      await fnUpdate({ data: { id: u.id, vendas_acesso: !u.vendas_acesso } });
+      toast.success(!u.vendas_acesso ? "Acesso ao Vendas liberado" : "Acesso ao Vendas removido");
+      refresh();
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
+  }
+
   async function handleReset(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!resetting) return;
