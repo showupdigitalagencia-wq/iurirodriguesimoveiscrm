@@ -69,16 +69,22 @@ export function ReuniaoDetailDialog({ reuniaoId, onClose, onChanged }: Props) {
   const [r, setR] = useState<ReuniaoDetail | null>(null);
   const [resultado, setResultado] = useState("");
   const [addOpen, setAddOpen] = useState(false);
+  const [leadTab, setLeadTab] = useState<"equipe" | "leads">("leads");
+  const [teamList, setTeamList] = useState<LeadOpt[]>([]);
   const [myLeads, setMyLeads] = useState<LeadOpt[]>([]);
-  const [selectedLeadId, setSelectedLeadId] = useState<string>("");
+  const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
+  const [waListOpen, setWaListOpen] = useState(false);
+  const [waList, setWaList] = useState<LeadOpt[]>([]);
   const [addUserOpen, setAddUserOpen] = useState(false);
   const [allUsers, setAllUsers] = useState<{ id: string; nome: string; role: string }[]>([]);
-  const [selectedUserId, setSelectedUserId] = useState<string>("");
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
   const callGet = useServerFn(getReuniao);
   const callStatus = useServerFn(updateReuniaoStatus);
   const callDelete = useServerFn(deleteReuniao);
   const callAddLead = useServerFn(addLeadToReuniao);
   const callAddUser = useServerFn(addUserToReuniao);
+  const callAddLeadsBatch = useServerFn(addLeadsBatchToReuniao);
+  const callAddUsersBatch = useServerFn(addUsersBatchToReuniao);
 
   useEffect(() => {
     if (!reuniaoId) { setR(null); return; }
@@ -95,45 +101,63 @@ export function ReuniaoDetailDialog({ reuniaoId, onClose, onChanged }: Props) {
 
   async function loadMyLeads() {
     if (!r) return;
-    let q = supabase.from("leads").select("id, nome, telefone, canal").order("nome").limit(500);
+    let myCanal: string | null = null;
     if (!isAdmin) {
-      // Executivo: somente leads do seu canal
       const { data: profile } = await supabase.from("profiles").select("responsavel_id").eq("id", r.my_user_id).maybeSingle();
       const respId = profile?.responsavel_id;
       if (respId) {
         const { data: resp } = await supabase.from("responsaveis").select("canal").eq("id", respId).maybeSingle();
-        const canal = resp?.canal;
-        if (canal) q = q.eq("canal", canal);
+        myCanal = (resp?.canal as string | null) ?? null;
       }
     }
-    const { data } = await q;
-    setMyLeads((data as LeadOpt[]) ?? []);
+    // Leads do pipeline (não fechado)
+    let q = supabase.from("leads").select("id, nome, telefone, canal, etapa, is_corretor").order("nome").limit(500);
+    if (!isAdmin && myCanal) q = q.eq("canal", myCanal);
+    const { data: rows } = await q;
+    const all = ((rows ?? []) as (LeadOpt & { etapa: string; is_corretor: boolean; canal: string })[]);
+    setMyLeads(all.filter((l) => l.etapa !== "fechado").map(({ id, nome, telefone }) => ({ id, nome, telefone })));
+    setTeamList(
+      all
+        .filter((l) => l.etapa === "fechado" && l.is_corretor)
+        .map(({ id, nome, telefone }) => ({ id, nome, telefone })),
+    );
   }
 
   async function openAdd() {
     setAddOpen(true);
-    setSelectedLeadId("");
+    setSelectedLeadIds(new Set());
+    setLeadTab("leads");
     await loadMyLeads();
   }
 
-  async function submitAddLead() {
-    if (!reuniaoId || !selectedLeadId) return;
+  function toggleLead(id: string) {
+    setSelectedLeadIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
+
+  function selectAllInTab(list: LeadOpt[], select: boolean) {
+    setSelectedLeadIds((prev) => {
+      const next = new Set(prev);
+      for (const l of list) { if (select) next.add(l.id); else next.delete(l.id); }
+      return next;
+    });
+  }
+
+  async function submitAddLeads() {
+    if (!reuniaoId || selectedLeadIds.size === 0) return;
     try {
-      const res = await callAddLead({ data: { reuniao_id: reuniaoId, lead_id: selectedLeadId } });
-      toast.success("Lead adicionado");
+      const ids = Array.from(selectedLeadIds);
+      const res = await callAddLeadsBatch({ data: { reuniao_id: reuniaoId, lead_ids: ids } });
+      toast.success(`${res.added.length} adicionado(s)`);
       setAddOpen(false);
       onChanged?.();
       const fresh = await callGet({ data: { id: reuniaoId } });
       setR(fresh);
-      // Abre WhatsApp automaticamente
-      const lead = res.lead;
-      const tel = onlyDigits(lead.telefone);
-      if (tel && fresh) {
-        const corretores = fresh.participantes_corretores.map((c) => c.nome).join(", ");
-        const msg = buildWhatsAppMessage(fresh.tipo, lead.nome, new Date(fresh.data_inicio), fresh.local, corretores);
-        const phone = tel.startsWith("55") || tel.length < 11 ? tel : `55${tel}`;
-        window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, "_blank", "noopener");
-      }
+      setWaList(res.added.map((l) => ({ id: l.id, nome: l.nome, telefone: l.telefone })));
+      setWaListOpen(true);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Falha");
     }
@@ -141,7 +165,7 @@ export function ReuniaoDetailDialog({ reuniaoId, onClose, onChanged }: Props) {
 
   async function openAddUser() {
     setAddUserOpen(true);
-    setSelectedUserId("");
+    setSelectedUserIds(new Set());
     const { data: roles } = await supabase.from("user_roles").select("user_id, role");
     const ids = (roles ?? []).map((r) => r.user_id);
     const { data: profs } = await supabase.from("profiles").select("id, nome").in("id", ids);
@@ -151,11 +175,19 @@ export function ReuniaoDetailDialog({ reuniaoId, onClose, onChanged }: Props) {
       .sort((a, b) => a.nome.localeCompare(b.nome)));
   }
 
-  async function submitAddUser() {
-    if (!reuniaoId || !selectedUserId) return;
+  function toggleUser(id: string) {
+    setSelectedUserIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
+
+  async function submitAddUsers() {
+    if (!reuniaoId || selectedUserIds.size === 0) return;
     try {
-      await callAddUser({ data: { reuniao_id: reuniaoId, user_id: selectedUserId } });
-      toast.success("Participante adicionado e notificado");
+      const res = await callAddUsersBatch({ data: { reuniao_id: reuniaoId, user_ids: Array.from(selectedUserIds) } });
+      toast.success(`${res.addedCount} participante(s) notificado(s)`);
       setAddUserOpen(false);
       onChanged?.();
       const fresh = await callGet({ data: { id: reuniaoId } });
@@ -164,6 +196,9 @@ export function ReuniaoDetailDialog({ reuniaoId, onClose, onChanged }: Props) {
       toast.error(e instanceof Error ? e.message : "Falha");
     }
   }
+
+  // Mantido: usado internamente caso queira-se adicionar individual (legacy)
+  void callAddLead; void callAddUser;
 
   async function setStatus(status: ReuniaoStatus) {
     if (!reuniaoId) return;
