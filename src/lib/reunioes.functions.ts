@@ -105,27 +105,9 @@ async function loadMeetingAccess(supabaseAdmin: any, userId: string) {
 
 export const listEquipeReuniao = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async () => {
+  .handler(async ({ context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const [{ data: profiles }, { data: roles }, { data: resps }] = await Promise.all([
-      supabaseAdmin.from("profiles").select("id, nome, responsavel_id").eq("ativo", true).order("nome"),
-      supabaseAdmin.from("user_roles").select("user_id, role"),
-      supabaseAdmin.from("responsaveis").select("id, nome, ativo"),
-    ]);
-    const rolesMap = new Map(((roles ?? []) as { user_id: string; role: EquipeMembro["role"] }[]).map((r) => [r.user_id, r.role]));
-    const respMap = new Map(((resps ?? []) as { id: string; nome: string }[]).map((r) => [r.id, r.nome]));
-    const activeExec = new Set(
-      ((resps ?? []) as { nome: string; ativo: boolean }[])
-        .filter((r) => r.ativo)
-        .map((r) => r.nome.trim().split(" ")[0].toLowerCase())
-    );
-    const equipe: EquipeMembro[] = ((profiles ?? []) as { id: string; nome: string; responsavel_id: string | null }[]).map((p) => {
-      const role = rolesMap.get(p.id) ?? "corretor";
-      const isExec = activeExec.has(p.nome.trim().split(" ")[0].toLowerCase());
-      const tipo: EquipeMembro["tipo"] = role === "admin" ? "admin" : isExec ? "executivo" : "corretor";
-      const executivo = tipo === "corretor" && p.responsavel_id ? respMap.get(p.responsavel_id) ?? null : null;
-      return { id: p.id, nome: p.nome, role, tipo, executivo };
-    });
+    const { equipe } = await loadMeetingAccess(supabaseAdmin, context.userId);
     return { equipe };
   });
 
