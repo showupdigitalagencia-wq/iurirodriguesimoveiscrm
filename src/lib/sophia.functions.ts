@@ -314,7 +314,7 @@ Para dados em tempo real (leads ativos, corretores na equipe, disponibilidade, p
             role: "user",
             content: [
               { type: "text", text: m.content },
-              { type: "image", image: new URL(m.imageDataUrl) },
+              { type: "image", image: m.imageDataUrl },
             ],
           } as ModelMessage;
         }
