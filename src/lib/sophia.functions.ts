@@ -180,15 +180,17 @@ export const sophiaChat = createServerFn({ method: "POST" })
           const profsRes = ids.length
             ? await supabaseAdmin.from("profiles").select("id, responsavel_id, ativo").in("responsavel_id", ids)
             : { data: [] as Array<{ id: string; responsavel_id: string | null; ativo: boolean }> };
-          const leadsRes = ids.length
-            ? await supabaseAdmin.from("vendas_leads").select("id, responsavel_id, etapa").in("responsavel_id", ids)
-            : { data: [] as Array<{ id: string; responsavel_id: string | null; etapa: string }> };
           const profs = profsRes.data ?? [];
+          const corretorIds = profs.map((p) => p.id);
+          const leadsRes = corretorIds.length
+            ? await supabaseAdmin.from("vendas_leads").select("id, corretor_id, etapa").in("corretor_id", corretorIds)
+            : { data: [] as Array<{ id: string; corretor_id: string | null; etapa: string }> };
           const leadsAtivos = leadsRes.data ?? [];
 
           const resultado = lista.map((e) => {
             const corretores = profs.filter((p) => p.responsavel_id === e.id);
-            const leads = leadsAtivos.filter((l) => l.responsavel_id === e.id && l.etapa !== "fechado" && l.etapa !== "perdido");
+            const meusIds = new Set(corretores.map((c) => c.id));
+            const leads = leadsAtivos.filter((l) => l.corretor_id && meusIds.has(l.corretor_id) && l.etapa !== "fechado" && l.etapa !== "perdido");
             return {
               nome: e.nome,
               regiao: e.regiao ?? "(sem região cadastrada)",
