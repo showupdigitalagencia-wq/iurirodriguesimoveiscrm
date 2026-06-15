@@ -128,6 +128,15 @@ function AuthLayout() {
     };
   }, []);
 
+  // Redireciona corretor_vendas para /vendas se tentar acessar rotas não permitidas
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  useEffect(() => {
+    if (isCorretorVendas && !isAdmin) {
+      const allowed = CORRETOR_ALLOWED_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"));
+      if (!allowed) router.navigate({ to: "/vendas" });
+    }
+  }, [isCorretorVendas, isAdmin, pathname, router]);
+
   async function logout() {
     await endUserSession();
     await supabase.auth.signOut();
