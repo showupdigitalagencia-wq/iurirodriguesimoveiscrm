@@ -80,6 +80,16 @@ export function canalNome(id: LeadCanal): string {
   return CANAIS.find((c) => c.id === id)?.nome ?? id;
 }
 
+const EXECUTIVO_CANAIS = new Set<string>(["robson", "fabiola", "renata", "denise"]);
+
+export type CargoTitulo = "EXECUTIVO" | "CORRETOR" | "ADMINISTRADOR";
+
+export function cargoTitulo(opts: { isAdmin?: boolean; canal?: string | null }): CargoTitulo {
+  if (opts.isAdmin) return "ADMINISTRADOR";
+  if (opts.canal && EXECUTIVO_CANAIS.has(opts.canal)) return "EXECUTIVO";
+  return "CORRETOR";
+}
+
 export const ETAPA_COLORS: Record<LeadEtapa, {
   badge: string;     // bg + text + border for badges/pills
   bar: string;       // solid bg for column headers / side bars
