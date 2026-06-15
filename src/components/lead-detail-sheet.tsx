@@ -314,7 +314,15 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
                     <Field label="Nome"><Input value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} /></Field>
                     <Field label="Telefone"><Input value={form.telefone} onChange={(e) => setForm({ ...form, telefone: e.target.value })} /></Field>
                     <Field label="Email"><Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></Field>
-                    <Field label="Responsável">
+                    <Field label="Região">
+                      <Select value={form.regiao} onValueChange={(v) => setForm({ ...form, regiao: v as LeadRegiao })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {REGIOES.map((r) => <SelectItem key={r.id} value={r.id}>{r.nome}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                    <Field label="Responsável / Executivo">
                       <Select value={form.canal} onValueChange={(v) => setForm({ ...form, canal: v as LeadRow["canal"] })}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
@@ -322,6 +330,70 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
                         </SelectContent>
                       </Select>
                     </Field>
+                    <Field label="Etapa do pipeline">
+                      <Select value={form.etapa} onValueChange={(v) => setForm({ ...form, etapa: v as LeadRow["etapa"] })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {ETAPAS.map((e) => <SelectItem key={e.id} value={e.id}>{e.nome}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </Field>
+
+                    <Separator />
+                    <div className="text-xs uppercase tracking-wide text-muted-foreground">Perguntas do formulário</div>
+
+                    <Field label="Já atua como corretor?">
+                      <Select value={form.ja_corretor} onValueChange={(v) => setForm({ ...form, ja_corretor: v })}>
+                        <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Sim, credenciado">Sim, credenciado</SelectItem>
+                          <SelectItem value="Ainda não">Ainda não</SelectItem>
+                          <SelectItem value="Em processo">Em processo</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                    <Field label="CRECI ativo?">
+                      <Select value={form.creci_ativo} onValueChange={(v) => setForm({ ...form, creci_ativo: v })}>
+                        <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Sim">Sim</SelectItem>
+                          <SelectItem value="Não">Não</SelectItem>
+                          <SelectItem value="Em andamento">Em andamento</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                    <Field label="Número do CRECI">
+                      <Input value={form.numero_creci} onChange={(e) => setForm({ ...form, numero_creci: e.target.value })} />
+                    </Field>
+                    <Field label="Disponibilidade para atuar na região?">
+                      <Select value={form.disponibilidade_regiao} onValueChange={(v) => setForm({ ...form, disponibilidade_regiao: v })}>
+                        <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Sim">Sim</SelectItem>
+                          <SelectItem value="Não">Não</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                    <Field label="Disponibilidade para videochamada diária?">
+                      <Select value={form.disponibilidade_video} onValueChange={(v) => setForm({ ...form, disponibilidade_video: v })}>
+                        <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Sim">Sim</SelectItem>
+                          <SelectItem value="Não">Não</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                    <Field label="Possui veículo?">
+                      <Select value={form.possui_veiculo} onValueChange={(v) => setForm({ ...form, possui_veiculo: v })}>
+                        <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Sim">Sim</SelectItem>
+                          <SelectItem value="Não">Não</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Field>
+
+                    <Separator />
                     <Field label="Observações"><Textarea rows={4} value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} /></Field>
                   </div>
                 ) : (
