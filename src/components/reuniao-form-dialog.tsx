@@ -485,27 +485,9 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
               {form.user_ids.size === 0 && form.lead_ids.size === 0 ? (
                 <p className="text-xs text-muted-foreground">Nenhum participante selecionado</p>
               ) : (
-                <div className="flex flex-wrap gap-1.5 border border-border rounded-md p-2">
-                  {equipe.filter((m) => form.user_ids.has(m.id)).map((m) => (
-                    <Badge key={m.id} variant="secondary" className="gap-1">
-                      {m.tipo === "admin" ? <Shield className="h-3 w-3 text-red-500" /> : m.tipo === "executivo" ? <Briefcase className="h-3 w-3 text-gold" /> : <Users className="h-3 w-3" />}
-                      {m.nome}
-                      <button type="button" onClick={() => setForm({ ...form, user_ids: toggle(form.user_ids, m.id) })} className="ml-1 opacity-70 hover:opacity-100">
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  ))}
-                  {leads.filter((l) => form.lead_ids.has(l.id)).map((l) => (
-                    <Badge key={l.id} variant="outline" className="gap-1">
-                      {l.nome}
-                      {!defaultLeadId && (
-                        <button type="button" onClick={() => setForm({ ...form, lead_ids: toggle(form.lead_ids, l.id) })} className="ml-1 opacity-70 hover:opacity-100">
-                          <X className="h-3 w-3" />
-                        </button>
-                      )}
-                    </Badge>
-                  ))}
-                </div>
+                <p className="text-sm text-muted-foreground">
+                  <span className="font-medium text-foreground">{form.user_ids.size}</span> da equipe + <span className="font-medium text-foreground">{form.lead_ids.size}</span> leads adicionados
+                </p>
               )}
             </div>
           )}
@@ -531,22 +513,21 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
           <DialogTitle>Adicionar Participantes</DialogTitle>
           <DialogDescription>Selecione corretores da equipe e/ou leads do pipeline</DialogDescription>
         </DialogHeader>
-        <Tabs value={participantsTab} onValueChange={(v) => setParticipantsTab(v as "equipe" | "leads")}>
-          <TabsList className="grid grid-cols-2 w-full">
-            <TabsTrigger value="equipe">Minha Equipe ({form.user_ids.size})</TabsTrigger>
-            <TabsTrigger value="leads">Leads ({form.lead_ids.size})</TabsTrigger>
-          </TabsList>
-          <TabsContent value="equipe" className="space-y-2">
-            <label className="flex items-center gap-2 text-xs cursor-pointer">
-              <Checkbox
-                checked={equipe.length > 0 && equipe.every((e) => form.user_ids.has(e.id))}
-                onCheckedChange={(c) =>
-                  setForm({ ...form, user_ids: c ? new Set(equipe.map((e) => e.id)) : new Set<string>() })
-                }
-              />
-              <span>Selecionar todos</span>
-            </label>
-            <div className="max-h-72 overflow-y-auto border border-border rounded-md p-2 space-y-1">
+        <div className="space-y-4">
+          <section className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-semibold">Equipe ({equipe.length} pessoas)</Label>
+              <label className="flex items-center gap-2 text-xs cursor-pointer">
+                <Checkbox
+                  checked={equipe.length > 0 && equipe.every((e) => form.user_ids.has(e.id))}
+                  onCheckedChange={(c) =>
+                    setForm({ ...form, user_ids: c ? new Set(equipe.map((e) => e.id)) : new Set<string>() })
+                  }
+                />
+                <span>Selecionar toda a equipe</span>
+              </label>
+            </div>
+            <div className="max-h-56 overflow-y-auto border border-border rounded-md p-2 space-y-1">
               {equipe.length === 0 && <p className="text-xs text-muted-foreground">Nenhum membro disponível</p>}
               {equipe.map((m) => (
                 <label key={m.id} className="flex items-center gap-2 text-sm cursor-pointer py-1 px-1 hover:bg-muted rounded">
@@ -563,18 +544,22 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
                 </label>
               ))}
             </div>
-          </TabsContent>
-          <TabsContent value="leads" className="space-y-2">
-            <label className="flex items-center gap-2 text-xs cursor-pointer">
-              <Checkbox
-                checked={leads.length > 0 && leads.every((l) => form.lead_ids.has(l.id))}
-                onCheckedChange={(c) =>
-                  setForm({ ...form, lead_ids: c ? new Set(leads.map((l) => l.id)) : new Set<string>() })
-                }
-              />
-              <span>Selecionar todos</span>
-            </label>
-            <div className="max-h-72 overflow-y-auto border border-border rounded-md p-2 space-y-1">
+          </section>
+
+          <section className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-semibold">Leads ({leads.length} leads)</Label>
+              <label className="flex items-center gap-2 text-xs cursor-pointer">
+                <Checkbox
+                  checked={leads.length > 0 && leads.every((l) => form.lead_ids.has(l.id))}
+                  onCheckedChange={(c) =>
+                    setForm({ ...form, lead_ids: c ? new Set(leads.map((l) => l.id)) : new Set<string>() })
+                  }
+                />
+                <span>Selecionar todos os leads</span>
+              </label>
+            </div>
+            <div className="max-h-56 overflow-y-auto border border-border rounded-md p-2 space-y-1">
               {leads.length === 0 && <p className="text-xs text-muted-foreground">Nenhum lead disponível</p>}
               {leads.map((l) => (
                 <label key={l.id} className="flex items-center gap-2 text-sm cursor-pointer py-1 px-1 hover:bg-muted rounded">
@@ -587,8 +572,8 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
                 </label>
               ))}
             </div>
-          </TabsContent>
-        </Tabs>
+          </section>
+        </div>
         <div className="flex justify-end pt-2">
           <Button variant="gold" onClick={() => setParticipantsOpen(false)}>Confirmar</Button>
         </div>
