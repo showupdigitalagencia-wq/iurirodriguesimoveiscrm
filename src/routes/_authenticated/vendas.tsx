@@ -37,7 +37,7 @@ const TABS = [
 
 function VendasLayout() {
   return (
-    <div className="p-3 md:p-6 space-y-4 pb-24 md:pb-6">
+    <div data-vendas-root className="p-3 md:p-6 space-y-4 pb-24 md:pb-6">
       <div className="flex items-center justify-between">
         <div className="min-w-0">
           <h1 className="text-xl md:text-2xl font-bold truncate">Corretores de Vendas</h1>
