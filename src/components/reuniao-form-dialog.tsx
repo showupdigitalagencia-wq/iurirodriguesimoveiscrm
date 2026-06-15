@@ -453,10 +453,13 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
             <Label>Tipo</Label>
             <RadioGroup value={form.tipo} onValueChange={(v) => setForm({ ...form, tipo: v as Tipo })} className="flex flex-wrap gap-4 mt-2">
               <label className="flex items-center gap-2 cursor-pointer">
-                <RadioGroupItem value="individual" /> <span>Individual</span>
+                <RadioGroupItem value="individual" /> <span className="text-blue-500 font-medium">Individual</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
-                <RadioGroupItem value="institucional" /> <span>Institucional</span>
+                <RadioGroupItem value="institucional" /> <span className="text-gold font-medium">Institucional</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <RadioGroupItem value="mentoria" /> <span className="text-blue-900 dark:text-blue-300 font-medium">Mentoria</span>
               </label>
               {isAdmin && (
                 <label className="flex items-center gap-2 cursor-pointer">
