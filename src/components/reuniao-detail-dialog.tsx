@@ -94,12 +94,26 @@ export function ReuniaoDetailDialog({ reuniaoId, onClose, onChanged }: Props) {
 
   async function handleDelete() {
     if (!reuniaoId) return;
-    if (!confirm("Excluir esta reunião?")) return;
+    if (!confirm("Tem certeza? A reunião será excluída e todos serão notificados.")) return;
     try {
       await callDelete({ data: { id: reuniaoId } });
-      toast.success("Reunião excluída");
+      toast.success("Reunião excluída — notificação enviada");
       onChanged?.();
       onClose();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha");
+    }
+  }
+
+  async function handleCancel() {
+    if (!reuniaoId) return;
+    if (!confirm("Tem certeza? Todos serão notificados do cancelamento.")) return;
+    try {
+      await callStatus({ data: { id: reuniaoId, status: "cancelada", resultado: null } });
+      toast.success("Reunião cancelada — notificação enviada");
+      onChanged?.();
+      const fresh = await callGet({ data: { id: reuniaoId } });
+      setR(fresh);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Falha");
     }
