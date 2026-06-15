@@ -118,11 +118,9 @@ export const listLeadsReuniao = createServerFn({ method: "GET" })
     const access = await loadMeetingAccess(supabaseAdmin, context.userId);
     let query = supabaseAdmin
       .from("leads")
-      .select("id, nome, telefone, responsavel_id, etapa, is_corretor")
-      .neq("etapa", "fechado")
-      .eq("is_corretor", false)
+      .select("id, nome, telefone, responsavel_id, etapa")
       .order("nome")
-      .limit(500);
+      .limit(1000);
     if (!access.isAdmin && access.currentExecId) query = query.eq("responsavel_id", access.currentExecId);
     if (!access.isAdmin && !access.currentExecId) return { leads: [] as LeadReuniaoOpt[] };
     const { data, error } = await query;

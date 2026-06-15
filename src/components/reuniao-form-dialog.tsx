@@ -8,6 +8,9 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useServerFn } from "@tanstack/react-start";
 import { createReuniao, listEquipeReuniao, listLeadsReuniao, type EquipeMembro } from "@/lib/reunioes.functions";
+import { ETAPAS } from "@/lib/lead-helpers";
+
+const ETAPA_LABEL: Record<string, string> = Object.fromEntries(ETAPAS.map((e) => [e.id, e.nome]));
 import { startGoogleOAuth, getGoogleStatus } from "@/lib/google.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -566,8 +569,8 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
                   <Checkbox checked={form.lead_ids.has(l.id)} onCheckedChange={() => setForm({ ...form, lead_ids: toggle(form.lead_ids, l.id) })} />
                   <span className="truncate">
                     {l.nome}
+                    {l.etapa && <span className="ml-1">({ETAPA_LABEL[l.etapa] ?? l.etapa})</span>}
                     <span className="text-muted-foreground text-xs ml-1">— {l.telefone}</span>
-                    {l.etapa && <span className="text-xs text-muted-foreground ml-1">• {l.etapa}</span>}
                   </span>
                 </label>
               ))}
