@@ -279,15 +279,15 @@ export const sophiaChat = createServerFn({ method: "POST" })
           const since = new Date(); since.setDate(since.getDate() - 90);
           let q = supabaseAdmin
             .from("vendas_leads")
-            .select("etapa, regiao, canal, created_at, fechado_em, corretor_id")
+            .select("etapa, regiao, executivo_canal, created_at, updated_at, corretor_id")
             .gte("created_at", since.toISOString());
           if (permitidos !== "todos") q = q.in("corretor_id", permitidos);
           const { data } = await q;
-          const leads = data ?? [];
+          const leads = (data ?? []) as Array<{ etapa: string; regiao: string | null; executivo_canal: string | null; created_at: string; updated_at: string; corretor_id: string | null }>;
           const total = leads.length;
           if (!total) return { aviso: "Sem dados suficientes nos últimos 90 dias." };
 
-          const agg = (key: "regiao" | "canal") => {
+          const agg = (key: "regiao" | "executivo_canal") => {
             const m = new Map<string, { total: number; fechados: number }>();
             leads.forEach((l) => {
               const k = (l[key] as string | null) ?? "(sem)";
@@ -301,25 +301,27 @@ export const sophiaChat = createServerFn({ method: "POST" })
               .sort((a, b) => b.taxa_conversao_pct - a.taxa_conversao_pct);
           };
 
-          const diasSemana = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"];
-          const porDia = new Array(7).fill(0).map((_, i) => ({ dia: diasSemana[i], leads: 0, fechados: 0 }));
+          const diasSemana = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"] as const;
+          const porDia: Array<{ dia: string; leads: number; fechados: number }> = diasSemana.map((dia) => ({ dia, leads: 0, fechados: 0 }));
           leads.forEach((l) => {
             const d = new Date(l.created_at).getDay();
-            porDia[d].leads += 1;
-            if (l.etapa === "fechado") porDia[d].fechados += 1;
+            const bucket = porDia[d];
+            if (!bucket) return;
+            bucket.leads += 1;
+            if (l.etapa === "fechado") bucket.fechados += 1;
           });
 
-          const fechados = leads.filter((l) => l.etapa === "fechado" && l.fechado_em);
-          const tempos = fechados.map((l) => (new Date(l.fechado_em!).getTime() - new Date(l.created_at).getTime()) / 86400000);
+          const fechados = leads.filter((l) => l.etapa === "fechado");
+          const tempos = fechados.map((l) => (new Date(l.updated_at).getTime() - new Date(l.created_at).getTime()) / 86400000);
           const tempoMedioDias = tempos.length ? Math.round((tempos.reduce((a, b) => a + b, 0) / tempos.length) * 10) / 10 : null;
 
           return {
             periodo: "últimos 90 dias",
             total_leads: total,
-            total_fechados: leads.filter((l) => l.etapa === "fechado").length,
-            taxa_conversao_geral_pct: Math.round((leads.filter((l) => l.etapa === "fechado").length / total) * 1000) / 10,
+            total_fechados: fechados.length,
+            taxa_conversao_geral_pct: Math.round((fechados.length / total) * 1000) / 10,
             por_regiao: agg("regiao").slice(0, 8),
-            por_canal: agg("canal").slice(0, 8),
+            por_canal: agg("executivo_canal").slice(0, 8),
             por_dia_semana: porDia,
             tempo_medio_fechamento_dias: tempoMedioDias,
           };
