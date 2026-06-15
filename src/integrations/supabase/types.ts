@@ -32,6 +32,45 @@ export type Database = {
         }
         Relationships: []
       }
+      corretor_disponibilidade: {
+        Row: {
+          corretor_id: string
+          created_at: string
+          data: string | null
+          dia_semana: number | null
+          hora_fim: string | null
+          hora_inicio: string | null
+          id: string
+          observacao: string | null
+          tipo: string
+          updated_at: string
+        }
+        Insert: {
+          corretor_id: string
+          created_at?: string
+          data?: string | null
+          dia_semana?: number | null
+          hora_fim?: string | null
+          hora_inicio?: string | null
+          id?: string
+          observacao?: string | null
+          tipo: string
+          updated_at?: string
+        }
+        Update: {
+          corretor_id?: string
+          created_at?: string
+          data?: string | null
+          dia_semana?: number | null
+          hora_fim?: string | null
+          hora_inicio?: string | null
+          id?: string
+          observacao?: string | null
+          tipo?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       google_tokens: {
         Row: {
           access_token: string
