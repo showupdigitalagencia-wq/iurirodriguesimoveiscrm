@@ -12,8 +12,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { REGIOES } from "@/lib/lead-helpers";
 import { VENDAS_ETAPAS, formatBRL, vendasEtapaInfo, type VendasLead, type VendasEtapa, type VendasTipo } from "@/lib/vendas-helpers";
 import { createVisita, createReuniaoOnlineVenda } from "@/lib/visitas.functions";
+import { listCorretoresDisponibilidade, atribuirLead, aceitarLead, recusarLead, type CorretorAvail } from "@/lib/vendas-distribuicao.functions";
 import { toast } from "sonner";
-import { Plus, MapPin, Video } from "lucide-react";
+import { Plus, MapPin, Video, UserPlus, Check, X } from "lucide-react";
+
+type VendasLeadExt = VendasLead & {
+  atribuicao_status?: "pendente" | "aceito" | "recusado" | null;
+  atribuido_em?: string | null;
+  recusas?: string[] | null;
+};
 
 export const Route = createFileRoute("/_authenticated/vendas/leads")({
   component: VendasLeads,
@@ -21,6 +28,19 @@ export const Route = createFileRoute("/_authenticated/vendas/leads")({
 
 function VendasLeads() {
   const qc = useQueryClient();
+  const { data: me } = useQuery({
+    queryKey: ["me_vendas_ctx"],
+    queryFn: async () => {
+      const { data: ud } = await supabase.auth.getUser();
+      const uid = ud.user?.id ?? null;
+      if (!uid) return { uid: null, isAdmin: false };
+      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", uid);
+      return { uid, isAdmin: roles?.some((r) => r.role === "admin") ?? false };
+    },
+  });
+  const isAdmin = me?.isAdmin ?? false;
+  const myUid = me?.uid ?? null;
+
   const { data: leads = [] } = useQuery({
     queryKey: ["vendas_leads"],
     queryFn: async () => {
@@ -29,14 +49,16 @@ function VendasLeads() {
         .select("*")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return (data ?? []) as VendasLead[];
+      return (data ?? []) as VendasLeadExt[];
     },
   });
+
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["vendas_leads"] });
 
   return (
     <div className="space-y-3">
       <div className="flex justify-end">
-        <CreateVendasLeadDialog onCreated={() => qc.invalidateQueries({ queryKey: ["vendas_leads"] })} />
+        <CreateVendasLeadDialog onCreated={invalidate} />
       </div>
 
       <div className="rounded-md border overflow-x-auto">
@@ -48,15 +70,17 @@ function VendasLeads() {
               <th className="p-3">Telefone</th>
               <th className="p-3">Valor</th>
               <th className="p-3">Etapa</th>
+              <th className="p-3">Atribuição</th>
               <th className="p-3 text-right">Ações</th>
             </tr>
           </thead>
           <tbody>
             {leads.length === 0 && (
-              <tr><td colSpan={6} className="p-6 text-center text-muted-foreground">Nenhum lead ainda</td></tr>
+              <tr><td colSpan={7} className="p-6 text-center text-muted-foreground">Nenhum lead ainda</td></tr>
             )}
             {leads.map((l) => {
               const info = vendasEtapaInfo(l.etapa);
+              const isMyPending = l.corretor_id === myUid && l.atribuicao_status === "pendente";
               return (
                 <tr key={l.id} className="border-t">
                   <td className="p-3 font-medium">{l.nome}</td>
@@ -69,9 +93,26 @@ function VendasLeads() {
                     </span>
                   </td>
                   <td className="p-3">
+                    {!l.corretor_id ? (
+                      <span className="text-xs text-muted-foreground">— Sem corretor</span>
+                    ) : l.atribuicao_status === "pendente" ? (
+                      <span className="text-xs px-2 py-0.5 rounded border bg-yellow-500/15 text-yellow-700 border-yellow-300">⏳ Aguardando aceite</span>
+                    ) : l.atribuicao_status === "aceito" ? (
+                      <span className="text-xs px-2 py-0.5 rounded border bg-green-600/15 text-green-700 border-green-300">✅ Aceito</span>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">Atribuído</span>
+                    )}
+                  </td>
+                  <td className="p-3">
                     <div className="flex gap-2 justify-end flex-wrap">
-                      <AgendarVisitaButton lead={l} onDone={() => qc.invalidateQueries({ queryKey: ["vendas_leads"] })} />
-                      <ReuniaoOnlineButton lead={l} onDone={() => qc.invalidateQueries({ queryKey: ["vendas_leads"] })} />
+                      {isAdmin && (
+                        <AtribuirLeadButton lead={l} onDone={invalidate} />
+                      )}
+                      {isMyPending && (
+                        <AceitarRecusarButtons leadId={l.id} onDone={invalidate} />
+                      )}
+                      <AgendarVisitaButton lead={l} onDone={invalidate} />
+                      <ReuniaoOnlineButton lead={l} onDone={invalidate} />
                     </div>
                   </td>
                 </tr>
@@ -81,6 +122,114 @@ function VendasLeads() {
         </table>
       </div>
     </div>
+  );
+}
+
+function AtribuirLeadButton({ lead, onDone }: { lead: VendasLeadExt; onDone: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState<string | null>(null);
+  const listFn = useServerFn(listCorretoresDisponibilidade);
+  const assignFn = useServerFn(atribuirLead);
+  const { data: corretores = [], refetch, isFetching } = useQuery({
+    queryKey: ["corretores_disp", lead.id, open],
+    enabled: open,
+    queryFn: async () => {
+      const r = await listFn({ data: { lead_id: lead.id } });
+      return r.items as CorretorAvail[];
+    },
+  });
+
+  async function assign(corretorId: string) {
+    setSaving(corretorId);
+    try {
+      await assignFn({ data: { lead_id: lead.id, corretor_id: corretorId } });
+      toast.success("Lead atribuído. Notificação enviada ao corretor.");
+      setOpen(false);
+      onDone();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao atribuir");
+    } finally { setSaving(null); }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="outline" className="gap-1"><UserPlus className="h-3.5 w-3.5" />Atribuir</Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader><DialogTitle>Atribuir lead — {lead.nome}</DialogTitle></DialogHeader>
+        <div className="space-y-2 py-2 max-h-[60vh] overflow-y-auto">
+          {isFetching && <p className="text-xs text-muted-foreground">Carregando corretores...</p>}
+          {!isFetching && corretores.length === 0 && <p className="text-xs text-muted-foreground">Nenhum corretor cadastrado</p>}
+          {corretores.map((c) => (
+            <div key={c.id} className="flex items-center justify-between border rounded p-2">
+              <div className="min-w-0">
+                <div className="font-medium truncate">{c.nome}</div>
+                <div className="text-xs text-muted-foreground flex gap-2 flex-wrap">
+                  <span className={c.disponivel_agora ? "text-green-600" : "text-muted-foreground"}>
+                    {c.disponivel_agora ? "🟢 Disponível agora" : "⚪ Fora do horário"}
+                  </span>
+                  <span>· {c.leads_ativos} leads ativos</span>
+                  {c.recusou && <span className="text-red-600">· já recusou este lead</span>}
+                </div>
+              </div>
+              <Button size="sm" variant="gold" disabled={saving === c.id} onClick={() => assign(c.id)}>
+                {saving === c.id ? "..." : "Atribuir"}
+              </Button>
+            </div>
+          ))}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => refetch()}>Atualizar</Button>
+          <Button variant="outline" onClick={() => setOpen(false)}>Fechar</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function AceitarRecusarButtons({ leadId, onDone }: { leadId: string; onDone: () => void }) {
+  const [busy, setBusy] = useState(false);
+  const [motivoOpen, setMotivoOpen] = useState(false);
+  const [motivo, setMotivo] = useState("");
+  const aceitarFn = useServerFn(aceitarLead);
+  const recusarFn = useServerFn(recusarLead);
+
+  async function aceitar() {
+    setBusy(true);
+    try { await aceitarFn({ data: { lead_id: leadId } }); toast.success("Lead aceito"); onDone(); }
+    catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
+    finally { setBusy(false); }
+  }
+  async function recusar() {
+    setBusy(true);
+    try { await recusarFn({ data: { lead_id: leadId, motivo: motivo.trim() || undefined } }); toast.success("Lead devolvido ao executivo"); setMotivoOpen(false); onDone(); }
+    catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
+    finally { setBusy(false); }
+  }
+
+  return (
+    <>
+      <Button size="sm" variant="default" className="gap-1 bg-green-600 hover:bg-green-700" disabled={busy} onClick={aceitar}>
+        <Check className="h-3.5 w-3.5" />Aceitar
+      </Button>
+      <Dialog open={motivoOpen} onOpenChange={setMotivoOpen}>
+        <DialogTrigger asChild>
+          <Button size="sm" variant="destructive" className="gap-1" disabled={busy}><X className="h-3.5 w-3.5" />Recusar</Button>
+        </DialogTrigger>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>Recusar lead</DialogTitle></DialogHeader>
+          <div className="space-y-2 py-2">
+            <Label>Motivo (opcional)</Label>
+            <Textarea rows={3} value={motivo} onChange={(e) => setMotivo(e.target.value)} placeholder="Ex.: estou sem disponibilidade hoje" />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setMotivoOpen(false)}>Cancelar</Button>
+            <Button variant="destructive" onClick={recusar} disabled={busy}>Confirmar recusa</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
