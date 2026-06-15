@@ -228,7 +228,8 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
           local: null,
           tipo: form.tipo,
           lead_ids: Array.from(form.lead_ids),
-          responsavel_ids: Array.from(form.resp_ids),
+          responsavel_ids: [],
+          user_ids: Array.from(form.user_ids),
           usar_meet: true,
         },
       });
@@ -241,7 +242,7 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
       }
 
       const selectedLeads = leads.filter((l) => form.lead_ids.has(l.id));
-      const corretorNome = resps.find((r) => form.resp_ids.has(r.id))?.nome ?? "";
+      const corretorNome = equipe.filter((e) => form.user_ids.has(e.id)).map((e) => e.nome).join(", ");
 
       setConfirmacao({
         leads: selectedLeads,
