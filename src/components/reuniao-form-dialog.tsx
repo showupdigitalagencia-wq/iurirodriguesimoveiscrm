@@ -236,7 +236,7 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
     const handleSendGroup = async () => {
       try {
         await navigator.clipboard.writeText(msg);
-        toast.success("✅ Mensagem copiada! Cole no grupo e envie");
+        toast.success("✅ Mensagem copiada!", { description: "Cole no grupo (Ctrl+V ou segurar+colar) e envie" });
       } catch {
         toast.error("Não foi possível copiar — copie manualmente");
       }
