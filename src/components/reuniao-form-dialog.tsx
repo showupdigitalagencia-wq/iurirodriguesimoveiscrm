@@ -485,27 +485,9 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
               {form.user_ids.size === 0 && form.lead_ids.size === 0 ? (
                 <p className="text-xs text-muted-foreground">Nenhum participante selecionado</p>
               ) : (
-                <div className="flex flex-wrap gap-1.5 border border-border rounded-md p-2">
-                  {equipe.filter((m) => form.user_ids.has(m.id)).map((m) => (
-                    <Badge key={m.id} variant="secondary" className="gap-1">
-                      {m.tipo === "admin" ? <Shield className="h-3 w-3 text-red-500" /> : m.tipo === "executivo" ? <Briefcase className="h-3 w-3 text-gold" /> : <Users className="h-3 w-3" />}
-                      {m.nome}
-                      <button type="button" onClick={() => setForm({ ...form, user_ids: toggle(form.user_ids, m.id) })} className="ml-1 opacity-70 hover:opacity-100">
-                        <X className="h-3 w-3" />
-                      </button>
-                    </Badge>
-                  ))}
-                  {leads.filter((l) => form.lead_ids.has(l.id)).map((l) => (
-                    <Badge key={l.id} variant="outline" className="gap-1">
-                      {l.nome}
-                      {!defaultLeadId && (
-                        <button type="button" onClick={() => setForm({ ...form, lead_ids: toggle(form.lead_ids, l.id) })} className="ml-1 opacity-70 hover:opacity-100">
-                          <X className="h-3 w-3" />
-                        </button>
-                      )}
-                    </Badge>
-                  ))}
-                </div>
+                <p className="text-sm text-muted-foreground">
+                  <span className="font-medium text-foreground">{form.user_ids.size}</span> da equipe + <span className="font-medium text-foreground">{form.lead_ids.size}</span> leads adicionados
+                </p>
               )}
             </div>
           )}
