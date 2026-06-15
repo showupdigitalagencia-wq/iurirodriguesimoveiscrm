@@ -180,60 +180,57 @@ export function CreateLeadDialog({ mode, isAdmin, responsaveis, onCreated, trigg
           </div>
 
 
-          {mode === "corretor" ? (
-            <>
+          <>
+            <div>
+              <Label>Já atua como corretor?</Label>
+              <Select value={form.ja_corretor} onValueChange={(v) => update("ja_corretor", v)}>
+                <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Sim, credenciado">Sim, credenciado</SelectItem>
+                  <SelectItem value="Ainda não">Ainda não</SelectItem>
+                  <SelectItem value="Em processo">Em processo</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
               <div>
-                <Label>Já atua como corretor?</Label>
-                <Select value={form.ja_corretor} onValueChange={(v) => update("ja_corretor", v)}>
-                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                <Label>CRECI ativo?</Label>
+                <Select value={form.creci_ativo} onValueChange={(v) => update("creci_ativo", v)}>
+                  <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Sim, credenciado">Sim, credenciado</SelectItem>
-                    <SelectItem value="Ainda não">Ainda não</SelectItem>
-                    <SelectItem value="Em processo">Em processo</SelectItem>
+                    <SelectItem value="Sim">Sim</SelectItem>
+                    <SelectItem value="Não">Não</SelectItem>
+                    <SelectItem value="Em andamento">Em andamento</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <Label>CRECI ativo?</Label>
-                  <Select value={form.creci_ativo} onValueChange={(v) => update("creci_ativo", v)}>
-                    <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Sim">Sim</SelectItem>
-                      <SelectItem value="Não">Não</SelectItem>
-                      <SelectItem value="Em andamento">Em andamento</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div><Label>Número do CRECI</Label><Input value={form.numero_creci} onChange={(e) => update("numero_creci", e.target.value)} /></div>
+              <div><Label>Número do CRECI</Label><Input value={form.numero_creci} onChange={(e) => update("numero_creci", e.target.value)} /></div>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <div>
+                <Label className="text-xs">Disp. região</Label>
+                <Select value={form.disponibilidade_regiao} onValueChange={(v) => update("disponibilidade_regiao", v)}>
+                  <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                  <SelectContent><SelectItem value="Sim">Sim</SelectItem><SelectItem value="Não">Não</SelectItem></SelectContent>
+                </Select>
               </div>
-              <div className="grid grid-cols-3 gap-2">
-                <div>
-                  <Label className="text-xs">Disp. região</Label>
-                  <Select value={form.disponibilidade_regiao} onValueChange={(v) => update("disponibilidade_regiao", v)}>
-                    <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
-                    <SelectContent><SelectItem value="Sim">Sim</SelectItem><SelectItem value="Não">Não</SelectItem></SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label className="text-xs">Disp. video</Label>
-                  <Select value={form.disponibilidade_video} onValueChange={(v) => update("disponibilidade_video", v)}>
-                    <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
-                    <SelectContent><SelectItem value="Sim">Sim</SelectItem><SelectItem value="Não">Não</SelectItem></SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label className="text-xs">Veículo</Label>
-                  <Select value={form.possui_veiculo} onValueChange={(v) => update("possui_veiculo", v)}>
-                    <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
-                    <SelectContent><SelectItem value="Sim">Sim</SelectItem><SelectItem value="Não">Não</SelectItem></SelectContent>
-                  </Select>
-                </div>
+              <div>
+                <Label className="text-xs">Disp. video</Label>
+                <Select value={form.disponibilidade_video} onValueChange={(v) => update("disponibilidade_video", v)}>
+                  <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                  <SelectContent><SelectItem value="Sim">Sim</SelectItem><SelectItem value="Não">Não</SelectItem></SelectContent>
+                </Select>
               </div>
-            </>
-          ) : (
-            <div><Label>Observações</Label><Textarea rows={4} value={form.observacoes} onChange={(e) => update("observacoes", e.target.value)} /></div>
-          )}
+              <div>
+                <Label className="text-xs">Veículo</Label>
+                <Select value={form.possui_veiculo} onValueChange={(v) => update("possui_veiculo", v)}>
+                  <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                  <SelectContent><SelectItem value="Sim">Sim</SelectItem><SelectItem value="Não">Não</SelectItem></SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div><Label>Observações</Label><Textarea rows={3} value={form.observacoes} onChange={(e) => update("observacoes", e.target.value)} /></div>
+          </>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
