@@ -82,7 +82,8 @@ export function CreateLeadDialog({ mode, isAdmin, responsaveis, onCreated, trigg
         responsavel_id = r?.id ?? null;
       }
 
-      const dados_corretor = mode === "corretor" ? {
+      const hasScreening = form.ja_corretor || form.creci_ativo || form.numero_creci || form.disponibilidade_regiao || form.disponibilidade_video || form.possui_veiculo;
+      const dados_corretor = (mode === "corretor" || hasScreening) ? {
         ja_corretor: form.ja_corretor || null,
         creci_ativo: form.creci_ativo || null,
         numero_creci: form.numero_creci || null,
