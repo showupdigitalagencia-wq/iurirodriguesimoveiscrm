@@ -184,9 +184,9 @@ export const createReuniao = createServerFn({ method: "POST" })
     const reuniaoId = (inserted as { id: string }).id;
 
     // Participantes
-    const rows: { reuniao_id: string; lead_id: string | null; responsavel_id: string | null }[] = [
-      ...data.lead_ids.map((lid) => ({ reuniao_id: reuniaoId, lead_id: lid, responsavel_id: null })),
-      ...data.responsavel_ids.map((rid) => ({ reuniao_id: reuniaoId, lead_id: null, responsavel_id: rid })),
+    const rows: { reuniao_id: string; lead_id: string | null; responsavel_id: string | null; added_by: string | null }[] = [
+      ...data.lead_ids.map((lid) => ({ reuniao_id: reuniaoId, lead_id: lid, responsavel_id: null, added_by: context.userId })),
+      ...data.responsavel_ids.map((rid) => ({ reuniao_id: reuniaoId, lead_id: null, responsavel_id: rid, added_by: context.userId })),
     ];
     if (rows.length) {
       await supabaseAdmin.from("reuniao_participantes" as never).insert(rows as never);
