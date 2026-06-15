@@ -373,10 +373,10 @@ export const sophiaChat = createServerFn({ method: "POST" })
             }
           }
 
-          let rq = supabaseAdmin.from("reunioes").select("id, titulo, data_hora").gte("data_hora", agora.toISOString()).lt("data_hora", amanha).order("data_hora").limit(10);
+          const rq = supabaseAdmin.from("reunioes").select("id, titulo, data_inicio").gte("data_inicio", agora.toISOString()).lt("data_inicio", amanha).order("data_inicio").limit(10);
           const { data: reunioes } = await rq;
           (reunioes ?? []).forEach((r) => {
-            alerts.push({ tipo: "reuniao_proxima", mensagem: `Reunião "${r.titulo}" em ${new Date(r.data_hora).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}` });
+            alerts.push({ tipo: "reuniao_proxima", mensagem: `Reunião "${r.titulo}" em ${new Date(r.data_inicio).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}` });
           });
 
           return {
