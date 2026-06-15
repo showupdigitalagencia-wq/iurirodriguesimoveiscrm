@@ -22,6 +22,7 @@ type UserRole = "admin" | "corretor" | "corretor_vendas";
 type UserRow = {
   id: string; email: string; nome: string; ativo: boolean;
   responsavel_id: string | null; role: UserRole;
+  vendas_acesso: boolean;
   last_sign_in_at: string | null; created_at: string;
 };
 
