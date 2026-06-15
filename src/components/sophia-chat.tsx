@@ -12,6 +12,18 @@ import remarkGfm from "remark-gfm";
 
 type Msg = { role: "user" | "assistant"; content: string; imageDataUrl?: string };
 
+type SRInstance = {
+  lang: string;
+  interimResults: boolean;
+  continuous: boolean;
+  onresult: (e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void;
+  onerror: (e: { error?: string }) => void;
+  onend: () => void;
+  start: () => void;
+  stop: () => void;
+};
+type SRConstructor = new () => SRInstance;
+
 const QUICK_ACTIONS = [
   "📊 Relatório do dia",
   "📊 Relatório da semana",
