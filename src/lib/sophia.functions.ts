@@ -171,7 +171,7 @@ export const sophiaChat = createServerFn({ method: "POST" })
       }),
 
       buscar_lead: tool({
-        description: "Busca leads do escopo permitido por nome ou telefone. Retorna até 10 resultados.",
+        description: "PIPELINE DE VENDAS DE IMÓVEIS. Busca leads de vendas (clientes querendo comprar/alugar imóvel) por nome ou telefone. Para captação de corretores use captacao_buscar_lead.",
         inputSchema: z.object({ termo: z.string().min(2) }),
         execute: async ({ termo }) => {
           const permitidos = corretoresPermitidos();
