@@ -197,10 +197,11 @@ function UsuariosPage() {
                   <div className="text-xs text-muted-foreground">{u.email}</div>
                 </td>
                 <td className="px-4 py-3">
-                  <Select value={u.role} onValueChange={(v) => changeRole(u, v as "admin" | "corretor")}>
-                    <SelectTrigger className="w-36 h-8"><SelectValue /></SelectTrigger>
+                  <Select value={u.role} onValueChange={(v) => changeRole(u, v as UserRole)}>
+                    <SelectTrigger className="w-40 h-8"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="corretor">Executivo</SelectItem>
+                      <SelectItem value="corretor_vendas">Corretor (Vendas)</SelectItem>
                       <SelectItem value="admin">Administrador</SelectItem>
                     </SelectContent>
                   </Select>
