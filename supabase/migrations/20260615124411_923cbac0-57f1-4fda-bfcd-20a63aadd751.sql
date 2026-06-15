@@ -1,0 +1,1 @@
+ALTER TABLE public.responsaveis ADD COLUMN IF NOT EXISTS regiao TEXT;
