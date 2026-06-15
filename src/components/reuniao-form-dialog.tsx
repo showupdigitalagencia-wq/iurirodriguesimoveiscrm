@@ -301,11 +301,10 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
           {confirmacao.leads.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nenhum lead selecionado.</p>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {confirmacao.leads.map((l) => {
                 const tel = onlyDigits(l.telefone);
                 const phone = tel.startsWith("55") || tel.length < 11 ? tel : `55${tel}`;
-                const waUrl = `https://wa.me/${phone}`;
                 const msg = buildLeadMessage({
                   tipo: confirmacao.tipo,
                   leadNome: l.nome,
@@ -314,22 +313,19 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
                   local: confirmacao.local,
                   corretor: confirmacao.corretor,
                 });
+                const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
                 return (
-                  <div key={l.id} className="border border-border rounded-md p-3 space-y-2">
-                    <div className="text-sm font-medium">{l.nome} <span className="text-muted-foreground text-xs">— {l.telefone}</span></div>
-                    <div className="bg-muted rounded-md p-2 text-xs whitespace-pre-wrap break-words max-h-40 overflow-y-auto">{msg}</div>
-                    <div className="flex flex-wrap gap-2">
-                      <Button size="sm" variant="outline" onClick={() => copyText(msg)}>
-                        <Copy className="h-4 w-4 mr-1" /> Copiar
+                  <div key={l.id} className="flex items-center justify-between gap-2 border border-border rounded-md p-2">
+                    <span className="text-sm font-medium truncate">{l.nome}</span>
+                    {tel ? (
+                      <Button asChild size="sm" variant="gold">
+                        <a href={waUrl} target="_blank" rel="noopener noreferrer">
+                          <MessageCircle className="h-4 w-4 mr-1" /> Enviar no WhatsApp
+                        </a>
                       </Button>
-                      {tel && (
-                        <Button asChild size="sm" variant="gold">
-                          <a href={waUrl} target="_blank" rel="noopener noreferrer">
-                            <MessageCircle className="h-4 w-4 mr-1" /> Abrir WhatsApp
-                          </a>
-                        </Button>
-                      )}
-                    </div>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">sem telefone</span>
+                    )}
                   </div>
                 );
               })}
