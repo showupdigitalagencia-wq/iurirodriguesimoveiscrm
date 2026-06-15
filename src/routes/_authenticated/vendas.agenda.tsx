@@ -287,6 +287,19 @@ function AgendaCorretorPage() {
         </Button>
       </div>
 
+      <div className="rounded-xl border border-border bg-card p-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+        <div className="flex items-start gap-3 min-w-0">
+          <Video className="h-5 w-5 text-gold shrink-0 mt-0.5" />
+          <div className="min-w-0">
+            <div className="font-semibold text-sm">Reunião online com lead</div>
+            <div className="text-xs text-muted-foreground">Crie uma reunião individual com Google Meet para um lead do seu pipeline</div>
+          </div>
+        </div>
+        <Button onClick={() => openReuniaoFor(new Date())} variant="gold" size="sm" className="w-full sm:w-auto">
+          <Plus className="h-4 w-4 mr-1" /> Agendar Reunião
+        </Button>
+      </div>
+
       {/* Controle de visão */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
         <Tabs value={view} onValueChange={(v) => setView(v as View)}>
@@ -306,8 +319,8 @@ function AgendaCorretorPage() {
 
       {/* Visão */}
       {view === "mes"
-        ? <MonthView cursor={cursor} slotsForDate={slotsForDate} onSlotClick={openVisitaFor} />
-        : <ListView view={view} cursor={cursor} slotsForDate={slotsForDate} onSlotClick={openVisitaFor} onRemoveVisita={handleDeleteVisita} />}
+        ? <MonthView cursor={cursor} slotsForDate={slotsForDate} onSlotClick={openVisitaFor} onReuniaoClick={openReuniaoFor} />
+        : <ListView view={view} cursor={cursor} slotsForDate={slotsForDate} onSlotClick={openVisitaFor} onReuniaoClick={openReuniaoFor} onRemoveVisita={handleDeleteVisita} />}
 
       {/* Dialog: nova visita */}
       <Dialog open={openVisita} onOpenChange={setOpenVisita}>
@@ -340,6 +353,38 @@ function AgendaCorretorPage() {
               <Button type="submit" disabled={savingVisita} className="bg-orange-500 hover:bg-orange-600 text-white">
                 {savingVisita && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
                 Agendar e enviar WhatsApp
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={openReuniao} onOpenChange={setOpenReuniao}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Agendar reunião online</DialogTitle></DialogHeader>
+          <form onSubmit={handleAddReuniao} className="space-y-3">
+            <div>
+              <Label>Lead</Label>
+              <Select name="lead_id" required>
+                <SelectTrigger className="mt-1.5"><SelectValue placeholder="Selecione o lead..." /></SelectTrigger>
+                <SelectContent>
+                  {leads.length === 0 ? (
+                    <div className="px-2 py-3 text-xs text-muted-foreground">Nenhum lead cadastrado</div>
+                  ) : leads.map((l) => (
+                    <SelectItem key={l.id} value={l.id}>{l.nome} · {l.telefone}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Data</Label><Input type="date" name="data" required defaultValue={reuniaoDefaults.date} className="mt-1.5" /></div>
+              <div><Label>Hora</Label><Input type="time" name="hora" required defaultValue={reuniaoDefaults.time} className="mt-1.5" /></div>
+            </div>
+            <div><Label>Pauta / observações</Label><Textarea name="observacoes" maxLength={500} className="mt-1.5" /></div>
+            <DialogFooter>
+              <Button type="submit" variant="gold" disabled={savingReuniao}>
+                {savingReuniao && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
+                Agendar reunião
               </Button>
             </DialogFooter>
           </form>
