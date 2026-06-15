@@ -50,12 +50,13 @@ function buildGroupMessage(opts: { data: string; hora: string; local: string }):
   return `⚠️ REUNIÃO DE ALINHAMENTO\n\nAtenção equipe! 👥\n\n📅 Data: ${dataBR}\n🕐 Hora: ${opts.hora}\n📍 Link Google Meet: ${opts.local || "a definir"}\n\nPresença de TODOS obrigatória!\n\n— Iuri Rodrigues\nDiretor Geral | Iuri Rodrigues Imóveis 🏢`;
 }
 
-// Próximos horários fixos: Seg 19h, Ter 15h, Qui 17h
+// Próximos horários fixos: Seg 19h, Ter 15h, Qui 17h, Sáb 15h
 function nextInstitucionalSlots(): { iso: string; dateStr: string; timeStr: string; label: string }[] {
   const targets: { dow: number; hour: number; label: string }[] = [
     { dow: 1, hour: 19, label: "Seg 19:00" },
     { dow: 2, hour: 15, label: "Ter 15:00" },
     { dow: 4, hour: 17, label: "Qui 17:00" },
+    { dow: 6, hour: 15, label: "Sáb 15:00" },
   ];
   const now = new Date();
   return targets.map((t) => {
