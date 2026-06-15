@@ -255,7 +255,7 @@ function UsuariosPage() {
               </tr>
             ))}
             {users.length === 0 && (
-              <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">Nenhum usuário cadastrado.</td></tr>
+              <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">Nenhum usuário cadastrado.</td></tr>
             )}
           </tbody>
         </table>
