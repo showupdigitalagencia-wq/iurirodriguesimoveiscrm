@@ -137,9 +137,12 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
         disponibilidade_video: form.disponibilidade_video || null,
         possui_veiculo: form.possui_veiculo || null,
       };
+      const matchResp = responsaveis.find((r) => r.id === form.responsavel_id);
+      const resolvedCanal = (matchResp?.canal as LeadRow["canal"] | undefined) ?? form.canal;
       await callUpdate({ data: { id: leadId, patch: {
         nome: form.nome, email: form.email || null, telefone: form.telefone,
-        observacoes: form.observacoes || null, canal: form.canal,
+        observacoes: form.observacoes || null, canal: resolvedCanal,
+        responsavel_id: form.responsavel_id || null,
         regiao: form.regiao, etapa: form.etapa,
         dados_corretor,
       } } });
