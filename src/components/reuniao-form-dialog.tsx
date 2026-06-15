@@ -236,10 +236,11 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
     const handleSendGroup = async () => {
       try {
         await navigator.clipboard.writeText(msg);
-        toast.success("Mensagem copiada — cole no grupo");
+        toast.success("✅ Mensagem copiada! Cole no grupo e envie");
       } catch {
-        toast.error("Não foi possível copiar a mensagem");
+        toast.error("Não foi possível copiar — copie manualmente");
       }
+      // Open in a new tab; works on both mobile (deep link) and desktop (WhatsApp Web)
       window.open(GROUP_WA_URL, "_blank", "noopener,noreferrer");
     };
     return (
@@ -251,10 +252,25 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
           </DialogHeader>
           <div className="bg-muted rounded-md p-3 text-sm whitespace-pre-wrap break-words">{msg}</div>
           <div className="flex flex-col gap-2">
-            <Button variant="gold" onClick={handleSendGroup}>
-              <Users className="h-4 w-4 mr-1" /> Enviar mensagem no Grupo WhatsApp
+            <Button asChild variant="gold">
+              <a
+                href={GROUP_WA_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => {
+                  navigator.clipboard
+                    .writeText(msg)
+                    .then(() => toast.success("✅ Mensagem copiada! Cole no grupo e envie"))
+                    .catch(() => toast.error("Não foi possível copiar — copie manualmente"));
+                }}
+              >
+                <Users className="h-4 w-4 mr-1" /> Enviar mensagem no Grupo WhatsApp
+              </a>
             </Button>
-            <Button variant="outline" onClick={() => onOpenChange(false)}>Fechar</Button>
+            <Button variant="outline" onClick={handleSendGroup}>
+              Copiar e abrir grupo (fallback)
+            </Button>
+            <Button variant="ghost" onClick={() => onOpenChange(false)}>Fechar</Button>
           </div>
         </DialogContent>
       </Dialog>
