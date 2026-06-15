@@ -160,12 +160,62 @@ export const sophiaChat = createServerFn({ method: "POST" })
           return { total_7d: data?.length ?? 0, por_etapa };
         },
       }),
+
+      info_executivos: tool({
+        description: "Retorna executivos cadastrados, suas regiões, total de corretores na equipe e leads ativos. Use para perguntas sobre quem atende qual região.",
+        inputSchema: z.object({
+          regiao: z.string().optional().describe("Filtra por região (busca parcial, case-insensitive)"),
+          nome: z.string().optional().describe("Filtra por nome do executivo (busca parcial)"),
+        }),
+        execute: async ({ regiao, nome }) => {
+          const { data: execs } = await supabaseAdmin
+            .from("responsaveis")
+            .select("id, nome, regiao, ativo")
+            .eq("ativo", true);
+          let lista = execs ?? [];
+          if (regiao) lista = lista.filter((e) => (e.regiao ?? "").toLowerCase().includes(regiao.toLowerCase()));
+          if (nome) lista = lista.filter((e) => (e.nome ?? "").toLowerCase().includes(nome.toLowerCase()));
+
+          const ids = lista.map((e) => e.id);
+          const profsRes = ids.length
+            ? await supabaseAdmin.from("profiles").select("id, responsavel_id, ativo").in("responsavel_id", ids)
+            : { data: [] as Array<{ id: string; responsavel_id: string | null; ativo: boolean }> };
+          const profs = profsRes.data ?? [];
+          const corretorIds = profs.map((p) => p.id);
+          const leadsRes = corretorIds.length
+            ? await supabaseAdmin.from("vendas_leads").select("id, corretor_id, etapa").in("corretor_id", corretorIds)
+            : { data: [] as Array<{ id: string; corretor_id: string | null; etapa: string }> };
+          const leadsAtivos = leadsRes.data ?? [];
+
+          const resultado = lista.map((e) => {
+            const corretores = profs.filter((p) => p.responsavel_id === e.id);
+            const meusIds = new Set(corretores.map((c) => c.id));
+            const leads = leadsAtivos.filter((l) => l.corretor_id && meusIds.has(l.corretor_id) && l.etapa !== "fechado" && l.etapa !== "perdido");
+            return {
+              nome: e.nome,
+              regiao: e.regiao ?? "(sem região cadastrada)",
+              total_corretores: corretores.length,
+              corretores_ativos: corretores.filter((c) => c.ativo).length,
+              leads_ativos: leads.length,
+            };
+          });
+          return { executivos: resultado };
+        },
+      }),
     };
 
     const messages: ModelMessage[] = [
       {
         role: "system",
-        content: `Você é a Sophia, assistente IA interna do Sistema Nexus da imobiliária Iuri Rodrigues. Seja direta, simpática e use português brasileiro. Use as ferramentas disponíveis para responder com dados reais. Quando for atribuir um lead, sempre confirme antes. Formate respostas em markdown quando ajudar a leitura.`,
+        content: `Você é a Sophia, assistente IA interna do Sistema Nexus da imobiliária Iuri Rodrigues. Seja direta, simpática e use português brasileiro. Use as ferramentas disponíveis para responder com dados reais. Quando for atribuir um lead, sempre confirme antes. Formate respostas em markdown quando ajudar a leitura.
+
+EQUIPE DE EXECUTIVOS E REGIÕES DE ATUAÇÃO (conhecimento fixo):
+- Denise → Nilópolis e Mesquita
+- Fabíola → Recreio dos Bandeirantes
+- Renata → Belford Roxo
+- Robson → Barra da Tijuca
+
+Responda imediatamente perguntas sobre qual executivo cuida de uma região (ou vice-versa) com base nessa lista. Para dados em tempo real (leads ativos, corretores na equipe, disponibilidade), use as ferramentas info_executivos ou listar_corretores_disponiveis e cite números atualizados do banco.`,
       },
       ...data.messages.map((m) => ({ role: m.role, content: m.content }) as ModelMessage),
     ];
