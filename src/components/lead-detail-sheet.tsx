@@ -68,6 +68,8 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
       supabase.from("user_roles").select("role").eq("user_id", uid).eq("role", "admin").maybeSingle()
         .then(({ data: r }) => setIsAdmin(r?.role === "admin"));
     });
+    supabase.from("responsaveis").select("id, nome, canal").eq("ativo", true).order("nome")
+      .then(({ data }) => setResponsaveis((data as { id: string; nome: string; canal: string | null }[] | null) ?? []));
   }, []);
 
   useEffect(() => {
