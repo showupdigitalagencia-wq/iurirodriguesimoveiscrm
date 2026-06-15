@@ -189,7 +189,7 @@ export const createReuniaoOnlineVenda = createServerFn({ method: "POST" })
       console.warn("[vendas] reunião online google meet falhou", e);
     }
 
-    const { data: reuniao } = await supabase
+    const { data: reuniao, error: reuniaoError } = await supabase
       .from("reunioes" as never)
       .insert({
         titulo: `Reunião online: ${leadRow?.nome ?? "Lead"}`,
@@ -203,10 +203,12 @@ export const createReuniaoOnlineVenda = createServerFn({ method: "POST" })
       } as never)
       .select("id")
       .single();
+    if (reuniaoError || !reuniao) throw new Error(reuniaoError?.message ?? "Falha ao registrar reunião");
     if (reuniao) {
-      await supabase
+      const { error: participanteError } = await supabase
         .from("reuniao_participantes" as never)
         .insert({ reuniao_id: (reuniao as { id: string }).id, user_id: userId, added_by: userId } as never);
+      if (participanteError) throw new Error(participanteError.message);
     }
 
     await supabase
