@@ -53,11 +53,12 @@ export type EquipeMembro = {
   tipo: "admin" | "executivo" | "corretor";
   executivo: string | null;
   responsavel_id: string | null;
+  regiao: string | null;
 };
 
 export type LeadReuniaoOpt = { id: string; nome: string; telefone: string; etapa?: string | null };
 
-type ProfileEquipeRow = { id: string; nome: string; responsavel_id: string | null; ativo?: boolean | null };
+type ProfileEquipeRow = { id: string; nome: string; responsavel_id: string | null; ativo?: boolean | null; regiao?: string | null };
 type RoleRow = { user_id: string; role: EquipeMembro["role"] };
 type ResponsavelRow = { id: string; nome: string; ativo: boolean };
 
@@ -67,7 +68,7 @@ function firstName(nome: string) {
 
 async function loadMeetingAccess(supabaseAdmin: any, userId: string) {
   const [{ data: profiles }, { data: roles }, { data: resps }, { data: currentProfile }, { data: currentRole }] = await Promise.all([
-    supabaseAdmin.from("profiles").select("id, nome, responsavel_id, ativo").eq("ativo", true).order("nome"),
+    supabaseAdmin.from("profiles").select("id, nome, responsavel_id, ativo, regiao").eq("ativo", true).order("nome"),
     supabaseAdmin.from("user_roles").select("user_id, role"),
     supabaseAdmin.from("responsaveis").select("id, nome, ativo"),
     supabaseAdmin.from("profiles").select("id, nome, responsavel_id, ativo").eq("id", userId).maybeSingle(),
@@ -91,7 +92,7 @@ async function loadMeetingAccess(supabaseAdmin: any, userId: string) {
     const isProfileExec = !!p.responsavel_id && execById.get(p.responsavel_id) === firstName(p.nome);
     const tipo: EquipeMembro["tipo"] = role === "admin" ? "admin" : isProfileExec ? "executivo" : "corretor";
     const executivo = tipo === "corretor" && p.responsavel_id ? respMap.get(p.responsavel_id) ?? null : null;
-    return { id: p.id, nome: p.nome, role, tipo, executivo, responsavel_id: p.responsavel_id };
+    return { id: p.id, nome: p.nome, role, tipo, executivo, responsavel_id: p.responsavel_id, regiao: p.regiao ?? null };
   });
 
   const equipe = isAdmin
