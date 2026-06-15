@@ -71,6 +71,7 @@ function ConfigPage() {
           <TabsTrigger value="responsaveis">Responsáveis</TabsTrigger>
           <TabsTrigger value="integracoes">Integrações</TabsTrigger>
           <TabsTrigger value="formularios">Formulários Meta</TabsTrigger>
+          <TabsTrigger value="admin">Admin</TabsTrigger>
         </TabsList>
         <TabsContent value="conta" className="mt-6 space-y-6">
           <MinhaContaSection />
@@ -85,7 +86,47 @@ function ConfigPage() {
         <TabsContent value="formularios" className="mt-6">
           <FormulariosSection />
         </TabsContent>
+        <TabsContent value="admin" className="mt-6 space-y-6">
+          <SistemaCorretoresToggle />
+        </TabsContent>
       </Tabs>
+    </div>
+  );
+}
+
+function SistemaCorretoresToggle() {
+  const [ativo, setAtivo] = useState<boolean | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    supabase.from("configuracoes").select("valor").eq("chave", "sistema_corretores_ativo").maybeSingle()
+      .then(({ data }) => setAtivo(data?.valor === true));
+  }, []);
+
+  async function toggle(v: boolean) {
+    setSaving(true);
+    const { error } = await supabase.from("configuracoes")
+      .upsert({ chave: "sistema_corretores_ativo", valor: v as never, updated_at: new Date().toISOString() }, { onConflict: "chave" });
+    setSaving(false);
+    if (error) { toast.error("Erro ao salvar"); return; }
+    setAtivo(v);
+    toast.success(v ? "Sistema de corretores liberado" : "Sistema de corretores desativado");
+  }
+
+  return (
+    <div className="rounded-lg border p-5 space-y-3">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h3 className="font-semibold">Liberar sistema de Corretores de Vendas</h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            Quando ativado, o menu <strong>Vendas</strong> fica visível para administradores e corretores de vendas habilitados.
+          </p>
+        </div>
+        <Switch checked={ativo === true} disabled={saving || ativo === null} onCheckedChange={toggle} />
+      </div>
+    </div>
+  );
+}
     </div>
   );
 }
