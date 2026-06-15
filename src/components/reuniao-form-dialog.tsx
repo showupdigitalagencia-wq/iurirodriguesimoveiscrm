@@ -7,15 +7,14 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useServerFn } from "@tanstack/react-start";
-import { createReuniao } from "@/lib/reunioes.functions";
+import { createReuniao, listEquipeReuniao, type EquipeMembro } from "@/lib/reunioes.functions";
 import { startGoogleOAuth, getGoogleStatus } from "@/lib/google.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { MessageCircle, Video, CheckCircle2, Users } from "lucide-react";
+import { MessageCircle, Video, CheckCircle2, Users, Shield, Briefcase } from "lucide-react";
 
 type Tipo = "individual" | "institucional" | "alinhamento";
 type LeadOpt = { id: string; nome: string; telefone: string };
-type RespOpt = { id: string; nome: string; canal: string };
 
 const GROUP_WA_URL = "https://chat.whatsapp.com/GCRzxSX7Ou51J8qgNjLiyu";
 
@@ -91,8 +90,9 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
   const call = useServerFn(createReuniao);
   const startOAuth = useServerFn(startGoogleOAuth);
   const checkStatus = useServerFn(getGoogleStatus);
+  const fetchEquipe = useServerFn(listEquipeReuniao);
   const [leads, setLeads] = useState<LeadOpt[]>([]);
-  const [resps, setResps] = useState<RespOpt[]>([]);
+  const [equipe, setEquipe] = useState<EquipeMembro[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [saving, setSaving] = useState(false);
   const [googleConnected, setGoogleConnected] = useState<boolean | null>(null);
@@ -116,7 +116,7 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
     tipo: "individual" as Tipo,
     descricao: "",
     lead_ids: new Set<string>(),
-    resp_ids: new Set<string>(),
+    user_ids: new Set<string>(),
   });
 
   async function refreshGoogleStatus() {
@@ -131,10 +131,13 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
 
   useEffect(() => {
     if (!open) return;
-    supabase.from("leads").select("id, nome, telefone").order("created_at", { ascending: false }).limit(500)
-      .then(({ data }) => setLeads((data as LeadOpt[]) ?? []));
-    supabase.from("responsaveis").select("id, nome, canal").order("nome")
-      .then(({ data }) => setResps((data as RespOpt[]) ?? []));
+    if (defaultLeadId) {
+      supabase.from("leads").select("id, nome, telefone").eq("id", defaultLeadId).maybeSingle()
+        .then(({ data }) => setLeads(data ? [data as LeadOpt] : []));
+    } else {
+      setLeads([]);
+    }
+    fetchEquipe().then((r) => setEquipe(r.equipe)).catch(() => setEquipe([]));
     supabase.auth.getUser().then(async ({ data }) => {
       const uid = data.user?.id;
       if (!uid) return setIsAdmin(false);
@@ -142,7 +145,7 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
       setIsAdmin(!!r);
     });
     refreshGoogleStatus();
-  }, [open]);
+  }, [open, defaultLeadId]);
 
   useEffect(() => {
     if (!open) return;
@@ -169,7 +172,7 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
       setForm({
         titulo: "", data: "", hora: "", duracao: 60,
         tipo: "individual", descricao: "",
-        lead_ids: new Set<string>(), resp_ids: new Set<string>(),
+        lead_ids: new Set<string>(), user_ids: new Set<string>(),
       });
       setConfirmacao(null);
     }
@@ -225,7 +228,8 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
           local: null,
           tipo: form.tipo,
           lead_ids: Array.from(form.lead_ids),
-          responsavel_ids: Array.from(form.resp_ids),
+          responsavel_ids: [],
+          user_ids: Array.from(form.user_ids),
           usar_meet: true,
         },
       });
@@ -238,7 +242,7 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
       }
 
       const selectedLeads = leads.filter((l) => form.lead_ids.has(l.id));
-      const corretorNome = resps.find((r) => form.resp_ids.has(r.id))?.nome ?? "";
+      const corretorNome = equipe.filter((e) => form.user_ids.has(e.id)).map((e) => e.nome).join(", ");
 
       setConfirmacao({
         leads: selectedLeads,
@@ -461,11 +465,10 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
             </RadioGroup>
           </div>
 
-          {form.tipo !== "alinhamento" && (
+          {form.tipo !== "alinhamento" && defaultLeadId && leads.length > 0 && (
             <div>
-              <Label>Leads participantes</Label>
-              <div className="mt-2 max-h-40 overflow-y-auto border border-border rounded-md p-2 space-y-1">
-                {leads.length === 0 && <p className="text-xs text-muted-foreground">Nenhum lead disponível</p>}
+              <Label>Lead da reunião</Label>
+              <div className="mt-2 border border-border rounded-md p-2 space-y-1">
                 {leads.map((l) => (
                   <label key={l.id} className="flex items-center gap-2 text-sm cursor-pointer py-1 px-1 hover:bg-muted rounded">
                     <Checkbox checked={form.lead_ids.has(l.id)} onCheckedChange={() => setForm({ ...form, lead_ids: toggle(form.lead_ids, l.id) })} />
@@ -477,12 +480,38 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
           )}
 
           <div>
-            <Label>Corretores participantes</Label>
-            <div className="mt-2 border border-border rounded-md p-2 space-y-1">
-              {resps.map((r) => (
-                <label key={r.id} className="flex items-center gap-2 text-sm cursor-pointer py-1 px-1 hover:bg-muted rounded">
-                  <Checkbox checked={form.resp_ids.has(r.id)} onCheckedChange={() => setForm({ ...form, resp_ids: toggle(form.resp_ids, r.id) })} />
-                  <span>{r.nome}</span>
+            <div className="flex items-center justify-between mb-2">
+              <Label>Equipe (participantes)</Label>
+              <label className="flex items-center gap-2 text-xs cursor-pointer">
+                <Checkbox
+                  checked={equipe.length > 0 && equipe.every((e) => form.user_ids.has(e.id))}
+                  onCheckedChange={(c) =>
+                    setForm({ ...form, user_ids: c ? new Set(equipe.map((e) => e.id)) : new Set<string>() })
+                  }
+                />
+                <span>Selecionar toda a equipe</span>
+              </label>
+            </div>
+            <div className="max-h-56 overflow-y-auto border border-border rounded-md p-2 space-y-1">
+              {equipe.length === 0 && <p className="text-xs text-muted-foreground">Nenhum membro disponível</p>}
+              {equipe.map((m) => (
+                <label key={m.id} className="flex items-center gap-2 text-sm cursor-pointer py-1 px-1 hover:bg-muted rounded">
+                  <Checkbox checked={form.user_ids.has(m.id)} onCheckedChange={() => setForm({ ...form, user_ids: toggle(form.user_ids, m.id) })} />
+                  {m.tipo === "admin" ? (
+                    <Shield className="h-3.5 w-3.5 text-red-500 shrink-0" />
+                  ) : m.tipo === "executivo" ? (
+                    <Briefcase className="h-3.5 w-3.5 text-gold shrink-0" />
+                  ) : (
+                    <Users className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  )}
+                  <span className="truncate">
+                    {m.nome}
+                    {m.tipo === "admin" && <span className="text-xs text-red-500 ml-1">(Admin)</span>}
+                    {m.tipo === "executivo" && <span className="text-xs text-gold ml-1">(Executivo)</span>}
+                    {m.tipo === "corretor" && m.executivo && (
+                      <span className="text-xs text-muted-foreground ml-1">— Exec: {m.executivo}</span>
+                    )}
+                  </span>
                 </label>
               ))}
             </div>
