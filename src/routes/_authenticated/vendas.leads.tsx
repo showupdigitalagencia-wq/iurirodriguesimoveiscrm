@@ -48,11 +48,12 @@ function VendasLeads() {
               <th className="p-3">Telefone</th>
               <th className="p-3">Valor</th>
               <th className="p-3">Etapa</th>
+              <th className="p-3 text-right">Ações</th>
             </tr>
           </thead>
           <tbody>
             {leads.length === 0 && (
-              <tr><td colSpan={5} className="p-6 text-center text-muted-foreground">Nenhum lead ainda</td></tr>
+              <tr><td colSpan={6} className="p-6 text-center text-muted-foreground">Nenhum lead ainda</td></tr>
             )}
             {leads.map((l) => {
               const info = vendasEtapaInfo(l.etapa);
@@ -67,6 +68,12 @@ function VendasLeads() {
                       {info.emoji} {info.nome}
                     </span>
                   </td>
+                  <td className="p-3">
+                    <div className="flex gap-2 justify-end flex-wrap">
+                      <AgendarVisitaButton lead={l} onDone={() => qc.invalidateQueries({ queryKey: ["vendas_leads"] })} />
+                      <ReuniaoOnlineButton lead={l} onDone={() => qc.invalidateQueries({ queryKey: ["vendas_leads"] })} />
+                    </div>
+                  </td>
                 </tr>
               );
             })}
@@ -74,6 +81,134 @@ function VendasLeads() {
         </table>
       </div>
     </div>
+  );
+}
+
+function toLocalInputValue(d: Date) {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function AgendarVisitaButton({ lead, onDone }: { lead: VendasLead; onDone: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [endereco, setEndereco] = useState("");
+  const [dataInicio, setDataInicio] = useState(() => {
+    const d = new Date(); d.setHours(d.getHours() + 1, 0, 0, 0); return toLocalInputValue(d);
+  });
+  const [duracao, setDuracao] = useState(60);
+  const [observacoes, setObservacoes] = useState("");
+  const createVisitaFn = useServerFn(createVisita);
+
+  async function submit() {
+    if (!endereco.trim()) { toast.error("Informe o endereço"); return; }
+    setSaving(true);
+    try {
+      await createVisitaFn({ data: {
+        lead_id: lead.id,
+        endereco: endereco.trim(),
+        data_inicio: new Date(dataInicio).toISOString(),
+        duracao_min: duracao,
+        observacoes: observacoes.trim() || undefined,
+      } });
+      toast.success("Visita agendada");
+      // WhatsApp confirmação
+      const dt = new Date(dataInicio);
+      const dataBR = dt.toLocaleDateString("pt-BR");
+      const horaBR = dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+      const msg = `Olá ${lead.nome}! Confirmando sua visita ao imóvel em ${endereco.trim()} no dia ${dataBR} às ${horaBR}. Iuri Rodrigues Imóveis 🏢`;
+      const tel = (lead.telefone ?? "").replace(/\D/g, "");
+      if (tel) window.open(`https://wa.me/${tel.length <= 11 ? "55" + tel : tel}?text=${encodeURIComponent(msg)}`, "_blank");
+      setOpen(false);
+      onDone();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao agendar");
+    } finally { setSaving(false); }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="outline" className="gap-1"><MapPin className="h-3.5 w-3.5" />Agendar Visita</Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader><DialogTitle>Agendar visita — {lead.nome}</DialogTitle></DialogHeader>
+        <div className="space-y-3 py-2">
+          <div><Label>Endereço do imóvel *</Label><Input value={endereco} onChange={(e) => setEndereco(e.target.value)} placeholder="Rua, nº, bairro" /></div>
+          <div className="grid grid-cols-2 gap-2">
+            <div><Label>Data e hora</Label><Input type="datetime-local" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} /></div>
+            <div><Label>Duração (min)</Label><Input type="number" min={15} step={15} value={duracao} onChange={(e) => setDuracao(Number(e.target.value) || 60)} /></div>
+          </div>
+          <div><Label>Observações</Label><Textarea rows={3} value={observacoes} onChange={(e) => setObservacoes(e.target.value)} /></div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
+          <Button variant="gold" onClick={submit} disabled={saving}>{saving ? "Salvando..." : "Agendar"}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function ReuniaoOnlineButton({ lead, onDone }: { lead: VendasLead; onDone: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [dataInicio, setDataInicio] = useState(() => {
+    const d = new Date(); d.setHours(d.getHours() + 1, 0, 0, 0); return toLocalInputValue(d);
+  });
+  const [duracao, setDuracao] = useState(45);
+  const [observacoes, setObservacoes] = useState("");
+  const createReuniaoFn = useServerFn(createReuniaoOnlineVenda);
+
+  async function submit() {
+    setSaving(true);
+    try {
+      const res = await createReuniaoFn({ data: {
+        lead_id: lead.id,
+        data_inicio: new Date(dataInicio).toISOString(),
+        duracao_min: duracao,
+        observacoes: observacoes.trim() || undefined,
+      } });
+      if (res.meetLink) {
+        toast.success("Reunião criada no Google Meet");
+      } else {
+        toast.warning("Reunião registrada, mas o Google Meet não pôde ser criado. Conecte o Google na Agenda.");
+      }
+      const dt = new Date(dataInicio);
+      const dataBR = dt.toLocaleDateString("pt-BR");
+      const horaBR = dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+      const linkPart = res.meetLink ? `\n📍 Link: ${res.meetLink}` : "";
+      const msg = `Olá ${lead.nome}! Sua reunião online está confirmada para ${dataBR} às ${horaBR}.${linkPart}\n\nIuri Rodrigues Imóveis 🏢`;
+      const tel = (lead.telefone ?? "").replace(/\D/g, "");
+      if (tel) window.open(`https://wa.me/${tel.length <= 11 ? "55" + tel : tel}?text=${encodeURIComponent(msg)}`, "_blank");
+      setOpen(false);
+      onDone();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao criar reunião");
+    } finally { setSaving(false); }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="outline" className="gap-1"><Video className="h-3.5 w-3.5" />Reunião Online</Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader><DialogTitle>Reunião online — {lead.nome}</DialogTitle></DialogHeader>
+        <div className="space-y-3 py-2">
+          <div className="grid grid-cols-2 gap-2">
+            <div><Label>Data e hora</Label><Input type="datetime-local" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} /></div>
+            <div><Label>Duração (min)</Label><Input type="number" min={15} step={15} value={duracao} onChange={(e) => setDuracao(Number(e.target.value) || 45)} /></div>
+          </div>
+          <div><Label>Pauta / observações</Label><Textarea rows={3} value={observacoes} onChange={(e) => setObservacoes(e.target.value)} /></div>
+          <p className="text-xs text-muted-foreground">Será criado um evento com Google Meet no seu calendário. Conecte o Google em Vendas → Agenda se ainda não conectou.</p>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
+          <Button variant="gold" onClick={submit} disabled={saving}>{saving ? "Criando..." : "Criar reunião"}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
