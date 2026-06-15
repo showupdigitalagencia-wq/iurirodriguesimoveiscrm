@@ -220,7 +220,7 @@ export function ReuniaoDetailDialog({ reuniaoId, onClose, onChanged }: Props) {
               <div className="flex gap-2 flex-wrap pt-2">
                 <Button variant="gold" size="sm" onClick={() => setStatus("realizada")}>Marcar realizada</Button>
                 <Button variant="outline" size="sm" onClick={() => setStatus("agendada")}>Reabrir</Button>
-                <Button variant="outline" size="sm" onClick={() => setStatus("cancelada")} className="text-destructive">Cancelar reunião</Button>
+                <Button variant="outline" size="sm" onClick={handleCancel} className="text-destructive">Cancelar reunião</Button>
                 <Button variant="ghost" size="sm" onClick={handleDelete} className="text-destructive ml-auto">
                   <Trash2 className="h-4 w-4" />
                 </Button>
