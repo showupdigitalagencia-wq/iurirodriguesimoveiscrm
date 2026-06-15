@@ -125,7 +125,7 @@ function MonthGrid({ cursor, from, reunioes, onOpen }: { cursor: Date; from: Dat
                   <button
                     key={r.id}
                     onClick={() => onOpen(r.id)}
-                    className={`block w-full text-left text-[10px] sm:text-xs px-1.5 py-1 rounded border ${colorFor(r.tipo)} truncate`}
+                    className={`block w-full text-left text-[10px] sm:text-xs px-1.5 py-1 rounded border ${colorFor(r)} truncate`}
                   >
                     {format(new Date(r.data_inicio), "HH:mm")} {r.titulo}
                   </button>
@@ -166,7 +166,7 @@ function DayList({ day, reunioes, onOpen, compact }: { day: Date; reunioes: Reun
           <button
             key={r.id}
             onClick={() => onOpen(r.id)}
-            className={`block w-full text-left p-3 rounded-md border ${colorFor(r.tipo)} hover:opacity-90 transition`}
+            className={`block w-full text-left p-3 rounded-md border ${colorFor(r)} hover:opacity-90 transition`}
           >
             <div className="flex justify-between gap-2 text-xs opacity-90">
               <span>{format(new Date(r.data_inicio), "HH:mm")} · {r.duracao_min}min</span>
