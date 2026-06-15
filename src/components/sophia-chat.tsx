@@ -61,22 +61,25 @@ export function LauraChat() {
       </SheetTrigger>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-md flex flex-col p-0 gap-0 h-[100dvh] max-h-[100dvh]"
+        className="w-screen sm:max-w-md flex flex-col p-0 gap-0 h-[100dvh] max-h-[100dvh] border-0 sm:border-l inset-0 sm:inset-y-0 sm:right-0 sm:left-auto"
       >
         <SheetTitle className="sr-only">Laura — Assistente IA</SheetTitle>
 
         {/* Header */}
-        <div className="border-b p-3 flex items-center gap-2 shrink-0 bg-background">
+        <div
+          className="border-b px-2 py-2 flex items-center gap-2 shrink-0 bg-background sticky top-0 z-10"
+          style={{ paddingTop: "max(0.5rem, env(safe-area-inset-top))" }}
+        >
           <Button
             variant="ghost"
             size="icon"
-            className="h-10 w-10 shrink-0"
+            className="h-11 w-11 shrink-0"
             onClick={() => setOpen(false)}
             aria-label="Voltar"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <Avatar className="h-10 w-10 shrink-0">
+          <Avatar className="h-9 w-9 shrink-0">
             <AvatarFallback className="bg-gradient-to-br from-fuchsia-500 to-violet-600 text-white">
               <Bot className="h-5 w-5" />
             </AvatarFallback>
@@ -88,13 +91,14 @@ export function LauraChat() {
           <Button
             variant="ghost"
             size="icon"
-            className="h-10 w-10 shrink-0"
+            className="h-11 w-11 shrink-0"
             onClick={() => setOpen(false)}
             aria-label="Fechar"
           >
             <X className="h-5 w-5" />
           </Button>
         </div>
+
 
         {/* Messages */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
