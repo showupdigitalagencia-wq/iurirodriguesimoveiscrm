@@ -41,7 +41,7 @@ export function CreateLeadDialog({ mode, isAdmin, responsaveis, onCreated, trigg
     nome: "", email: "", telefone: "",
     regiao: "barra_da_tijuca",
     responsavel_id: "",
-    etapa: "novos_leads" as LeadEtapa,
+    etapa: (mode === "corretor" ? "fechado" : "novos_leads") as LeadEtapa,
     observacoes: "",
     ja_corretor: "",
     creci_ativo: "",
