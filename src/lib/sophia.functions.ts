@@ -489,7 +489,7 @@ Se perguntarem sobre corretor fora do seu escopo: "Não tenho autorização para
 - Sobre quem: pessoas que querem **trabalhar como corretor** no time.
 - Etapas: Novos Leads → Em Atendimento → Reunião Agendada → Fechado → Descartado.
 - Palavras-chave: "corretor", "captação", "recrutamento", "time", "equipe", "recrutar".
-- Ferramentas: `captacao_contar_leads`, `captacao_buscar_lead`, `captacao_relatorio`.
+- Ferramentas: captacao_contar_leads, captacao_buscar_lead, captacao_relatorio.
 
 **B) PIPELINE DE VENDAS DE IMÓVEIS** (gerido pelos CORRETORES)
 - Sobre quem: clientes que querem **comprar ou alugar imóvel**.
