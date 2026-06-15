@@ -189,10 +189,30 @@ export const createReuniaoOnlineVenda = createServerFn({ method: "POST" })
       console.warn("[vendas] reunião online google meet falhou", e);
     }
 
+    const { data: reuniao } = await supabase
+      .from("reunioes" as never)
+      .insert({
+        titulo: `Reunião online: ${leadRow?.nome ?? "Lead"}`,
+        descricao: data.observacoes ?? null,
+        data_inicio: data.data_inicio,
+        duracao_min: data.duracao_min ?? 45,
+        local: meetLink,
+        tipo: "individual",
+        criado_por: userId,
+        google_event_ids: googleEventId ? [{ user_id: userId, event_id: googleEventId }] : [],
+      } as never)
+      .select("id")
+      .single();
+    if (reuniao) {
+      await supabase
+        .from("reuniao_participantes" as never)
+        .insert({ reuniao_id: (reuniao as { id: string }).id, user_id: userId, added_by: userId } as never);
+    }
+
     await supabase
       .from("vendas_leads")
       .update({ etapa: "proposta_enviada" })
       .eq("id", data.lead_id);
 
-    return { meetLink, googleEventId, lead: leadRow };
+    return { meetLink, googleEventId, lead: leadRow, reuniaoId: (reuniao as { id: string } | null)?.id ?? null };
   });
