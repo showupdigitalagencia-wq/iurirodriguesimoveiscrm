@@ -52,32 +52,82 @@ export type EquipeMembro = {
   role: "admin" | "corretor" | "corretor_vendas";
   tipo: "admin" | "executivo" | "corretor";
   executivo: string | null;
+  responsavel_id: string | null;
 };
+
+export type LeadReuniaoOpt = { id: string; nome: string; telefone: string };
+
+type ProfileEquipeRow = { id: string; nome: string; responsavel_id: string | null; ativo?: boolean | null };
+type RoleRow = { user_id: string; role: EquipeMembro["role"] };
+type ResponsavelRow = { id: string; nome: string; ativo: boolean };
+
+function firstName(nome: string) {
+  return nome.trim().split(" ")[0]?.toLowerCase() ?? "";
+}
+
+async function loadMeetingAccess(supabaseAdmin: any, userId: string) {
+  const [{ data: profiles }, { data: roles }, { data: resps }, { data: currentProfile }, { data: currentRole }] = await Promise.all([
+    supabaseAdmin.from("profiles").select("id, nome, responsavel_id, ativo").eq("ativo", true).order("nome"),
+    supabaseAdmin.from("user_roles").select("user_id, role"),
+    supabaseAdmin.from("responsaveis").select("id, nome, ativo"),
+    supabaseAdmin.from("profiles").select("id, nome, responsavel_id, ativo").eq("id", userId).maybeSingle(),
+    supabaseAdmin.from("user_roles").select("role").eq("user_id", userId).maybeSingle(),
+  ]);
+
+  const roleMap = new Map(((roles ?? []) as RoleRow[]).map((r) => [r.user_id, r.role]));
+  const respRows = ((resps ?? []) as ResponsavelRow[]).filter((r) => r.ativo);
+  const respMap = new Map(respRows.map((r) => [r.id, r.nome]));
+  const execById = new Map(respRows.map((r) => [r.id, firstName(r.nome)]));
+  const current = currentProfile as ProfileEquipeRow | null;
+  const currentRoleName = ((currentRole?.role as EquipeMembro["role"] | undefined) ?? "corretor");
+  const isAdmin = currentRoleName === "admin";
+  const currentExecId = current?.responsavel_id && execById.get(current.responsavel_id) === firstName(current.nome)
+    ? current.responsavel_id
+    : null;
+  const isExec = !isAdmin && !!currentExecId;
+
+  const allEquipe: EquipeMembro[] = ((profiles ?? []) as ProfileEquipeRow[]).map((p) => {
+    const role = roleMap.get(p.id) ?? "corretor";
+    const isProfileExec = !!p.responsavel_id && execById.get(p.responsavel_id) === firstName(p.nome);
+    const tipo: EquipeMembro["tipo"] = role === "admin" ? "admin" : isProfileExec ? "executivo" : "corretor";
+    const executivo = tipo === "corretor" && p.responsavel_id ? respMap.get(p.responsavel_id) ?? null : null;
+    return { id: p.id, nome: p.nome, role, tipo, executivo, responsavel_id: p.responsavel_id };
+  });
+
+  const equipe = isAdmin
+    ? allEquipe
+    : isExec
+      ? allEquipe.filter((m) => m.tipo === "admin" || m.tipo === "executivo" || m.responsavel_id === currentExecId)
+      : allEquipe.filter((m) => m.id === userId);
+
+  return { isAdmin, isExec, currentExecId, currentRoleName, equipe };
+}
 
 export const listEquipeReuniao = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async () => {
+  .handler(async ({ context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const [{ data: profiles }, { data: roles }, { data: resps }] = await Promise.all([
-      supabaseAdmin.from("profiles").select("id, nome, responsavel_id").eq("ativo", true).order("nome"),
-      supabaseAdmin.from("user_roles").select("user_id, role"),
-      supabaseAdmin.from("responsaveis").select("id, nome, ativo"),
-    ]);
-    const rolesMap = new Map(((roles ?? []) as { user_id: string; role: EquipeMembro["role"] }[]).map((r) => [r.user_id, r.role]));
-    const respMap = new Map(((resps ?? []) as { id: string; nome: string }[]).map((r) => [r.id, r.nome]));
-    const activeExec = new Set(
-      ((resps ?? []) as { nome: string; ativo: boolean }[])
-        .filter((r) => r.ativo)
-        .map((r) => r.nome.trim().split(" ")[0].toLowerCase())
-    );
-    const equipe: EquipeMembro[] = ((profiles ?? []) as { id: string; nome: string; responsavel_id: string | null }[]).map((p) => {
-      const role = rolesMap.get(p.id) ?? "corretor";
-      const isExec = activeExec.has(p.nome.trim().split(" ")[0].toLowerCase());
-      const tipo: EquipeMembro["tipo"] = role === "admin" ? "admin" : isExec ? "executivo" : "corretor";
-      const executivo = tipo === "corretor" && p.responsavel_id ? respMap.get(p.responsavel_id) ?? null : null;
-      return { id: p.id, nome: p.nome, role, tipo, executivo };
-    });
+    const { equipe } = await loadMeetingAccess(supabaseAdmin, context.userId);
     return { equipe };
+  });
+
+export const listLeadsReuniao = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const access = await loadMeetingAccess(supabaseAdmin, context.userId);
+    let query = supabaseAdmin
+      .from("leads")
+      .select("id, nome, telefone, responsavel_id, etapa, is_corretor")
+      .neq("etapa", "fechado")
+      .eq("is_corretor", false)
+      .order("nome")
+      .limit(500);
+    if (!access.isAdmin && access.currentExecId) query = query.eq("responsavel_id", access.currentExecId);
+    if (!access.isAdmin && !access.currentExecId) return { leads: [] as LeadReuniaoOpt[] };
+    const { data, error } = await query;
+    if (error) throw new Error(error.message);
+    return { leads: ((data ?? []) as LeadReuniaoOpt[]).map(({ id, nome, telefone }) => ({ id, nome, telefone })) };
   });
 
 export const listReunioes = createServerFn({ method: "POST" })
@@ -373,23 +423,15 @@ export const createReuniao = createServerFn({ method: "POST" })
     if (error || !inserted) throw new Error(error?.message ?? "Falha ao criar reunião");
     const reuniaoId = (inserted as { id: string }).id;
 
-    // Auto-incluir todos os admins e executivos ativos para que a reunião apareça na agenda deles
-    // (RLS já libera leitura, mas precisamos do user_id para sync de Google Calendar individual)
-    const { data: equipeRows } = await supabaseAdmin
-      .from("profiles").select("id, nome").eq("ativo", true);
-    const { data: rolesRows } = await supabaseAdmin
-      .from("user_roles").select("user_id, role");
-    const { data: respAtivos } = await supabaseAdmin
-      .from("responsaveis").select("nome").eq("ativo", true);
-    const adminIds = new Set(((rolesRows ?? []) as { user_id: string; role: string }[])
-      .filter((r) => r.role === "admin").map((r) => r.user_id));
-    const execFirstNames = new Set(((respAtivos ?? []) as { nome: string }[])
-      .map((r) => r.nome.trim().split(" ")[0].toLowerCase()));
-    const autoUserIds = ((equipeRows ?? []) as { id: string; nome: string }[])
-      .filter((p) => adminIds.has(p.id) || execFirstNames.has(p.nome.trim().split(" ")[0].toLowerCase()))
-      .map((p) => p.id);
-
-    const allUserIds = Array.from(new Set([...data.user_ids, ...autoUserIds]));
+    const access = await loadMeetingAccess(supabaseAdmin, context.userId);
+    if (!access.isAdmin && !access.isExec) throw new Error("Apenas Admin ou Executivo pode criar reunião");
+    const allowedUserIds = new Set(access.equipe.map((m) => m.id));
+    const selectedUserIds = data.user_ids.filter((id) => allowedUserIds.has(id));
+    const autoUserIds = access.equipe.filter((m) => m.tipo === "admin" || m.tipo === "executivo").map((m) => m.id);
+    const allUserIds = Array.from(new Set([...selectedUserIds, ...autoUserIds]));
+    const pushUserIds = access.equipe
+      .filter((m) => m.tipo === "corretor" && selectedUserIds.includes(m.id))
+      .map((m) => m.id);
 
     // Participantes
     const rows: { reuniao_id: string; lead_id: string | null; responsavel_id: string | null; user_id: string | null; added_by: string | null }[] = [
@@ -521,34 +563,49 @@ export const createReuniao = createServerFn({ method: "POST" })
       await supabaseAdmin.from("lead_historico").insert(historicoRows);
     }
 
-    // Notificação push para TODOS via segment "All"
+    // Notificação push apenas para corretores adicionados explicitamente
     try {
       const { sendOneSignalPush } = await import("@/lib/onesignal.server");
-      const { data: profileCriador } = await supabaseAdmin
-        .from("profiles").select("nome").eq("id", context.userId).maybeSingle();
-      const nomeCriador = profileCriador?.nome ?? "Sistema";
+      const { data: perfisPush } = pushUserIds.length
+        ? await supabaseAdmin.from("profiles").select("onesignal_external_id").in("id", pushUserIds)
+        : { data: [] };
+      const externalIds = ((perfisPush ?? []) as { onesignal_external_id: string | null }[])
+        .map((p) => p.onesignal_external_id)
+        .filter((id): id is string => !!id);
 
       const dt = new Date(data.data_inicio);
       const dataStr = dt.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit", year: "numeric" });
       const horaStr = dt.toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" });
-
-      let title: string;
-      let message: string;
-      if (data.tipo === "institucional") {
-        title = "🏢 Reunião Institucional!";
-        message = `Com Diretor IURI RODRIGUES | ${dataStr} às ${horaStr}`;
-      } else if (data.tipo === "alinhamento") {
-        title = "⚠️ Reunião de Alinhamento!";
-        message = `Reunião obrigatória com toda equipe | ${dataStr} às ${horaStr}`;
-      } else {
-        title = "📅 Nova Reunião Agendada!";
-        message = `Individual | ${dataStr} às ${horaStr} | Por: ${nomeCriador}`;
-      }
       const url = `https://iurirodriguesimoveiscrm.lovable.app/agenda`;
 
-      await sendOneSignalPush({ segments: ["All"], title, message, url, data: { reuniao_id: reuniaoId } });
+      if (externalIds.length) {
+        await sendOneSignalPush({
+          externalIds,
+          title: "📅 Você foi adicionado a uma reunião",
+          message: `${data.titulo} | ${dataStr} às ${horaStr}`,
+          url,
+          data: { reuniao_id: reuniaoId },
+        });
+      }
     } catch (e) {
       console.error("[Reuniao] push falhou", e);
+    }
+
+    try {
+      if (data.lead_ids.length) {
+        const { sendZapiMessage } = await import("@/lib/notify.server");
+        const { data: leadsZap } = await supabaseAdmin.from("leads").select("nome, telefone").in("id", data.lead_ids);
+        const dt = new Date(data.data_inicio);
+        const dataStr = dt.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
+        const horaStr = dt.toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" });
+        for (const lead of (leadsZap ?? []) as { nome: string; telefone: string }[]) {
+          const phone = lead.telefone.replace(/\D+/g, "");
+          if (!phone) continue;
+          await sendZapiMessage(phone.startsWith("55") ? phone : `55${phone}`, `Olá ${lead.nome}! Sua reunião foi confirmada para ${dataStr} às ${horaStr}. Link: ${finalLocal ?? "a definir"}`);
+        }
+      }
+    } catch (e) {
+      console.error("[Reuniao] WhatsApp lead falhou", e);
     }
 
     return { id: reuniaoId, local: finalLocal, invitedEmails, leadsSemEmail };
