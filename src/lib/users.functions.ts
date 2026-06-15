@@ -63,8 +63,12 @@ export const createUser = createServerFn({ method: "POST" })
     if (error || !created.user) throw new Error(error?.message ?? "Falha ao criar usuário");
 
     // Trigger cria profile + role default (corretor). Atualizamos se necessário.
+    // Corretor_vendas já entra com acesso liberado ao sistema de vendas.
     await supabaseAdmin.from("profiles").upsert({
-      id: created.user.id, nome: data.nome, responsavel_id: data.responsavel_id ?? null,
+      id: created.user.id,
+      nome: data.nome,
+      responsavel_id: data.responsavel_id ?? null,
+      vendas_acesso: data.role === "corretor_vendas" ? true : undefined,
     });
 
     if (data.role !== "corretor") {
