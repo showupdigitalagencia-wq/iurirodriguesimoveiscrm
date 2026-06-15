@@ -160,6 +160,65 @@ export const addLeadToReuniao = createServerFn({ method: "POST" })
     return { ok: true, lead: l, reuniao: r };
   });
 
+export const addUserToReuniao = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ reuniao_id: z.string().uuid(), user_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: roleRow } = await supabaseAdmin
+      .from("user_roles").select("role").eq("user_id", context.userId).maybeSingle();
+    if (roleRow?.role !== "admin") throw new Error("Apenas Admin pode adicionar usuários internos");
+
+    const [{ data: profAlvo }, { data: reuniao }] = await Promise.all([
+      supabaseAdmin.from("profiles").select("id, nome, onesignal_external_id").eq("id", data.user_id).maybeSingle(),
+      supabaseAdmin.from("reunioes" as never).select("id, titulo, data_inicio, local").eq("id", data.reuniao_id).maybeSingle(),
+    ]);
+    if (!profAlvo) throw new Error("Usuário não encontrado");
+    if (!reuniao) throw new Error("Reunião não encontrada");
+
+    const { data: existing } = await supabaseAdmin
+      .from("reuniao_participantes" as never)
+      .select("id").eq("reuniao_id", data.reuniao_id).eq("user_id", data.user_id).maybeSingle();
+    if (!existing) {
+      const { error } = await supabaseAdmin.from("reuniao_participantes" as never).insert({
+        reuniao_id: data.reuniao_id,
+        user_id: data.user_id,
+        added_by: context.userId,
+      } as never);
+      if (error) throw new Error(error.message);
+    }
+
+    // Push para o adicionado
+    try {
+      const appId = process.env.ONESIGNAL_APP_ID;
+      const restKey = process.env.ONESIGNAL_REST_API_KEY;
+      const extId = (profAlvo as { onesignal_external_id: string | null }).onesignal_external_id;
+      const r = reuniao as unknown as { titulo: string; data_inicio: string; local: string | null };
+      if (appId && restKey && extId) {
+        const dt = new Date(r.data_inicio);
+        const dataStr = dt.toLocaleDateString("pt-BR");
+        const horaStr = dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+        await fetch("https://api.onesignal.com/notifications?c=push", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Key ${restKey}` },
+          body: JSON.stringify({
+            app_id: appId,
+            include_aliases: { external_id: [extId] },
+            target_channel: "push",
+            headings: { en: "🟡 Você foi adicionado a uma reunião!" },
+            contents: { en: `${r.titulo} — ${dataStr} às ${horaStr}` },
+            url: "https://iurirodriguesimoveiscrm.lovable.app/agenda",
+          }),
+        });
+      }
+    } catch (e) {
+      console.warn("[addUserToReuniao] push falhou", e);
+    }
+
+    return { ok: true, user: { id: profAlvo.id, nome: (profAlvo as { nome: string }).nome } };
+  });
+
+
 
 export const createReuniao = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
