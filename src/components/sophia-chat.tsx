@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { sophiaChat } from "@/lib/sophia.functions";
+import { sophiaChat, sophiaContext } from "@/lib/sophia.functions";
 import { sophiaTranscribe } from "@/lib/sophia-transcribe.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Sparkles, Send, Loader2, Bot, X, ArrowLeft, Mic, ImagePlus, Trash2 } from "lucide-react";
