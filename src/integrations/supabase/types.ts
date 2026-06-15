@@ -334,6 +334,7 @@ export type Database = {
       responsaveis: {
         Row: {
           ativo: boolean
+          avatar_url: string | null
           canal: Database["public"]["Enums"]["lead_canal"]
           created_at: string
           id: string
@@ -345,6 +346,7 @@ export type Database = {
         }
         Insert: {
           ativo?: boolean
+          avatar_url?: string | null
           canal: Database["public"]["Enums"]["lead_canal"]
           created_at?: string
           id?: string
@@ -356,6 +358,7 @@ export type Database = {
         }
         Update: {
           ativo?: boolean
+          avatar_url?: string | null
           canal?: Database["public"]["Enums"]["lead_canal"]
           created_at?: string
           id?: string
