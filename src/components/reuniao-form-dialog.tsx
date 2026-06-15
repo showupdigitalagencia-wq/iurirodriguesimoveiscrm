@@ -356,6 +356,25 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
             <Input value={form.titulo} onChange={(e) => setForm({ ...form, titulo: e.target.value })} placeholder="Ex: Apresentação do imóvel" />
           </div>
 
+          {form.tipo === "institucional" && (
+            <div className="border border-gold/40 bg-gold/5 rounded-md p-2 space-y-1.5">
+              <p className="text-xs font-medium text-gold-foreground/80">Horários fixos sugeridos:</p>
+              <div className="flex flex-wrap gap-1.5">
+                {nextInstitucionalSlots().map((s) => (
+                  <Button
+                    key={s.iso}
+                    type="button"
+                    size="sm"
+                    variant={form.data === s.dateStr && form.hora === s.timeStr ? "gold" : "outline"}
+                    onClick={() => setForm({ ...form, data: s.dateStr, hora: s.timeStr, titulo: form.titulo || `Reunião Institucional — ${s.timeStr}` })}
+                  >
+                    {s.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Data</Label>
