@@ -52,7 +52,56 @@ export type EquipeMembro = {
   role: "admin" | "corretor" | "corretor_vendas";
   tipo: "admin" | "executivo" | "corretor";
   executivo: string | null;
+  responsavel_id: string | null;
 };
+
+export type LeadReuniaoOpt = { id: string; nome: string; telefone: string };
+
+type ProfileEquipeRow = { id: string; nome: string; responsavel_id: string | null; ativo?: boolean | null };
+type RoleRow = { user_id: string; role: EquipeMembro["role"] };
+type ResponsavelRow = { id: string; nome: string; ativo: boolean };
+
+function firstName(nome: string) {
+  return nome.trim().split(" ")[0]?.toLowerCase() ?? "";
+}
+
+async function loadMeetingAccess(supabaseAdmin: any, userId: string) {
+  const [{ data: profiles }, { data: roles }, { data: resps }, { data: currentProfile }, { data: currentRole }] = await Promise.all([
+    supabaseAdmin.from("profiles").select("id, nome, responsavel_id, ativo").eq("ativo", true).order("nome"),
+    supabaseAdmin.from("user_roles").select("user_id, role"),
+    supabaseAdmin.from("responsaveis").select("id, nome, ativo"),
+    supabaseAdmin.from("profiles").select("id, nome, responsavel_id, ativo").eq("id", userId).maybeSingle(),
+    supabaseAdmin.from("user_roles").select("role").eq("user_id", userId).maybeSingle(),
+  ]);
+
+  const roleMap = new Map(((roles ?? []) as RoleRow[]).map((r) => [r.user_id, r.role]));
+  const respRows = ((resps ?? []) as ResponsavelRow[]).filter((r) => r.ativo);
+  const respMap = new Map(respRows.map((r) => [r.id, r.nome]));
+  const execById = new Map(respRows.map((r) => [r.id, firstName(r.nome)]));
+  const current = currentProfile as ProfileEquipeRow | null;
+  const currentRoleName = ((currentRole?.role as EquipeMembro["role"] | undefined) ?? "corretor");
+  const isAdmin = currentRoleName === "admin";
+  const currentExecId = current?.responsavel_id && execById.get(current.responsavel_id) === firstName(current.nome)
+    ? current.responsavel_id
+    : null;
+  const isExec = !isAdmin && !!currentExecId;
+
+  const allEquipe: EquipeMembro[] = ((profiles ?? []) as ProfileEquipeRow[]).map((p) => {
+    const role = roleMap.get(p.id) ?? "corretor";
+    const isProfileExec = !!p.responsavel_id && execById.get(p.responsavel_id) === firstName(p.nome);
+    const tipo: EquipeMembro["tipo"] = role === "admin" ? "admin" : isProfileExec ? "executivo" : "corretor";
+    const executivo = tipo === "corretor" && p.responsavel_id ? respMap.get(p.responsavel_id) ?? null : null;
+    return { id: p.id, nome: p.nome, role, tipo, executivo, responsavel_id: p.responsavel_id };
+  });
+
+  const equipe = isAdmin
+    ? allEquipe
+    : isExec
+      ? allEquipe.filter((m) => m.tipo === "admin" || m.tipo === "executivo" || m.responsavel_id === currentExecId)
+      : allEquipe.filter((m) => m.id === userId);
+
+  return { isAdmin, isExec, currentExecId, currentRoleName, equipe };
+}
 
 export const listEquipeReuniao = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
