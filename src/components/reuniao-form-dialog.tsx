@@ -172,7 +172,7 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
       setForm({
         titulo: "", data: "", hora: "", duracao: 60,
         tipo: "individual", descricao: "",
-        lead_ids: new Set<string>(), resp_ids: new Set<string>(),
+        lead_ids: new Set<string>(), user_ids: new Set<string>(),
       });
       setConfirmacao(null);
     }
