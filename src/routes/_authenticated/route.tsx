@@ -281,6 +281,7 @@ function AuthLayout() {
         </nav>
       </div>
 
+      {isAdmin && <SophiaChat />}
       <Toaster richColors position="top-right" />
     </div>
   );
