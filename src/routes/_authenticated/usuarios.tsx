@@ -75,11 +75,17 @@ function UsuariosPage() {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     const respId = String(fd.get("responsavel_id") || "");
+    const password = String(fd.get("password"));
+    const confirm = String(fd.get("password_confirm"));
+    const role = String(fd.get("role")) as UserRole;
+    if (password !== confirm) { toast.error("As senhas não conferem"); return; }
+    if (role === "corretor_vendas" && (!respId || respId === NO_RESPONSAVEL)) {
+      toast.error("Selecione o executivo responsável pelo corretor"); return;
+    }
     try {
       await fnCreate({ data: {
         nome: String(fd.get("nome")), email: String(fd.get("email")),
-        password: String(fd.get("password")),
-        role: String(fd.get("role")) as UserRole,
+        password, role,
         responsavel_id: respId === NO_RESPONSAVEL ? null : respId,
       }});
       toast.success("Funcionário criado");
