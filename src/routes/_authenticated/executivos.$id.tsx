@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState, useCallback } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { getExecutivoDetalhe, listCorretoresDisponiveis, setCorretorExecutivo, updateExecutivoRegiao } from "@/lib/executivos.functions";
+import { getExecutivoDetalhe, listCorretoresDisponiveis, listExecutivos, setCorretorExecutivo, updateExecutivoRegiao } from "@/lib/executivos.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,12 +32,14 @@ function ExecutivoDetalhePage() {
   const { id } = Route.useParams();
   const fnDetalhe = useServerFn(getExecutivoDetalhe);
   const fnDisp = useServerFn(listCorretoresDisponiveis);
+  const fnExecs = useServerFn(listExecutivos);
   const fnSet = useServerFn(setCorretorExecutivo);
   const fnRegiao = useServerFn(updateExecutivoRegiao);
 
   const [detalhe, setDetalhe] = useState<Detalhe | null>(null);
   const [loading, setLoading] = useState(true);
   const [disponiveis, setDisponiveis] = useState<CorretorDisp[]>([]);
+  const [outrosExecs, setOutrosExecs] = useState<Array<{ id: string; nome: string }>>([]);
   const [openAdd, setOpenAdd] = useState(false);
   const [selectedCorretor, setSelectedCorretor] = useState<string>("");
   const [trocaFor, setTrocaFor] = useState<Corretor | null>(null);
@@ -208,15 +210,20 @@ function ExecutivoDetalhePage() {
         )}
       </div>
 
-      <Dialog open={!!trocaFor} onOpenChange={(o) => { if (!o) { setTrocaFor(null); setNovoExec(""); } }}>
+      <Dialog open={!!trocaFor} onOpenChange={async (o) => {
+        if (!o) { setTrocaFor(null); setNovoExec(""); }
+        else if (outrosExecs.length === 0) {
+          const list = await fnExecs();
+          setOutrosExecs((list as Array<{ id: string; nome: string }>).filter((e) => e.id !== id));
+        }
+      }}>
         <DialogContent>
           <DialogHeader><DialogTitle>Trocar {trocaFor?.nome} de equipe</DialogTitle></DialogHeader>
           <Select value={novoExec} onValueChange={setNovoExec}>
             <SelectTrigger><SelectValue placeholder="Novo executivo" /></SelectTrigger>
             <SelectContent>
-              {Array.from(new Map(disponiveis.filter((c) => c.responsavel_id && c.responsavel_id !== id && !outrosExecsIds.has(c.id) === false || c.responsavel_id !== id)
-                .map((c) => [c.responsavel_id!, c.executivo_nome ?? ""]))).map(([eid, enome]) => (
-                <SelectItem key={eid} value={eid}>{enome || eid}</SelectItem>
+              {outrosExecs.map((e) => (
+                <SelectItem key={e.id} value={e.id}>{e.nome}</SelectItem>
               ))}
             </SelectContent>
           </Select>
