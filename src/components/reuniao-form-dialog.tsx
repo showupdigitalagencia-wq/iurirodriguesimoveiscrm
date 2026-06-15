@@ -11,10 +11,12 @@ import { createReuniao, listEquipeReuniao, listLeadsReuniao, type EquipeMembro }
 import { startGoogleOAuth, getGoogleStatus } from "@/lib/google.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { MessageCircle, Video, CheckCircle2, Users, Shield, Briefcase } from "lucide-react";
+import { MessageCircle, Video, CheckCircle2, Users, Shield, Briefcase, UserPlus, X } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 
 type Tipo = "individual" | "institucional" | "alinhamento" | "mentoria";
-type LeadOpt = { id: string; nome: string; telefone: string };
+type LeadOpt = { id: string; nome: string; telefone: string; etapa?: string | null };
 
 const GROUP_WA_URL = "https://chat.whatsapp.com/GCRzxSX7Ou51J8qgNjLiyu";
 
