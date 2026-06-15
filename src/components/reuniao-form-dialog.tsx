@@ -226,6 +226,8 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
         hora: form.hora,
         local: finalLocal,
         corretor: corretorNome,
+        invitedEmails: res.invitedEmails ?? [],
+        leadsSemEmail: res.leadsSemEmail ?? [],
       });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Falha ao agendar");
