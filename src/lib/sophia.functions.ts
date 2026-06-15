@@ -212,7 +212,7 @@ export const sophiaChat = createServerFn({ method: "POST" })
       }),
 
       relatorio_rapido: tool({
-        description: "Resumo dos últimos 7 dias: leads por etapa, dentro do escopo permitido.",
+        description: "PIPELINE DE VENDAS DE IMÓVEIS. Resumo dos últimos 7 dias por etapa. Para captação de corretores use captacao_relatorio.",
         inputSchema: z.object({}),
         execute: async () => {
           const permitidos = corretoresPermitidos();
