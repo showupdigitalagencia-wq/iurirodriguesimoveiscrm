@@ -26,6 +26,7 @@ export type ReuniaoRow = {
 export type ReuniaoDetail = ReuniaoRow & {
   participantes_leads: { id: string; nome: string; telefone: string; added_by: string | null }[];
   participantes_corretores: { id: string; nome: string; canal: string }[];
+  participantes_usuarios: { id: string; nome: string }[];
   my_role: "admin" | "corretor" | "corretor_vendas" | string;
   my_user_id: string;
   my_responsavel_id: string | null;
