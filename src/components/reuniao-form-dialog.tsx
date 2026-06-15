@@ -11,7 +11,7 @@ import { createReuniao } from "@/lib/reunioes.functions";
 import { startGoogleOAuth, getGoogleStatus } from "@/lib/google.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { MessageCircle, Video, CheckCircle2, Copy, Users } from "lucide-react";
+import { MessageCircle, Video, CheckCircle2, Users } from "lucide-react";
 
 type Tipo = "individual" | "institucional" | "alinhamento";
 type LeadOpt = { id: string; nome: string; telefone: string };
@@ -50,14 +50,8 @@ function buildGroupMessage(opts: { data: string; hora: string; local: string }):
   return `⚠️ REUNIÃO DE ALINHAMENTO\n\nAtenção equipe! 👥\n\n📅 Data: ${dataBR}\n🕐 Hora: ${opts.hora}\n📍 Link Google Meet: ${opts.local || "a definir"}\n\nPresença de TODOS obrigatória!\n\n— Iuri Rodrigues\nDiretor Geral | Iuri Rodrigues Imóveis 🏢`;
 }
 
-async function copyText(text: string) {
-  try {
-    await navigator.clipboard.writeText(text);
-    toast.success("Mensagem copiada");
-  } catch {
-    toast.error("Falha ao copiar");
-  }
-}
+
+
 
 interface Props {
   open: boolean;
@@ -248,12 +242,9 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
           </DialogHeader>
           <div className="bg-muted rounded-md p-3 text-sm whitespace-pre-wrap break-words">{msg}</div>
           <div className="flex flex-col gap-2">
-            <Button variant="gold" onClick={() => copyText(msg)}>
-              <Copy className="h-4 w-4 mr-1" /> Copiar mensagem
-            </Button>
-            <Button asChild variant="default">
-              <a href={GROUP_WA_URL} target="_blank" rel="noopener noreferrer">
-                <Users className="h-4 w-4 mr-1" /> Enviar para Grupo WhatsApp
+            <Button asChild variant="gold">
+              <a href={`${GROUP_WA_URL}`} target="_blank" rel="noopener noreferrer">
+                <Users className="h-4 w-4 mr-1" /> Enviar no WhatsApp (Grupo)
               </a>
             </Button>
             <Button variant="outline" onClick={() => onOpenChange(false)}>Fechar</Button>
@@ -269,10 +260,8 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>✅ Reunião agendada! Envie a confirmação</DialogTitle>
-            <DialogDescription>
-              Copie a mensagem e envie pelo WhatsApp para cada lead.
-            </DialogDescription>
+            <DialogTitle>✅ Reunião agendada com sucesso!</DialogTitle>
+            <DialogDescription>Envie a confirmação:</DialogDescription>
           </DialogHeader>
           {confirmacao.local && (
             <div className="text-xs bg-muted rounded-md p-2 break-all">
@@ -306,11 +295,10 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
           {confirmacao.leads.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nenhum lead selecionado.</p>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {confirmacao.leads.map((l) => {
                 const tel = onlyDigits(l.telefone);
                 const phone = tel.startsWith("55") || tel.length < 11 ? tel : `55${tel}`;
-                const waUrl = `https://wa.me/${phone}`;
                 const msg = buildLeadMessage({
                   tipo: confirmacao.tipo,
                   leadNome: l.nome,
@@ -319,22 +307,19 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
                   local: confirmacao.local,
                   corretor: confirmacao.corretor,
                 });
+                const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
                 return (
-                  <div key={l.id} className="border border-border rounded-md p-3 space-y-2">
-                    <div className="text-sm font-medium">{l.nome} <span className="text-muted-foreground text-xs">— {l.telefone}</span></div>
-                    <div className="bg-muted rounded-md p-2 text-xs whitespace-pre-wrap break-words max-h-40 overflow-y-auto">{msg}</div>
-                    <div className="flex flex-wrap gap-2">
-                      <Button size="sm" variant="outline" onClick={() => copyText(msg)}>
-                        <Copy className="h-4 w-4 mr-1" /> Copiar
+                  <div key={l.id} className="flex items-center justify-between gap-2 border border-border rounded-md p-2">
+                    <span className="text-sm font-medium truncate">{l.nome}</span>
+                    {tel ? (
+                      <Button asChild size="sm" variant="gold">
+                        <a href={waUrl} target="_blank" rel="noopener noreferrer">
+                          <MessageCircle className="h-4 w-4 mr-1" /> Enviar no WhatsApp
+                        </a>
                       </Button>
-                      {tel && (
-                        <Button asChild size="sm" variant="gold">
-                          <a href={waUrl} target="_blank" rel="noopener noreferrer">
-                            <MessageCircle className="h-4 w-4 mr-1" /> Abrir WhatsApp
-                          </a>
-                        </Button>
-                      )}
-                    </div>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">sem telefone</span>
+                    )}
                   </div>
                 );
               })}
