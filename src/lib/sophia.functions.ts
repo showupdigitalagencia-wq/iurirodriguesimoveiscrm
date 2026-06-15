@@ -25,7 +25,7 @@ async function assertAcesso(supabase: SupabaseClient, userId: string) {
   const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", userId);
   const isCorretor = (roles ?? []).some((r) => r.role === "corretor_vendas" || r.role === "corretor");
   if (isCorretor && map.get("sophia_corretores_acesso") === true) return "corretor";
-  throw new Error("Sophia ainda não está disponível para você.");
+  throw new Error("Laura ainda não está disponível para você.");
 }
 
 export const sophiaChat = createServerFn({ method: "POST" })
@@ -207,7 +207,7 @@ export const sophiaChat = createServerFn({ method: "POST" })
     const messages: ModelMessage[] = [
       {
         role: "system",
-        content: `Você é a Sophia, assistente IA interna do Sistema Nexus da imobiliária Iuri Rodrigues. Seja direta, simpática e use português brasileiro. Use as ferramentas disponíveis para responder com dados reais. Quando for atribuir um lead, sempre confirme antes. Formate respostas em markdown quando ajudar a leitura.
+        content: `Você é a Laura, assistente IA interna do Sistema Nexus da imobiliária Iuri Rodrigues. Seja direta, simpática e use português brasileiro. Use as ferramentas disponíveis para responder com dados reais. Quando for atribuir um lead, sempre confirme antes. Formate respostas em markdown quando ajudar a leitura.
 
 EQUIPE DE EXECUTIVOS E REGIÕES DE ATUAÇÃO (conhecimento fixo):
 - Denise → Nilópolis e Mesquita
