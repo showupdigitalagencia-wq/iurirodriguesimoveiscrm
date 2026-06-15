@@ -78,7 +78,7 @@ function AuthLayout() {
 
   const navItems = useMemo(() => {
     const corretorPodeVer = isCorretorVendas && (vendasAtivo || vendasAcessoIndividual);
-    // Corretor de vendas: vê apenas Vendas + Configurações
+    // Corretor de vendas: vê apenas as funções do sistema de vendas
     if (isCorretorVendas && !isAdmin) {
       const items: Array<{ to: string; label: string; icon: typeof LayoutDashboard }> = [];
       if (corretorPodeVer) {
@@ -153,6 +153,10 @@ function AuthLayout() {
     router.navigate({ to: "/auth" });
   }
 
+  const mobileTopItems = isCorretorVendas && !isAdmin
+    ? MOBILE_TOP_ICONS.filter((item) => item.to !== "/configuracoes")
+    : MOBILE_TOP_ICONS;
+
   return (
     <div className="min-h-screen flex bg-background">
       {/* Desktop sidebar — inalterado */}
@@ -193,7 +197,7 @@ function AuthLayout() {
             <div className="text-sm font-bold text-gold leading-tight truncate">Sistema NEXUS</div>
           </div>
           <div className="flex items-center gap-1 shrink-0">
-            {MOBILE_TOP_ICONS.map((item) => {
+            {mobileTopItems.map((item) => {
               const Icon = item.icon;
               return (
                 <Link key={item.to} to={item.to} aria-label={item.label}
