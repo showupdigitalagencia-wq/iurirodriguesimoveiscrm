@@ -127,7 +127,7 @@ export const listLeadsReuniao = createServerFn({ method: "GET" })
     if (!access.isAdmin && !access.currentExecId) return { leads: [] as LeadReuniaoOpt[] };
     const { data, error } = await query;
     if (error) throw new Error(error.message);
-    return { leads: ((data ?? []) as LeadReuniaoOpt[]).map(({ id, nome, telefone }) => ({ id, nome, telefone })) };
+    return { leads: ((data ?? []) as Array<LeadReuniaoOpt & { etapa?: string | null }>).map(({ id, nome, telefone, etapa }) => ({ id, nome, telefone, etapa: etapa ?? null })) };
   });
 
 export const listReunioes = createServerFn({ method: "POST" })
