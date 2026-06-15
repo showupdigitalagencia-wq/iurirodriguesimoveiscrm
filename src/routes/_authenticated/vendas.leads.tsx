@@ -86,8 +86,8 @@ function VendasLeads() {
               const info = vendasEtapaInfo(l.etapa);
               const isMyPending = l.corretor_id === myUid && l.atribuicao_status === "pendente";
               return (
-                <tr key={l.id} className="border-t">
-                  <td className="p-3 font-medium">{l.nome}</td>
+                <tr key={l.id} className="border-t hover:bg-muted/30 cursor-pointer" onClick={() => setDetailId(l.id)}>
+                  <td className="p-3 font-medium underline-offset-2 hover:underline">{l.nome}</td>
                   <td className="p-3">{l.tipo === "compra" ? "Compra" : "Locação"}</td>
                   <td className="p-3">{l.telefone}</td>
                   <td className="p-3">{formatBRL(l.valor != null ? Number(l.valor) : null)}</td>
