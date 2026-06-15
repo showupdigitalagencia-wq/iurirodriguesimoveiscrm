@@ -393,9 +393,11 @@ function AgendaCorretorPage() {
   );
 }
 
-function ListView({ view, cursor, slotsForDate }: {
+function ListView({ view, cursor, slotsForDate, onSlotClick, onRemoveVisita }: {
   view: View; cursor: Date;
-  slotsForDate: (d: Date) => { recs: DisponibilidadeRow[]; blocked: boolean };
+  slotsForDate: (d: Date) => { recs: DisponibilidadeRow[]; blocked: boolean; visitas: VisitaItem[] };
+  onSlotClick: (date: Date, time?: string) => void;
+  onRemoveVisita: (id: string) => void;
 }) {
   const days = useMemo(() => {
     if (view === "dia") return [cursor];
@@ -406,22 +408,52 @@ function ListView({ view, cursor, slotsForDate }: {
   return (
     <div className="grid gap-2">
       {days.map((d) => {
-        const { recs, blocked } = slotsForDate(d);
+        const { recs, blocked, visitas } = slotsForDate(d);
         const today = isSameDay(d, new Date());
         return (
           <div key={d.toISOString()} className={`rounded-xl border ${today ? "border-gold" : "border-border"} bg-card p-3`}>
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-2 gap-2">
               <div className="text-sm font-semibold">{format(d, "EEE, dd/MM", { locale: ptBR })}</div>
-              {blocked && <Badge variant="destructive">Bloqueado</Badge>}
+              <div className="flex items-center gap-1">
+                {blocked && <Badge variant="destructive">Bloqueado</Badge>}
+                {!blocked && (
+                  <Button size="sm" variant="ghost" className="h-7 text-orange-600 hover:text-orange-700 hover:bg-orange-500/10" onClick={() => onSlotClick(d)}>
+                    <Plus className="h-3.5 w-3.5 mr-1" /> Visita
+                  </Button>
+                )}
+              </div>
             </div>
             {recs.length === 0 ? (
               <p className="text-xs text-muted-foreground">Sem disponibilidade.</p>
             ) : (
               <div className="flex flex-wrap gap-1.5">
                 {recs.map((r) => (
-                  <Badge key={r.id} variant={blocked ? "outline" : "secondary"} className={blocked ? "line-through opacity-60" : ""}>
+                  <button
+                    key={r.id}
+                    type="button"
+                    disabled={blocked}
+                    onClick={() => onSlotClick(d, r.hora_inicio?.slice(0,5))}
+                    className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs transition ${blocked ? "line-through opacity-60 cursor-not-allowed" : "hover:border-orange-500 hover:bg-orange-500/10"} bg-secondary text-secondary-foreground border-transparent`}
+                  >
                     {r.hora_inicio?.slice(0,5)} – {r.hora_fim?.slice(0,5)}
-                  </Badge>
+                  </button>
+                ))}
+              </div>
+            )}
+            {visitas.length > 0 && (
+              <div className="mt-2 space-y-1.5">
+                {visitas.map((v) => (
+                  <div key={v.id} className="flex items-center justify-between gap-2 rounded-md border border-orange-500/40 bg-orange-500/10 px-2.5 py-1.5">
+                    <div className="min-w-0 text-xs">
+                      <div className="font-medium text-orange-700 dark:text-orange-400 truncate">
+                        {format(new Date(v.data_inicio), "HH:mm")} · {v.vendas_leads?.nome ?? "Lead"}
+                      </div>
+                      <div className="text-muted-foreground truncate flex items-center gap-1"><MapPin className="h-3 w-3" /> {v.endereco}</div>
+                    </div>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive shrink-0" onClick={() => onRemoveVisita(v.id)}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
                 ))}
               </div>
             )}
@@ -432,8 +464,10 @@ function ListView({ view, cursor, slotsForDate }: {
   );
 }
 
-function MonthView({ cursor, slotsForDate }: {
-  cursor: Date; slotsForDate: (d: Date) => { recs: DisponibilidadeRow[]; blocked: boolean };
+function MonthView({ cursor, slotsForDate, onSlotClick }: {
+  cursor: Date;
+  slotsForDate: (d: Date) => { recs: DisponibilidadeRow[]; blocked: boolean; visitas: VisitaItem[] };
+  onSlotClick: (date: Date, time?: string) => void;
 }) {
   const start = startOfWeek(startOfMonth(cursor), { weekStartsOn: 0 });
   const end = endOfWeek(endOfMonth(cursor), { weekStartsOn: 0 });
@@ -447,18 +481,31 @@ function MonthView({ cursor, slotsForDate }: {
       </div>
       <div className="grid grid-cols-7">
         {days.map((d) => {
-          const { recs, blocked } = slotsForDate(d);
+          const { recs, blocked, visitas } = slotsForDate(d);
           const inMonth = isSameMonth(d, cursor);
           const today = isSameDay(d, new Date());
           return (
-            <div key={d.toISOString()} className={`min-h-[60px] sm:min-h-[80px] p-1.5 border-t border-l border-border first:border-l-0 ${!inMonth ? "opacity-40" : ""}`}>
+            <button
+              type="button"
+              key={d.toISOString()}
+              onClick={() => !blocked && onSlotClick(d)}
+              disabled={blocked}
+              className={`text-left min-h-[60px] sm:min-h-[80px] p-1.5 border-t border-l border-border first:border-l-0 ${!inMonth ? "opacity-40" : ""} ${!blocked ? "hover:bg-orange-500/5" : "cursor-not-allowed"}`}
+            >
               <div className={`text-[11px] font-medium ${today ? "text-gold" : ""}`}>{format(d, "d")}</div>
               {blocked ? (
                 <div className="mt-1 text-[9px] text-destructive">Bloqueado</div>
-              ) : recs.length > 0 ? (
-                <div className="mt-1 text-[9px] text-gold font-medium">{recs.length} janela{recs.length > 1 ? "s" : ""}</div>
-              ) : null}
-            </div>
+              ) : (
+                <>
+                  {recs.length > 0 && <div className="mt-1 text-[9px] text-gold font-medium">{recs.length} janela{recs.length > 1 ? "s" : ""}</div>}
+                  {visitas.length > 0 && (
+                    <div className="mt-1 inline-flex items-center rounded px-1 py-0.5 bg-orange-500 text-white text-[9px] font-medium">
+                      {visitas.length} visita{visitas.length > 1 ? "s" : ""}
+                    </div>
+                  )}
+                </>
+              )}
+            </button>
           );
         })}
       </div>
