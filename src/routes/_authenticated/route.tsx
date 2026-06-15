@@ -61,7 +61,7 @@ function AuthLayout() {
   const [vendasAtivo, setVendasAtivo] = useState(false);
 
   const navItems = useMemo(() => {
-    const base = [...NAV];
+    const base: Array<{ to: string; label: string; icon: typeof LayoutDashboard }> = [...NAV];
     if (isAdmin && vendasAtivo) base.push({ to: "/vendas", label: "Vendas", icon: Briefcase });
     return isAdmin ? [...base, ...ADMIN_NAV, ...CONFIG_NAV] : [...base, ...CONFIG_NAV];
   }, [isAdmin, vendasAtivo]);
