@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { canalNome, type LeadRow } from "@/lib/lead-helpers";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Download, BadgeCheck, XCircle, HelpCircle, Users, Car, MapPin, Trash2 } from "lucide-react";
+import { Download, BadgeCheck, XCircle, HelpCircle, Users, Car, MapPin, Trash2, Phone } from "lucide-react";
 import { LeadDetailSheet } from "@/components/lead-detail-sheet";
 import { CreateLeadDialog } from "@/components/create-lead-dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
