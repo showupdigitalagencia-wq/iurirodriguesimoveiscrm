@@ -119,11 +119,13 @@ export const atribuirLead = createServerFn({ method: "POST" })
         .from("profiles").select("onesignal_external_id").eq("id", data.corretor_id).maybeSingle();
       const ext = prof?.onesignal_external_id;
       if (ext) {
+        const lead = updated as { nome: string; telefone: string; regiao: string };
+        const regiaoFmt = (lead.regiao ?? "").replace(/_/g, " ");
         await sendOneSignalPush({
           externalId: ext,
-          title: "📥 Novo lead atribuído",
-          message: `${(updated as { nome: string }).nome} — confirme ou recuse na sua lista de leads`,
-          url: "https://iurirodriguesimoveiscrm.lovable.app/vendas/leads",
+          title: "🏠 Novo Lead Atribuído!",
+          message: `Nome: ${lead.nome} | Tel: ${lead.telefone} | Região: ${regiaoFmt}`,
+          url: `https://iurirodriguesimoveiscrm.lovable.app/vendas/leads?lead=${data.lead_id}`,
           data: { lead_id: data.lead_id },
         });
       }
