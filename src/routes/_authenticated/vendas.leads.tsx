@@ -12,8 +12,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { REGIOES } from "@/lib/lead-helpers";
 import { VENDAS_ETAPAS, formatBRL, vendasEtapaInfo, type VendasLead, type VendasEtapa, type VendasTipo } from "@/lib/vendas-helpers";
 import { createVisita, createReuniaoOnlineVenda } from "@/lib/visitas.functions";
+import { listCorretoresDisponibilidade, atribuirLead, aceitarLead, recusarLead, type CorretorAvail } from "@/lib/vendas-distribuicao.functions";
 import { toast } from "sonner";
-import { Plus, MapPin, Video } from "lucide-react";
+import { Plus, MapPin, Video, UserPlus, Check, X } from "lucide-react";
+
+type VendasLeadExt = VendasLead & {
+  atribuicao_status?: "pendente" | "aceito" | "recusado" | null;
+  atribuido_em?: string | null;
+  recusas?: string[] | null;
+};
 
 export const Route = createFileRoute("/_authenticated/vendas/leads")({
   component: VendasLeads,
