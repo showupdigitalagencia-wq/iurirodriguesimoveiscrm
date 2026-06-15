@@ -12,10 +12,10 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { addDays, addMonths, endOfMonth, endOfWeek, format, isSameDay, isSameMonth, startOfMonth, startOfWeek, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarCheck2, ChevronLeft, ChevronRight, Loader2, Plus, Trash2, Link2, Link2Off, MapPin } from "lucide-react";
+import { CalendarCheck2, ChevronLeft, ChevronRight, Loader2, Plus, Trash2, Link2, Link2Off, MapPin, Video } from "lucide-react";
 import { addBloqueio, addRecorrente, listDisponibilidade, removeDisponibilidade, type DisponibilidadeRow } from "@/lib/disponibilidade.functions";
 import { disconnectGoogle, getGoogleStatus, startGoogleOAuth } from "@/lib/google.functions";
-import { createVisita, deleteVisita, listMyVendasLeads, listVisitas, type VisitaRow } from "@/lib/visitas.functions";
+import { createReuniaoOnlineVenda, createVisita, deleteVisita, listMyVendasLeads, listReunioesCorretor, listVisitas, type ReuniaoCorretorRow, type VisitaRow } from "@/lib/visitas.functions";
 
 export const Route = createFileRoute("/_authenticated/vendas/agenda")({
   head: () => ({ meta: [{ title: "Minha Agenda — Vendas" }] }),
@@ -23,7 +23,9 @@ export const Route = createFileRoute("/_authenticated/vendas/agenda")({
 });
 
 type VisitaItem = VisitaRow & { vendas_leads: { nome: string; telefone: string } | null };
+type ReuniaoItem = ReuniaoCorretorRow;
 type LeadOption = { id: string; nome: string; telefone: string; etapa: string };
+type AgendaSlot = { recs: DisponibilidadeRow[]; blocked: boolean; visitas: VisitaItem[]; reunioes: ReuniaoItem[] };
 
 const DIAS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 type View = "dia" | "semana" | "mes";
@@ -37,12 +39,15 @@ function AgendaCorretorPage() {
   const fnGoogleStart = useServerFn(startGoogleOAuth);
   const fnGoogleDisconnect = useServerFn(disconnectGoogle);
   const fnListVisitas = useServerFn(listVisitas);
+  const fnListReunioes = useServerFn(listReunioesCorretor);
   const fnCreateVisita = useServerFn(createVisita);
+  const fnCreateReuniao = useServerFn(createReuniaoOnlineVenda);
   const fnDeleteVisita = useServerFn(deleteVisita);
   const fnListLeads = useServerFn(listMyVendasLeads);
 
   const [items, setItems] = useState<DisponibilidadeRow[]>([]);
   const [visitas, setVisitas] = useState<VisitaItem[]>([]);
+  const [reunioes, setReunioes] = useState<ReuniaoItem[]>([]);
   const [leads, setLeads] = useState<LeadOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<View>("semana");
@@ -50,25 +55,30 @@ function AgendaCorretorPage() {
   const [openRec, setOpenRec] = useState(false);
   const [openBlock, setOpenBlock] = useState(false);
   const [openVisita, setOpenVisita] = useState(false);
+  const [openReuniao, setOpenReuniao] = useState(false);
   const [visitaDefaults, setVisitaDefaults] = useState<{ date: string; time: string }>({ date: "", time: "09:00" });
+  const [reuniaoDefaults, setReuniaoDefaults] = useState<{ date: string; time: string }>({ date: "", time: "09:00" });
   const [savingVisita, setSavingVisita] = useState(false);
+  const [savingReuniao, setSavingReuniao] = useState(false);
   const [google, setGoogle] = useState<{ connected: boolean; email: string | null }>({ connected: false, email: null });
   const [connectingGoogle, setConnectingGoogle] = useState(false);
 
   const refresh = useCallback(async () => {
     try {
-      const [disp, vis, lds] = await Promise.all([
+      const [disp, vis, reun, lds] = await Promise.all([
         fnList({ data: {} }),
         fnListVisitas(),
+        fnListReunioes(),
         fnListLeads(),
       ]);
       setItems(disp.items);
       setVisitas(vis.items as VisitaItem[]);
+      setReunioes(reun.items as ReuniaoItem[]);
       setLeads(lds.items);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erro ao carregar agenda");
     } finally { setLoading(false); }
-  }, [fnList, fnListVisitas, fnListLeads]);
+  }, [fnList, fnListVisitas, fnListReunioes, fnListLeads]);
 
   useEffect(() => {
     refresh();
@@ -100,12 +110,18 @@ function AgendaCorretorPage() {
     const recs = recorrentes.filter((r) => r.dia_semana === dow);
     const blocked = bloqueios.some((b) => b.data === dateStr && !b.hora_inicio);
     const vis = visitas.filter((v) => format(new Date(v.data_inicio), "yyyy-MM-dd") === dateStr);
-    return { recs, blocked, visitas: vis };
+    const reun = reunioes.filter((r) => format(new Date(r.data_inicio), "yyyy-MM-dd") === dateStr);
+    return { recs, blocked, visitas: vis, reunioes: reun };
   }
 
   function openVisitaFor(date: Date, time?: string) {
     setVisitaDefaults({ date: format(date, "yyyy-MM-dd"), time: time ?? "09:00" });
     setOpenVisita(true);
+  }
+
+  function openReuniaoFor(date: Date, time?: string) {
+    setReuniaoDefaults({ date: format(date, "yyyy-MM-dd"), time: time ?? "09:00" });
+    setOpenReuniao(true);
   }
 
   function whatsappLink(telefone: string, msg: string) {
@@ -142,6 +158,36 @@ function AgendaCorretorPage() {
       }
     } catch (e) { toast.error(e instanceof Error ? e.message : "Erro ao agendar"); }
     finally { setSavingVisita(false); }
+  }
+
+  async function handleAddReuniao(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const leadId = String(fd.get("lead_id") || "");
+    const data = String(fd.get("data") || "");
+    const hora = String(fd.get("hora") || "");
+    const observacoes = String(fd.get("observacoes") || "").trim();
+    if (!leadId || !data || !hora) { toast.error("Selecione o lead, data e hora"); return; }
+    setSavingReuniao(true);
+    try {
+      const iso = new Date(`${data}T${hora}:00`).toISOString();
+      const res = await fnCreateReuniao({ data: {
+        lead_id: leadId,
+        data_inicio: iso,
+        duracao_min: 45,
+        observacoes: observacoes || undefined,
+      }});
+      toast.success(res.meetLink ? "Reunião online agendada" : "Reunião registrada sem link Meet");
+      setOpenReuniao(false);
+      refresh();
+      if (res.lead?.telefone) {
+        const dataFmt = format(new Date(iso), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
+        const link = res.meetLink ? ` Link: ${res.meetLink}` : "";
+        const msg = `Olá ${res.lead.nome}! Confirmando nossa reunião online no dia ${dataFmt}.${link}`;
+        window.open(whatsappLink(res.lead.telefone, msg), "_blank");
+      }
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Erro ao agendar reunião"); }
+    finally { setSavingReuniao(false); }
   }
 
   async function handleDeleteVisita(id: string) {
@@ -242,6 +288,19 @@ function AgendaCorretorPage() {
         </Button>
       </div>
 
+      <div className="rounded-xl border border-border bg-card p-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+        <div className="flex items-start gap-3 min-w-0">
+          <Video className="h-5 w-5 text-gold shrink-0 mt-0.5" />
+          <div className="min-w-0">
+            <div className="font-semibold text-sm">Reunião online com lead</div>
+            <div className="text-xs text-muted-foreground">Crie uma reunião individual com Google Meet para um lead do seu pipeline</div>
+          </div>
+        </div>
+        <Button onClick={() => openReuniaoFor(new Date())} variant="gold" size="sm" className="w-full sm:w-auto">
+          <Plus className="h-4 w-4 mr-1" /> Agendar Reunião
+        </Button>
+      </div>
+
       {/* Controle de visão */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
         <Tabs value={view} onValueChange={(v) => setView(v as View)}>
@@ -261,8 +320,8 @@ function AgendaCorretorPage() {
 
       {/* Visão */}
       {view === "mes"
-        ? <MonthView cursor={cursor} slotsForDate={slotsForDate} onSlotClick={openVisitaFor} />
-        : <ListView view={view} cursor={cursor} slotsForDate={slotsForDate} onSlotClick={openVisitaFor} onRemoveVisita={handleDeleteVisita} />}
+        ? <MonthView cursor={cursor} slotsForDate={slotsForDate} onSlotClick={openVisitaFor} onReuniaoClick={openReuniaoFor} />
+        : <ListView view={view} cursor={cursor} slotsForDate={slotsForDate} onSlotClick={openVisitaFor} onReuniaoClick={openReuniaoFor} onRemoveVisita={handleDeleteVisita} />}
 
       {/* Dialog: nova visita */}
       <Dialog open={openVisita} onOpenChange={setOpenVisita}>
@@ -295,6 +354,38 @@ function AgendaCorretorPage() {
               <Button type="submit" disabled={savingVisita} className="bg-orange-500 hover:bg-orange-600 text-white">
                 {savingVisita && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
                 Agendar e enviar WhatsApp
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={openReuniao} onOpenChange={setOpenReuniao}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Agendar reunião online</DialogTitle></DialogHeader>
+          <form onSubmit={handleAddReuniao} className="space-y-3">
+            <div>
+              <Label>Lead</Label>
+              <Select name="lead_id" required>
+                <SelectTrigger className="mt-1.5"><SelectValue placeholder="Selecione o lead..." /></SelectTrigger>
+                <SelectContent>
+                  {leads.length === 0 ? (
+                    <div className="px-2 py-3 text-xs text-muted-foreground">Nenhum lead cadastrado</div>
+                  ) : leads.map((l) => (
+                    <SelectItem key={l.id} value={l.id}>{l.nome} · {l.telefone}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Data</Label><Input type="date" name="data" required defaultValue={reuniaoDefaults.date} className="mt-1.5" /></div>
+              <div><Label>Hora</Label><Input type="time" name="hora" required defaultValue={reuniaoDefaults.time} className="mt-1.5" /></div>
+            </div>
+            <div><Label>Pauta / observações</Label><Textarea name="observacoes" maxLength={500} className="mt-1.5" /></div>
+            <DialogFooter>
+              <Button type="submit" variant="gold" disabled={savingReuniao}>
+                {savingReuniao && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
+                Agendar reunião
               </Button>
             </DialogFooter>
           </form>
@@ -393,10 +484,11 @@ function AgendaCorretorPage() {
   );
 }
 
-function ListView({ view, cursor, slotsForDate, onSlotClick, onRemoveVisita }: {
+function ListView({ view, cursor, slotsForDate, onSlotClick, onReuniaoClick, onRemoveVisita }: {
   view: View; cursor: Date;
-  slotsForDate: (d: Date) => { recs: DisponibilidadeRow[]; blocked: boolean; visitas: VisitaItem[] };
+  slotsForDate: (d: Date) => AgendaSlot;
   onSlotClick: (date: Date, time?: string) => void;
+  onReuniaoClick: (date: Date, time?: string) => void;
   onRemoveVisita: (id: string) => void;
 }) {
   const days = useMemo(() => {
@@ -408,7 +500,7 @@ function ListView({ view, cursor, slotsForDate, onSlotClick, onRemoveVisita }: {
   return (
     <div className="grid gap-2">
       {days.map((d) => {
-        const { recs, blocked, visitas } = slotsForDate(d);
+        const { recs, blocked, visitas, reunioes } = slotsForDate(d);
         const today = isSameDay(d, new Date());
         return (
           <div key={d.toISOString()} className={`rounded-xl border ${today ? "border-gold" : "border-border"} bg-card p-3`}>
@@ -417,9 +509,14 @@ function ListView({ view, cursor, slotsForDate, onSlotClick, onRemoveVisita }: {
               <div className="flex items-center gap-1">
                 {blocked && <Badge variant="destructive">Bloqueado</Badge>}
                 {!blocked && (
-                  <Button size="sm" variant="ghost" className="h-7 text-orange-600 hover:text-orange-700 hover:bg-orange-500/10" onClick={() => onSlotClick(d)}>
-                    <Plus className="h-3.5 w-3.5 mr-1" /> Visita
-                  </Button>
+                  <>
+                    <Button size="sm" variant="ghost" className="h-7 text-orange-600 hover:text-orange-700 hover:bg-orange-500/10" onClick={() => onSlotClick(d)}>
+                      <Plus className="h-3.5 w-3.5 mr-1" /> Visita
+                    </Button>
+                    <Button size="sm" variant="ghost" className="h-7 text-gold hover:text-gold hover:bg-gold/10" onClick={() => onReuniaoClick(d)}>
+                      <Video className="h-3.5 w-3.5 mr-1" /> Online
+                    </Button>
+                  </>
                 )}
               </div>
             </div>
@@ -457,6 +554,20 @@ function ListView({ view, cursor, slotsForDate, onSlotClick, onRemoveVisita }: {
                 ))}
               </div>
             )}
+            {reunioes.length > 0 && (
+              <div className="mt-2 space-y-1.5">
+                {reunioes.map((r) => (
+                  <div key={r.id} className="rounded-md border border-gold/40 bg-gold/10 px-2.5 py-1.5">
+                    <div className="min-w-0 text-xs">
+                      <div className="font-medium text-gold truncate">
+                        {format(new Date(r.data_inicio), "HH:mm")} · {r.titulo}
+                      </div>
+                      {r.local && <div className="text-muted-foreground truncate flex items-center gap-1"><Video className="h-3 w-3" /> {r.local}</div>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         );
       })}
@@ -464,10 +575,11 @@ function ListView({ view, cursor, slotsForDate, onSlotClick, onRemoveVisita }: {
   );
 }
 
-function MonthView({ cursor, slotsForDate, onSlotClick }: {
+function MonthView({ cursor, slotsForDate, onSlotClick, onReuniaoClick }: {
   cursor: Date;
-  slotsForDate: (d: Date) => { recs: DisponibilidadeRow[]; blocked: boolean; visitas: VisitaItem[] };
+  slotsForDate: (d: Date) => AgendaSlot;
   onSlotClick: (date: Date, time?: string) => void;
+  onReuniaoClick: (date: Date, time?: string) => void;
 }) {
   const start = startOfWeek(startOfMonth(cursor), { weekStartsOn: 0 });
   const end = endOfWeek(endOfMonth(cursor), { weekStartsOn: 0 });
@@ -481,15 +593,12 @@ function MonthView({ cursor, slotsForDate, onSlotClick }: {
       </div>
       <div className="grid grid-cols-7">
         {days.map((d) => {
-          const { recs, blocked, visitas } = slotsForDate(d);
+          const { recs, blocked, visitas, reunioes } = slotsForDate(d);
           const inMonth = isSameMonth(d, cursor);
           const today = isSameDay(d, new Date());
           return (
-            <button
-              type="button"
+            <div
               key={d.toISOString()}
-              onClick={() => !blocked && onSlotClick(d)}
-              disabled={blocked}
               className={`text-left min-h-[60px] sm:min-h-[80px] p-1.5 border-t border-l border-border first:border-l-0 ${!inMonth ? "opacity-40" : ""} ${!blocked ? "hover:bg-orange-500/5" : "cursor-not-allowed"}`}
             >
               <div className={`text-[11px] font-medium ${today ? "text-gold" : ""}`}>{format(d, "d")}</div>
@@ -503,9 +612,18 @@ function MonthView({ cursor, slotsForDate, onSlotClick }: {
                       {visitas.length} visita{visitas.length > 1 ? "s" : ""}
                     </div>
                   )}
+                  {reunioes.length > 0 && (
+                    <div className="mt-1 inline-flex items-center rounded px-1 py-0.5 bg-gold text-gold-foreground text-[9px] font-medium">
+                      {reunioes.length} online
+                    </div>
+                  )}
+                  <div className="mt-1 flex gap-1">
+                    <button type="button" onClick={() => onSlotClick(d)} className="text-[9px] text-orange-600 hover:underline">Visita</button>
+                    <button type="button" onClick={() => onReuniaoClick(d)} className="text-[9px] text-gold hover:underline">Online</button>
+                  </div>
                 </>
               )}
-            </button>
+            </div>
           );
         })}
       </div>

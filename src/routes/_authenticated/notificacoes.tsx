@@ -17,7 +17,7 @@ function NotificacoesPage() {
   const saveExternalId = useServerFn(savePushExternalId);
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
-  const [role, setRole] = useState<"admin" | "corretor" | null>(null);
+  const [role, setRole] = useState<"admin" | "corretor" | "corretor_vendas" | null>(null);
   const [responsavelId, setResponsavelId] = useState<string | null>(null);
   const [responsavelNome, setResponsavelNome] = useState<string | null>(null);
   const [savedExternalId, setSavedExternalId] = useState<string | null>(null);
@@ -46,7 +46,7 @@ function NotificacoesPage() {
         .eq("user_id", uid)
         .maybeSingle();
       const resp = (prof?.responsaveis as { id: string; nome: string; onesignal_external_id: string | null } | null) ?? null;
-      setRole((userRole?.role as "admin" | "corretor" | undefined) ?? null);
+      setRole((userRole?.role as "admin" | "corretor" | "corretor_vendas" | undefined) ?? null);
       setResponsavelId(resp?.id ?? null);
       setResponsavelNome(resp?.nome ?? null);
       setSavedExternalId(resp?.onesignal_external_id ?? prof?.onesignal_external_id ?? null);
@@ -56,7 +56,7 @@ function NotificacoesPage() {
   }, []);
 
   async function handleEnable() {
-    if (!responsavelId && role !== "admin") {
+    if (!responsavelId && role !== "admin" && role !== "corretor_vendas") {
       toast.error("Seu usuário não está vinculado a um corretor. Peça ao admin para vincular em Configurações.");
       return;
     }
@@ -101,7 +101,7 @@ function NotificacoesPage() {
       <header>
         <h1 className="text-3xl font-bold tracking-tight">Notificações Push</h1>
         <p className="text-muted-foreground mt-1">
-          Receba um alerta no seu celular sempre que chegar um lead seu.
+          Receba um alerta no seu celular sempre que chegar um lead ou reunião sua.
         </p>
       </header>
 
@@ -111,7 +111,7 @@ function NotificacoesPage() {
           <div className="flex-1">
             <div className="font-medium">Corretor vinculado</div>
             <div className="text-sm text-muted-foreground">
-              {responsavelNome ?? "— (peça ao admin para vincular seu usuário em Configurações)"}
+              {responsavelNome ?? (role === "corretor_vendas" ? "Seu usuário de vendas" : "— (peça ao admin para vincular seu usuário em Configurações)")}
             </div>
           </div>
         </div>
@@ -153,7 +153,7 @@ function NotificacoesPage() {
         <div className="flex gap-2">
           <Button
             onClick={handleEnable}
-            disabled={loading || (!responsavelId && role !== "admin") || isPreview || !supported}
+            disabled={loading || (!responsavelId && role !== "admin" && role !== "corretor_vendas") || isPreview || !supported}
             variant="gold"
             className="flex-1"
           >

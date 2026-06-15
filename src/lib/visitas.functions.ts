@@ -13,6 +13,17 @@ export type VisitaRow = {
   status: string;
 };
 
+export type ReuniaoCorretorRow = {
+  id: string;
+  titulo: string;
+  descricao: string | null;
+  data_inicio: string;
+  duracao_min: number;
+  local: string | null;
+  status: string;
+  criado_por: string | null;
+};
+
 export const listVisitas = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -22,6 +33,18 @@ export const listVisitas = createServerFn({ method: "GET" })
       .order("data_inicio", { ascending: true });
     if (error) throw new Error(error.message);
     return { items: (data ?? []) as unknown as (VisitaRow & { vendas_leads: { nome: string; telefone: string } | null })[] };
+  });
+
+export const listReunioesCorretor = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("reunioes" as never)
+      .select("id, titulo, descricao, data_inicio, duracao_min, local, status, criado_por")
+      .eq("tipo", "individual" as never)
+      .order("data_inicio", { ascending: true });
+    if (error) throw new Error(error.message);
+    return { items: (data ?? []) as unknown as ReuniaoCorretorRow[] };
   });
 
 export const createVisita = createServerFn({ method: "POST" })
@@ -166,10 +189,32 @@ export const createReuniaoOnlineVenda = createServerFn({ method: "POST" })
       console.warn("[vendas] reunião online google meet falhou", e);
     }
 
+    const { data: reuniao, error: reuniaoError } = await supabase
+      .from("reunioes" as never)
+      .insert({
+        titulo: `Reunião online: ${leadRow?.nome ?? "Lead"}`,
+        descricao: data.observacoes ?? null,
+        data_inicio: data.data_inicio,
+        duracao_min: data.duracao_min ?? 45,
+        local: meetLink,
+        tipo: "individual",
+        criado_por: userId,
+        google_event_ids: googleEventId ? [{ user_id: userId, event_id: googleEventId }] : [],
+      } as never)
+      .select("id")
+      .single();
+    if (reuniaoError || !reuniao) throw new Error(reuniaoError?.message ?? "Falha ao registrar reunião");
+    if (reuniao) {
+      const { error: participanteError } = await supabase
+        .from("reuniao_participantes" as never)
+        .insert({ reuniao_id: (reuniao as { id: string }).id, user_id: userId, added_by: userId } as never);
+      if (participanteError) throw new Error(participanteError.message);
+    }
+
     await supabase
       .from("vendas_leads")
       .update({ etapa: "proposta_enviada" })
       .eq("id", data.lead_id);
 
-    return { meetLink, googleEventId, lead: leadRow };
+    return { meetLink, googleEventId, lead: leadRow, reuniaoId: (reuniao as { id: string } | null)?.id ?? null };
   });
