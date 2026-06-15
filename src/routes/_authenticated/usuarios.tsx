@@ -160,9 +160,12 @@ function UsuariosPage() {
           <DialogContent>
             <DialogHeader><DialogTitle>Criar funcionário</DialogTitle></DialogHeader>
             <form onSubmit={handleCreate} className="space-y-3">
-              <div><Label>Nome</Label><Input name="nome" required maxLength={120} className="mt-1.5" /></div>
-              <div><Label>Email</Label><Input name="email" type="email" required maxLength={255} className="mt-1.5" /></div>
-              <div><Label>Senha (mín. 6)</Label><Input name="password" type="text" required minLength={6} maxLength={128} className="mt-1.5" /></div>
+              <div><Label>Nome completo</Label><Input name="nome" required maxLength={120} className="mt-1.5" /></div>
+              <div><Label>Email (login)</Label><Input name="email" type="email" required maxLength={255} className="mt-1.5" /></div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div><Label>Senha provisória</Label><Input name="password" type="text" required minLength={6} maxLength={128} className="mt-1.5" /></div>
+                <div><Label>Confirmar senha</Label><Input name="password_confirm" type="text" required minLength={6} maxLength={128} className="mt-1.5" /></div>
+              </div>
               <div>
                 <Label>Papel</Label>
                 <Select name="role" defaultValue="corretor">
