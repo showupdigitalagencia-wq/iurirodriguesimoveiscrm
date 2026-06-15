@@ -17,11 +17,11 @@ const SUGESTOES = [
   "Me dê um relatório rápido da semana",
 ];
 
-export function SophiaChat() {
+export function LauraChat() {
   const fn = useServerFn(sophiaChat);
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([
-    { role: "assistant", content: "Oi! Eu sou a **Sophia** 👋 Como posso te ajudar hoje?" },
+    { role: "assistant", content: "Oi! Eu sou a **Laura** 👋 Como posso te ajudar hoje?" },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -54,7 +54,7 @@ export function SophiaChat() {
         <Button
           size="icon"
           className="fixed bottom-24 right-4 md:bottom-6 md:right-6 z-50 h-14 w-14 rounded-full shadow-xl bg-gradient-to-br from-fuchsia-500 to-violet-600 hover:from-fuchsia-600 hover:to-violet-700 text-white"
-          aria-label="Abrir Sophia"
+          aria-label="Abrir Laura"
         >
           <Sparkles className="h-6 w-6" />
         </Button>
@@ -63,7 +63,7 @@ export function SophiaChat() {
         side="right"
         className="w-full sm:max-w-md flex flex-col p-0 gap-0 h-[100dvh] max-h-[100dvh]"
       >
-        <SheetTitle className="sr-only">Sophia — Assistente IA</SheetTitle>
+        <SheetTitle className="sr-only">Laura — Assistente IA</SheetTitle>
 
         {/* Header */}
         <div className="border-b p-3 flex items-center gap-2 shrink-0 bg-background">
@@ -82,7 +82,7 @@ export function SophiaChat() {
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
-            <div className="text-base font-semibold leading-tight truncate">Sophia</div>
+            <div className="text-base font-semibold leading-tight truncate">Laura</div>
             <div className="text-xs text-muted-foreground truncate">Assistente IA do Sistema Nexus</div>
           </div>
           <Button
@@ -121,7 +121,7 @@ export function SophiaChat() {
           {loading && (
             <div className="flex justify-start">
               <div className="bg-muted rounded-2xl rounded-bl-sm px-3.5 py-2 text-sm flex items-center gap-2">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Sophia está pensando…
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Laura está pensando…
               </div>
             </div>
           )}
@@ -149,7 +149,7 @@ export function SophiaChat() {
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Pergunte algo à Sophia…"
+            placeholder="Pergunte algo à Laura…"
             className="flex-1 min-w-0 bg-background border rounded-full px-4 h-11 text-base focus:outline-none focus:ring-2 focus:ring-primary"
             disabled={loading}
           />
