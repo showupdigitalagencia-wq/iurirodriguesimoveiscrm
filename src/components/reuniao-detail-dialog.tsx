@@ -388,67 +388,123 @@ export function ReuniaoDetailDialog({ reuniaoId, onClose, onChanged }: Props) {
               )}
             </div>
 
-            {/* Add lead modal */}
+            {/* Add lead modal: equipe + leads, multi-select */}
             <Dialog open={addOpen} onOpenChange={setAddOpen}>
               <DialogContent className="max-w-md">
                 <DialogHeader>
-                  <DialogTitle>Adicionar lead à reunião</DialogTitle>
+                  <DialogTitle>Adicionar à reunião</DialogTitle>
                   <DialogDescription>
-                    {isAdmin ? "Escolha qualquer lead." : "Escolha um dos seus leads."}
+                    {isAdmin ? "Equipe (corretores fechados) ou leads do pipeline." : "Sua equipe ou seus leads."}
                   </DialogDescription>
                 </DialogHeader>
-                <div className="space-y-3">
-                  <div className="max-h-72 overflow-y-auto border border-border rounded-md divide-y divide-border">
-                    {myLeads.length === 0 && <p className="p-3 text-xs text-muted-foreground">Nenhum lead disponível.</p>}
-                    {myLeads.map((l) => (
-                      <label key={l.id} className="flex items-center gap-2 p-2 cursor-pointer hover:bg-muted text-sm">
-                        <input
-                          type="radio"
-                          name="lead"
-                          checked={selectedLeadId === l.id}
-                          onChange={() => setSelectedLeadId(l.id)}
-                        />
-                        <span className="flex-1 truncate">{l.nome} <span className="text-muted-foreground text-xs">— {l.telefone}</span></span>
-                      </label>
-                    ))}
-                  </div>
-                  <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={() => setAddOpen(false)}>Cancelar</Button>
-                    <Button variant="gold" onClick={submitAddLead} disabled={!selectedLeadId}>
-                      Adicionar e enviar WhatsApp
-                    </Button>
-                  </div>
+                <Tabs value={leadTab} onValueChange={(v) => setLeadTab(v as "equipe" | "leads")}>
+                  <TabsList className="grid grid-cols-2 w-full">
+                    <TabsTrigger value="equipe">Equipe ({teamList.length})</TabsTrigger>
+                    <TabsTrigger value="leads">Leads ({myLeads.length})</TabsTrigger>
+                  </TabsList>
+                  {(["equipe", "leads"] as const).map((tab) => {
+                    const list = tab === "equipe" ? teamList : myLeads;
+                    const allSelected = list.length > 0 && list.every((l) => selectedLeadIds.has(l.id));
+                    return (
+                      <TabsContent key={tab} value={tab} className="space-y-2">
+                        <div className="flex items-center justify-between px-1">
+                          <label className="flex items-center gap-2 text-xs cursor-pointer">
+                            <Checkbox checked={allSelected} onCheckedChange={(c) => selectAllInTab(list, !!c)} />
+                            Selecionar todos
+                          </label>
+                          <span className="text-xs text-muted-foreground">{selectedLeadIds.size} selecionado(s)</span>
+                        </div>
+                        <div className="max-h-72 overflow-y-auto border border-border rounded-md divide-y divide-border">
+                          {list.length === 0 && <p className="p-3 text-xs text-muted-foreground">Nenhum disponível.</p>}
+                          {list.map((l) => (
+                            <label key={l.id} className="flex items-center gap-2 p-2 cursor-pointer hover:bg-muted text-sm min-h-11">
+                              <Checkbox checked={selectedLeadIds.has(l.id)} onCheckedChange={() => toggleLead(l.id)} />
+                              <span className="flex-1 truncate">{l.nome} <span className="text-muted-foreground text-xs">— {l.telefone}</span></span>
+                            </label>
+                          ))}
+                        </div>
+                      </TabsContent>
+                    );
+                  })}
+                </Tabs>
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button variant="outline" onClick={() => setAddOpen(false)}>Cancelar</Button>
+                  <Button variant="gold" onClick={submitAddLeads} disabled={selectedLeadIds.size === 0}>
+                    Confirmar e Adicionar ({selectedLeadIds.size})
+                  </Button>
                 </div>
               </DialogContent>
             </Dialog>
 
-            {/* Add internal user modal (admin only) */}
+            {/* WhatsApp list modal pós-adicao em massa */}
+            <Dialog open={waListOpen} onOpenChange={setWaListOpen}>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Enviar WhatsApp</DialogTitle>
+                  <DialogDescription>Envie confirmação para cada participante adicionado.</DialogDescription>
+                </DialogHeader>
+                <div className="max-h-80 overflow-y-auto border border-border rounded-md divide-y divide-border">
+                  {waList.length === 0 && <p className="p-3 text-xs text-muted-foreground">Nenhum.</p>}
+                  {waList.map((l) => {
+                    const corretores = r.participantes_corretores.map((c) => c.nome).join(", ");
+                    const msg = buildWhatsAppMessage(r.tipo, l.nome, new Date(r.data_inicio), r.local, corretores);
+                    const tel = onlyDigits(l.telefone);
+                    const phone = tel.startsWith("55") || tel.length < 11 ? tel : `55${tel}`;
+                    const href = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+                    return (
+                      <div key={l.id} className="flex items-center justify-between gap-2 p-2">
+                        <span className="text-sm truncate">{l.nome} <span className="text-muted-foreground text-xs">— {l.telefone}</span></span>
+                        {tel ? (
+                          <Button asChild size="sm" variant="gold" className="shrink-0 min-h-11">
+                            <a href={href} target="_blank" rel="noopener noreferrer">
+                              <MessageCircle className="h-4 w-4 mr-1" /> Enviar
+                            </a>
+                          </Button>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">sem telefone</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="flex justify-end pt-2">
+                  <Button variant="outline" onClick={() => setWaListOpen(false)}>Fechar</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            {/* Add internal user modal (admin only) - multi-select */}
             <Dialog open={addUserOpen} onOpenChange={setAddUserOpen}>
               <DialogContent className="max-w-md">
                 <DialogHeader>
-                  <DialogTitle>Adicionar participante</DialogTitle>
-                  <DialogDescription>Admin, executivo ou corretor.</DialogDescription>
+                  <DialogTitle>Adicionar participantes</DialogTitle>
+                  <DialogDescription>Admins, executivos ou corretores.</DialogDescription>
                 </DialogHeader>
-                <div className="space-y-3">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between px-1">
+                    <label className="flex items-center gap-2 text-xs cursor-pointer">
+                      <Checkbox
+                        checked={allUsers.length > 0 && allUsers.every((u) => selectedUserIds.has(u.id))}
+                        onCheckedChange={(c) => setSelectedUserIds(c ? new Set(allUsers.map((u) => u.id)) : new Set())}
+                      />
+                      Selecionar todos
+                    </label>
+                    <span className="text-xs text-muted-foreground">{selectedUserIds.size} selecionado(s)</span>
+                  </div>
                   <div className="max-h-72 overflow-y-auto border border-border rounded-md divide-y divide-border">
                     {allUsers.length === 0 && <p className="p-3 text-xs text-muted-foreground">Carregando...</p>}
                     {allUsers.map((u) => (
-                      <label key={u.id} className="flex items-center gap-2 p-2 cursor-pointer hover:bg-muted text-sm">
-                        <input
-                          type="radio"
-                          name="user"
-                          checked={selectedUserId === u.id}
-                          onChange={() => setSelectedUserId(u.id)}
-                        />
+                      <label key={u.id} className="flex items-center gap-2 p-2 cursor-pointer hover:bg-muted text-sm min-h-11">
+                        <Checkbox checked={selectedUserIds.has(u.id)} onCheckedChange={() => toggleUser(u.id)} />
                         <span className="flex-1 truncate">{u.nome}</span>
                         <Badge variant="outline" className="text-[10px]">{u.role}</Badge>
                       </label>
                     ))}
                   </div>
-                  <div className="flex justify-end gap-2">
+                  <div className="flex justify-end gap-2 pt-2">
                     <Button variant="outline" onClick={() => setAddUserOpen(false)}>Cancelar</Button>
-                    <Button variant="gold" onClick={submitAddUser} disabled={!selectedUserId}>
-                      Adicionar e notificar
+                    <Button variant="gold" onClick={submitAddUsers} disabled={selectedUserIds.size === 0}>
+                      Confirmar e Adicionar ({selectedUserIds.size})
                     </Button>
                   </div>
                 </div>
