@@ -54,25 +54,28 @@ export type EquipeMembro = {
   executivo: string | null;
   responsavel_id: string | null;
   regiao: string | null;
+  lead_id: string | null;
 };
 
 export type LeadReuniaoOpt = { id: string; nome: string; telefone: string; etapa?: string | null };
 
-type ProfileEquipeRow = { id: string; nome: string; responsavel_id: string | null; ativo?: boolean | null; regiao?: string | null };
+type ProfileEquipeRow = { id: string; nome: string; responsavel_id: string | null; ativo?: boolean | null };
 type RoleRow = { user_id: string; role: EquipeMembro["role"] };
 type ResponsavelRow = { id: string; nome: string; ativo: boolean };
+type ContratadoRow = { id: string; nome: string; responsavel_id: string | null; regiao: string | null; email: string | null };
 
 function firstName(nome: string) {
   return nome.trim().split(" ")[0]?.toLowerCase() ?? "";
 }
 
 async function loadMeetingAccess(supabaseAdmin: any, userId: string) {
-  const [{ data: profiles }, { data: roles }, { data: resps }, { data: currentProfile }, { data: currentRole }] = await Promise.all([
-    supabaseAdmin.from("profiles").select("id, nome, responsavel_id, ativo, regiao").eq("ativo", true).order("nome"),
+  const [{ data: profiles }, { data: roles }, { data: resps }, { data: currentProfile }, { data: currentRole }, { data: contratados }] = await Promise.all([
+    supabaseAdmin.from("profiles").select("id, nome, responsavel_id, ativo").eq("ativo", true).order("nome"),
     supabaseAdmin.from("user_roles").select("user_id, role"),
     supabaseAdmin.from("responsaveis").select("id, nome, ativo"),
     supabaseAdmin.from("profiles").select("id, nome, responsavel_id, ativo").eq("id", userId).maybeSingle(),
     supabaseAdmin.from("user_roles").select("role").eq("user_id", userId).maybeSingle(),
+    supabaseAdmin.from("leads").select("id, nome, responsavel_id, regiao, email").eq("is_corretor", true).eq("etapa", "fechado").order("nome"),
   ]);
 
   const roleMap = new Map(((roles ?? []) as RoleRow[]).map((r) => [r.user_id, r.role]));
@@ -87,13 +90,50 @@ async function loadMeetingAccess(supabaseAdmin: any, userId: string) {
     : null;
   const isExec = !isAdmin && !!currentExecId;
 
-  const allEquipe: EquipeMembro[] = ((profiles ?? []) as ProfileEquipeRow[]).map((p) => {
+  // Map auth user emails -> profile ids to dedup contratados that already have a profile
+  const emailToProfileId = new Map<string, string>();
+  try {
+    const { data: users } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
+    ((users?.users ?? []) as Array<{ id: string; email?: string | null }>).forEach((u) => {
+      if (u.email) emailToProfileId.set(u.email.toLowerCase(), u.id);
+    });
+  } catch { /* ignore */ }
+
+  const contratadoRows = (contratados ?? []) as ContratadoRow[];
+  const profileExtra = new Map<string, { regiao: string | null; responsavel_id: string | null }>();
+  const usedProfileIds = new Set<string>();
+  contratadoRows.forEach((c) => {
+    const pid = c.email ? emailToProfileId.get(c.email.toLowerCase()) : undefined;
+    if (pid) {
+      usedProfileIds.add(pid);
+      profileExtra.set(pid, { regiao: c.regiao, responsavel_id: c.responsavel_id ?? profileExtra.get(pid)?.responsavel_id ?? null });
+    }
+  });
+
+  const fromProfiles: EquipeMembro[] = ((profiles ?? []) as ProfileEquipeRow[]).map((p) => {
     const role = roleMap.get(p.id) ?? "corretor";
     const isProfileExec = !!p.responsavel_id && execById.get(p.responsavel_id) === firstName(p.nome);
     const tipo: EquipeMembro["tipo"] = role === "admin" ? "admin" : isProfileExec ? "executivo" : "corretor";
-    const executivo = tipo === "corretor" && p.responsavel_id ? respMap.get(p.responsavel_id) ?? null : null;
-    return { id: p.id, nome: p.nome, role, tipo, executivo, responsavel_id: p.responsavel_id, regiao: p.regiao ?? null };
+    const extra = profileExtra.get(p.id);
+    const responsavel_id = p.responsavel_id ?? extra?.responsavel_id ?? null;
+    const executivo = tipo === "corretor" && responsavel_id ? respMap.get(responsavel_id) ?? null : null;
+    return { id: p.id, nome: p.nome, role, tipo, executivo, responsavel_id, regiao: extra?.regiao ?? null, lead_id: null };
   });
+
+  const fromContratados: EquipeMembro[] = contratadoRows
+    .filter((c) => !(c.email && emailToProfileId.get(c.email.toLowerCase()) && usedProfileIds.has(emailToProfileId.get(c.email.toLowerCase())!)))
+    .map((c) => ({
+      id: `lead:${c.id}`,
+      nome: c.nome,
+      role: "corretor" as const,
+      tipo: "corretor" as const,
+      executivo: c.responsavel_id ? respMap.get(c.responsavel_id) ?? null : null,
+      responsavel_id: c.responsavel_id,
+      regiao: c.regiao,
+      lead_id: c.id,
+    }));
+
+  const allEquipe = [...fromProfiles, ...fromContratados].sort((a, b) => a.nome.localeCompare(b.nome));
 
   const equipe = isAdmin
     ? allEquipe
