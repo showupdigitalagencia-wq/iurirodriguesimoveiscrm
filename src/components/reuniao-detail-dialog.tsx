@@ -296,12 +296,32 @@ export function ReuniaoDetailDialog({ reuniaoId, onClose, onChanged }: Props) {
 
               <div>
                 <div className="flex items-center gap-2 text-xs uppercase text-muted-foreground mb-2">
-                  <Users className="h-3.5 w-3.5" /> Corretores
+                  <Users className="h-3.5 w-3.5" /> Corretores / Executivos
                 </div>
                 {r.participantes_corretores.length === 0 ? <p className="text-muted-foreground text-xs">Nenhum</p> : (
                   <ul className="space-y-1">
                     {r.participantes_corretores.map((c) => (
                       <li key={c.id} className="text-sm">{c.nome}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2 text-xs uppercase text-muted-foreground">
+                    <Users className="h-3.5 w-3.5" /> Participantes internos
+                  </div>
+                  {isAdmin && (
+                    <Button size="sm" variant="gold" onClick={openAddUser}>
+                      <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar participante
+                    </Button>
+                  )}
+                </div>
+                {(r.participantes_usuarios ?? []).length === 0 ? <p className="text-muted-foreground text-xs">Nenhum</p> : (
+                  <ul className="space-y-1">
+                    {(r.participantes_usuarios ?? []).map((u) => (
+                      <li key={u.id} className="text-sm">{u.nome}</li>
                     ))}
                   </ul>
                 )}
