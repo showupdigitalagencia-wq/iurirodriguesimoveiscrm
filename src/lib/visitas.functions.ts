@@ -13,6 +13,17 @@ export type VisitaRow = {
   status: string;
 };
 
+export type ReuniaoCorretorRow = {
+  id: string;
+  titulo: string;
+  descricao: string | null;
+  data_inicio: string;
+  duracao_min: number;
+  local: string | null;
+  status: string;
+  criado_por: string | null;
+};
+
 export const listVisitas = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -22,6 +33,18 @@ export const listVisitas = createServerFn({ method: "GET" })
       .order("data_inicio", { ascending: true });
     if (error) throw new Error(error.message);
     return { items: (data ?? []) as unknown as (VisitaRow & { vendas_leads: { nome: string; telefone: string } | null })[] };
+  });
+
+export const listReunioesCorretor = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("reunioes" as never)
+      .select("id, titulo, descricao, data_inicio, duracao_min, local, status, criado_por")
+      .eq("tipo", "individual" as never)
+      .order("data_inicio", { ascending: true });
+    if (error) throw new Error(error.message);
+    return { items: (data ?? []) as unknown as ReuniaoCorretorRow[] };
   });
 
 export const createVisita = createServerFn({ method: "POST" })
