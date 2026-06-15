@@ -101,6 +101,8 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
   const [googleConnected, setGoogleConnected] = useState<boolean | null>(null);
   const [googleEmail, setGoogleEmail] = useState<string | null>(null);
   const [connectingGoogle, setConnectingGoogle] = useState(false);
+  const [participantsOpen, setParticipantsOpen] = useState(false);
+  const [participantsTab, setParticipantsTab] = useState<"equipe" | "leads">("equipe");
   const [confirmacao, setConfirmacao] = useState<null | {
     leads: LeadOpt[];
     tipo: Tipo;
