@@ -141,5 +141,5 @@ export const getMyRole = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     const { data } = await context.supabase
       .from("user_roles").select("role").eq("user_id", context.userId).maybeSingle();
-    return { role: (data?.role as "admin" | "corretor" | undefined) ?? "corretor" };
+    return { role: (data?.role as "admin" | "corretor" | "corretor_vendas" | undefined) ?? "corretor" };
   });
