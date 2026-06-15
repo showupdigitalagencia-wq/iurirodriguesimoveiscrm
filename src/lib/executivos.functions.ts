@@ -183,3 +183,68 @@ export const updateExecutivoRegiao = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+function slugifyCanal(nome: string) {
+  const base = nome
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 40);
+  return base || `exec_${Date.now().toString(36)}`;
+}
+
+export const createExecutivo = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({
+    nome: z.string().trim().min(2).max(120),
+    email: z.string().trim().email().max(255),
+    password: z.string().min(6).max(128),
+    whatsapp: z.string().trim().min(8).max(40),
+    regiao: z.string().trim().min(1).max(200),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase as unknown as SupabaseClient, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    let canal = slugifyCanal(data.nome);
+    const { data: existing } = await supabaseAdmin.from("responsaveis").select("canal");
+    const taken = new Set((existing ?? []).map((r) => r.canal as string));
+    let suffix = 1;
+    let candidate = canal;
+    while (taken.has(candidate)) {
+      suffix += 1;
+      candidate = `${canal}_${suffix}`.slice(0, 40);
+    }
+    canal = candidate;
+    const { error: enumErr } = await supabaseAdmin.rpc("add_lead_canal_value", { _value: canal });
+    if (enumErr) throw new Error(`Falha ao registrar canal: ${enumErr.message}`);
+
+    const { data: resp, error: respErr } = await supabaseAdmin
+      .from("responsaveis")
+      .insert({ nome: data.nome, canal: canal as never, whatsapp: data.whatsapp, regiao: data.regiao, ativo: true })
+      .select("id")
+      .single();
+    if (respErr || !resp) throw new Error(respErr?.message ?? "Falha ao criar executivo");
+
+    const { data: created, error: userErr } = await supabaseAdmin.auth.admin.createUser({
+      email: data.email,
+      password: data.password,
+      email_confirm: true,
+      user_metadata: { nome: data.nome },
+    });
+    if (userErr || !created.user) {
+      await supabaseAdmin.from("responsaveis").delete().eq("id", resp.id);
+      throw new Error(userErr?.message ?? "Falha ao criar usuário");
+    }
+
+    await supabaseAdmin.from("profiles").upsert({
+      id: created.user.id,
+      nome: data.nome,
+      responsavel_id: resp.id,
+      ativo: true,
+    });
+
+    return { ok: true, id: resp.id };
+  });
