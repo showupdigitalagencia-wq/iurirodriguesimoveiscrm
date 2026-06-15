@@ -423,23 +423,15 @@ export const createReuniao = createServerFn({ method: "POST" })
     if (error || !inserted) throw new Error(error?.message ?? "Falha ao criar reunião");
     const reuniaoId = (inserted as { id: string }).id;
 
-    // Auto-incluir todos os admins e executivos ativos para que a reunião apareça na agenda deles
-    // (RLS já libera leitura, mas precisamos do user_id para sync de Google Calendar individual)
-    const { data: equipeRows } = await supabaseAdmin
-      .from("profiles").select("id, nome").eq("ativo", true);
-    const { data: rolesRows } = await supabaseAdmin
-      .from("user_roles").select("user_id, role");
-    const { data: respAtivos } = await supabaseAdmin
-      .from("responsaveis").select("nome").eq("ativo", true);
-    const adminIds = new Set(((rolesRows ?? []) as { user_id: string; role: string }[])
-      .filter((r) => r.role === "admin").map((r) => r.user_id));
-    const execFirstNames = new Set(((respAtivos ?? []) as { nome: string }[])
-      .map((r) => r.nome.trim().split(" ")[0].toLowerCase()));
-    const autoUserIds = ((equipeRows ?? []) as { id: string; nome: string }[])
-      .filter((p) => adminIds.has(p.id) || execFirstNames.has(p.nome.trim().split(" ")[0].toLowerCase()))
-      .map((p) => p.id);
-
-    const allUserIds = Array.from(new Set([...data.user_ids, ...autoUserIds]));
+    const access = await loadMeetingAccess(supabaseAdmin, context.userId);
+    if (!access.isAdmin && !access.isExec) throw new Error("Apenas Admin ou Executivo pode criar reunião");
+    const allowedUserIds = new Set(access.equipe.map((m) => m.id));
+    const selectedUserIds = data.user_ids.filter((id) => allowedUserIds.has(id));
+    const autoUserIds = access.equipe.filter((m) => m.tipo === "admin" || m.tipo === "executivo").map((m) => m.id);
+    const allUserIds = Array.from(new Set([...selectedUserIds, ...autoUserIds]));
+    const pushUserIds = access.equipe
+      .filter((m) => m.tipo === "corretor" && selectedUserIds.includes(m.id))
+      .map((m) => m.id);
 
     // Participantes
     const rows: { reuniao_id: string; lead_id: string | null; responsavel_id: string | null; user_id: string | null; added_by: string | null }[] = [
