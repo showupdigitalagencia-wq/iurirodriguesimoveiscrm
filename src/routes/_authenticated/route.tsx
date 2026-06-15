@@ -252,7 +252,12 @@ function AuthLayout() {
                       <SheetTitle className="text-gold">Menu</SheetTitle>
                     </SheetHeader>
                     <ul className="mt-4 grid gap-1">
-                      {[MOBILE_BOTTOM[4], { to: "/relatorio", label: "Relatórios", icon: BarChart3 }, ...(isAdmin ? ADMIN_NAV : [])].map((item) => {
+                      {[
+                        MOBILE_BOTTOM[4],
+                        { to: "/relatorio", label: "Relatórios", icon: BarChart3 },
+                        ...(isAdmin && vendasAtivo ? [{ to: "/vendas", label: "Vendas", icon: Briefcase }] : []),
+                        ...(isAdmin ? ADMIN_NAV : []),
+                      ].map((item) => {
                         const Icon = item.icon;
                         return (
                           <li key={item.to}>
