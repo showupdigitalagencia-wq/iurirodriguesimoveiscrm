@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useServerFn } from "@tanstack/react-start";
-import { createReuniao, listEquipeReuniao, type EquipeMembro } from "@/lib/reunioes.functions";
+import { createReuniao, listEquipeReuniao, listLeadsReuniao, type EquipeMembro } from "@/lib/reunioes.functions";
 import { startGoogleOAuth, getGoogleStatus } from "@/lib/google.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -91,6 +91,7 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
   const startOAuth = useServerFn(startGoogleOAuth);
   const checkStatus = useServerFn(getGoogleStatus);
   const fetchEquipe = useServerFn(listEquipeReuniao);
+  const fetchPipelineLeads = useServerFn(listLeadsReuniao);
   const [leads, setLeads] = useState<LeadOpt[]>([]);
   const [equipe, setEquipe] = useState<EquipeMembro[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -135,7 +136,7 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
       supabase.from("leads").select("id, nome, telefone").eq("id", defaultLeadId).maybeSingle()
         .then(({ data }) => setLeads(data ? [data as LeadOpt] : []));
     } else {
-      setLeads([]);
+      fetchPipelineLeads().then((r) => setLeads(r.leads)).catch(() => setLeads([]));
     }
     fetchEquipe().then((r) => setEquipe(r.equipe)).catch(() => setEquipe([]));
     supabase.auth.getUser().then(async ({ data }) => {
