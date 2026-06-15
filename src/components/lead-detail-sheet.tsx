@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { ETAPAS, CANAIS, etapaNome, canalNome, regiaoNome, etapaColor, type LeadRow } from "@/lib/lead-helpers";
+import { ETAPAS, CANAIS, REGIOES, etapaNome, canalNome, regiaoNome, etapaColor, type LeadRow, type LeadRegiao } from "@/lib/lead-helpers";
 import { updateLead, updateLeadEtapa, addNote, markFirstResponse } from "@/lib/leads.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
