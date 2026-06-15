@@ -248,3 +248,90 @@ export const createExecutivo = createServerFn({ method: "POST" })
 
     return { ok: true, id: resp.id };
   });
+
+function firstNameLower(nome: string) {
+  return (nome ?? "").trim().split(" ")[0]?.toLowerCase() ?? "";
+}
+
+async function findExecutivoUserId(supabaseAdmin: any, execId: string): Promise<string | null> {
+  const { data: exec } = await supabaseAdmin.from("responsaveis").select("nome").eq("id", execId).maybeSingle();
+  if (!exec) return null;
+  const { data: profs } = await supabaseAdmin.from("profiles").select("id, nome").eq("responsavel_id", execId);
+  const match = (profs ?? []).find((p: { nome: string }) => firstNameLower(p.nome) === firstNameLower(exec.nome));
+  return match?.id ?? null;
+}
+
+export const updateExecutivo = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({
+    id: z.string().uuid(),
+    nome: z.string().trim().min(2).max(120).optional(),
+    email: z.string().trim().email().max(255).optional(),
+    whatsapp: z.string().trim().min(8).max(40).optional(),
+    regiao: z.string().trim().max(200).nullable().optional(),
+    avatar_url: z.string().trim().max(1000).nullable().optional(),
+    password: z.string().min(6).max(128).optional(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase as unknown as SupabaseClient, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const patch: Record<string, unknown> = {};
+    if (data.nome !== undefined) patch.nome = data.nome;
+    if (data.whatsapp !== undefined) patch.whatsapp = data.whatsapp;
+    if (data.regiao !== undefined) patch.regiao = data.regiao;
+    if (data.avatar_url !== undefined) patch.avatar_url = data.avatar_url;
+    if (Object.keys(patch).length) {
+      const { error } = await supabaseAdmin.from("responsaveis").update(patch).eq("id", data.id);
+      if (error) throw new Error(error.message);
+    }
+
+    const userId = await findExecutivoUserId(supabaseAdmin, data.id);
+    if (userId && (data.email || data.password || data.nome)) {
+      const userPatch: Record<string, unknown> = {};
+      if (data.email) userPatch.email = data.email;
+      if (data.password) userPatch.password = data.password;
+      if (data.nome) userPatch.user_metadata = { nome: data.nome };
+      const { error: uerr } = await supabaseAdmin.auth.admin.updateUserById(userId, userPatch);
+      if (uerr) throw new Error(uerr.message);
+      if (data.nome) {
+        await supabaseAdmin.from("profiles").update({ nome: data.nome }).eq("id", userId);
+      }
+    }
+    return { ok: true };
+  });
+
+export const setExecutivoAtivo = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ id: z.string().uuid(), ativo: z.boolean() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase as unknown as SupabaseClient, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("responsaveis").update({ ativo: data.ativo }).eq("id", data.id);
+    if (error) throw new Error(error.message);
+    const userId = await findExecutivoUserId(supabaseAdmin, data.id);
+    if (userId) {
+      await supabaseAdmin.from("profiles").update({ ativo: data.ativo }).eq("id", userId);
+      try {
+        await supabaseAdmin.auth.admin.updateUserById(userId, { ban_duration: data.ativo ? "none" : "876000h" });
+      } catch { /* ignore */ }
+    }
+    return { ok: true };
+  });
+
+export const deleteExecutivo = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase as unknown as SupabaseClient, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const userId = await findExecutivoUserId(supabaseAdmin, data.id);
+    await supabaseAdmin.from("leads").update({ responsavel_id: null }).eq("responsavel_id", data.id);
+    await supabaseAdmin.from("profiles").update({ responsavel_id: null }).eq("responsavel_id", data.id);
+    const { error } = await supabaseAdmin.from("responsaveis").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    if (userId) {
+      try { await supabaseAdmin.auth.admin.deleteUser(userId); } catch { /* ignore */ }
+    }
+    return { ok: true };
+  });
