@@ -155,7 +155,7 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
               <div><span className="text-muted-foreground">Tipo:</span> {lead.tipo === "compra" ? "Compra" : "Locação"}</div>
               <div><span className="text-muted-foreground">Região:</span> {String(lead.regiao).replace(/_/g, " ")}</div>
               <div><span className="text-muted-foreground">Valor:</span> {formatBRL(lead.valor != null ? Number(lead.valor) : null)}</div>
-              <div><span className="text-muted-foreground">Criado em:</span> {new Date(lead.created_at).toLocaleString("pt-BR")}</div>
+              <div><span className="text-muted-foreground">Criado em:</span> {new Date(lead.created_at).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}</div>
               {lead.observacoes && <div className="col-span-2"><span className="text-muted-foreground">Observações:</span> {lead.observacoes}</div>}
             </div>
           ) : (
@@ -204,13 +204,13 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
           <div>
             <Label className="text-xs">Histórico de atividades</Label>
             <div className="mt-1 space-y-1 text-sm border rounded p-2 max-h-40 overflow-y-auto">
-              <div className="text-xs text-muted-foreground">Lead criado em {new Date(lead.created_at).toLocaleString("pt-BR")}</div>
+              <div className="text-xs text-muted-foreground">Lead criado em {new Date(lead.created_at).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}</div>
               {lead.atribuido_em && (
-                <div className="text-xs text-muted-foreground">Atribuído em {new Date(lead.atribuido_em).toLocaleString("pt-BR")} ({lead.atribuicao_status})</div>
+                <div className="text-xs text-muted-foreground">Atribuído em {new Date(lead.atribuido_em).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })} ({lead.atribuicao_status})</div>
               )}
               {visitas.map((v) => (
                 <div key={v.id} className="text-xs">
-                  🏠 Visita {v.status} — {v.endereco} ({new Date(v.data_inicio).toLocaleString("pt-BR")})
+                  🏠 Visita {v.status} — {v.endereco} ({new Date(v.data_inicio).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })})
                 </div>
               ))}
               {visitas.length === 0 && <div className="text-xs text-muted-foreground">Nenhuma visita registrada</div>}
@@ -255,7 +255,7 @@ function AgendarVisitaInline({ lead, onDone }: { lead: VendasLead; onDone: () =>
       await fn({ data: { lead_id: lead.id, endereco: endereco.trim(), data_inicio: new Date(dataInicio).toISOString(), duracao_min: duracao, observacoes: observacoes.trim() || undefined } });
       toast.success("Visita agendada");
       const dt = new Date(dataInicio);
-      const msg = `Olá ${lead.nome}! Confirmando sua visita ao imóvel em ${endereco.trim()} no dia ${dt.toLocaleDateString("pt-BR")} às ${dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}. Iuri Rodrigues Imóveis 🏢`;
+      const msg = `Olá ${lead.nome}! Confirmando sua visita ao imóvel em ${endereco.trim()} no dia ${dt.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })} às ${dt.toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" })}. Iuri Rodrigues Imóveis 🏢`;
       const tel = (lead.telefone ?? "").replace(/\D/g, "");
       if (tel) window.open(`https://wa.me/${tel.length <= 11 ? "55" + tel : tel}?text=${encodeURIComponent(msg)}`, "_blank");
       setOpen(false); onDone();
@@ -299,7 +299,7 @@ function ReuniaoOnlineInline({ lead, onDone }: { lead: VendasLead; onDone: () =>
       toast.success(res.meetLink ? "Reunião criada" : "Reunião registrada (sem Meet)");
       const dt = new Date(dataInicio);
       const linkPart = res.meetLink ? `\n📍 Link: ${res.meetLink}` : "";
-      const msg = `Olá ${lead.nome}! Sua reunião online está confirmada para ${dt.toLocaleDateString("pt-BR")} às ${dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}.${linkPart}\n\nIuri Rodrigues Imóveis 🏢`;
+      const msg = `Olá ${lead.nome}! Sua reunião online está confirmada para ${dt.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })} às ${dt.toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" })}.${linkPart}\n\nIuri Rodrigues Imóveis 🏢`;
       const tel = (lead.telefone ?? "").replace(/\D/g, "");
       if (tel) window.open(`https://wa.me/${tel.length <= 11 ? "55" + tel : tel}?text=${encodeURIComponent(msg)}`, "_blank");
       setOpen(false); onDone();

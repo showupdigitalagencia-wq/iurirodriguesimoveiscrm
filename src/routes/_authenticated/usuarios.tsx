@@ -235,7 +235,7 @@ function UsuariosPage() {
                   </Select>
                 </td>
                 <td className="px-4 py-3 text-xs text-muted-foreground">
-                  {u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleString("pt-BR") : "nunca"}
+                  {u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }) : "nunca"}
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
