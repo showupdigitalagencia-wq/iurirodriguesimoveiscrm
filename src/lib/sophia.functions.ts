@@ -13,26 +13,74 @@ const InputSchema = z.object({
   messages: z.array(MessageSchema).min(1).max(40),
 });
 
-async function assertAcesso(supabase: SupabaseClient, userId: string) {
-  const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-  if (isAdmin) return "admin";
-  const { data: cfg } = await supabase.from("configuracoes").select("chave, valor").in("chave", [
-    "sophia_executivos_acesso",
-    "sophia_corretores_acesso",
-  ]);
-  const map = new Map((cfg ?? []).map((r) => [r.chave, r.valor]));
-  // Executivos == admins of vendas? For now allow if toggle on and user is corretor_vendas
-  const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", userId);
-  const isCorretor = (roles ?? []).some((r) => r.role === "corretor_vendas" || r.role === "corretor");
-  if (isCorretor && map.get("sophia_corretores_acesso") === true) return "corretor";
-  throw new Error("Laura ainda não está disponível para você.");
+type Scope =
+  | { tipo: "admin"; userId: string; nome: string }
+  | { tipo: "executivo"; userId: string; nome: string; responsavelId: string; responsavelNome: string; regiao: string | null; corretorIds: string[] }
+  | { tipo: "corretor"; userId: string; nome: string };
+
+async function resolverAcesso(
+  supabaseUser: SupabaseClient,
+  userId: string,
+): Promise<Scope> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: isAdmin } = await supabaseUser.rpc("has_role", { _user_id: userId, _role: "admin" });
+
+  const { data: cfg } = await supabaseAdmin
+    .from("configuracoes")
+    .select("chave, valor")
+    .in("chave", ["sophia_executivos_acesso", "sophia_corretores_acesso"]);
+  const cfgMap = new Map((cfg ?? []).map((r) => [r.chave, r.valor]));
+
+  const { data: profile } = await supabaseAdmin
+    .from("profiles")
+    .select("id, nome, responsavel_id")
+    .eq("id", userId)
+    .maybeSingle();
+  const nome = profile?.nome ?? "";
+
+  if (isAdmin) return { tipo: "admin", userId, nome };
+
+  // Detecta executivo: profile.nome corresponde a um responsaveis ativo (match por primeiro nome, case-insensitive)
+  const primeiroNome = nome.trim().split(/\s+/)[0]?.toLowerCase() ?? "";
+  if (primeiroNome) {
+    const { data: resp } = await supabaseAdmin
+      .from("responsaveis")
+      .select("id, nome, regiao, ativo")
+      .eq("ativo", true);
+    const meuResp = (resp ?? []).find((r) => (r.nome ?? "").trim().toLowerCase().split(/\s+/)[0] === primeiroNome);
+    if (meuResp) {
+      if (!cfgMap.get("sophia_executivos_acesso")) {
+        throw new Error("Laura ainda não está liberada para executivos. Solicite acesso ao Admin.");
+      }
+      const { data: equipe } = await supabaseAdmin
+        .from("profiles")
+        .select("id")
+        .eq("responsavel_id", meuResp.id);
+      const corretorIds = (equipe ?? []).map((p) => p.id).filter((id) => id !== userId);
+      return {
+        tipo: "executivo",
+        userId,
+        nome,
+        responsavelId: meuResp.id,
+        responsavelNome: meuResp.nome,
+        regiao: meuResp.regiao,
+        corretorIds,
+      };
+    }
+  }
+
+  // Corretor
+  if (!cfgMap.get("sophia_corretores_acesso")) {
+    throw new Error("Laura ainda não está liberada para corretores. Solicite acesso ao Admin.");
+  }
+  return { tipo: "corretor", userId, nome };
 }
 
 export const sophiaChat = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => InputSchema.parse(d))
   .handler(async ({ data, context }) => {
-    await assertAcesso(context.supabase as unknown as SupabaseClient, context.userId);
+    const scope = await resolverAcesso(context.supabase as unknown as SupabaseClient, context.userId);
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("LOVABLE_API_KEY não configurada");
 
@@ -40,24 +88,32 @@ export const sophiaChat = createServerFn({ method: "POST" })
     const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
     const gateway = createLovableAiGatewayProvider(apiKey);
 
+    const NEGADO = "Não tenho autorização para compartilhar essas informações.";
+
+    function corretoresPermitidos(): string[] | "todos" {
+      if (scope.tipo === "admin") return "todos";
+      if (scope.tipo === "executivo") return [scope.userId, ...scope.corretorIds];
+      return [scope.userId];
+    }
+
     const tools = {
       listar_corretores_disponiveis: tool({
-        description: "Lista corretores de vendas disponíveis, opcionalmente filtrando por região e horário (HH:MM, formato 24h).",
+        description: "Lista corretores de vendas disponíveis, opcionalmente filtrando por região e horário (HH:MM).",
         inputSchema: z.object({
-          regiao: z.string().optional().describe("Região solicitada, ex: 'Barra', 'Recreio'"),
-          hora: z.string().optional().describe("Horário desejado em formato HH:MM"),
+          regiao: z.string().optional(),
+          hora: z.string().optional(),
         }),
         execute: async ({ regiao, hora }) => {
-          const { data: profiles } = await supabaseAdmin
-            .from("profiles")
-            .select("id, nome, ativo, responsavel_id")
-            .eq("ativo", true);
+          const permitidos = corretoresPermitidos();
+          let q = supabaseAdmin.from("profiles").select("id, nome, ativo, responsavel_id").eq("ativo", true);
+          if (permitidos !== "todos") q = q.in("id", permitidos);
+          const { data: profiles } = await q;
           const ids = (profiles ?? []).map((p) => p.id);
-          if (!ids.length) return { corretores: [] };
+          if (!ids.length) return { corretores: [], aviso: scope.tipo === "corretor" ? "Apenas seus próprios dados." : null };
 
           const { data: roles } = await supabaseAdmin
             .from("user_roles").select("user_id, role").in("user_id", ids);
-          const vendasIds = new Set((roles ?? []).filter((r) => r.role === "corretor_vendas").map((r) => r.user_id));
+          const vendasIds = new Set((roles ?? []).filter((r) => r.role === "corretor_vendas" || r.role === "corretor").map((r) => r.user_id));
           const corretores = (profiles ?? []).filter((p) => vendasIds.has(p.id));
           if (!corretores.length) return { corretores: [] };
 
@@ -81,20 +137,21 @@ export const sophiaChat = createServerFn({ method: "POST" })
             });
             return { id: c.id, nome: c.nome, disponivel: livre };
           });
-          // regiao filtering is descriptive only — corretor disponibilidade não tem campo regiao
           const _ = regiao;
           return { corretores: result.filter((c) => c.disponivel || !hora) };
         },
       }),
 
       contar_leads: tool({
-        description: "Conta leads por período (hoje, semana, mes) e/ou etapa.",
+        description: "Conta leads do escopo permitido por período (hoje/semana/mes/total) e/ou etapa.",
         inputSchema: z.object({
           periodo: z.enum(["hoje", "semana", "mes", "total"]).default("hoje"),
           etapa: z.string().optional(),
         }),
         execute: async ({ periodo, etapa }) => {
-          let query = supabaseAdmin.from("leads").select("id, etapa, created_at", { count: "exact", head: false });
+          const permitidos = corretoresPermitidos();
+          let query = supabaseAdmin.from("vendas_leads").select("id, etapa, created_at, corretor_id", { count: "exact" });
+          if (permitidos !== "todos") query = query.in("corretor_id", permitidos);
           const now = new Date();
           if (periodo === "hoje") {
             const d = new Date(now); d.setHours(0, 0, 0, 0);
@@ -108,32 +165,37 @@ export const sophiaChat = createServerFn({ method: "POST" })
           }
           if (etapa) query = query.eq("etapa", etapa as never);
           const { data, count } = await query;
-          return { total: count ?? data?.length ?? 0, periodo, etapa: etapa ?? null };
+          return { total: count ?? data?.length ?? 0, periodo, etapa: etapa ?? null, escopo: scope.tipo };
         },
       }),
 
       buscar_lead: tool({
-        description: "Busca leads de vendas por nome ou telefone (busca parcial). Retorna até 10 resultados.",
-        inputSchema: z.object({
-          termo: z.string().min(2),
-        }),
+        description: "Busca leads do escopo permitido por nome ou telefone. Retorna até 10 resultados.",
+        inputSchema: z.object({ termo: z.string().min(2) }),
         execute: async ({ termo }) => {
-          const { data } = await supabaseAdmin
+          const permitidos = corretoresPermitidos();
+          let q = supabaseAdmin
             .from("vendas_leads")
             .select("id, nome, telefone, etapa, regiao, corretor_id")
             .or(`nome.ilike.%${termo}%,telefone.ilike.%${termo}%`)
             .limit(10);
+          if (permitidos !== "todos") q = q.in("corretor_id", permitidos);
+          const { data } = await q;
           return { leads: data ?? [] };
         },
       }),
 
       atribuir_lead: tool({
-        description: "Atribui um lead de vendas a um corretor específico.",
+        description: "Atribui um lead de vendas a um corretor. Apenas admin e executivo podem usar; executivo só atribui para a própria equipe.",
         inputSchema: z.object({
           lead_id: z.string().uuid(),
           corretor_id: z.string().uuid(),
         }),
         execute: async ({ lead_id, corretor_id }) => {
+          if (scope.tipo === "corretor") return { ok: false, erro: NEGADO };
+          if (scope.tipo === "executivo" && !scope.corretorIds.includes(corretor_id) && corretor_id !== scope.userId) {
+            return { ok: false, erro: NEGADO };
+          }
           const { error } = await supabaseAdmin
             .from("vendas_leads")
             .update({
@@ -149,30 +211,35 @@ export const sophiaChat = createServerFn({ method: "POST" })
       }),
 
       relatorio_rapido: tool({
-        description: "Gera um resumo rápido: leads por etapa nos últimos 7 dias.",
+        description: "Resumo dos últimos 7 dias: leads por etapa, dentro do escopo permitido.",
         inputSchema: z.object({}),
         execute: async () => {
+          const permitidos = corretoresPermitidos();
           const since = new Date(); since.setDate(since.getDate() - 7);
-          const { data } = await supabaseAdmin
-            .from("leads").select("etapa").gte("created_at", since.toISOString());
+          let q = supabaseAdmin.from("vendas_leads").select("etapa, corretor_id").gte("created_at", since.toISOString());
+          if (permitidos !== "todos") q = q.in("corretor_id", permitidos);
+          const { data } = await q;
           const por_etapa: Record<string, number> = {};
           (data ?? []).forEach((l) => { por_etapa[l.etapa] = (por_etapa[l.etapa] ?? 0) + 1; });
-          return { total_7d: data?.length ?? 0, por_etapa };
+          return { total_7d: data?.length ?? 0, por_etapa, escopo: scope.tipo };
         },
       }),
 
       info_executivos: tool({
-        description: "Retorna executivos cadastrados, suas regiões, total de corretores na equipe e leads ativos. Use para perguntas sobre quem atende qual região.",
+        description: "Informações sobre executivos e suas regiões. Apenas admin vê todos; executivo vê apenas a si mesmo; corretor não tem acesso.",
         inputSchema: z.object({
-          regiao: z.string().optional().describe("Filtra por região (busca parcial, case-insensitive)"),
-          nome: z.string().optional().describe("Filtra por nome do executivo (busca parcial)"),
+          regiao: z.string().optional(),
+          nome: z.string().optional(),
         }),
         execute: async ({ regiao, nome }) => {
+          if (scope.tipo === "corretor") return { erro: NEGADO };
+
           const { data: execs } = await supabaseAdmin
-            .from("responsaveis")
-            .select("id, nome, regiao, ativo")
-            .eq("ativo", true);
+            .from("responsaveis").select("id, nome, regiao, ativo").eq("ativo", true);
           let lista = execs ?? [];
+          if (scope.tipo === "executivo") {
+            lista = lista.filter((e) => e.id === scope.responsavelId);
+          }
           if (regiao) lista = lista.filter((e) => (e.regiao ?? "").toLowerCase().includes(regiao.toLowerCase()));
           if (nome) lista = lista.filter((e) => (e.nome ?? "").toLowerCase().includes(nome.toLowerCase()));
 
@@ -204,18 +271,41 @@ export const sophiaChat = createServerFn({ method: "POST" })
       }),
     };
 
+    const escopoTexto =
+      scope.tipo === "admin"
+        ? `Você está conversando com um ADMINISTRADOR (${scope.nome}). Acesso total: todos os executivos, corretores, leads e métricas.`
+        : scope.tipo === "executivo"
+        ? `Você está conversando com a EXECUTIVA/EXECUTIVO ${scope.responsavelNome} (região: ${scope.regiao ?? "n/a"}). Acesso APENAS à própria equipe (${scope.corretorIds.length} corretor(es)) e aos próprios leads. NUNCA revele dados de outros executivos ou de corretores de outra equipe.`
+        : `Você está conversando com um CORRETOR (${scope.nome}). Acesso APENAS aos próprios leads, agenda e métricas. NUNCA revele dados de outros corretores ou executivos.`;
+
+    const regrasComuns =
+      scope.tipo === "admin"
+        ? ""
+        : `\n\nTEMAS BLOQUEADOS (responda exatamente: "Esse assunto não está dentro das minhas atribuições"):
+- Processos internos da empresa
+- Vida pessoal de gestores ou colegas
+- Salários e comissões de outras pessoas
+- Informações confidenciais
+- Dados de outros executivos ou corretores fora do seu escopo
+
+Se perguntarem sobre outro executivo: "Não tenho autorização para compartilhar informações de outros executivos."
+Se perguntarem sobre corretor fora do seu escopo: "Não tenho autorização para compartilhar informações de outros corretores."`;
+
     const messages: ModelMessage[] = [
       {
         role: "system",
-        content: `Você é a Laura, assistente IA interna do Sistema Nexus da imobiliária Iuri Rodrigues. Seja direta, simpática e use português brasileiro. Use as ferramentas disponíveis para responder com dados reais. Quando for atribuir um lead, sempre confirme antes. Formate respostas em markdown quando ajudar a leitura.
+        content: `Você é a Laura, assistente IA interna do Sistema Nexus da imobiliária Iuri Rodrigues. Tom profissional, prestativa, respostas claras e diretas em português brasileiro. NUNCA invente informações — se não souber, responda "Não tenho essa informação no momento". Use markdown leve quando ajudar a leitura.
 
-EQUIPE DE EXECUTIVOS E REGIÕES DE ATUAÇÃO (conhecimento fixo):
+CONTROLE DE ACESSO DO USUÁRIO ATUAL:
+${escopoTexto}${regrasComuns}
+
+EQUIPE DE EXECUTIVOS E REGIÕES (conhecimento fixo, pode ser citado para qualquer perfil):
 - Denise → Nilópolis e Mesquita
 - Fabíola → Recreio dos Bandeirantes
 - Renata → Belford Roxo
 - Robson → Barra da Tijuca
 
-Responda imediatamente perguntas sobre qual executivo cuida de uma região (ou vice-versa) com base nessa lista. Para dados em tempo real (leads ativos, corretores na equipe, disponibilidade), use as ferramentas info_executivos ou listar_corretores_disponiveis e cite números atualizados do banco.`,
+Para dados em tempo real (leads ativos, corretores na equipe, disponibilidade, pipeline, reuniões, métricas) use as ferramentas e cite números reais do banco. Antes de atribuir um lead, sempre confirme com o usuário.`,
       },
       ...data.messages.map((m) => ({ role: m.role, content: m.content }) as ModelMessage),
     ];
