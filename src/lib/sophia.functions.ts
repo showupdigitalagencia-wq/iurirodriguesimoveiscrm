@@ -308,7 +308,18 @@ EQUIPE DE EXECUTIVOS E REGIÕES (conhecimento fixo, pode ser citado para qualque
 
 Para dados em tempo real (leads ativos, corretores na equipe, disponibilidade, pipeline, reuniões, métricas) use as ferramentas e cite números reais do banco. Antes de atribuir um lead, sempre confirme com o usuário.`,
       },
-      ...data.messages.map((m) => ({ role: m.role, content: m.content }) as ModelMessage),
+      ...data.messages.map((m) => {
+        if (m.role === "user" && m.imageDataUrl) {
+          return {
+            role: "user",
+            content: [
+              { type: "text", text: m.content },
+              { type: "image", image: new URL(m.imageDataUrl) },
+            ],
+          } as ModelMessage;
+        }
+        return { role: m.role, content: m.content } as ModelMessage;
+      }),
     ];
 
     const { text } = await generateText({
