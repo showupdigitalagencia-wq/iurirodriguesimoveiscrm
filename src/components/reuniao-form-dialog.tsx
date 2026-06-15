@@ -279,6 +279,30 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
               <strong>Link Meet:</strong> {confirmacao.local}
             </div>
           )}
+          {confirmacao.invitedEmails.length > 0 && (
+            <div className="text-xs rounded-md p-2 bg-green-500/10 border border-green-500/30 space-y-1">
+              <div className="font-medium text-green-700 dark:text-green-400">
+                ✅ Convite do Google Calendar enviado para:
+              </div>
+              <ul className="list-disc list-inside break-all">
+                {confirmacao.invitedEmails.map((em) => (
+                  <li key={em}>{em}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {confirmacao.leadsSemEmail.length > 0 && (
+            <div className="text-xs rounded-md p-2 bg-yellow-500/10 border border-yellow-500/30">
+              <div className="font-medium text-yellow-700 dark:text-yellow-400">
+                ⚠️ Lead sem email — convite não enviado:
+              </div>
+              <ul className="list-disc list-inside">
+                {confirmacao.leadsSemEmail.map((n) => (
+                  <li key={n}>{n}</li>
+                ))}
+              </ul>
+            </div>
+          )}
           {confirmacao.leads.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nenhum lead selecionado.</p>
           ) : (
