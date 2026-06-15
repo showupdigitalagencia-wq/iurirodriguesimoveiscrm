@@ -15,6 +15,7 @@ import { createVisita, createReuniaoOnlineVenda } from "@/lib/visitas.functions"
 import { listCorretoresDisponibilidade, atribuirLead, aceitarLead, recusarLead, type CorretorAvail } from "@/lib/vendas-distribuicao.functions";
 import { toast } from "sonner";
 import { Plus, MapPin, Video, UserPlus, Check, X } from "lucide-react";
+import { VendasLeadDetail } from "@/components/vendas-lead-detail";
 
 type VendasLeadExt = VendasLead & {
   atribuicao_status?: "pendente" | "aceito" | "recusado" | null;
