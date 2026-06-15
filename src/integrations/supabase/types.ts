@@ -405,6 +405,7 @@ export type Database = {
           recorrente: boolean
           responsavel_id: string | null
           reuniao_id: string
+          user_id: string | null
         }
         Insert: {
           added_by?: string | null
@@ -414,6 +415,7 @@ export type Database = {
           recorrente?: boolean
           responsavel_id?: string | null
           reuniao_id: string
+          user_id?: string | null
         }
         Update: {
           added_by?: string | null
@@ -423,6 +425,7 @@ export type Database = {
           recorrente?: boolean
           responsavel_id?: string | null
           reuniao_id?: string
+          user_id?: string | null
         }
         Relationships: [
           {
