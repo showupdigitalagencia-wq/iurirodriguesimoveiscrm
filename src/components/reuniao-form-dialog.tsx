@@ -13,7 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { MessageCircle, Video, CheckCircle2, Users, Shield, Briefcase } from "lucide-react";
 
-type Tipo = "individual" | "institucional" | "alinhamento";
+type Tipo = "individual" | "institucional" | "alinhamento" | "mentoria";
 type LeadOpt = { id: string; nome: string; telefone: string };
 
 const GROUP_WA_URL = "https://chat.whatsapp.com/GCRzxSX7Ou51J8qgNjLiyu";
