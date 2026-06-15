@@ -219,3 +219,26 @@ export async function patchCalendarEventDescription(input: {
   }
   return true;
 }
+
+export async function deleteCalendarEvent(input: {
+  userId: string;
+  eventId: string;
+}): Promise<boolean> {
+  const token = await getValidAccessToken(input.userId);
+  if (!token) {
+    console.warn("[Google] deleteCalendarEvent: no token for user", input.userId);
+    return false;
+  }
+  const res = await fetch(
+    `https://www.googleapis.com/calendar/v3/calendars/primary/events/${encodeURIComponent(input.eventId)}?sendUpdates=all`,
+    {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    },
+  );
+  if (!res.ok && res.status !== 410 && res.status !== 404) {
+    console.error("[Google] delete event failed", res.status, await res.text());
+    return false;
+  }
+  return true;
+}
