@@ -537,6 +537,9 @@ export type Database = {
       }
       vendas_leads: {
         Row: {
+          atribuicao_status: string | null
+          atribuido_em: string | null
+          atribuido_por: string | null
           corretor_id: string | null
           created_at: string
           created_by: string | null
@@ -546,6 +549,7 @@ export type Database = {
           id: string
           nome: string
           observacoes: string | null
+          recusas: Json
           regiao: Database["public"]["Enums"]["lead_regiao"]
           telefone: string
           tipo: Database["public"]["Enums"]["vendas_tipo"]
@@ -553,6 +557,9 @@ export type Database = {
           valor: number | null
         }
         Insert: {
+          atribuicao_status?: string | null
+          atribuido_em?: string | null
+          atribuido_por?: string | null
           corretor_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -562,6 +569,7 @@ export type Database = {
           id?: string
           nome: string
           observacoes?: string | null
+          recusas?: Json
           regiao?: Database["public"]["Enums"]["lead_regiao"]
           telefone: string
           tipo?: Database["public"]["Enums"]["vendas_tipo"]
@@ -569,6 +577,9 @@ export type Database = {
           valor?: number | null
         }
         Update: {
+          atribuicao_status?: string | null
+          atribuido_em?: string | null
+          atribuido_por?: string | null
           corretor_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -578,6 +589,7 @@ export type Database = {
           id?: string
           nome?: string
           observacoes?: string | null
+          recusas?: Json
           regiao?: Database["public"]["Enums"]["lead_regiao"]
           telefone?: string
           tipo?: Database["public"]["Enums"]["vendas_tipo"]
