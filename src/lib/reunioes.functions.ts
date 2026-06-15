@@ -69,27 +69,97 @@ export const getReuniao = createServerFn({ method: "POST" })
 
     const { data: parts } = await context.supabase
       .from("reuniao_participantes" as never)
-      .select("lead_id, responsavel_id")
+      .select("lead_id, responsavel_id, added_by")
       .eq("reuniao_id", data.id);
 
-    const leadIds = (parts ?? []).map((p: { lead_id: string | null }) => p.lead_id).filter(Boolean) as string[];
-    const respIds = (parts ?? []).map((p: { responsavel_id: string | null }) => p.responsavel_id).filter(Boolean) as string[];
+    const partsArr = (parts ?? []) as { lead_id: string | null; responsavel_id: string | null; added_by: string | null }[];
+    const leadIds = partsArr.map((p) => p.lead_id).filter(Boolean) as string[];
+    const respIds = partsArr.map((p) => p.responsavel_id).filter(Boolean) as string[];
 
-    const [{ data: leads }, { data: resps }] = await Promise.all([
+    const [{ data: leads }, { data: resps }, { data: roleRow }, { data: profile }] = await Promise.all([
       leadIds.length
         ? context.supabase.from("leads").select("id, nome, telefone").in("id", leadIds)
         : Promise.resolve({ data: [] as { id: string; nome: string; telefone: string }[] }),
       respIds.length
         ? context.supabase.from("responsaveis").select("id, nome, canal").in("id", respIds)
         : Promise.resolve({ data: [] as { id: string; nome: string; canal: string }[] }),
+      context.supabase.from("user_roles").select("role").eq("user_id", context.userId).maybeSingle(),
+      context.supabase.from("profiles").select("responsavel_id").eq("id", context.userId).maybeSingle(),
     ]);
+
+    const myRole = (roleRow?.role as string | undefined) ?? "corretor";
+    const myResp = (profile?.responsavel_id as string | null | undefined) ?? null;
+    // "Executivo" no sistema = corretor com responsavel_id próprio (lidera equipe)
+    const isExecutivo = !!myResp;
+
+    let leadsList = (leads ?? []).map((l) => {
+      const p = partsArr.find((x) => x.lead_id === l.id);
+      return { ...l, added_by: p?.added_by ?? null };
+    });
+
+    // Executivos só veem seus próprios leads adicionados; admin vê tudo
+    if (myRole !== "admin" && isExecutivo) {
+      leadsList = leadsList.filter((l) => l.added_by === context.userId);
+    } else if (myRole !== "admin" && !isExecutivo) {
+      // Corretor comum: vê só seus próprios leads adicionados (se houver)
+      leadsList = leadsList.filter((l) => l.added_by === context.userId);
+    }
 
     return {
       ...(r as unknown as ReuniaoRow),
-      participantes_leads: leads ?? [],
+      participantes_leads: leadsList,
       participantes_corretores: resps ?? [],
+      my_role: myRole,
+      my_user_id: context.userId,
+      my_responsavel_id: myResp,
+      is_executivo: isExecutivo,
     } as ReuniaoDetail;
   });
+
+export const addLeadToReuniao = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ reuniao_id: z.string().uuid(), lead_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // Authorization: admin OR executivo who owns the lead via canal
+    const [{ data: roleRow }, { data: profile }, { data: lead }, { data: reuniao }] = await Promise.all([
+      supabaseAdmin.from("user_roles").select("role").eq("user_id", context.userId).maybeSingle(),
+      supabaseAdmin.from("profiles").select("responsavel_id").eq("id", context.userId).maybeSingle(),
+      supabaseAdmin.from("leads").select("id, nome, telefone, canal, email").eq("id", data.lead_id).maybeSingle(),
+      supabaseAdmin.from("reunioes" as never).select("id, titulo, data_inicio, local, tipo").eq("id", data.reuniao_id).maybeSingle(),
+    ]);
+    if (!lead) throw new Error("Lead não encontrado");
+    if (!reuniao) throw new Error("Reunião não encontrada");
+    const isAdmin = roleRow?.role === "admin";
+    if (!isAdmin) {
+      const respId = (profile?.responsavel_id as string | null) ?? null;
+      if (!respId) throw new Error("Sem permissão");
+      const { data: resp } = await supabaseAdmin.from("responsaveis").select("canal").eq("id", respId).maybeSingle();
+      const meuCanal = (resp?.canal as string | null) ?? null;
+      const leadCanal = (lead as { canal: string | null }).canal ?? null;
+      if (!meuCanal || leadCanal !== meuCanal) throw new Error("Sem permissão sobre este lead");
+    }
+
+    // Idempotência
+    const { data: existing } = await supabaseAdmin
+      .from("reuniao_participantes" as never)
+      .select("id")
+      .eq("reuniao_id", data.reuniao_id)
+      .eq("lead_id", data.lead_id)
+      .maybeSingle();
+    if (!existing) {
+      await supabaseAdmin.from("reuniao_participantes" as never).insert({
+        reuniao_id: data.reuniao_id,
+        lead_id: data.lead_id,
+        added_by: context.userId,
+      } as never);
+    }
+
+    const r = reuniao as unknown as { titulo: string; data_inicio: string; local: string | null; tipo: string };
+    const l = lead as unknown as { nome: string; telefone: string };
+    return { ok: true, lead: l, reuniao: r };
+  });
+
 
 export const createReuniao = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
