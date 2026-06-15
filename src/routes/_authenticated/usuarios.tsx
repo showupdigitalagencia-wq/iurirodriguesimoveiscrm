@@ -78,7 +78,7 @@ function UsuariosPage() {
       await fnCreate({ data: {
         nome: String(fd.get("nome")), email: String(fd.get("email")),
         password: String(fd.get("password")),
-        role: String(fd.get("role")) as "admin" | "corretor",
+        role: String(fd.get("role")) as UserRole,
         responsavel_id: respId === NO_RESPONSAVEL ? null : respId,
       }});
       toast.success("Funcionário criado");
