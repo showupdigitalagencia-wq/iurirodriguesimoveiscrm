@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { canalNome, type LeadRow } from "@/lib/lead-helpers";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Download, BadgeCheck, XCircle, HelpCircle, Users, Car, MapPin, Trash2, Phone } from "lucide-react";
+import { Download, BadgeCheck, XCircle, HelpCircle, Users, Car, MapPin, Trash2, MessageCircle } from "lucide-react";
 import { LeadDetailSheet } from "@/components/lead-detail-sheet";
 import { CreateLeadDialog } from "@/components/create-lead-dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -252,11 +252,13 @@ function CorretoresPage() {
                 </div>
                 {l.telefone && (
                   <a
-                    href={`tel:${l.telefone.replace(/[^+\d]/g, "")}`}
+                    href={`https://wa.me/${l.telefone.replace(/[^\d]/g, "")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
                     className="inline-flex items-center justify-center gap-2 w-full h-10 rounded-md bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 active:bg-emerald-800"
                   >
-                    <Phone className="h-4 w-4" /> Ligar
+                    <MessageCircle className="h-4 w-4" /> WhatsApp
                   </a>
                 )}
               </CardContent>
@@ -320,10 +322,12 @@ function CorretoresPage() {
                   <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                     {l.telefone && (
                       <a
-                        href={`tel:${l.telefone.replace(/[^+\d]/g, "")}`}
+                        href={`https://wa.me/${l.telefone.replace(/[^\d]/g, "")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-emerald-600 text-white text-xs font-medium hover:bg-emerald-700"
                       >
-                        <Phone className="h-3.5 w-3.5" /> Ligar
+                        <MessageCircle className="h-3.5 w-3.5" /> WhatsApp
                       </a>
                     )}
                   </TableCell>
