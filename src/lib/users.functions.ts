@@ -66,9 +66,9 @@ export const createUser = createServerFn({ method: "POST" })
       id: created.user.id, nome: data.nome, responsavel_id: data.responsavel_id ?? null,
     });
 
-    if (data.role === "admin") {
+    if (data.role !== "corretor") {
       await supabaseAdmin.from("user_roles").delete().eq("user_id", created.user.id);
-      await supabaseAdmin.from("user_roles").insert({ user_id: created.user.id, role: "admin" });
+      await supabaseAdmin.from("user_roles").insert({ user_id: created.user.id, role: data.role });
     }
 
     return { ok: true, id: created.user.id };
