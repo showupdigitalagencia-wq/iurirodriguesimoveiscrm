@@ -233,19 +233,26 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
   // Confirmation modal — alinhamento
   if (confirmacao && confirmacao.tipo === "alinhamento") {
     const msg = buildGroupMessage({ data: confirmacao.data, hora: confirmacao.hora, local: confirmacao.local });
+    const handleSendGroup = async () => {
+      try {
+        await navigator.clipboard.writeText(msg);
+        toast.success("Mensagem copiada — cole no grupo");
+      } catch {
+        toast.error("Não foi possível copiar a mensagem");
+      }
+      window.open(GROUP_WA_URL, "_blank", "noopener,noreferrer");
+    };
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>⚠️ Reunião de Alinhamento agendada</DialogTitle>
-            <DialogDescription>Envie a mensagem para o grupo da equipe</DialogDescription>
+            <DialogTitle>⚠️ Reunião de Alinhamento agendada!</DialogTitle>
+            <DialogDescription>Notifique a equipe:</DialogDescription>
           </DialogHeader>
           <div className="bg-muted rounded-md p-3 text-sm whitespace-pre-wrap break-words">{msg}</div>
           <div className="flex flex-col gap-2">
-            <Button asChild variant="gold">
-              <a href={`${GROUP_WA_URL}`} target="_blank" rel="noopener noreferrer">
-                <Users className="h-4 w-4 mr-1" /> Enviar no WhatsApp (Grupo)
-              </a>
+            <Button variant="gold" onClick={handleSendGroup}>
+              <Users className="h-4 w-4 mr-1" /> Enviar mensagem no Grupo WhatsApp
             </Button>
             <Button variant="outline" onClick={() => onOpenChange(false)}>Fechar</Button>
           </div>
