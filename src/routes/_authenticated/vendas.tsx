@@ -32,6 +32,7 @@ const TABS = [
   { to: "/vendas", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/vendas/pipeline", label: "Pipeline", icon: Kanban, exact: false },
   { to: "/vendas/leads", label: "Leads", icon: Users, exact: false },
+  { to: "/vendas/agenda", label: "Agenda", icon: CalendarDays, exact: false },
 ] as const;
 
 function VendasLayout() {
