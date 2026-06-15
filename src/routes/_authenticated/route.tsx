@@ -120,7 +120,7 @@ function AuthLayout() {
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
-              <Link key={item.to} to={item.to}
+              <Link key={item.to} to={item.to as "/dashboard"}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm hover:bg-sidebar-accent transition-colors [&.active]:bg-sidebar-accent [&.active]:text-gold"
                 activeProps={{ className: "active" }}>
                 <Icon className="h-4 w-4" />
