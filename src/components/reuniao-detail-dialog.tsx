@@ -384,6 +384,39 @@ export function ReuniaoDetailDialog({ reuniaoId, onClose, onChanged }: Props) {
                 </div>
               </DialogContent>
             </Dialog>
+
+            {/* Add internal user modal (admin only) */}
+            <Dialog open={addUserOpen} onOpenChange={setAddUserOpen}>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Adicionar participante</DialogTitle>
+                  <DialogDescription>Admin, executivo ou corretor.</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-3">
+                  <div className="max-h-72 overflow-y-auto border border-border rounded-md divide-y divide-border">
+                    {allUsers.length === 0 && <p className="p-3 text-xs text-muted-foreground">Carregando...</p>}
+                    {allUsers.map((u) => (
+                      <label key={u.id} className="flex items-center gap-2 p-2 cursor-pointer hover:bg-muted text-sm">
+                        <input
+                          type="radio"
+                          name="user"
+                          checked={selectedUserId === u.id}
+                          onChange={() => setSelectedUserId(u.id)}
+                        />
+                        <span className="flex-1 truncate">{u.nome}</span>
+                        <Badge variant="outline" className="text-[10px]">{u.role}</Badge>
+                      </label>
+                    ))}
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button variant="outline" onClick={() => setAddUserOpen(false)}>Cancelar</Button>
+                    <Button variant="gold" onClick={submitAddUser} disabled={!selectedUserId}>
+                      Adicionar e notificar
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </>
         ) : (
           <p className="text-sm text-muted-foreground">Carregando...</p>
