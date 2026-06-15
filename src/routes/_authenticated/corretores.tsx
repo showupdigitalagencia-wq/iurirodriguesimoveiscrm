@@ -57,11 +57,13 @@ function YesNo({ value }: { value?: string | null }) {
 }
 
 function CorretoresPage() {
+  const { exec } = Route.useSearch();
+  const navigate = Route.useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
   const [leads, setLeads] = useState<CorretorLead[]>([]);
   const [responsaveis, setResponsaveis] = useState<Responsavel[]>([]);
   const [q, setQ] = useState("");
-  const [respFilter, setRespFilter] = useState<string>("todos");
+  const [respFilter, setRespFilter] = useState<string>(exec ?? "todos");
   const [openLead, setOpenLead] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
