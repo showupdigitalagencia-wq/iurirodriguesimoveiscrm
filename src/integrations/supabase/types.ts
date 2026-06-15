@@ -682,7 +682,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "corretor" | "corretor_vendas"
-      lead_canal: "denise" | "fabiola" | "renata" | "robson"
+      lead_canal: "denise" | "fabiola" | "renata" | "robson" | "teste_nego"
       lead_etapa:
         | "novos_leads"
         | "em_atendimento"
@@ -845,7 +845,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "corretor", "corretor_vendas"],
-      lead_canal: ["denise", "fabiola", "renata", "robson"],
+      lead_canal: ["denise", "fabiola", "renata", "robson", "teste_nego"],
       lead_etapa: [
         "novos_leads",
         "em_atendimento",
