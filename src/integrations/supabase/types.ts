@@ -656,6 +656,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_lead_canal_value: { Args: { _value: string }; Returns: undefined }
       current_user_is_active: { Args: never; Returns: boolean }
       current_user_responsavel_id: { Args: never; Returns: string }
       current_user_role: {
