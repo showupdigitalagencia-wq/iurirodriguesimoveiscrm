@@ -1,0 +1,1 @@
+ALTER TABLE public.reunioes ADD COLUMN IF NOT EXISTS google_event_ids jsonb NOT NULL DEFAULT '[]'::jsonb;
