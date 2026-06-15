@@ -95,7 +95,7 @@ function UsuariosPage() {
     } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
   }
 
-  async function changeRole(u: UserRow, role: "admin" | "corretor") {
+  async function changeRole(u: UserRow, role: UserRole) {
     try {
       await fnUpdate({ data: { id: u.id, role } });
       toast.success("Papel atualizado");
