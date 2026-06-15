@@ -36,6 +36,7 @@ interface Props {
 export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Voltar" }: Props) {
   const [lead, setLead] = useState<LeadRow | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [responsaveis, setResponsaveis] = useState<{ id: string; nome: string; canal: string | null }[]>([]);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const [historico, setHistorico] = useState<HistoricoRow[]>([]);
   const [nota, setNota] = useState("");
@@ -43,6 +44,7 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
   const [form, setForm] = useState({
     nome: "", email: "", telefone: "", observacoes: "",
     canal: "denise" as LeadRow["canal"],
+    responsavel_id: "" as string,
     regiao: "barra_da_tijuca" as LeadRegiao,
     etapa: "novos_leads" as LeadRow["etapa"],
     ja_corretor: "",
