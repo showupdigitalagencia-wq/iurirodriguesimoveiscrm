@@ -94,12 +94,26 @@ export function ReuniaoDetailDialog({ reuniaoId, onClose, onChanged }: Props) {
 
   async function handleDelete() {
     if (!reuniaoId) return;
-    if (!confirm("Excluir esta reunião?")) return;
+    if (!confirm("Tem certeza? A reunião será excluída e todos serão notificados.")) return;
     try {
       await callDelete({ data: { id: reuniaoId } });
-      toast.success("Reunião excluída");
+      toast.success("Reunião excluída — notificação enviada");
       onChanged?.();
       onClose();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha");
+    }
+  }
+
+  async function handleCancel() {
+    if (!reuniaoId) return;
+    if (!confirm("Tem certeza? Todos serão notificados do cancelamento.")) return;
+    try {
+      await callStatus({ data: { id: reuniaoId, status: "cancelada", resultado: null } });
+      toast.success("Reunião cancelada — notificação enviada");
+      onChanged?.();
+      const fresh = await callGet({ data: { id: reuniaoId } });
+      setR(fresh);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Falha");
     }
@@ -115,10 +129,23 @@ export function ReuniaoDetailDialog({ reuniaoId, onClose, onChanged }: Props) {
                 {r.titulo}
               </DialogTitle>
               <DialogDescription className="flex gap-2 flex-wrap mt-1">
-                <Badge variant={r.tipo === "institucional" ? "default" : "secondary"} className={r.tipo === "institucional" ? "bg-gold text-gold-foreground" : "bg-blue-500 text-white"}>
-                  {r.tipo === "institucional" ? "Institucional" : "Individual"}
+                <Badge
+                  className={
+                    r.tipo === "institucional"
+                      ? "bg-gold text-gold-foreground"
+                      : r.tipo === "alinhamento"
+                      ? "bg-purple-600 text-white"
+                      : "bg-blue-500 text-white"
+                  }
+                >
+                  {r.tipo === "institucional" ? "Institucional" : r.tipo === "alinhamento" ? "Alinhamento" : "Individual"}
                 </Badge>
-                <Badge variant="outline">{r.status}</Badge>
+                <Badge
+                  variant="outline"
+                  className={r.status === "cancelada" ? "bg-red-600 text-white border-red-700" : ""}
+                >
+                  {r.status}
+                </Badge>
               </DialogDescription>
             </DialogHeader>
 
@@ -193,7 +220,7 @@ export function ReuniaoDetailDialog({ reuniaoId, onClose, onChanged }: Props) {
               <div className="flex gap-2 flex-wrap pt-2">
                 <Button variant="gold" size="sm" onClick={() => setStatus("realizada")}>Marcar realizada</Button>
                 <Button variant="outline" size="sm" onClick={() => setStatus("agendada")}>Reabrir</Button>
-                <Button variant="outline" size="sm" onClick={() => setStatus("cancelada")} className="text-destructive">Cancelar reunião</Button>
+                <Button variant="outline" size="sm" onClick={handleCancel} className="text-destructive">Cancelar reunião</Button>
                 <Button variant="ghost" size="sm" onClick={handleDelete} className="text-destructive ml-auto">
                   <Trash2 className="h-4 w-4" />
                 </Button>

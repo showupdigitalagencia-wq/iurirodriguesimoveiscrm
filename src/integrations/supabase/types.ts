@@ -404,6 +404,7 @@ export type Database = {
           data_inicio: string
           descricao: string | null
           duracao_min: number
+          google_event_ids: Json
           id: string
           local: string | null
           resultado: string | null
@@ -418,6 +419,7 @@ export type Database = {
           data_inicio: string
           descricao?: string | null
           duracao_min?: number
+          google_event_ids?: Json
           id?: string
           local?: string | null
           resultado?: string | null
@@ -432,6 +434,7 @@ export type Database = {
           data_inicio?: string
           descricao?: string | null
           duracao_min?: number
+          google_event_ids?: Json
           id?: string
           local?: string | null
           resultado?: string | null
