@@ -282,7 +282,7 @@ export const updateExecutivo = createServerFn({ method: "POST" })
     if (data.regiao !== undefined) patch.regiao = data.regiao;
     if (data.avatar_url !== undefined) patch.avatar_url = data.avatar_url;
     if (Object.keys(patch).length) {
-      const { error } = await supabaseAdmin.from("responsaveis").update(patch).eq("id", data.id);
+      const { error } = await supabaseAdmin.from("responsaveis").update(patch as never).eq("id", data.id);
       if (error) throw new Error(error.message);
     }
 
