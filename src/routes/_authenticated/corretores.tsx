@@ -322,10 +322,12 @@ function CorretoresPage() {
                   <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                     {l.telefone && (
                       <a
-                        href={`tel:${l.telefone.replace(/[^+\d]/g, "")}`}
+                        href={`https://wa.me/${l.telefone.replace(/[^\d]/g, "")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-emerald-600 text-white text-xs font-medium hover:bg-emerald-700"
                       >
-                        <Phone className="h-3.5 w-3.5" /> Ligar
+                        <MessageCircle className="h-3.5 w-3.5" /> WhatsApp
                       </a>
                     )}
                   </TableCell>
