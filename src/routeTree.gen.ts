@@ -33,6 +33,7 @@ import { Route as ApiPublicGoogleOauthCallbackRouteImport } from './routes/api/p
 import { Route as ApiPublicCronUnattendedRouteImport } from './routes/api/public/cron-unattended'
 import { Route as ApiPublicCronReunioesInstitucionaisRouteImport } from './routes/api/public/cron-reunioes-institucionais'
 import { Route as ApiPublicCronReuniaoLembretesRouteImport } from './routes/api/public/cron-reuniao-lembretes'
+import { Route as ApiPublicCronLauraResumoDiarioRouteImport } from './routes/api/public/cron-laura-resumo-diario'
 import { Route as AuthenticatedVendasPipelineRouteImport } from './routes/_authenticated/vendas.pipeline'
 import { Route as AuthenticatedVendasLeadsRouteImport } from './routes/_authenticated/vendas.leads'
 import { Route as AuthenticatedVendasAgendaRouteImport } from './routes/_authenticated/vendas.agenda'
@@ -165,6 +166,12 @@ const ApiPublicCronReuniaoLembretesRoute =
     path: '/api/public/cron-reuniao-lembretes',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCronLauraResumoDiarioRoute =
+  ApiPublicCronLauraResumoDiarioRouteImport.update({
+    id: '/api/public/cron-laura-resumo-diario',
+    path: '/api/public/cron-laura-resumo-diario',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedVendasPipelineRoute =
   AuthenticatedVendasPipelineRouteImport.update({
     id: '/pipeline',
@@ -217,6 +224,7 @@ export interface FileRoutesByFullPath {
   '/vendas/agenda': typeof AuthenticatedVendasAgendaRoute
   '/vendas/leads': typeof AuthenticatedVendasLeadsRoute
   '/vendas/pipeline': typeof AuthenticatedVendasPipelineRoute
+  '/api/public/cron-laura-resumo-diario': typeof ApiPublicCronLauraResumoDiarioRoute
   '/api/public/cron-reuniao-lembretes': typeof ApiPublicCronReuniaoLembretesRoute
   '/api/public/cron-reunioes-institucionais': typeof ApiPublicCronReunioesInstitucionaisRoute
   '/api/public/cron-unattended': typeof ApiPublicCronUnattendedRoute
@@ -246,6 +254,7 @@ export interface FileRoutesByTo {
   '/vendas/agenda': typeof AuthenticatedVendasAgendaRoute
   '/vendas/leads': typeof AuthenticatedVendasLeadsRoute
   '/vendas/pipeline': typeof AuthenticatedVendasPipelineRoute
+  '/api/public/cron-laura-resumo-diario': typeof ApiPublicCronLauraResumoDiarioRoute
   '/api/public/cron-reuniao-lembretes': typeof ApiPublicCronReuniaoLembretesRoute
   '/api/public/cron-reunioes-institucionais': typeof ApiPublicCronReunioesInstitucionaisRoute
   '/api/public/cron-unattended': typeof ApiPublicCronUnattendedRoute
@@ -278,6 +287,7 @@ export interface FileRoutesById {
   '/_authenticated/vendas/agenda': typeof AuthenticatedVendasAgendaRoute
   '/_authenticated/vendas/leads': typeof AuthenticatedVendasLeadsRoute
   '/_authenticated/vendas/pipeline': typeof AuthenticatedVendasPipelineRoute
+  '/api/public/cron-laura-resumo-diario': typeof ApiPublicCronLauraResumoDiarioRoute
   '/api/public/cron-reuniao-lembretes': typeof ApiPublicCronReuniaoLembretesRoute
   '/api/public/cron-reunioes-institucionais': typeof ApiPublicCronReunioesInstitucionaisRoute
   '/api/public/cron-unattended': typeof ApiPublicCronUnattendedRoute
@@ -310,6 +320,7 @@ export interface FileRouteTypes {
     | '/vendas/agenda'
     | '/vendas/leads'
     | '/vendas/pipeline'
+    | '/api/public/cron-laura-resumo-diario'
     | '/api/public/cron-reuniao-lembretes'
     | '/api/public/cron-reunioes-institucionais'
     | '/api/public/cron-unattended'
@@ -339,6 +350,7 @@ export interface FileRouteTypes {
     | '/vendas/agenda'
     | '/vendas/leads'
     | '/vendas/pipeline'
+    | '/api/public/cron-laura-resumo-diario'
     | '/api/public/cron-reuniao-lembretes'
     | '/api/public/cron-reunioes-institucionais'
     | '/api/public/cron-unattended'
@@ -370,6 +382,7 @@ export interface FileRouteTypes {
     | '/_authenticated/vendas/agenda'
     | '/_authenticated/vendas/leads'
     | '/_authenticated/vendas/pipeline'
+    | '/api/public/cron-laura-resumo-diario'
     | '/api/public/cron-reuniao-lembretes'
     | '/api/public/cron-reunioes-institucionais'
     | '/api/public/cron-unattended'
@@ -385,6 +398,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   FormularioRoute: typeof FormularioRoute
+  ApiPublicCronLauraResumoDiarioRoute: typeof ApiPublicCronLauraResumoDiarioRoute
   ApiPublicCronReuniaoLembretesRoute: typeof ApiPublicCronReuniaoLembretesRoute
   ApiPublicCronReunioesInstitucionaisRoute: typeof ApiPublicCronReunioesInstitucionaisRoute
   ApiPublicCronUnattendedRoute: typeof ApiPublicCronUnattendedRoute
@@ -564,6 +578,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronReuniaoLembretesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron-laura-resumo-diario': {
+      id: '/api/public/cron-laura-resumo-diario'
+      path: '/api/public/cron-laura-resumo-diario'
+      fullPath: '/api/public/cron-laura-resumo-diario'
+      preLoaderRoute: typeof ApiPublicCronLauraResumoDiarioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/vendas/pipeline': {
       id: '/_authenticated/vendas/pipeline'
       path: '/pipeline'
@@ -682,6 +703,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   FormularioRoute: FormularioRoute,
+  ApiPublicCronLauraResumoDiarioRoute: ApiPublicCronLauraResumoDiarioRoute,
   ApiPublicCronReuniaoLembretesRoute: ApiPublicCronReuniaoLembretesRoute,
   ApiPublicCronReunioesInstitucionaisRoute:
     ApiPublicCronReunioesInstitucionaisRoute,
@@ -694,13 +716,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
