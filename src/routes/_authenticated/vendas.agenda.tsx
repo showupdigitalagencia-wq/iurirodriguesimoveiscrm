@@ -575,10 +575,11 @@ function ListView({ view, cursor, slotsForDate, onSlotClick, onReuniaoClick, onR
   );
 }
 
-function MonthView({ cursor, slotsForDate, onSlotClick }: {
+function MonthView({ cursor, slotsForDate, onSlotClick, onReuniaoClick }: {
   cursor: Date;
-  slotsForDate: (d: Date) => { recs: DisponibilidadeRow[]; blocked: boolean; visitas: VisitaItem[] };
+  slotsForDate: (d: Date) => AgendaSlot;
   onSlotClick: (date: Date, time?: string) => void;
+  onReuniaoClick: (date: Date, time?: string) => void;
 }) {
   const start = startOfWeek(startOfMonth(cursor), { weekStartsOn: 0 });
   const end = endOfWeek(endOfMonth(cursor), { weekStartsOn: 0 });
@@ -592,15 +593,12 @@ function MonthView({ cursor, slotsForDate, onSlotClick }: {
       </div>
       <div className="grid grid-cols-7">
         {days.map((d) => {
-          const { recs, blocked, visitas } = slotsForDate(d);
+          const { recs, blocked, visitas, reunioes } = slotsForDate(d);
           const inMonth = isSameMonth(d, cursor);
           const today = isSameDay(d, new Date());
           return (
-            <button
-              type="button"
+            <div
               key={d.toISOString()}
-              onClick={() => !blocked && onSlotClick(d)}
-              disabled={blocked}
               className={`text-left min-h-[60px] sm:min-h-[80px] p-1.5 border-t border-l border-border first:border-l-0 ${!inMonth ? "opacity-40" : ""} ${!blocked ? "hover:bg-orange-500/5" : "cursor-not-allowed"}`}
             >
               <div className={`text-[11px] font-medium ${today ? "text-gold" : ""}`}>{format(d, "d")}</div>
@@ -614,9 +612,18 @@ function MonthView({ cursor, slotsForDate, onSlotClick }: {
                       {visitas.length} visita{visitas.length > 1 ? "s" : ""}
                     </div>
                   )}
+                  {reunioes.length > 0 && (
+                    <div className="mt-1 inline-flex items-center rounded px-1 py-0.5 bg-gold text-gold-foreground text-[9px] font-medium">
+                      {reunioes.length} online
+                    </div>
+                  )}
+                  <div className="mt-1 flex gap-1">
+                    <button type="button" onClick={() => onSlotClick(d)} className="text-[9px] text-orange-600 hover:underline">Visita</button>
+                    <button type="button" onClick={() => onReuniaoClick(d)} className="text-[9px] text-gold hover:underline">Online</button>
+                  </div>
                 </>
               )}
-            </button>
+            </div>
           );
         })}
       </div>
