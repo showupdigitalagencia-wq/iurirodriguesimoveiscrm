@@ -32,6 +32,9 @@ type Responsavel = { id: string; nome: string; canal: string };
 
 export const Route = createFileRoute("/_authenticated/corretores")({
   head: () => ({ meta: [{ title: "Captação de Corretores — Sistema NEXUS" }] }),
+  validateSearch: (search: Record<string, unknown>): { exec?: string } => ({
+    exec: typeof search.exec === "string" ? search.exec : undefined,
+  }),
   component: CorretoresPage,
 });
 
