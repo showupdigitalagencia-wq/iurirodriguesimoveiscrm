@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useServerFn } from "@tanstack/react-start";
-import { getReuniao, updateReuniaoStatus, deleteReuniao, addLeadToReuniao, type ReuniaoDetail, type ReuniaoStatus } from "@/lib/reunioes.functions";
+import { getReuniao, updateReuniaoStatus, deleteReuniao, addLeadToReuniao, addUserToReuniao, type ReuniaoDetail, type ReuniaoStatus } from "@/lib/reunioes.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
