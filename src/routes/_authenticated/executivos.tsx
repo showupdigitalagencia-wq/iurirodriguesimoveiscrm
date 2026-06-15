@@ -38,9 +38,13 @@ function initials(nome: string) {
 }
 
 function ExecutivosPage() {
+  const navigate = useNavigate();
   const fn = useServerFn(listExecutivos);
   const fnCreate = useServerFn(createExecutivo);
   const fnRole = useServerFn(getMyRole);
+  const fnUpdate = useServerFn(updateExecutivo);
+  const fnAtivo = useServerFn(setExecutivoAtivo);
+  const fnDelete = useServerFn(deleteExecutivo);
   const [execs, setExecs] = useState<Exec[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -48,6 +52,11 @@ function ExecutivosPage() {
   const [submitting, setSubmitting] = useState(false);
   const [regiaoSel, setRegiaoSel] = useState<string>("Barra da Tijuca");
   const [regiaoOutra, setRegiaoOutra] = useState("");
+  const [selected, setSelected] = useState<Exec | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [actionBusy, setActionBusy] = useState(false);
+  const [edit, setEdit] = useState({ nome: "", email: "", whatsapp: "", regiao: "", avatar_url: "", password: "" });
 
   const refresh = useCallback(async () => {
     try {
