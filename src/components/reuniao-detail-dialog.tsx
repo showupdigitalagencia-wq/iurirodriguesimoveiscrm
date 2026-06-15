@@ -260,13 +260,13 @@ export function ReuniaoDetailDialog({ reuniaoId, onClose, onChanged }: Props) {
               <Separator />
 
               <div>
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
                   <div className="flex items-center gap-2 text-xs uppercase text-muted-foreground">
                     <Users className="h-3.5 w-3.5" /> Leads {isAdmin ? "(todos)" : "(meus)"}
                   </div>
                   {canAddLead && (
-                    <Button size="sm" variant="gold" onClick={openAdd}>
-                      <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar lead
+                    <Button variant="gold" onClick={openAdd} className="w-full sm:w-auto min-h-11">
+                      <Plus className="h-4 w-4 mr-1" /> Adicionar lead
                     </Button>
                   )}
                 </div>
