@@ -36,24 +36,39 @@ function AgendaCorretorPage() {
   const fnGoogleStatus = useServerFn(getGoogleStatus);
   const fnGoogleStart = useServerFn(startGoogleOAuth);
   const fnGoogleDisconnect = useServerFn(disconnectGoogle);
+  const fnListVisitas = useServerFn(listVisitas);
+  const fnCreateVisita = useServerFn(createVisita);
+  const fnDeleteVisita = useServerFn(deleteVisita);
+  const fnListLeads = useServerFn(listMyVendasLeads);
 
   const [items, setItems] = useState<DisponibilidadeRow[]>([]);
+  const [visitas, setVisitas] = useState<VisitaItem[]>([]);
+  const [leads, setLeads] = useState<LeadOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<View>("semana");
   const [cursor, setCursor] = useState(new Date());
   const [openRec, setOpenRec] = useState(false);
   const [openBlock, setOpenBlock] = useState(false);
+  const [openVisita, setOpenVisita] = useState(false);
+  const [visitaDefaults, setVisitaDefaults] = useState<{ date: string; time: string }>({ date: "", time: "09:00" });
+  const [savingVisita, setSavingVisita] = useState(false);
   const [google, setGoogle] = useState<{ connected: boolean; email: string | null }>({ connected: false, email: null });
   const [connectingGoogle, setConnectingGoogle] = useState(false);
 
   const refresh = useCallback(async () => {
     try {
-      const { items } = await fnList({ data: {} });
-      setItems(items);
+      const [disp, vis, lds] = await Promise.all([
+        fnList({ data: {} }),
+        fnListVisitas(),
+        fnListLeads(),
+      ]);
+      setItems(disp.items);
+      setVisitas(vis.items as VisitaItem[]);
+      setLeads(lds.items);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erro ao carregar agenda");
     } finally { setLoading(false); }
-  }, [fnList]);
+  }, [fnList, fnListVisitas, fnListLeads]);
 
   useEffect(() => {
     refresh();
