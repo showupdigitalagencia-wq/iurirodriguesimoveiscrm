@@ -129,10 +129,23 @@ export function ReuniaoDetailDialog({ reuniaoId, onClose, onChanged }: Props) {
                 {r.titulo}
               </DialogTitle>
               <DialogDescription className="flex gap-2 flex-wrap mt-1">
-                <Badge variant={r.tipo === "institucional" ? "default" : "secondary"} className={r.tipo === "institucional" ? "bg-gold text-gold-foreground" : "bg-blue-500 text-white"}>
-                  {r.tipo === "institucional" ? "Institucional" : "Individual"}
+                <Badge
+                  className={
+                    r.tipo === "institucional"
+                      ? "bg-gold text-gold-foreground"
+                      : r.tipo === "alinhamento"
+                      ? "bg-purple-600 text-white"
+                      : "bg-blue-500 text-white"
+                  }
+                >
+                  {r.tipo === "institucional" ? "Institucional" : r.tipo === "alinhamento" ? "Alinhamento" : "Individual"}
                 </Badge>
-                <Badge variant="outline">{r.status}</Badge>
+                <Badge
+                  variant="outline"
+                  className={r.status === "cancelada" ? "bg-red-600 text-white border-red-700" : ""}
+                >
+                  {r.status}
+                </Badge>
               </DialogDescription>
             </DialogHeader>
 
