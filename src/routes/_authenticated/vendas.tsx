@@ -62,24 +62,7 @@ function VendasLayout() {
         })}
       </nav>
       <Outlet />
-      {/* Bottom nav mobile */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t flex justify-around items-stretch h-16 pb-[env(safe-area-inset-bottom)]">
-        {TABS.map((t) => {
-          const Icon = t.icon;
-          return (
-            <Link
-              key={t.to}
-              to={t.to}
-              activeOptions={{ exact: t.exact }}
-              activeProps={{ className: "text-gold" }}
-              className="flex-1 inline-flex flex-col items-center justify-center gap-0.5 text-[11px] text-muted-foreground min-h-[44px]"
-            >
-              <Icon className="h-5 w-5" />
-              <span>{t.label}</span>
-            </Link>
-          );
-        })}
-      </nav>
+      {/* Bottom nav mobile removida — usa a barra global do _authenticated layout para evitar duplicação */}
     </div>
   );
 }
