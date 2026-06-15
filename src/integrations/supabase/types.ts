@@ -339,6 +339,7 @@ export type Database = {
           id: string
           nome: string
           onesignal_external_id: string | null
+          regiao: string | null
           updated_at: string
           whatsapp: string
         }
@@ -349,6 +350,7 @@ export type Database = {
           id?: string
           nome: string
           onesignal_external_id?: string | null
+          regiao?: string | null
           updated_at?: string
           whatsapp: string
         }
@@ -359,6 +361,7 @@ export type Database = {
           id?: string
           nome?: string
           onesignal_external_id?: string | null
+          regiao?: string | null
           updated_at?: string
           whatsapp?: string
         }
