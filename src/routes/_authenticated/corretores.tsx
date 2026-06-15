@@ -286,6 +286,7 @@ function CorretoresPage() {
               <TableHead>Nº CRECI</TableHead>
               <TableHead>Veículo</TableHead>
               <TableHead>Recebido</TableHead>
+              <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
