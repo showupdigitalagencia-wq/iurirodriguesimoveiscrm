@@ -144,7 +144,7 @@ export const sophiaChat = createServerFn({ method: "POST" })
       }),
 
       contar_leads: tool({
-        description: "Conta leads do escopo permitido por período (hoje/semana/mes/total) e/ou etapa.",
+        description: "PIPELINE DE VENDAS DE IMÓVEIS (corretores atendendo clientes que querem comprar/alugar). Conta leads de vendas por período (hoje/semana/mes/total) e/ou etapa (novo, contato, qualificado, visita, proposta, negociacao, fechado, perdido). Para captação de corretores use captacao_contar_leads.",
         inputSchema: z.object({
           periodo: z.enum(["hoje", "semana", "mes", "total"]).default("hoje"),
           etapa: z.string().optional(),
