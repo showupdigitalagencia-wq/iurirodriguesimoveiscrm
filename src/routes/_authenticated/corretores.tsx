@@ -162,9 +162,9 @@ function CorretoresPage() {
     <div className="p-4 md:p-8 space-y-6">
       <header className="flex flex-wrap items-end gap-4 justify-between">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Captação de Corretores</h1>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Corretores do Time</h1>
           <p className="text-muted-foreground mt-1 text-sm">
-            {filtered.length} de {scoped.length} candidatos {isAdmin && respFilter !== "todos" && `de ${respLabel}`}
+            {filtered.length} de {scoped.length} corretores contratados {isAdmin && respFilter !== "todos" && `de ${respLabel}`}
           </p>
         </div>
         <div className="flex gap-2 w-full md:w-auto flex-wrap">
