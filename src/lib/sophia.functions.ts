@@ -270,6 +270,124 @@ export const sophiaChat = createServerFn({ method: "POST" })
           return { executivos: resultado };
         },
       }),
+
+      analisar_padroes_insights: tool({
+        description: "Analisa padrões e gera insights inteligentes sobre conversão por região, origem (canal), dia da semana e tempo médio até fechamento. Usa os últimos 90 dias dentro do escopo permitido.",
+        inputSchema: z.object({}),
+        execute: async () => {
+          const permitidos = corretoresPermitidos();
+          const since = new Date(); since.setDate(since.getDate() - 90);
+          let q = supabaseAdmin
+            .from("vendas_leads")
+            .select("etapa, regiao, canal, created_at, fechado_em, corretor_id")
+            .gte("created_at", since.toISOString());
+          if (permitidos !== "todos") q = q.in("corretor_id", permitidos);
+          const { data } = await q;
+          const leads = data ?? [];
+          const total = leads.length;
+          if (!total) return { aviso: "Sem dados suficientes nos últimos 90 dias." };
+
+          const agg = (key: "regiao" | "canal") => {
+            const m = new Map<string, { total: number; fechados: number }>();
+            leads.forEach((l) => {
+              const k = (l[key] as string | null) ?? "(sem)";
+              const cur = m.get(k) ?? { total: 0, fechados: 0 };
+              cur.total += 1;
+              if (l.etapa === "fechado") cur.fechados += 1;
+              m.set(k, cur);
+            });
+            return Array.from(m.entries())
+              .map(([k, v]) => ({ chave: k, total: v.total, fechados: v.fechados, taxa_conversao_pct: Math.round((v.fechados / v.total) * 1000) / 10 }))
+              .sort((a, b) => b.taxa_conversao_pct - a.taxa_conversao_pct);
+          };
+
+          const diasSemana = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"];
+          const porDia = new Array(7).fill(0).map((_, i) => ({ dia: diasSemana[i], leads: 0, fechados: 0 }));
+          leads.forEach((l) => {
+            const d = new Date(l.created_at).getDay();
+            porDia[d].leads += 1;
+            if (l.etapa === "fechado") porDia[d].fechados += 1;
+          });
+
+          const fechados = leads.filter((l) => l.etapa === "fechado" && l.fechado_em);
+          const tempos = fechados.map((l) => (new Date(l.fechado_em!).getTime() - new Date(l.created_at).getTime()) / 86400000);
+          const tempoMedioDias = tempos.length ? Math.round((tempos.reduce((a, b) => a + b, 0) / tempos.length) * 10) / 10 : null;
+
+          return {
+            periodo: "últimos 90 dias",
+            total_leads: total,
+            total_fechados: leads.filter((l) => l.etapa === "fechado").length,
+            taxa_conversao_geral_pct: Math.round((leads.filter((l) => l.etapa === "fechado").length / total) * 1000) / 10,
+            por_regiao: agg("regiao").slice(0, 8),
+            por_canal: agg("canal").slice(0, 8),
+            por_dia_semana: porDia,
+            tempo_medio_fechamento_dias: tempoMedioDias,
+          };
+        },
+      }),
+
+      sugestoes_proativas: tool({
+        description: "Detecta situações que merecem atenção AGORA dentro do escopo: leads parados há muito tempo, corretores sem atividade, reuniões próximas. Use quando o usuário pedir sugestões ou quando for útil propor próximos passos.",
+        inputSchema: z.object({}),
+        execute: async () => {
+          const permitidos = corretoresPermitidos();
+          const agora = new Date();
+          const h48 = new Date(agora.getTime() - 48 * 3600 * 1000).toISOString();
+          const h72 = new Date(agora.getTime() - 72 * 3600 * 1000).toISOString();
+          const amanha = new Date(agora.getTime() + 36 * 3600 * 1000).toISOString();
+
+          let lp = supabaseAdmin
+            .from("vendas_leads")
+            .select("id, nome, etapa, corretor_id, updated_at")
+            .in("etapa", ["novo", "contato", "qualificado"] as never[])
+            .lt("updated_at", h48)
+            .limit(20);
+          if (permitidos !== "todos") lp = lp.in("corretor_id", permitidos);
+          const { data: leadsParados } = await lp;
+
+          let alerts: Array<{ tipo: string; mensagem: string; corretor_id?: string | null }> = [];
+          (leadsParados ?? []).forEach((l) => {
+            alerts.push({ tipo: "lead_parado", mensagem: `Lead "${l.nome}" parado em ${l.etapa} há mais de 48h`, corretor_id: l.corretor_id });
+          });
+
+          let corretoresSemAtividade: Array<{ id: string; nome: string }> = [];
+          if (scope.tipo !== "corretor") {
+            const ids = scope.tipo === "executivo" ? scope.corretorIds : null;
+            let prof = supabaseAdmin.from("profiles").select("id, nome").eq("ativo", true);
+            if (ids) prof = prof.in("id", ids);
+            const { data: profs } = await prof;
+            const profIds = (profs ?? []).map((p) => p.id);
+            if (profIds.length) {
+              const { data: ativ } = await supabaseAdmin
+                .from("lead_historico")
+                .select("user_id")
+                .in("user_id", profIds)
+                .gte("created_at", h72);
+              const ativos = new Set((ativ ?? []).map((a) => a.user_id));
+              corretoresSemAtividade = (profs ?? []).filter((p) => !ativos.has(p.id)).slice(0, 10);
+              corretoresSemAtividade.forEach((c) => {
+                alerts.push({ tipo: "corretor_inativo", mensagem: `${c.nome} sem atividade nas últimas 72h` });
+              });
+            }
+          }
+
+          let rq = supabaseAdmin.from("reunioes").select("id, titulo, data_hora").gte("data_hora", agora.toISOString()).lt("data_hora", amanha).order("data_hora").limit(10);
+          const { data: reunioes } = await rq;
+          (reunioes ?? []).forEach((r) => {
+            alerts.push({ tipo: "reuniao_proxima", mensagem: `Reunião "${r.titulo}" em ${new Date(r.data_hora).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}` });
+          });
+
+          return {
+            total_alertas: alerts.length,
+            alertas: alerts.slice(0, 30),
+            resumo: {
+              leads_parados: leadsParados?.length ?? 0,
+              corretores_inativos: corretoresSemAtividade.length,
+              reunioes_proximas_36h: reunioes?.length ?? 0,
+            },
+          };
+        },
+      }),
     };
 
     const escopoTexto =
