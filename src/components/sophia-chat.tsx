@@ -63,7 +63,7 @@ export function LauraChat() {
   const [recording, setRecording] = useState(false);
   const [pendingImage, setPendingImage] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const recRef = useRef<ReturnType<SRConstructor> | null>(null);
+  const recRef = useRef<SRInstance | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
