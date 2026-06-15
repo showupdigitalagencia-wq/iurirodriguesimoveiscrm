@@ -270,6 +270,126 @@ export const sophiaChat = createServerFn({ method: "POST" })
           return { executivos: resultado };
         },
       }),
+
+      analisar_padroes_insights: tool({
+        description: "Analisa padrões e gera insights inteligentes sobre conversão por região, origem (canal), dia da semana e tempo médio até fechamento. Usa os últimos 90 dias dentro do escopo permitido.",
+        inputSchema: z.object({}),
+        execute: async () => {
+          const permitidos = corretoresPermitidos();
+          const since = new Date(); since.setDate(since.getDate() - 90);
+          let q = supabaseAdmin
+            .from("vendas_leads")
+            .select("etapa, regiao, executivo_canal, created_at, updated_at, corretor_id")
+            .gte("created_at", since.toISOString());
+          if (permitidos !== "todos") q = q.in("corretor_id", permitidos);
+          const { data } = await q;
+          const leads = (data ?? []) as Array<{ etapa: string; regiao: string | null; executivo_canal: string | null; created_at: string; updated_at: string; corretor_id: string | null }>;
+          const total = leads.length;
+          if (!total) return { aviso: "Sem dados suficientes nos últimos 90 dias." };
+
+          const agg = (key: "regiao" | "executivo_canal") => {
+            const m = new Map<string, { total: number; fechados: number }>();
+            leads.forEach((l) => {
+              const k = (l[key] as string | null) ?? "(sem)";
+              const cur = m.get(k) ?? { total: 0, fechados: 0 };
+              cur.total += 1;
+              if (l.etapa === "fechado") cur.fechados += 1;
+              m.set(k, cur);
+            });
+            return Array.from(m.entries())
+              .map(([k, v]) => ({ chave: k, total: v.total, fechados: v.fechados, taxa_conversao_pct: Math.round((v.fechados / v.total) * 1000) / 10 }))
+              .sort((a, b) => b.taxa_conversao_pct - a.taxa_conversao_pct);
+          };
+
+          const diasSemana = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"] as const;
+          const porDia: Array<{ dia: string; leads: number; fechados: number }> = diasSemana.map((dia) => ({ dia, leads: 0, fechados: 0 }));
+          leads.forEach((l) => {
+            const d = new Date(l.created_at).getDay();
+            const bucket = porDia[d];
+            if (!bucket) return;
+            bucket.leads += 1;
+            if (l.etapa === "fechado") bucket.fechados += 1;
+          });
+
+          const fechados = leads.filter((l) => l.etapa === "fechado");
+          const tempos = fechados.map((l) => (new Date(l.updated_at).getTime() - new Date(l.created_at).getTime()) / 86400000);
+          const tempoMedioDias = tempos.length ? Math.round((tempos.reduce((a, b) => a + b, 0) / tempos.length) * 10) / 10 : null;
+
+          return {
+            periodo: "últimos 90 dias",
+            total_leads: total,
+            total_fechados: fechados.length,
+            taxa_conversao_geral_pct: Math.round((fechados.length / total) * 1000) / 10,
+            por_regiao: agg("regiao").slice(0, 8),
+            por_canal: agg("executivo_canal").slice(0, 8),
+            por_dia_semana: porDia,
+            tempo_medio_fechamento_dias: tempoMedioDias,
+          };
+        },
+      }),
+
+      sugestoes_proativas: tool({
+        description: "Detecta situações que merecem atenção AGORA dentro do escopo: leads parados há muito tempo, corretores sem atividade, reuniões próximas. Use quando o usuário pedir sugestões ou quando for útil propor próximos passos.",
+        inputSchema: z.object({}),
+        execute: async () => {
+          const permitidos = corretoresPermitidos();
+          const agora = new Date();
+          const h48 = new Date(agora.getTime() - 48 * 3600 * 1000).toISOString();
+          const h72 = new Date(agora.getTime() - 72 * 3600 * 1000).toISOString();
+          const amanha = new Date(agora.getTime() + 36 * 3600 * 1000).toISOString();
+
+          let lp = supabaseAdmin
+            .from("vendas_leads")
+            .select("id, nome, etapa, corretor_id, updated_at")
+            .in("etapa", ["novo", "contato", "qualificado"] as never[])
+            .lt("updated_at", h48)
+            .limit(20);
+          if (permitidos !== "todos") lp = lp.in("corretor_id", permitidos);
+          const { data: leadsParados } = await lp;
+
+          let alerts: Array<{ tipo: string; mensagem: string; corretor_id?: string | null }> = [];
+          (leadsParados ?? []).forEach((l) => {
+            alerts.push({ tipo: "lead_parado", mensagem: `Lead "${l.nome}" parado em ${l.etapa} há mais de 48h`, corretor_id: l.corretor_id });
+          });
+
+          let corretoresSemAtividade: Array<{ id: string; nome: string }> = [];
+          if (scope.tipo !== "corretor") {
+            const ids = scope.tipo === "executivo" ? scope.corretorIds : null;
+            let prof = supabaseAdmin.from("profiles").select("id, nome").eq("ativo", true);
+            if (ids) prof = prof.in("id", ids);
+            const { data: profs } = await prof;
+            const profIds = (profs ?? []).map((p) => p.id);
+            if (profIds.length) {
+              const { data: ativ } = await supabaseAdmin
+                .from("lead_historico")
+                .select("user_id")
+                .in("user_id", profIds)
+                .gte("created_at", h72);
+              const ativos = new Set((ativ ?? []).map((a) => a.user_id));
+              corretoresSemAtividade = (profs ?? []).filter((p) => !ativos.has(p.id)).slice(0, 10);
+              corretoresSemAtividade.forEach((c) => {
+                alerts.push({ tipo: "corretor_inativo", mensagem: `${c.nome} sem atividade nas últimas 72h` });
+              });
+            }
+          }
+
+          const rq = supabaseAdmin.from("reunioes").select("id, titulo, data_inicio").gte("data_inicio", agora.toISOString()).lt("data_inicio", amanha).order("data_inicio").limit(10);
+          const { data: reunioes } = await rq;
+          (reunioes ?? []).forEach((r) => {
+            alerts.push({ tipo: "reuniao_proxima", mensagem: `Reunião "${r.titulo}" em ${new Date(r.data_inicio).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}` });
+          });
+
+          return {
+            total_alertas: alerts.length,
+            alertas: alerts.slice(0, 30),
+            resumo: {
+              leads_parados: leadsParados?.length ?? 0,
+              corretores_inativos: corretoresSemAtividade.length,
+              reunioes_proximas_36h: reunioes?.length ?? 0,
+            },
+          };
+        },
+      }),
     };
 
     const escopoTexto =
@@ -306,7 +426,39 @@ EQUIPE DE EXECUTIVOS E REGIÕES (conhecimento fixo, pode ser citado para qualque
 - Renata → Belford Roxo
 - Robson → Barra da Tijuca
 
-Para dados em tempo real (leads ativos, corretores na equipe, disponibilidade, pipeline, reuniões, métricas) use as ferramentas e cite números reais do banco. Antes de atribuir um lead, sempre confirme com o usuário.`,
+Para dados em tempo real (leads ativos, corretores na equipe, disponibilidade, pipeline, reuniões, métricas) use as ferramentas e cite números reais do banco. Antes de atribuir um lead, sempre confirme com o usuário.
+
+VOCÊ É TAMBÉM UMA ESPECIALISTA EM:
+
+🎯 ESTRATÉGIA DE VENDAS IMOBILIÁRIAS
+Quando perguntada sobre como vender um imóvel, montar abordagem ou converter um lead, entregue um PLANO COMPLETO e personalizado:
+1. **Análise do imóvel/perfil do cliente** — público-alvo provável, faixa de renda, perfil familiar.
+2. **Canais de divulgação recomendados** — ZAP, Viva Real, OLX, Instagram, indicações, parcerias.
+3. **Script de abordagem** — abertura, qualificação (SPIN), descoberta de dor, agendamento.
+4. **Argumentos de venda** — diferenciais reais do imóvel/região, prova social, escassez ética.
+5. **Técnicas de negociação** — ancoragem, troca de concessões, fechamento por alternativas.
+6. **Próximos passos concretos** — o que fazer hoje, esta semana, neste mês.
+Use formatação em seções com títulos claros. Exemplos práticos > teoria abstrata.
+
+📣 MARKETING IMOBILIÁRIO
+- Ajude a redigir **anúncios** persuasivos (título com gatilho + bullets de benefícios + CTA claro).
+- Sugira **descrições** que destaquem lifestyle, não só metragem.
+- Recomende **fotos** ideais (ordem, ângulos, horário de luz, ambientes prioritários).
+- Indique **portais e horários** de publicação (Instagram entre 18h-21h, ZAP/Viva manhã).
+- Quando houver dados, cite o que está mais procurado na região consultada via analisar_padroes_insights.
+
+🧑‍🏫 COACHING PARA CORRETORES
+Quando o corretor pedir orientação ("como abordar lead frio", "lead não responde", "perdi o cliente para concorrente"):
+- Aja como **mentor experiente**, não como manual.
+- Dê **scripts prontos** (mensagem de WhatsApp, áudio, ligação) que ele possa usar AGORA.
+- Trabalhe a **mentalidade**: persistência cordial, foco no problema do cliente, follow-up programado.
+- Encerre sempre com **1 ação concreta** para ele executar nas próximas 24h.
+
+💡 RELATÓRIOS INTELIGENTES E SUGESTÕES PROATIVAS
+- Quando o usuário pedir relatórios, panorama, ou desempenho, chame **analisar_padroes_insights** e traduza os números em INSIGHTS acionáveis (ex.: "Barra converte 40% acima da média — vale concentrar mídia paga lá").
+- Quando o usuário pedir sugestões, "o que devo fazer", "alguma dica" — ou no início de uma conversa de gestão — chame **sugestoes_proativas** e proponha de 2 a 4 ações priorizadas, no formato:
+  • **Situação** → **Ação sugerida** (com 1 frase do porquê).
+- Nunca apenas despeje os números crus: sempre interprete.`,
       },
       ...data.messages.map((m) => {
         if (m.role === "user" && m.imageDataUrl) {
