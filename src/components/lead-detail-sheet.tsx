@@ -87,6 +87,7 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
         setForm({
           nome: ll.nome, email: ll.email ?? "", telefone: ll.telefone,
           observacoes: ll.observacoes ?? "", canal: ll.canal,
+          responsavel_id: ll.responsavel_id ?? "",
           regiao: ll.regiao, etapa: ll.etapa,
           ja_corretor: dc.ja_corretor ?? "",
           creci_ativo: dc.creci_ativo ?? "",
