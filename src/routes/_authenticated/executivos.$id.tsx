@@ -105,7 +105,6 @@ function ExecutivoDetalhePage() {
 
   const { executivo, corretores, equipeStats } = detalhe;
   const corretoresLivres = disponiveis.filter((c) => c.responsavel_id !== id);
-  const outrosExecsIds = new Set(corretores.map((c) => c.id));
 
   return (
     <div className="p-4 md:p-6 space-y-4">
