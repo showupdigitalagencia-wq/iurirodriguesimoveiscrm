@@ -58,13 +58,20 @@ const CONFIG_NAV = [
 function AuthLayout() {
   const router = useRouter();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isCorretorVendas, setIsCorretorVendas] = useState(false);
   const [vendasAtivo, setVendasAtivo] = useState(false);
 
   const navItems = useMemo(() => {
+    // Corretor de vendas: vê apenas Vendas + Configurações
+    if (isCorretorVendas && !isAdmin) {
+      const items: Array<{ to: string; label: string; icon: typeof LayoutDashboard }> = [];
+      if (vendasAtivo) items.push({ to: "/vendas", label: "Vendas", icon: Briefcase });
+      return [...items, ...CONFIG_NAV];
+    }
     const base: Array<{ to: string; label: string; icon: typeof LayoutDashboard }> = [...NAV];
     if (isAdmin && vendasAtivo) base.push({ to: "/vendas", label: "Vendas", icon: Briefcase });
     return isAdmin ? [...base, ...ADMIN_NAV, ...CONFIG_NAV] : [...base, ...CONFIG_NAV];
-  }, [isAdmin, vendasAtivo]);
+  }, [isAdmin, isCorretorVendas, vendasAtivo]);
 
   useEffect(() => {
     let active = true;
@@ -77,9 +84,12 @@ function AuthLayout() {
         .from("user_roles")
         .select("role")
         .eq("user_id", userId)
-        .eq("role", "admin")
-        .maybeSingle()
-        .then(({ data }) => { if (active) setIsAdmin(data?.role === "admin"); });
+        .then(({ data }) => {
+          if (!active) return;
+          const roles = (data ?? []).map((r) => r.role);
+          setIsAdmin(roles.includes("admin"));
+          setIsCorretorVendas(roles.includes("corretor_vendas"));
+        });
       supabase.from("configuracoes").select("valor").eq("chave", "sistema_corretores_ativo").maybeSingle()
         .then(({ data }) => { if (active) setVendasAtivo(data?.valor === true); });
     });

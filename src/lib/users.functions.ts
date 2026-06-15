@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-const Role = z.enum(["admin", "corretor"]);
+const Role = z.enum(["admin", "corretor", "corretor_vendas"]);
 
 async function assertAdmin(supabase: SupabaseClient, userId: string) {
   const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
@@ -66,9 +66,9 @@ export const createUser = createServerFn({ method: "POST" })
       id: created.user.id, nome: data.nome, responsavel_id: data.responsavel_id ?? null,
     });
 
-    if (data.role === "admin") {
+    if (data.role !== "corretor") {
       await supabaseAdmin.from("user_roles").delete().eq("user_id", created.user.id);
-      await supabaseAdmin.from("user_roles").insert({ user_id: created.user.id, role: "admin" });
+      await supabaseAdmin.from("user_roles").insert({ user_id: created.user.id, role: data.role });
     }
 
     return { ok: true, id: created.user.id };
@@ -141,5 +141,5 @@ export const getMyRole = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     const { data } = await context.supabase
       .from("user_roles").select("role").eq("user_id", context.userId).maybeSingle();
-    return { role: (data?.role as "admin" | "corretor" | undefined) ?? "corretor" };
+    return { role: (data?.role as "admin" | "corretor" | "corretor_vendas" | undefined) ?? "corretor" };
   });

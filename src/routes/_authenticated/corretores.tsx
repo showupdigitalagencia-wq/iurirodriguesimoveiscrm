@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { canalNome, type LeadRow } from "@/lib/lead-helpers";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Download, BadgeCheck, XCircle, HelpCircle, Users, Car, MapPin, Trash2 } from "lucide-react";
+import { Download, BadgeCheck, XCircle, HelpCircle, Users, Car, MapPin, Trash2, Phone } from "lucide-react";
 import { LeadDetailSheet } from "@/components/lead-detail-sheet";
 import { CreateLeadDialog } from "@/components/create-lead-dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -250,6 +250,15 @@ function CorretoresPage() {
                     </div>
                   </div>
                 </div>
+                {l.telefone && (
+                  <a
+                    href={`tel:${l.telefone.replace(/[^+\d]/g, "")}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex items-center justify-center gap-2 w-full h-10 rounded-md bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 active:bg-emerald-800"
+                  >
+                    <Phone className="h-4 w-4" /> Ligar
+                  </a>
+                )}
               </CardContent>
             </Card>
           );
@@ -277,6 +286,7 @@ function CorretoresPage() {
               <TableHead>Nº CRECI</TableHead>
               <TableHead>Veículo</TableHead>
               <TableHead>Recebido</TableHead>
+              <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -307,11 +317,21 @@ function CorretoresPage() {
                   <TableCell className="text-muted-foreground text-sm whitespace-nowrap">
                     {format(new Date(l.created_at), "dd/MM/yy HH:mm", { locale: ptBR })}
                   </TableCell>
+                  <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                    {l.telefone && (
+                      <a
+                        href={`tel:${l.telefone.replace(/[^+\d]/g, "")}`}
+                        className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-emerald-600 text-white text-xs font-medium hover:bg-emerald-700"
+                      >
+                        <Phone className="h-3.5 w-3.5" /> Ligar
+                      </a>
+                    )}
+                  </TableCell>
                 </TableRow>
               );
             })}
             {filtered.length === 0 && (
-              <TableRow><TableCell colSpan={isAdmin ? 9 : 8} className="text-center text-muted-foreground py-8">
+              <TableRow><TableCell colSpan={isAdmin ? 10 : 9} className="text-center text-muted-foreground py-8">
                 Nenhuma captação encontrada.
               </TableCell></TableRow>
             )}

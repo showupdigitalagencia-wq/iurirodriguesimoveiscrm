@@ -18,9 +18,10 @@ export const Route = createFileRoute("/_authenticated/usuarios")({
   component: UsuariosPage,
 });
 
+type UserRole = "admin" | "corretor" | "corretor_vendas";
 type UserRow = {
   id: string; email: string; nome: string; ativo: boolean;
-  responsavel_id: string | null; role: "admin" | "corretor";
+  responsavel_id: string | null; role: UserRole;
   last_sign_in_at: string | null; created_at: string;
 };
 
@@ -77,7 +78,7 @@ function UsuariosPage() {
       await fnCreate({ data: {
         nome: String(fd.get("nome")), email: String(fd.get("email")),
         password: String(fd.get("password")),
-        role: String(fd.get("role")) as "admin" | "corretor",
+        role: String(fd.get("role")) as UserRole,
         responsavel_id: respId === NO_RESPONSAVEL ? null : respId,
       }});
       toast.success("Funcionário criado");
@@ -94,7 +95,7 @@ function UsuariosPage() {
     } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
   }
 
-  async function changeRole(u: UserRow, role: "admin" | "corretor") {
+  async function changeRole(u: UserRow, role: UserRole) {
     try {
       await fnUpdate({ data: { id: u.id, role } });
       toast.success("Papel atualizado");
@@ -153,6 +154,7 @@ function UsuariosPage() {
                   <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="corretor">Executivo</SelectItem>
+                    <SelectItem value="corretor_vendas">Corretor (Vendas)</SelectItem>
                     <SelectItem value="admin">Administrador</SelectItem>
                   </SelectContent>
                 </Select>
@@ -195,10 +197,11 @@ function UsuariosPage() {
                   <div className="text-xs text-muted-foreground">{u.email}</div>
                 </td>
                 <td className="px-4 py-3">
-                  <Select value={u.role} onValueChange={(v) => changeRole(u, v as "admin" | "corretor")}>
-                    <SelectTrigger className="w-36 h-8"><SelectValue /></SelectTrigger>
+                  <Select value={u.role} onValueChange={(v) => changeRole(u, v as UserRole)}>
+                    <SelectTrigger className="w-40 h-8"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="corretor">Executivo</SelectItem>
+                      <SelectItem value="corretor_vendas">Corretor (Vendas)</SelectItem>
                       <SelectItem value="admin">Administrador</SelectItem>
                     </SelectContent>
                   </Select>
