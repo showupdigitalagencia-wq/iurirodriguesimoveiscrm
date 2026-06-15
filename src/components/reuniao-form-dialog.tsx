@@ -84,6 +84,8 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
     hora: string;
     local: string;
     corretor: string;
+    invitedEmails: string[];
+    leadsSemEmail: string[];
   }>(null);
   const [form, setForm] = useState({
     titulo: "",
