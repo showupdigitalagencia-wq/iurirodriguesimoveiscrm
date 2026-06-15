@@ -714,7 +714,7 @@ export type Database = {
         | "mesquita"
       reuniao_lembrete_tipo: "1d" | "1h" | "15min"
       reuniao_status: "agendada" | "realizada" | "cancelada"
-      reuniao_tipo: "individual" | "institucional" | "alinhamento"
+      reuniao_tipo: "individual" | "institucional" | "alinhamento" | "mentoria"
       vendas_etapa:
         | "novo_lead"
         | "contato_realizado"
@@ -880,7 +880,7 @@ export const Constants = {
       ],
       reuniao_lembrete_tipo: ["1d", "1h", "15min"],
       reuniao_status: ["agendada", "realizada", "cancelada"],
-      reuniao_tipo: ["individual", "institucional", "alinhamento"],
+      reuniao_tipo: ["individual", "institucional", "alinhamento", "mentoria"],
       vendas_etapa: [
         "novo_lead",
         "contato_realizado",
