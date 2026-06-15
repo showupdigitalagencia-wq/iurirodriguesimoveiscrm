@@ -398,23 +398,29 @@ export type Database = {
       }
       reuniao_participantes: {
         Row: {
+          added_by: string | null
           created_at: string
           id: string
           lead_id: string | null
+          recorrente: boolean
           responsavel_id: string | null
           reuniao_id: string
         }
         Insert: {
+          added_by?: string | null
           created_at?: string
           id?: string
           lead_id?: string | null
+          recorrente?: boolean
           responsavel_id?: string | null
           reuniao_id: string
         }
         Update: {
+          added_by?: string | null
           created_at?: string
           id?: string
           lead_id?: string | null
+          recorrente?: boolean
           responsavel_id?: string | null
           reuniao_id?: string
         }
@@ -452,6 +458,7 @@ export type Database = {
           google_event_ids: Json
           id: string
           local: string | null
+          recorrente: boolean
           resultado: string | null
           status: Database["public"]["Enums"]["reuniao_status"]
           tipo: Database["public"]["Enums"]["reuniao_tipo"]
@@ -467,6 +474,7 @@ export type Database = {
           google_event_ids?: Json
           id?: string
           local?: string | null
+          recorrente?: boolean
           resultado?: string | null
           status?: Database["public"]["Enums"]["reuniao_status"]
           tipo?: Database["public"]["Enums"]["reuniao_tipo"]
@@ -482,6 +490,7 @@ export type Database = {
           google_event_ids?: Json
           id?: string
           local?: string | null
+          recorrente?: boolean
           resultado?: string | null
           status?: Database["public"]["Enums"]["reuniao_status"]
           tipo?: Database["public"]["Enums"]["reuniao_tipo"]
