@@ -144,9 +144,24 @@ function ExecutivosPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {execs.map((e) => (
-          <Card key={e.id} className="hover:shadow-lg transition-shadow">
+          <Card
+            key={e.id}
+            className="hover:shadow-lg transition-shadow cursor-pointer"
+            onClick={() => {
+              setSelected(e);
+              setEdit({
+                nome: e.nome,
+                email: "",
+                whatsapp: e.whatsapp ?? "",
+                regiao: e.regiao ?? "",
+                avatar_url: e.avatar_url ?? "",
+                password: "",
+              });
+            }}
+          >
             <CardHeader className="flex flex-row items-center gap-3 pb-3">
               <Avatar className="h-14 w-14">
+                {e.avatar_url && <AvatarImage src={e.avatar_url} alt={e.nome} />}
                 <AvatarFallback className="bg-primary text-primary-foreground text-lg font-bold">{initials(e.nome)}</AvatarFallback>
               </Avatar>
               <div className="min-w-0 flex-1">
@@ -171,24 +186,145 @@ function ExecutivosPage() {
                   <div className="text-xl font-bold">{e.leads_ativos}</div>
                 </div>
               </div>
-              <div className="flex gap-2">
-                {e.whatsapp && (
-                  <Button asChild size="sm" variant="outline" className="flex-1">
-                    <a href={`https://wa.me/${e.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noreferrer">
-                      <MessageCircle className="h-4 w-4 mr-1" /> WhatsApp
-                    </a>
-                  </Button>
-                )}
-                <Button asChild size="sm" className="flex-1">
-                  <Link to="/corretores" search={{ exec: e.id }}>
-                    Ver equipe <ChevronRight className="h-4 w-4 ml-1" />
-                  </Link>
-                </Button>
-              </div>
             </CardContent>
           </Card>
         ))}
       </div>
+
+      <Dialog open={!!selected && !editing} onOpenChange={(o) => { if (!o) setSelected(null); }}>
+        <DialogContent className="max-w-md">
+          {selected && (
+            <>
+              <DialogHeader>
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-12 w-12">
+                    {selected.avatar_url && <AvatarImage src={selected.avatar_url} alt={selected.nome} />}
+                    <AvatarFallback className="bg-primary text-primary-foreground font-bold">{initials(selected.nome)}</AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0">
+                    <DialogTitle className="truncate">{selected.nome}</DialogTitle>
+                    <DialogDescription>
+                      {selected.regiao ?? "Sem região"} {selected.ativo ? "" : "• Inativo"}
+                    </DialogDescription>
+                  </div>
+                </div>
+              </DialogHeader>
+              <div className="grid grid-cols-2 gap-2 pt-2">
+                <Button variant="outline" onClick={() => setEditing(true)}>
+                  <Pencil className="h-4 w-4 mr-1" /> Editar
+                </Button>
+                <Button onClick={() => { navigate({ to: "/corretores", search: { exec: selected.id } }); }}>
+                  <Users className="h-4 w-4 mr-1" /> Ver Equipe
+                </Button>
+                {selected.whatsapp ? (
+                  <Button asChild variant="outline">
+                    <a href={`https://wa.me/${selected.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noreferrer">
+                      <MessageCircle className="h-4 w-4 mr-1" /> WhatsApp
+                    </a>
+                  </Button>
+                ) : (
+                  <Button variant="outline" disabled><MessageCircle className="h-4 w-4 mr-1" /> WhatsApp</Button>
+                )}
+                <Button
+                  variant={selected.ativo ? "secondary" : "gold"}
+                  disabled={actionBusy}
+                  onClick={async () => {
+                    setActionBusy(true);
+                    try {
+                      await fnAtivo({ data: { id: selected.id, ativo: !selected.ativo } });
+                      toast.success(selected.ativo ? "Executivo desativado" : "Executivo ativado");
+                      await refresh();
+                      setSelected((s) => s ? { ...s, ativo: !s.ativo } : s);
+                    } catch (err) { toast.error((err as Error).message); }
+                    finally { setActionBusy(false); }
+                  }}
+                >
+                  <Power className="h-4 w-4 mr-1" /> {selected.ativo ? "Desativar" : "Ativar"}
+                </Button>
+                {isAdmin && (
+                  <Button variant="destructive" className="col-span-2" onClick={() => setConfirmDelete(true)}>
+                    <Trash2 className="h-4 w-4 mr-1" /> Excluir
+                  </Button>
+                )}
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!selected && editing} onOpenChange={(o) => { if (!o) setEditing(false); }}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>Editar Executivo</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div><Label>Nome completo</Label><Input value={edit.nome} onChange={(ev) => setEdit({ ...edit, nome: ev.target.value })} className="mt-1.5" /></div>
+            <div><Label>Email / login (deixe vazio p/ manter)</Label><Input type="email" value={edit.email} onChange={(ev) => setEdit({ ...edit, email: ev.target.value })} placeholder="novo@email.com" className="mt-1.5" /></div>
+            <div><Label>Telefone / WhatsApp</Label><Input value={edit.whatsapp} onChange={(ev) => setEdit({ ...edit, whatsapp: ev.target.value })} className="mt-1.5" /></div>
+            <div><Label>Região de atuação</Label><Input value={edit.regiao} onChange={(ev) => setEdit({ ...edit, regiao: ev.target.value })} className="mt-1.5" /></div>
+            <div><Label>Foto / Avatar (URL)</Label><Input value={edit.avatar_url} onChange={(ev) => setEdit({ ...edit, avatar_url: ev.target.value })} placeholder="https://..." className="mt-1.5" /></div>
+            <div><Label>Nova senha (deixe vazio p/ manter)</Label><Input type="text" value={edit.password} onChange={(ev) => setEdit({ ...edit, password: ev.target.value })} className="mt-1.5" /></div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setEditing(false)} disabled={actionBusy}>Cancelar</Button>
+              <Button
+                variant="gold"
+                disabled={actionBusy}
+                onClick={async () => {
+                  if (!selected) return;
+                  setActionBusy(true);
+                  try {
+                    await fnUpdate({ data: {
+                      id: selected.id,
+                      nome: edit.nome.trim() || undefined,
+                      email: edit.email.trim() || undefined,
+                      whatsapp: edit.whatsapp.trim() || undefined,
+                      regiao: edit.regiao.trim() || null,
+                      avatar_url: edit.avatar_url.trim() || null,
+                      password: edit.password ? edit.password : undefined,
+                    }});
+                    toast.success("Executivo atualizado");
+                    setEditing(false);
+                    setSelected(null);
+                    await refresh();
+                  } catch (err) { toast.error((err as Error).message); }
+                  finally { setActionBusy(false); }
+                }}
+              >
+                {actionBusy ? <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Salvando…</> : "Salvar"}
+              </Button>
+            </DialogFooter>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. Os corretores deste executivo ficarão sem responsável.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={actionBusy}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={actionBusy}
+              onClick={async () => {
+                if (!selected) return;
+                setActionBusy(true);
+                try {
+                  await fnDelete({ data: { id: selected.id } });
+                  toast.success("Executivo excluído");
+                  setConfirmDelete(false);
+                  setSelected(null);
+                  await refresh();
+                } catch (err) { toast.error((err as Error).message); }
+                finally { setActionBusy(false); }
+              }}
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
