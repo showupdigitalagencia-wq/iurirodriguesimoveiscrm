@@ -9,6 +9,7 @@ export const ETAPAS: { id: LeadEtapa; nome: string }[] = [
   { id: "novos_leads", nome: "Novos Leads" },
   { id: "em_atendimento", nome: "Em Atendimento" },
   { id: "reuniao_agendada", nome: "Reunião Agendada" },
+  { id: "solicitacao_documentos", nome: "Solicitação de Documentos" },
   { id: "documentos_enviados", nome: "Documentos Enviados" },
   { id: "em_negociacao", nome: "Em Negociação" },
   { id: "follow_up", nome: "Follow Up" },
