@@ -55,7 +55,7 @@ export type EquipeMembro = {
   responsavel_id: string | null;
 };
 
-export type LeadReuniaoOpt = { id: string; nome: string; telefone: string };
+export type LeadReuniaoOpt = { id: string; nome: string; telefone: string; etapa?: string | null };
 
 type ProfileEquipeRow = { id: string; nome: string; responsavel_id: string | null; ativo?: boolean | null };
 type RoleRow = { user_id: string; role: EquipeMembro["role"] };
