@@ -194,3 +194,28 @@ export async function createCalendarEventWithMeet(input: CreateMeetEventInput): 
     null;
   return { htmlLink: j.htmlLink ?? null, meetLink, eventId: j.id ?? null };
 }
+
+export async function patchCalendarEventDescription(input: {
+  userId: string;
+  eventId: string;
+  description: string;
+}): Promise<boolean> {
+  const token = await getValidAccessToken(input.userId);
+  if (!token) return false;
+  const res = await fetch(
+    `https://www.googleapis.com/calendar/v3/calendars/primary/events/${encodeURIComponent(input.eventId)}?sendUpdates=all`,
+    {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ description: input.description }),
+    },
+  );
+  if (!res.ok) {
+    console.error("[Google] patch event failed", res.status, await res.text());
+    return false;
+  }
+  return true;
+}
