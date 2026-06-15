@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
@@ -10,8 +11,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { REGIOES } from "@/lib/lead-helpers";
 import { VENDAS_ETAPAS, formatBRL, vendasEtapaInfo, type VendasLead, type VendasEtapa, type VendasTipo } from "@/lib/vendas-helpers";
+import { createVisita, createReuniaoOnlineVenda } from "@/lib/visitas.functions";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
+import { Plus, MapPin, Video } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/vendas/leads")({
   component: VendasLeads,
