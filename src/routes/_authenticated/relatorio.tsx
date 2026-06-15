@@ -111,6 +111,7 @@ function RelatorioPage() {
         total: ms.length,
         em_atendimento: ms.filter((l) => l.etapa === "em_atendimento").length,
         reuniao_agendada: ms.filter((l) => l.etapa === "reuniao_agendada").length,
+        solicitacao_documentos: ms.filter((l) => l.etapa === "solicitacao_documentos").length,
         documentos_enviados: ms.filter((l) => l.etapa === "documentos_enviados").length,
         em_negociacao: ms.filter((l) => l.etapa === "em_negociacao").length,
         fechados: fechado,
