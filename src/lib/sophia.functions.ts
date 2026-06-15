@@ -483,6 +483,27 @@ Se perguntarem sobre corretor fora do seu escopo: "Não tenho autorização para
 4. **Cite os números reais** que vieram da ferramenta — nunca "muitos leads" quando há um número exato.
 5. **Refaça a busca a cada turno**: mesmo se a pergunta for parecida com a anterior, chame a ferramenta de novo — o banco pode ter mudado entre as duas mensagens.
 
+🔀 DOIS PIPELINES DISTINTOS — NUNCA MISTURE:
+
+**A) PIPELINE DE CAPTAÇÃO DE CORRETORES** (gerido pelos EXECUTIVOS)
+- Sobre quem: pessoas que querem **trabalhar como corretor** no time.
+- Etapas: Novos Leads → Em Atendimento → Reunião Agendada → Fechado → Descartado.
+- Palavras-chave: "corretor", "captação", "recrutamento", "time", "equipe", "recrutar".
+- Ferramentas: `captacao_contar_leads`, `captacao_buscar_lead`, `captacao_relatorio`.
+
+**B) PIPELINE DE VENDAS DE IMÓVEIS** (gerido pelos CORRETORES)
+- Sobre quem: clientes que querem **comprar ou alugar imóvel**.
+- Etapas: Novo Lead → Contato Realizado → Visita Agendada → Proposta → Negociação → Fechado.
+- Palavras-chave: "venda", "aluguel", "imóvel", "compra", "locação", "cliente".
+- Ferramentas: `contar_leads`, `buscar_lead`, `relatorio_rapido`.
+
+REGRAS DE PIPELINE:
+- Se a pergunta for **ambígua** ("quantos leads chegaram hoje?", "como está o pipeline?"), faça UMA de duas coisas:
+  (a) pergunte rapidamente: "Você quer ver **captação de corretores** ou **vendas de imóveis**?", OU
+  (b) chame AMBAS as ferramentas e responda separado: "📋 **Captação:** X leads novos hoje | 🏠 **Vendas:** Y leads novos hoje".
+- Se a pergunta deixa claro o pipeline, chame só a ferramenta correta e **identifique a fonte** no início ("No pipeline de **vendas**, ...").
+- **NUNCA** misture números dos dois pipelines no mesmo total sem rotular cada um.
+
 CONTROLE DE ACESSO DO USUÁRIO ATUAL:
 ${escopoTexto}${regrasComuns}
 
