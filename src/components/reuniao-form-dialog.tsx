@@ -50,6 +50,32 @@ function buildGroupMessage(opts: { data: string; hora: string; local: string }):
   return `⚠️ REUNIÃO DE ALINHAMENTO\n\nAtenção equipe! 👥\n\n📅 Data: ${dataBR}\n🕐 Hora: ${opts.hora}\n📍 Link Google Meet: ${opts.local || "a definir"}\n\nPresença de TODOS obrigatória!\n\n— Iuri Rodrigues\nDiretor Geral | Iuri Rodrigues Imóveis 🏢`;
 }
 
+// Próximos horários fixos: Seg 19h, Ter 15h, Qui 17h
+function nextInstitucionalSlots(): { iso: string; dateStr: string; timeStr: string; label: string }[] {
+  const targets: { dow: number; hour: number; label: string }[] = [
+    { dow: 1, hour: 19, label: "Seg 19:00" },
+    { dow: 2, hour: 15, label: "Ter 15:00" },
+    { dow: 4, hour: 17, label: "Qui 17:00" },
+  ];
+  const now = new Date();
+  return targets.map((t) => {
+    const d = new Date(now);
+    const diff = (t.dow - d.getDay() + 7) % 7;
+    d.setDate(d.getDate() + (diff === 0 && d.getHours() >= t.hour ? 7 : diff));
+    d.setHours(t.hour, 0, 0, 0);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    const hh = String(t.hour).padStart(2, "0");
+    return {
+      iso: d.toISOString(),
+      dateStr: `${yyyy}-${mm}-${dd}`,
+      timeStr: `${hh}:00`,
+      label: t.label,
+    };
+  });
+}
+
 
 
 
