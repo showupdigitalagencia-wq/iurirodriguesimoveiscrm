@@ -1,0 +1,1 @@
+ALTER TYPE public.lead_etapa ADD VALUE IF NOT EXISTS 'solicitacao_documentos' BEFORE 'documentos_enviados';

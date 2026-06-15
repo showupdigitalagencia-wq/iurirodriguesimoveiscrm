@@ -690,6 +690,7 @@ export type Database = {
         | "novos_leads"
         | "em_atendimento"
         | "reuniao_agendada"
+        | "solicitacao_documentos"
         | "documentos_enviados"
         | "em_negociacao"
         | "follow_up"
@@ -853,6 +854,7 @@ export const Constants = {
         "novos_leads",
         "em_atendimento",
         "reuniao_agendada",
+        "solicitacao_documentos",
         "documentos_enviados",
         "em_negociacao",
         "follow_up",
