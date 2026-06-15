@@ -292,7 +292,7 @@ export const updateExecutivo = createServerFn({ method: "POST" })
       if (data.email) userPatch.email = data.email;
       if (data.password) userPatch.password = data.password;
       if (data.nome) userPatch.user_metadata = { nome: data.nome };
-      const { error: uerr } = await supabaseAdmin.auth.admin.updateUserById(userId, userPatch);
+      const { error: uerr } = await supabaseAdmin.auth.admin.updateUserById(userId, userPatch as never);
       if (uerr) throw new Error(uerr.message);
       if (data.nome) {
         await supabaseAdmin.from("profiles").update({ nome: data.nome }).eq("id", userId);
