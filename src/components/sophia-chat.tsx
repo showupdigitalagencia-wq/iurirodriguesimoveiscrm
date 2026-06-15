@@ -58,6 +58,7 @@ function pickMime(): { mime: string; fmt: "webm" | "mp4" | "ogg" } {
 
 export function LauraChat() {
   const fn = useServerFn(sophiaChat);
+  const ctxFn = useServerFn(sophiaContext);
   const transcribe = useServerFn(sophiaTranscribe);
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([
@@ -85,6 +86,51 @@ export function LauraChat() {
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, loading]);
+
+  // Snapshot ao vivo ao abrir o chat — dados sempre frescos do banco
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const ctx = await ctxFn();
+        if (cancelled) return;
+        const s = ctx.snapshot;
+        const linhas: string[] = [];
+        linhas.push(`Oi, **${ctx.usuario.nome.split(/\s+/)[0]}**! 👋 Aqui está seu panorama agora:`);
+        linhas.push("");
+        linhas.push(`📊 **${s.leads_ativos}** leads ativos${s.leads_novos_hoje ? ` · 🆕 ${s.leads_novos_hoje} hoje` : ""}`);
+        if (s.leads_parados_48h) linhas.push(`⚠️ **${s.leads_parados_48h}** leads parados há +48h`);
+        if (s.proximas_reunioes_36h) linhas.push(`📅 **${s.proximas_reunioes_36h}** reunião(ões) nas próximas 36h`);
+        if (ctx.proxima_reuniao) linhas.push(`➡️ Próxima: _${ctx.proxima_reuniao.titulo}_ — ${ctx.proxima_reuniao.quando}`);
+        linhas.push("");
+        linhas.push("Em que posso te ajudar?");
+        setMessages([{ role: "assistant", content: linhas.join("\n") }]);
+      } catch {
+        // se falhar, mantém saudação padrão
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [open, ctxFn]);
+
+  // Realtime: alerta na hora que um lead novo aparece para o usuário
+  useEffect(() => {
+    let userId: string | null = null;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      userId = data.user?.id ?? null;
+      if (!userId) return;
+      channel = supabase
+        .channel(`laura-leads-${userId}`)
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "vendas_leads", filter: `corretor_id=eq.${userId}` }, (payload) => {
+          const nome = (payload.new as { nome?: string })?.nome ?? "Novo lead";
+          toast.success(`🆕 Novo lead chegou: ${nome}`, { description: "Laura já está com os dados atualizados." });
+        })
+        .subscribe();
+    })();
+    return () => { if (channel) supabase.removeChannel(channel); };
+  }, []);
 
   async function send(text: string, opts?: { imageDataUrl?: string; audioUrl?: string; audioDuration?: number }) {
     const content = text.trim();
