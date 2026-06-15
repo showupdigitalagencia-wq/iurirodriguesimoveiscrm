@@ -524,5 +524,76 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
         </div>
       </DialogContent>
     </Dialog>
+
+    <Dialog open={participantsOpen} onOpenChange={setParticipantsOpen}>
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Adicionar Participantes</DialogTitle>
+          <DialogDescription>Selecione corretores da equipe e/ou leads do pipeline</DialogDescription>
+        </DialogHeader>
+        <Tabs value={participantsTab} onValueChange={(v) => setParticipantsTab(v as "equipe" | "leads")}>
+          <TabsList className="grid grid-cols-2 w-full">
+            <TabsTrigger value="equipe">Minha Equipe ({form.user_ids.size})</TabsTrigger>
+            <TabsTrigger value="leads">Leads ({form.lead_ids.size})</TabsTrigger>
+          </TabsList>
+          <TabsContent value="equipe" className="space-y-2">
+            <label className="flex items-center gap-2 text-xs cursor-pointer">
+              <Checkbox
+                checked={equipe.length > 0 && equipe.every((e) => form.user_ids.has(e.id))}
+                onCheckedChange={(c) =>
+                  setForm({ ...form, user_ids: c ? new Set(equipe.map((e) => e.id)) : new Set<string>() })
+                }
+              />
+              <span>Selecionar todos</span>
+            </label>
+            <div className="max-h-72 overflow-y-auto border border-border rounded-md p-2 space-y-1">
+              {equipe.length === 0 && <p className="text-xs text-muted-foreground">Nenhum membro disponível</p>}
+              {equipe.map((m) => (
+                <label key={m.id} className="flex items-center gap-2 text-sm cursor-pointer py-1 px-1 hover:bg-muted rounded">
+                  <Checkbox checked={form.user_ids.has(m.id)} onCheckedChange={() => setForm({ ...form, user_ids: toggle(form.user_ids, m.id) })} />
+                  {m.tipo === "admin" ? <Shield className="h-3.5 w-3.5 text-red-500 shrink-0" /> : m.tipo === "executivo" ? <Briefcase className="h-3.5 w-3.5 text-gold shrink-0" /> : <Users className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
+                  <span className="truncate">
+                    {m.nome}
+                    {m.tipo === "admin" && <span className="text-xs text-red-500 ml-1">(Admin)</span>}
+                    {m.tipo === "executivo" && <span className="text-xs text-gold ml-1">(Executivo)</span>}
+                    {m.tipo === "corretor" && m.executivo && (
+                      <span className="text-xs text-muted-foreground ml-1">— Exec: {m.executivo}</span>
+                    )}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </TabsContent>
+          <TabsContent value="leads" className="space-y-2">
+            <label className="flex items-center gap-2 text-xs cursor-pointer">
+              <Checkbox
+                checked={leads.length > 0 && leads.every((l) => form.lead_ids.has(l.id))}
+                onCheckedChange={(c) =>
+                  setForm({ ...form, lead_ids: c ? new Set(leads.map((l) => l.id)) : new Set<string>() })
+                }
+              />
+              <span>Selecionar todos</span>
+            </label>
+            <div className="max-h-72 overflow-y-auto border border-border rounded-md p-2 space-y-1">
+              {leads.length === 0 && <p className="text-xs text-muted-foreground">Nenhum lead disponível</p>}
+              {leads.map((l) => (
+                <label key={l.id} className="flex items-center gap-2 text-sm cursor-pointer py-1 px-1 hover:bg-muted rounded">
+                  <Checkbox checked={form.lead_ids.has(l.id)} onCheckedChange={() => setForm({ ...form, lead_ids: toggle(form.lead_ids, l.id) })} />
+                  <span className="truncate">
+                    {l.nome}
+                    <span className="text-muted-foreground text-xs ml-1">— {l.telefone}</span>
+                    {l.etapa && <span className="text-xs text-muted-foreground ml-1">• {l.etapa}</span>}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
+        <div className="flex justify-end pt-2">
+          <Button variant="gold" onClick={() => setParticipantsOpen(false)}>Confirmar</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }
