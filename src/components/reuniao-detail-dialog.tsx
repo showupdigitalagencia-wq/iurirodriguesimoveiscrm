@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -6,11 +6,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useServerFn } from "@tanstack/react-start";
-import { getReuniao, updateReuniaoStatus, deleteReuniao, type ReuniaoDetail, type ReuniaoStatus } from "@/lib/reunioes.functions";
+import { getReuniao, updateReuniaoStatus, deleteReuniao, addLeadToReuniao, type ReuniaoDetail, type ReuniaoStatus } from "@/lib/reunioes.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
-import { Calendar, MapPin, Users, Trash2, MessageCircle } from "lucide-react";
+import { Calendar, MapPin, Users, Trash2, MessageCircle, Plus, Lock } from "lucide-react";
 
 function onlyDigits(s: string) {
   return (s || "").replace(/\D/g, "");
@@ -24,26 +25,22 @@ function buildWhatsAppMessage(
   corretores: string,
 ) {
   const data = format(dataHora, "dd/MM/yyyy", { locale: ptBR });
+  const diaSemana = format(dataHora, "EEEE", { locale: ptBR });
   const hora = format(dataHora, "HH:mm", { locale: ptBR });
   const localTxt = local?.trim() || "A definir";
   if (tipo === "institucional") {
     return `Olá ${leadNome}! 😊
 
-Você está convidado(a) para uma
-REUNIÃO INSTITUCIONAL! 🏢✨
+Você está convidado para nossa
+REUNIÃO INSTITUCIONAL!
 
-Você terá a oportunidade de conhecer
-pessoalmente nosso Diretor Geral
-IURI RODRIGUES e toda a nossa equipe!
+📅 ${diaSemana}, ${data}
+🕐 ${hora}
+📍 Link Google Meet: ${localTxt}
 
-📅 Data: ${data}
-🕐 Hora: ${hora}
-📍 Local/Link: ${localTxt}
+Com nosso Diretor Geral IURI RODRIGUES!
 
-Esta é uma excelente oportunidade!
-Confirme sua presença.
-
-Iuri Rodrigues Imóveis`;
+Iuri Rodrigues Imóveis 🏢`;
   }
   return `Olá ${leadNome}! 😊
 
@@ -58,6 +55,8 @@ Qualquer dúvida estamos à disposição!
 Iuri Rodrigues Imóveis`;
 }
 
+type LeadOpt = { id: string; nome: string; telefone: string };
+
 interface Props {
   reuniaoId: string | null;
   onClose: () => void;
@@ -67,9 +66,13 @@ interface Props {
 export function ReuniaoDetailDialog({ reuniaoId, onClose, onChanged }: Props) {
   const [r, setR] = useState<ReuniaoDetail | null>(null);
   const [resultado, setResultado] = useState("");
+  const [addOpen, setAddOpen] = useState(false);
+  const [myLeads, setMyLeads] = useState<LeadOpt[]>([]);
+  const [selectedLeadId, setSelectedLeadId] = useState<string>("");
   const callGet = useServerFn(getReuniao);
   const callStatus = useServerFn(updateReuniaoStatus);
   const callDelete = useServerFn(deleteReuniao);
+  const callAddLead = useServerFn(addLeadToReuniao);
 
   useEffect(() => {
     if (!reuniaoId) { setR(null); return; }
@@ -78,6 +81,57 @@ export function ReuniaoDetailDialog({ reuniaoId, onClose, onChanged }: Props) {
       setResultado(d.resultado ?? "");
     }).catch((e) => toast.error(e instanceof Error ? e.message : "Erro"));
   }, [reuniaoId, callGet]);
+
+  const isAdmin = r?.my_role === "admin";
+  const isExec = !!r?.is_executivo;
+  const canEdit = isAdmin || (!r?.recorrente && (r?.criado_por === r?.my_user_id));
+  const canAddLead = isAdmin || isExec;
+
+  async function loadMyLeads() {
+    if (!r) return;
+    let q = supabase.from("leads").select("id, nome, telefone, canal").order("nome").limit(500);
+    if (!isAdmin) {
+      // Executivo: somente leads do seu canal
+      const { data: profile } = await supabase.from("profiles").select("responsavel_id").eq("id", r.my_user_id).maybeSingle();
+      const respId = profile?.responsavel_id;
+      if (respId) {
+        const { data: resp } = await supabase.from("responsaveis").select("canal").eq("id", respId).maybeSingle();
+        const canal = resp?.canal;
+        if (canal) q = q.eq("canal", canal);
+      }
+    }
+    const { data } = await q;
+    setMyLeads((data as LeadOpt[]) ?? []);
+  }
+
+  async function openAdd() {
+    setAddOpen(true);
+    setSelectedLeadId("");
+    await loadMyLeads();
+  }
+
+  async function submitAddLead() {
+    if (!reuniaoId || !selectedLeadId) return;
+    try {
+      const res = await callAddLead({ data: { reuniao_id: reuniaoId, lead_id: selectedLeadId } });
+      toast.success("Lead adicionado");
+      setAddOpen(false);
+      onChanged?.();
+      const fresh = await callGet({ data: { id: reuniaoId } });
+      setR(fresh);
+      // Abre WhatsApp automaticamente
+      const lead = res.lead;
+      const tel = onlyDigits(lead.telefone);
+      if (tel && fresh) {
+        const corretores = fresh.participantes_corretores.map((c) => c.nome).join(", ");
+        const msg = buildWhatsAppMessage(fresh.tipo, lead.nome, new Date(fresh.data_inicio), fresh.local, corretores);
+        const phone = tel.startsWith("55") || tel.length < 11 ? tel : `55${tel}`;
+        window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, "_blank", "noopener");
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha");
+    }
+  }
 
   async function setStatus(status: ReuniaoStatus) {
     if (!reuniaoId) return;
@@ -119,6 +173,8 @@ export function ReuniaoDetailDialog({ reuniaoId, onClose, onChanged }: Props) {
     }
   }
 
+  const leadsToShow = useMemo(() => r?.participantes_leads ?? [], [r]);
+
   return (
     <Dialog open={!!reuniaoId} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
@@ -127,6 +183,7 @@ export function ReuniaoDetailDialog({ reuniaoId, onClose, onChanged }: Props) {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 {r.titulo}
+                {r.recorrente && <Lock className="h-4 w-4 text-gold" />}
               </DialogTitle>
               <DialogDescription className="flex gap-2 flex-wrap mt-1">
                 <Badge
@@ -146,6 +203,9 @@ export function ReuniaoDetailDialog({ reuniaoId, onClose, onChanged }: Props) {
                 >
                   {r.status}
                 </Badge>
+                {r.recorrente && (
+                  <Badge variant="outline" className="border-gold/60 text-gold">Recorrente — só Admin edita</Badge>
+                )}
               </DialogDescription>
             </DialogHeader>
 
@@ -170,12 +230,19 @@ export function ReuniaoDetailDialog({ reuniaoId, onClose, onChanged }: Props) {
               <Separator />
 
               <div>
-                <div className="flex items-center gap-2 text-xs uppercase text-muted-foreground mb-2">
-                  <Users className="h-3.5 w-3.5" /> Leads
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2 text-xs uppercase text-muted-foreground">
+                    <Users className="h-3.5 w-3.5" /> Leads {isAdmin ? "(todos)" : "(meus)"}
+                  </div>
+                  {canAddLead && (
+                    <Button size="sm" variant="gold" onClick={openAdd}>
+                      <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar lead
+                    </Button>
+                  )}
                 </div>
-                {r.participantes_leads.length === 0 ? <p className="text-muted-foreground text-xs">Nenhum</p> : (
+                {leadsToShow.length === 0 ? <p className="text-muted-foreground text-xs">Nenhum</p> : (
                   <ul className="space-y-2">
-                    {r.participantes_leads.map((l) => {
+                    {leadsToShow.map((l) => {
                       const corretores = r.participantes_corretores.map((c) => c.nome).join(", ");
                       const msg = buildWhatsAppMessage(r.tipo, l.nome, new Date(r.data_inicio), r.local, corretores);
                       const tel = onlyDigits(l.telefone);
@@ -186,7 +253,7 @@ export function ReuniaoDetailDialog({ reuniaoId, onClose, onChanged }: Props) {
                           {tel && (
                             <Button asChild size="sm" variant="outline" className="shrink-0">
                               <a href={href} target="_blank" rel="noopener noreferrer">
-                                <MessageCircle className="h-4 w-4 mr-1" /> Enviar confirmação
+                                <MessageCircle className="h-4 w-4 mr-1" /> Enviar
                               </a>
                             </Button>
                           )}
@@ -210,22 +277,63 @@ export function ReuniaoDetailDialog({ reuniaoId, onClose, onChanged }: Props) {
                 )}
               </div>
 
-              <Separator />
-
-              <div>
-                <Label>Resultado / observações pós-reunião</Label>
-                <Textarea rows={3} value={resultado} onChange={(e) => setResultado(e.target.value)} placeholder="O que aconteceu?" />
-              </div>
-
-              <div className="flex gap-2 flex-wrap pt-2">
-                <Button variant="gold" size="sm" onClick={() => setStatus("realizada")}>Marcar realizada</Button>
-                <Button variant="outline" size="sm" onClick={() => setStatus("agendada")}>Reabrir</Button>
-                <Button variant="outline" size="sm" onClick={handleCancel} className="text-destructive">Cancelar reunião</Button>
-                <Button variant="ghost" size="sm" onClick={handleDelete} className="text-destructive ml-auto">
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
+              {canEdit && (
+                <>
+                  <Separator />
+                  <div>
+                    <Label>Resultado / observações pós-reunião</Label>
+                    <Textarea rows={3} value={resultado} onChange={(e) => setResultado(e.target.value)} placeholder="O que aconteceu?" />
+                  </div>
+                  <div className="flex gap-2 flex-wrap pt-2">
+                    <Button variant="gold" size="sm" onClick={() => setStatus("realizada")}>Marcar realizada</Button>
+                    <Button variant="outline" size="sm" onClick={() => setStatus("agendada")}>Reabrir</Button>
+                    <Button variant="outline" size="sm" onClick={handleCancel} className="text-destructive">Cancelar reunião</Button>
+                    {isAdmin && (
+                      <Button variant="ghost" size="sm" onClick={handleDelete} className="text-destructive ml-auto">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </>
+              )}
+              {!canEdit && (
+                <p className="text-xs text-muted-foreground italic">Esta reunião é gerenciada pelo Administrador.</p>
+              )}
             </div>
+
+            {/* Add lead modal */}
+            <Dialog open={addOpen} onOpenChange={setAddOpen}>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Adicionar lead à reunião</DialogTitle>
+                  <DialogDescription>
+                    {isAdmin ? "Escolha qualquer lead." : "Escolha um dos seus leads."}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-3">
+                  <div className="max-h-72 overflow-y-auto border border-border rounded-md divide-y divide-border">
+                    {myLeads.length === 0 && <p className="p-3 text-xs text-muted-foreground">Nenhum lead disponível.</p>}
+                    {myLeads.map((l) => (
+                      <label key={l.id} className="flex items-center gap-2 p-2 cursor-pointer hover:bg-muted text-sm">
+                        <input
+                          type="radio"
+                          name="lead"
+                          checked={selectedLeadId === l.id}
+                          onChange={() => setSelectedLeadId(l.id)}
+                        />
+                        <span className="flex-1 truncate">{l.nome} <span className="text-muted-foreground text-xs">— {l.telefone}</span></span>
+                      </label>
+                    ))}
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button variant="outline" onClick={() => setAddOpen(false)}>Cancelar</Button>
+                    <Button variant="gold" onClick={submitAddLead} disabled={!selectedLeadId}>
+                      Adicionar e enviar WhatsApp
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </>
         ) : (
           <p className="text-sm text-muted-foreground">Carregando...</p>
