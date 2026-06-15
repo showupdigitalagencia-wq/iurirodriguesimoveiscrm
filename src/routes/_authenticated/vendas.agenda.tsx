@@ -12,10 +12,10 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { addDays, addMonths, endOfMonth, endOfWeek, format, isSameDay, isSameMonth, startOfMonth, startOfWeek, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarCheck2, ChevronLeft, ChevronRight, Loader2, Plus, Trash2, Link2, Link2Off, MapPin } from "lucide-react";
+import { CalendarCheck2, ChevronLeft, ChevronRight, Loader2, Plus, Trash2, Link2, Link2Off, MapPin, Video } from "lucide-react";
 import { addBloqueio, addRecorrente, listDisponibilidade, removeDisponibilidade, type DisponibilidadeRow } from "@/lib/disponibilidade.functions";
 import { disconnectGoogle, getGoogleStatus, startGoogleOAuth } from "@/lib/google.functions";
-import { createVisita, deleteVisita, listMyVendasLeads, listVisitas, type VisitaRow } from "@/lib/visitas.functions";
+import { createReuniaoOnlineVenda, createVisita, deleteVisita, listMyVendasLeads, listReunioesCorretor, listVisitas, type ReuniaoCorretorRow, type VisitaRow } from "@/lib/visitas.functions";
 
 export const Route = createFileRoute("/_authenticated/vendas/agenda")({
   head: () => ({ meta: [{ title: "Minha Agenda — Vendas" }] }),
@@ -23,6 +23,7 @@ export const Route = createFileRoute("/_authenticated/vendas/agenda")({
 });
 
 type VisitaItem = VisitaRow & { vendas_leads: { nome: string; telefone: string } | null };
+type ReuniaoItem = ReuniaoCorretorRow;
 type LeadOption = { id: string; nome: string; telefone: string; etapa: string };
 
 const DIAS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
@@ -37,12 +38,15 @@ function AgendaCorretorPage() {
   const fnGoogleStart = useServerFn(startGoogleOAuth);
   const fnGoogleDisconnect = useServerFn(disconnectGoogle);
   const fnListVisitas = useServerFn(listVisitas);
+  const fnListReunioes = useServerFn(listReunioesCorretor);
   const fnCreateVisita = useServerFn(createVisita);
+  const fnCreateReuniao = useServerFn(createReuniaoOnlineVenda);
   const fnDeleteVisita = useServerFn(deleteVisita);
   const fnListLeads = useServerFn(listMyVendasLeads);
 
   const [items, setItems] = useState<DisponibilidadeRow[]>([]);
   const [visitas, setVisitas] = useState<VisitaItem[]>([]);
+  const [reunioes, setReunioes] = useState<ReuniaoItem[]>([]);
   const [leads, setLeads] = useState<LeadOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<View>("semana");
@@ -50,25 +54,30 @@ function AgendaCorretorPage() {
   const [openRec, setOpenRec] = useState(false);
   const [openBlock, setOpenBlock] = useState(false);
   const [openVisita, setOpenVisita] = useState(false);
+  const [openReuniao, setOpenReuniao] = useState(false);
   const [visitaDefaults, setVisitaDefaults] = useState<{ date: string; time: string }>({ date: "", time: "09:00" });
+  const [reuniaoDefaults, setReuniaoDefaults] = useState<{ date: string; time: string }>({ date: "", time: "09:00" });
   const [savingVisita, setSavingVisita] = useState(false);
+  const [savingReuniao, setSavingReuniao] = useState(false);
   const [google, setGoogle] = useState<{ connected: boolean; email: string | null }>({ connected: false, email: null });
   const [connectingGoogle, setConnectingGoogle] = useState(false);
 
   const refresh = useCallback(async () => {
     try {
-      const [disp, vis, lds] = await Promise.all([
+      const [disp, vis, reun, lds] = await Promise.all([
         fnList({ data: {} }),
         fnListVisitas(),
+        fnListReunioes(),
         fnListLeads(),
       ]);
       setItems(disp.items);
       setVisitas(vis.items as VisitaItem[]);
+      setReunioes(reun.items as ReuniaoItem[]);
       setLeads(lds.items);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erro ao carregar agenda");
     } finally { setLoading(false); }
-  }, [fnList, fnListVisitas, fnListLeads]);
+  }, [fnList, fnListVisitas, fnListReunioes, fnListLeads]);
 
   useEffect(() => {
     refresh();
@@ -100,12 +109,18 @@ function AgendaCorretorPage() {
     const recs = recorrentes.filter((r) => r.dia_semana === dow);
     const blocked = bloqueios.some((b) => b.data === dateStr && !b.hora_inicio);
     const vis = visitas.filter((v) => format(new Date(v.data_inicio), "yyyy-MM-dd") === dateStr);
-    return { recs, blocked, visitas: vis };
+    const reun = reunioes.filter((r) => format(new Date(r.data_inicio), "yyyy-MM-dd") === dateStr);
+    return { recs, blocked, visitas: vis, reunioes: reun };
   }
 
   function openVisitaFor(date: Date, time?: string) {
     setVisitaDefaults({ date: format(date, "yyyy-MM-dd"), time: time ?? "09:00" });
     setOpenVisita(true);
+  }
+
+  function openReuniaoFor(date: Date, time?: string) {
+    setReuniaoDefaults({ date: format(date, "yyyy-MM-dd"), time: time ?? "09:00" });
+    setOpenReuniao(true);
   }
 
   function whatsappLink(telefone: string, msg: string) {
@@ -142,6 +157,36 @@ function AgendaCorretorPage() {
       }
     } catch (e) { toast.error(e instanceof Error ? e.message : "Erro ao agendar"); }
     finally { setSavingVisita(false); }
+  }
+
+  async function handleAddReuniao(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const leadId = String(fd.get("lead_id") || "");
+    const data = String(fd.get("data") || "");
+    const hora = String(fd.get("hora") || "");
+    const observacoes = String(fd.get("observacoes") || "").trim();
+    if (!leadId || !data || !hora) { toast.error("Selecione o lead, data e hora"); return; }
+    setSavingReuniao(true);
+    try {
+      const iso = new Date(`${data}T${hora}:00`).toISOString();
+      const res = await fnCreateReuniao({ data: {
+        lead_id: leadId,
+        data_inicio: iso,
+        duracao_min: 45,
+        observacoes: observacoes || undefined,
+      }});
+      toast.success(res.meetLink ? "Reunião online agendada" : "Reunião registrada sem link Meet");
+      setOpenReuniao(false);
+      refresh();
+      if (res.lead?.telefone) {
+        const dataFmt = format(new Date(iso), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
+        const link = res.meetLink ? ` Link: ${res.meetLink}` : "";
+        const msg = `Olá ${res.lead.nome}! Confirmando nossa reunião online no dia ${dataFmt}.${link}`;
+        window.open(whatsappLink(res.lead.telefone, msg), "_blank");
+      }
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Erro ao agendar reunião"); }
+    finally { setSavingReuniao(false); }
   }
 
   async function handleDeleteVisita(id: string) {
