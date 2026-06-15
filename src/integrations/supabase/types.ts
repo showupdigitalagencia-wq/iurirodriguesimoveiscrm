@@ -586,6 +586,56 @@ export type Database = {
         }
         Relationships: []
       }
+      vendas_visitas: {
+        Row: {
+          corretor_id: string
+          created_at: string
+          data_inicio: string
+          duracao_min: number
+          endereco: string
+          google_event_id: string | null
+          id: string
+          lead_id: string
+          observacoes: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          corretor_id: string
+          created_at?: string
+          data_inicio: string
+          duracao_min?: number
+          endereco: string
+          google_event_id?: string | null
+          id?: string
+          lead_id: string
+          observacoes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          corretor_id?: string
+          created_at?: string
+          data_inicio?: string
+          duracao_min?: number
+          endereco?: string
+          google_event_id?: string | null
+          id?: string
+          lead_id?: string
+          observacoes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendas_visitas_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "vendas_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

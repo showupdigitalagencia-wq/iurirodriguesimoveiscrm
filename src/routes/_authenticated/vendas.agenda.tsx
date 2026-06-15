@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,14 +12,18 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { addDays, addMonths, endOfMonth, endOfWeek, format, isSameDay, isSameMonth, startOfMonth, startOfWeek, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarCheck2, ChevronLeft, ChevronRight, Loader2, Plus, Trash2, Link2, Link2Off } from "lucide-react";
+import { CalendarCheck2, ChevronLeft, ChevronRight, Loader2, Plus, Trash2, Link2, Link2Off, MapPin } from "lucide-react";
 import { addBloqueio, addRecorrente, listDisponibilidade, removeDisponibilidade, type DisponibilidadeRow } from "@/lib/disponibilidade.functions";
 import { disconnectGoogle, getGoogleStatus, startGoogleOAuth } from "@/lib/google.functions";
+import { createVisita, deleteVisita, listMyVendasLeads, listVisitas, type VisitaRow } from "@/lib/visitas.functions";
 
 export const Route = createFileRoute("/_authenticated/vendas/agenda")({
   head: () => ({ meta: [{ title: "Minha Agenda — Vendas" }] }),
   component: AgendaCorretorPage,
 });
+
+type VisitaItem = VisitaRow & { vendas_leads: { nome: string; telefone: string } | null };
+type LeadOption = { id: string; nome: string; telefone: string; etapa: string };
 
 const DIAS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 type View = "dia" | "semana" | "mes";
@@ -31,24 +36,39 @@ function AgendaCorretorPage() {
   const fnGoogleStatus = useServerFn(getGoogleStatus);
   const fnGoogleStart = useServerFn(startGoogleOAuth);
   const fnGoogleDisconnect = useServerFn(disconnectGoogle);
+  const fnListVisitas = useServerFn(listVisitas);
+  const fnCreateVisita = useServerFn(createVisita);
+  const fnDeleteVisita = useServerFn(deleteVisita);
+  const fnListLeads = useServerFn(listMyVendasLeads);
 
   const [items, setItems] = useState<DisponibilidadeRow[]>([]);
+  const [visitas, setVisitas] = useState<VisitaItem[]>([]);
+  const [leads, setLeads] = useState<LeadOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<View>("semana");
   const [cursor, setCursor] = useState(new Date());
   const [openRec, setOpenRec] = useState(false);
   const [openBlock, setOpenBlock] = useState(false);
+  const [openVisita, setOpenVisita] = useState(false);
+  const [visitaDefaults, setVisitaDefaults] = useState<{ date: string; time: string }>({ date: "", time: "09:00" });
+  const [savingVisita, setSavingVisita] = useState(false);
   const [google, setGoogle] = useState<{ connected: boolean; email: string | null }>({ connected: false, email: null });
   const [connectingGoogle, setConnectingGoogle] = useState(false);
 
   const refresh = useCallback(async () => {
     try {
-      const { items } = await fnList({ data: {} });
-      setItems(items);
+      const [disp, vis, lds] = await Promise.all([
+        fnList({ data: {} }),
+        fnListVisitas(),
+        fnListLeads(),
+      ]);
+      setItems(disp.items);
+      setVisitas(vis.items as VisitaItem[]);
+      setLeads(lds.items);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erro ao carregar agenda");
     } finally { setLoading(false); }
-  }, [fnList]);
+  }, [fnList, fnListVisitas, fnListLeads]);
 
   useEffect(() => {
     refresh();
@@ -79,7 +99,55 @@ function AgendaCorretorPage() {
     const dateStr = format(date, "yyyy-MM-dd");
     const recs = recorrentes.filter((r) => r.dia_semana === dow);
     const blocked = bloqueios.some((b) => b.data === dateStr && !b.hora_inicio);
-    return { recs, blocked };
+    const vis = visitas.filter((v) => format(new Date(v.data_inicio), "yyyy-MM-dd") === dateStr);
+    return { recs, blocked, visitas: vis };
+  }
+
+  function openVisitaFor(date: Date, time?: string) {
+    setVisitaDefaults({ date: format(date, "yyyy-MM-dd"), time: time ?? "09:00" });
+    setOpenVisita(true);
+  }
+
+  function whatsappLink(telefone: string, msg: string) {
+    const tel = telefone.replace(/\D/g, "");
+    return `https://wa.me/${tel}?text=${encodeURIComponent(msg)}`;
+  }
+
+  async function handleAddVisita(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const leadId = String(fd.get("lead_id") || "");
+    const endereco = String(fd.get("endereco") || "").trim();
+    const data = String(fd.get("data") || "");
+    const hora = String(fd.get("hora") || "");
+    const observacoes = String(fd.get("observacoes") || "").trim();
+    if (!leadId || !endereco || !data || !hora) { toast.error("Preencha todos os campos"); return; }
+    setSavingVisita(true);
+    try {
+      const iso = new Date(`${data}T${hora}:00`).toISOString();
+      const res = await fnCreateVisita({ data: {
+        lead_id: leadId,
+        endereco,
+        data_inicio: iso,
+        duracao_min: 60,
+        observacoes: observacoes || undefined,
+      }});
+      toast.success("Visita agendada!");
+      setOpenVisita(false);
+      refresh();
+      if (res.lead?.telefone) {
+        const dataFmt = format(new Date(iso), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
+        const msg = `Olá ${res.lead.nome}! Confirmando nossa visita ao imóvel em ${endereco} no dia ${dataFmt}. Qualquer dúvida estou à disposição.`;
+        window.open(whatsappLink(res.lead.telefone, msg), "_blank");
+      }
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Erro ao agendar"); }
+    finally { setSavingVisita(false); }
+  }
+
+  async function handleDeleteVisita(id: string) {
+    if (!confirm("Cancelar esta visita?")) return;
+    try { await fnDeleteVisita({ data: { id } }); toast.success("Visita removida"); refresh(); }
+    catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
   }
 
   async function handleAddRec(e: React.FormEvent<HTMLFormElement>) {
@@ -160,6 +228,20 @@ function AgendaCorretorPage() {
         )}
       </div>
 
+      {/* Agendar visita — destaque */}
+      <div className="rounded-xl border-2 border-orange-500/40 bg-orange-500/5 p-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+        <div className="flex items-start gap-3 min-w-0">
+          <MapPin className="h-5 w-5 text-orange-500 shrink-0 mt-0.5" />
+          <div className="min-w-0">
+            <div className="font-semibold text-sm">Visita presencial ao imóvel</div>
+            <div className="text-xs text-muted-foreground">Agende uma visita, mova o lead automaticamente e envie WhatsApp de confirmação</div>
+          </div>
+        </div>
+        <Button onClick={() => openVisitaFor(new Date())} variant="default" size="sm" className="w-full sm:w-auto bg-orange-500 hover:bg-orange-600 text-white">
+          <Plus className="h-4 w-4 mr-1" /> Agendar Visita
+        </Button>
+      </div>
+
       {/* Controle de visão */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
         <Tabs value={view} onValueChange={(v) => setView(v as View)}>
@@ -178,7 +260,46 @@ function AgendaCorretorPage() {
       </div>
 
       {/* Visão */}
-      {view === "mes" ? <MonthView cursor={cursor} slotsForDate={slotsForDate} /> : <ListView view={view} cursor={cursor} slotsForDate={slotsForDate} />}
+      {view === "mes"
+        ? <MonthView cursor={cursor} slotsForDate={slotsForDate} onSlotClick={openVisitaFor} />
+        : <ListView view={view} cursor={cursor} slotsForDate={slotsForDate} onSlotClick={openVisitaFor} onRemoveVisita={handleDeleteVisita} />}
+
+      {/* Dialog: nova visita */}
+      <Dialog open={openVisita} onOpenChange={setOpenVisita}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Agendar visita ao imóvel</DialogTitle></DialogHeader>
+          <form onSubmit={handleAddVisita} className="space-y-3">
+            <div>
+              <Label>Lead</Label>
+              <Select name="lead_id" required>
+                <SelectTrigger className="mt-1.5"><SelectValue placeholder="Selecione o lead..." /></SelectTrigger>
+                <SelectContent>
+                  {leads.length === 0 ? (
+                    <div className="px-2 py-3 text-xs text-muted-foreground">Nenhum lead cadastrado</div>
+                  ) : leads.map((l) => (
+                    <SelectItem key={l.id} value={l.id}>{l.nome} · {l.telefone}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Endereço do imóvel</Label>
+              <Input name="endereco" required maxLength={300} className="mt-1.5" placeholder="Rua, número, bairro" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Data</Label><Input type="date" name="data" required defaultValue={visitaDefaults.date} className="mt-1.5" /></div>
+              <div><Label>Hora</Label><Input type="time" name="hora" required defaultValue={visitaDefaults.time} className="mt-1.5" /></div>
+            </div>
+            <div><Label>Observações (opcional)</Label><Textarea name="observacoes" maxLength={500} className="mt-1.5" placeholder="Ex.: levar contrato, cliente prefere entrada lateral" /></div>
+            <DialogFooter>
+              <Button type="submit" disabled={savingVisita} className="bg-orange-500 hover:bg-orange-600 text-white">
+                {savingVisita && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
+                Agendar e enviar WhatsApp
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* Gerenciar janelas */}
       <section className="rounded-xl border border-border bg-card p-4 space-y-3">
@@ -272,9 +393,11 @@ function AgendaCorretorPage() {
   );
 }
 
-function ListView({ view, cursor, slotsForDate }: {
+function ListView({ view, cursor, slotsForDate, onSlotClick, onRemoveVisita }: {
   view: View; cursor: Date;
-  slotsForDate: (d: Date) => { recs: DisponibilidadeRow[]; blocked: boolean };
+  slotsForDate: (d: Date) => { recs: DisponibilidadeRow[]; blocked: boolean; visitas: VisitaItem[] };
+  onSlotClick: (date: Date, time?: string) => void;
+  onRemoveVisita: (id: string) => void;
 }) {
   const days = useMemo(() => {
     if (view === "dia") return [cursor];
@@ -285,22 +408,52 @@ function ListView({ view, cursor, slotsForDate }: {
   return (
     <div className="grid gap-2">
       {days.map((d) => {
-        const { recs, blocked } = slotsForDate(d);
+        const { recs, blocked, visitas } = slotsForDate(d);
         const today = isSameDay(d, new Date());
         return (
           <div key={d.toISOString()} className={`rounded-xl border ${today ? "border-gold" : "border-border"} bg-card p-3`}>
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-2 gap-2">
               <div className="text-sm font-semibold">{format(d, "EEE, dd/MM", { locale: ptBR })}</div>
-              {blocked && <Badge variant="destructive">Bloqueado</Badge>}
+              <div className="flex items-center gap-1">
+                {blocked && <Badge variant="destructive">Bloqueado</Badge>}
+                {!blocked && (
+                  <Button size="sm" variant="ghost" className="h-7 text-orange-600 hover:text-orange-700 hover:bg-orange-500/10" onClick={() => onSlotClick(d)}>
+                    <Plus className="h-3.5 w-3.5 mr-1" /> Visita
+                  </Button>
+                )}
+              </div>
             </div>
             {recs.length === 0 ? (
               <p className="text-xs text-muted-foreground">Sem disponibilidade.</p>
             ) : (
               <div className="flex flex-wrap gap-1.5">
                 {recs.map((r) => (
-                  <Badge key={r.id} variant={blocked ? "outline" : "secondary"} className={blocked ? "line-through opacity-60" : ""}>
+                  <button
+                    key={r.id}
+                    type="button"
+                    disabled={blocked}
+                    onClick={() => onSlotClick(d, r.hora_inicio?.slice(0,5))}
+                    className={`inline-flex items-center rounded-md border px-2 py-0.5 text-xs transition ${blocked ? "line-through opacity-60 cursor-not-allowed" : "hover:border-orange-500 hover:bg-orange-500/10"} bg-secondary text-secondary-foreground border-transparent`}
+                  >
                     {r.hora_inicio?.slice(0,5)} – {r.hora_fim?.slice(0,5)}
-                  </Badge>
+                  </button>
+                ))}
+              </div>
+            )}
+            {visitas.length > 0 && (
+              <div className="mt-2 space-y-1.5">
+                {visitas.map((v) => (
+                  <div key={v.id} className="flex items-center justify-between gap-2 rounded-md border border-orange-500/40 bg-orange-500/10 px-2.5 py-1.5">
+                    <div className="min-w-0 text-xs">
+                      <div className="font-medium text-orange-700 dark:text-orange-400 truncate">
+                        {format(new Date(v.data_inicio), "HH:mm")} · {v.vendas_leads?.nome ?? "Lead"}
+                      </div>
+                      <div className="text-muted-foreground truncate flex items-center gap-1"><MapPin className="h-3 w-3" /> {v.endereco}</div>
+                    </div>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive shrink-0" onClick={() => onRemoveVisita(v.id)}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
                 ))}
               </div>
             )}
@@ -311,8 +464,10 @@ function ListView({ view, cursor, slotsForDate }: {
   );
 }
 
-function MonthView({ cursor, slotsForDate }: {
-  cursor: Date; slotsForDate: (d: Date) => { recs: DisponibilidadeRow[]; blocked: boolean };
+function MonthView({ cursor, slotsForDate, onSlotClick }: {
+  cursor: Date;
+  slotsForDate: (d: Date) => { recs: DisponibilidadeRow[]; blocked: boolean; visitas: VisitaItem[] };
+  onSlotClick: (date: Date, time?: string) => void;
 }) {
   const start = startOfWeek(startOfMonth(cursor), { weekStartsOn: 0 });
   const end = endOfWeek(endOfMonth(cursor), { weekStartsOn: 0 });
@@ -326,18 +481,31 @@ function MonthView({ cursor, slotsForDate }: {
       </div>
       <div className="grid grid-cols-7">
         {days.map((d) => {
-          const { recs, blocked } = slotsForDate(d);
+          const { recs, blocked, visitas } = slotsForDate(d);
           const inMonth = isSameMonth(d, cursor);
           const today = isSameDay(d, new Date());
           return (
-            <div key={d.toISOString()} className={`min-h-[60px] sm:min-h-[80px] p-1.5 border-t border-l border-border first:border-l-0 ${!inMonth ? "opacity-40" : ""}`}>
+            <button
+              type="button"
+              key={d.toISOString()}
+              onClick={() => !blocked && onSlotClick(d)}
+              disabled={blocked}
+              className={`text-left min-h-[60px] sm:min-h-[80px] p-1.5 border-t border-l border-border first:border-l-0 ${!inMonth ? "opacity-40" : ""} ${!blocked ? "hover:bg-orange-500/5" : "cursor-not-allowed"}`}
+            >
               <div className={`text-[11px] font-medium ${today ? "text-gold" : ""}`}>{format(d, "d")}</div>
               {blocked ? (
                 <div className="mt-1 text-[9px] text-destructive">Bloqueado</div>
-              ) : recs.length > 0 ? (
-                <div className="mt-1 text-[9px] text-gold font-medium">{recs.length} janela{recs.length > 1 ? "s" : ""}</div>
-              ) : null}
-            </div>
+              ) : (
+                <>
+                  {recs.length > 0 && <div className="mt-1 text-[9px] text-gold font-medium">{recs.length} janela{recs.length > 1 ? "s" : ""}</div>}
+                  {visitas.length > 0 && (
+                    <div className="mt-1 inline-flex items-center rounded px-1 py-0.5 bg-orange-500 text-white text-[9px] font-medium">
+                      {visitas.length} visita{visitas.length > 1 ? "s" : ""}
+                    </div>
+                  )}
+                </>
+              )}
+            </button>
           );
         })}
       </div>
