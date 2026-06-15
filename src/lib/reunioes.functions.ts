@@ -111,6 +111,25 @@ export const listEquipeReuniao = createServerFn({ method: "GET" })
     return { equipe };
   });
 
+export const listLeadsReuniao = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const access = await loadMeetingAccess(supabaseAdmin, context.userId);
+    let query = supabaseAdmin
+      .from("leads")
+      .select("id, nome, telefone, responsavel_id, etapa, is_corretor")
+      .neq("etapa", "fechado")
+      .eq("is_corretor", false)
+      .order("nome")
+      .limit(500);
+    if (!access.isAdmin && access.currentExecId) query = query.eq("responsavel_id", access.currentExecId);
+    if (!access.isAdmin && !access.currentExecId) return { leads: [] as LeadReuniaoOpt[] };
+    const { data, error } = await query;
+    if (error) throw new Error(error.message);
+    return { leads: ((data ?? []) as LeadReuniaoOpt[]).map(({ id, nome, telefone }) => ({ id, nome, telefone })) };
+  });
+
 export const listReunioes = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ from: z.string(), to: z.string() }).parse(d))
