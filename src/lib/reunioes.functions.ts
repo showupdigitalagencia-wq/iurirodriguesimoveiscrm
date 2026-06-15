@@ -373,10 +373,29 @@ export const createReuniao = createServerFn({ method: "POST" })
     if (error || !inserted) throw new Error(error?.message ?? "Falha ao criar reunião");
     const reuniaoId = (inserted as { id: string }).id;
 
+    // Auto-incluir todos os admins e executivos ativos para que a reunião apareça na agenda deles
+    // (RLS já libera leitura, mas precisamos do user_id para sync de Google Calendar individual)
+    const { data: equipeRows } = await supabaseAdmin
+      .from("profiles").select("id, nome").eq("ativo", true);
+    const { data: rolesRows } = await supabaseAdmin
+      .from("user_roles").select("user_id, role");
+    const { data: respAtivos } = await supabaseAdmin
+      .from("responsaveis").select("nome").eq("ativo", true);
+    const adminIds = new Set(((rolesRows ?? []) as { user_id: string; role: string }[])
+      .filter((r) => r.role === "admin").map((r) => r.user_id));
+    const execFirstNames = new Set(((respAtivos ?? []) as { nome: string }[])
+      .map((r) => r.nome.trim().split(" ")[0].toLowerCase()));
+    const autoUserIds = ((equipeRows ?? []) as { id: string; nome: string }[])
+      .filter((p) => adminIds.has(p.id) || execFirstNames.has(p.nome.trim().split(" ")[0].toLowerCase()))
+      .map((p) => p.id);
+
+    const allUserIds = Array.from(new Set([...data.user_ids, ...autoUserIds]));
+
     // Participantes
-    const rows: { reuniao_id: string; lead_id: string | null; responsavel_id: string | null; added_by: string | null }[] = [
-      ...data.lead_ids.map((lid) => ({ reuniao_id: reuniaoId, lead_id: lid, responsavel_id: null, added_by: context.userId })),
-      ...data.responsavel_ids.map((rid) => ({ reuniao_id: reuniaoId, lead_id: null, responsavel_id: rid, added_by: context.userId })),
+    const rows: { reuniao_id: string; lead_id: string | null; responsavel_id: string | null; user_id: string | null; added_by: string | null }[] = [
+      ...data.lead_ids.map((lid) => ({ reuniao_id: reuniaoId, lead_id: lid, responsavel_id: null, user_id: null, added_by: context.userId })),
+      ...data.responsavel_ids.map((rid) => ({ reuniao_id: reuniaoId, lead_id: null, responsavel_id: rid, user_id: null, added_by: context.userId })),
+      ...allUserIds.map((uid) => ({ reuniao_id: reuniaoId, lead_id: null, responsavel_id: null, user_id: uid, added_by: context.userId })),
     ];
     if (rows.length) {
       await supabaseAdmin.from("reuniao_participantes" as never).insert(rows as never);
