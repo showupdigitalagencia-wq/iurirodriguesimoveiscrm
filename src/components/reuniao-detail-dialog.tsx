@@ -69,10 +69,14 @@ export function ReuniaoDetailDialog({ reuniaoId, onClose, onChanged }: Props) {
   const [addOpen, setAddOpen] = useState(false);
   const [myLeads, setMyLeads] = useState<LeadOpt[]>([]);
   const [selectedLeadId, setSelectedLeadId] = useState<string>("");
+  const [addUserOpen, setAddUserOpen] = useState(false);
+  const [allUsers, setAllUsers] = useState<{ id: string; nome: string; role: string }[]>([]);
+  const [selectedUserId, setSelectedUserId] = useState<string>("");
   const callGet = useServerFn(getReuniao);
   const callStatus = useServerFn(updateReuniaoStatus);
   const callDelete = useServerFn(deleteReuniao);
   const callAddLead = useServerFn(addLeadToReuniao);
+  const callAddUser = useServerFn(addUserToReuniao);
 
   useEffect(() => {
     if (!reuniaoId) { setR(null); return; }
