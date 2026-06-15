@@ -70,27 +70,31 @@ export const getReuniao = createServerFn({ method: "POST" })
 
     const { data: parts } = await context.supabase
       .from("reuniao_participantes" as never)
-      .select("lead_id, responsavel_id, added_by")
+      .select("lead_id, responsavel_id, user_id, added_by")
       .eq("reuniao_id", data.id);
 
-    const partsArr = (parts ?? []) as { lead_id: string | null; responsavel_id: string | null; added_by: string | null }[];
+    const partsArr = (parts ?? []) as { lead_id: string | null; responsavel_id: string | null; user_id: string | null; added_by: string | null }[];
     const leadIds = partsArr.map((p) => p.lead_id).filter(Boolean) as string[];
     const respIds = partsArr.map((p) => p.responsavel_id).filter(Boolean) as string[];
+    const userIds = partsArr.map((p) => p.user_id).filter(Boolean) as string[];
 
-    const [{ data: leads }, { data: resps }, { data: roleRow }, { data: profile }] = await Promise.all([
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const [{ data: leads }, { data: resps }, { data: usrs }, { data: roleRow }, { data: profile }] = await Promise.all([
       leadIds.length
         ? context.supabase.from("leads").select("id, nome, telefone").in("id", leadIds)
         : Promise.resolve({ data: [] as { id: string; nome: string; telefone: string }[] }),
       respIds.length
         ? context.supabase.from("responsaveis").select("id, nome, canal").in("id", respIds)
         : Promise.resolve({ data: [] as { id: string; nome: string; canal: string }[] }),
+      userIds.length
+        ? supabaseAdmin.from("profiles").select("id, nome").in("id", userIds)
+        : Promise.resolve({ data: [] as { id: string; nome: string }[] }),
       context.supabase.from("user_roles").select("role").eq("user_id", context.userId).maybeSingle(),
       context.supabase.from("profiles").select("responsavel_id").eq("id", context.userId).maybeSingle(),
     ]);
 
     const myRole = (roleRow?.role as string | undefined) ?? "corretor";
     const myResp = (profile?.responsavel_id as string | null | undefined) ?? null;
-    // "Executivo" no sistema = corretor com responsavel_id próprio (lidera equipe)
     const isExecutivo = !!myResp;
 
     let leadsList = (leads ?? []).map((l) => {
@@ -98,11 +102,9 @@ export const getReuniao = createServerFn({ method: "POST" })
       return { ...l, added_by: p?.added_by ?? null };
     });
 
-    // Executivos só veem seus próprios leads adicionados; admin vê tudo
     if (myRole !== "admin" && isExecutivo) {
       leadsList = leadsList.filter((l) => l.added_by === context.userId);
     } else if (myRole !== "admin" && !isExecutivo) {
-      // Corretor comum: vê só seus próprios leads adicionados (se houver)
       leadsList = leadsList.filter((l) => l.added_by === context.userId);
     }
 
@@ -110,6 +112,7 @@ export const getReuniao = createServerFn({ method: "POST" })
       ...(r as unknown as ReuniaoRow),
       participantes_leads: leadsList,
       participantes_corretores: resps ?? [],
+      participantes_usuarios: (usrs ?? []) as { id: string; nome: string }[],
       my_role: myRole,
       my_user_id: context.userId,
       my_responsavel_id: myResp,
