@@ -81,9 +81,17 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
       setHistorico((h as HistoricoRow[]) ?? []);
       if (l) {
         const ll = l as LeadRow;
+        const dc = (ll.dados_corretor ?? {}) as Record<string, string | null>;
         setForm({
           nome: ll.nome, email: ll.email ?? "", telefone: ll.telefone,
           observacoes: ll.observacoes ?? "", canal: ll.canal,
+          regiao: ll.regiao, etapa: ll.etapa,
+          ja_corretor: dc.ja_corretor ?? "",
+          creci_ativo: dc.creci_ativo ?? "",
+          numero_creci: dc.numero_creci ?? ll.creci ?? "",
+          disponibilidade_regiao: dc.disponibilidade_regiao ?? "",
+          disponibilidade_video: dc.disponibilidade_video ?? "",
+          possui_veiculo: dc.possui_veiculo ?? "",
         });
       }
     }
