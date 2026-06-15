@@ -469,10 +469,23 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
             </RadioGroup>
           </div>
 
-          {form.tipo !== "alinhamento" && defaultLeadId && leads.length > 0 && (
+          {form.tipo !== "alinhamento" && leads.length > 0 && (
             <div>
-              <Label>Lead da reunião</Label>
-              <div className="mt-2 border border-border rounded-md p-2 space-y-1">
+              <div className="flex items-center justify-between mb-2">
+                <Label>{defaultLeadId ? "Lead da reunião" : "Leads do pipeline"}</Label>
+                {!defaultLeadId && (
+                  <label className="flex items-center gap-2 text-xs cursor-pointer">
+                    <Checkbox
+                      checked={leads.length > 0 && leads.every((l) => form.lead_ids.has(l.id))}
+                      onCheckedChange={(c) =>
+                        setForm({ ...form, lead_ids: c ? new Set(leads.map((l) => l.id)) : new Set<string>() })
+                      }
+                    />
+                    <span>Selecionar todos</span>
+                  </label>
+                )}
+              </div>
+              <div className="max-h-56 overflow-y-auto border border-border rounded-md p-2 space-y-1">
                 {leads.map((l) => (
                   <label key={l.id} className="flex items-center gap-2 text-sm cursor-pointer py-1 px-1 hover:bg-muted rounded">
                     <Checkbox checked={form.lead_ids.has(l.id)} onCheckedChange={() => setForm({ ...form, lead_ids: toggle(form.lead_ids, l.id) })} />
