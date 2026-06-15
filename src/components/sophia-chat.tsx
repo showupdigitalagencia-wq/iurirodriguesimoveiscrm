@@ -2,10 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { sophiaChat } from "@/lib/sophia.functions";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Sparkles, Send, Loader2, Bot } from "lucide-react";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sparkles, Send, Loader2, Bot, X, ArrowLeft } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -57,31 +59,62 @@ export function SophiaChat() {
           <Sparkles className="h-6 w-6" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-full sm:max-w-md flex flex-col p-0 gap-0">
-        <SheetHeader className="border-b p-4 flex-row items-center gap-3 space-y-0">
-          <Avatar className="h-10 w-10">
+      <SheetContent
+        side="right"
+        className="w-full sm:max-w-md flex flex-col p-0 gap-0 h-[100dvh] max-h-[100dvh]"
+      >
+        <SheetTitle className="sr-only">Sophia — Assistente IA</SheetTitle>
+
+        {/* Header */}
+        <div className="border-b p-3 flex items-center gap-2 shrink-0 bg-background">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-10 w-10 shrink-0"
+            onClick={() => setOpen(false)}
+            aria-label="Voltar"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <Avatar className="h-10 w-10 shrink-0">
             <AvatarFallback className="bg-gradient-to-br from-fuchsia-500 to-violet-600 text-white">
               <Bot className="h-5 w-5" />
             </AvatarFallback>
           </Avatar>
-          <div>
-            <SheetTitle className="text-base">Sophia</SheetTitle>
-            <div className="text-xs text-muted-foreground">Assistente IA do Sistema Nexus</div>
+          <div className="min-w-0 flex-1">
+            <div className="text-base font-semibold leading-tight truncate">Sophia</div>
+            <div className="text-xs text-muted-foreground truncate">Assistente IA do Sistema Nexus</div>
           </div>
-        </SheetHeader>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-10 w-10 shrink-0"
+            onClick={() => setOpen(false)}
+            aria-label="Fechar"
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
 
+        {/* Messages */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
           {messages.map((m, i) => (
             <div key={i} className={cn("flex", m.role === "user" ? "justify-end" : "justify-start")}>
               <div
                 className={cn(
-                  "max-w-[85%] rounded-2xl px-3.5 py-2 text-sm whitespace-pre-wrap",
+                  "max-w-[85%] rounded-2xl px-3.5 py-2 text-[15px] leading-relaxed",
                   m.role === "user"
                     ? "bg-primary text-primary-foreground rounded-br-sm"
                     : "bg-muted text-foreground rounded-bl-sm"
                 )}
               >
-                {m.content}
+                {m.role === "assistant" ? (
+                  <div className="break-words [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_p]:my-1 [&_ul]:my-1 [&_ul]:pl-5 [&_ul]:list-disc [&_ol]:my-1 [&_ol]:pl-5 [&_ol]:list-decimal [&_li]:my-0.5 [&_strong]:font-semibold [&_em]:italic [&_code]:rounded [&_code]:bg-background/60 [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-[13px] [&_a]:underline [&_a]:text-primary [&_h1]:text-base [&_h1]:font-semibold [&_h1]:my-2 [&_h2]:text-base [&_h2]:font-semibold [&_h2]:my-2 [&_h3]:font-semibold [&_h3]:my-1">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
+                  </div>
+                ) : (
+                  <div className="whitespace-pre-wrap break-words">{m.content}</div>
+                )}
               </div>
             </div>
           ))}
@@ -95,12 +128,12 @@ export function SophiaChat() {
         </div>
 
         {messages.length <= 1 && (
-          <div className="px-4 pb-2 flex flex-wrap gap-2">
+          <div className="px-3 pb-2 flex flex-wrap gap-2 shrink-0">
             {SUGESTOES.map((s) => (
               <button
                 key={s}
                 onClick={() => send(s)}
-                className="text-xs rounded-full border px-3 py-1.5 hover:bg-muted transition-colors"
+                className="text-xs rounded-full border px-3 py-2 hover:bg-muted transition-colors"
               >
                 {s}
               </button>
@@ -108,18 +141,25 @@ export function SophiaChat() {
           </div>
         )}
 
+        {/* Composer */}
         <form
           onSubmit={(e) => { e.preventDefault(); send(input); }}
-          className="border-t p-3 flex items-center gap-2"
+          className="border-t p-3 flex items-center gap-2 shrink-0 bg-background pb-[max(0.75rem,env(safe-area-inset-bottom))]"
         >
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Pergunte algo à Sophia…"
-            className="flex-1 bg-background border rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            className="flex-1 min-w-0 bg-background border rounded-full px-4 h-11 text-base focus:outline-none focus:ring-2 focus:ring-primary"
             disabled={loading}
           />
-          <Button type="submit" size="icon" disabled={loading || !input.trim()} className="rounded-full">
+          <Button
+            type="submit"
+            size="icon"
+            disabled={loading || !input.trim()}
+            className="rounded-full h-11 w-11 shrink-0"
+            aria-label="Enviar"
+          >
             <Send className="h-4 w-4" />
           </Button>
         </form>
