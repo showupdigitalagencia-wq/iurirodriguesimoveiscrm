@@ -266,10 +266,8 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>✅ Reunião agendada! Envie a confirmação</DialogTitle>
-            <DialogDescription>
-              Copie a mensagem e envie pelo WhatsApp para cada lead.
-            </DialogDescription>
+            <DialogTitle>✅ Reunião agendada com sucesso!</DialogTitle>
+            <DialogDescription>Envie a confirmação:</DialogDescription>
           </DialogHeader>
           {confirmacao.local && (
             <div className="text-xs bg-muted rounded-md p-2 break-all">
