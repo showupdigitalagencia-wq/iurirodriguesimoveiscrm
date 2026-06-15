@@ -164,6 +164,98 @@ export const addLeadToReuniao = createServerFn({ method: "POST" })
     return { ok: true, lead: l, reuniao: r };
   });
 
+export const addLeadsBatchToReuniao = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({
+    reuniao_id: z.string().uuid(),
+    lead_ids: z.array(z.string().uuid()).min(1).max(200),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const [{ data: roleRow }, { data: profile }, { data: reuniao }, { data: leadsRows }, { data: existingRows }] = await Promise.all([
+      supabaseAdmin.from("user_roles").select("role").eq("user_id", context.userId).maybeSingle(),
+      supabaseAdmin.from("profiles").select("responsavel_id").eq("id", context.userId).maybeSingle(),
+      supabaseAdmin.from("reunioes" as never).select("id, titulo, data_inicio, local, tipo").eq("id", data.reuniao_id).maybeSingle(),
+      supabaseAdmin.from("leads").select("id, nome, telefone, canal").in("id", data.lead_ids),
+      supabaseAdmin.from("reuniao_participantes" as never).select("lead_id").eq("reuniao_id", data.reuniao_id).not("lead_id", "is", null),
+    ]);
+    if (!reuniao) throw new Error("Reunião não encontrada");
+    const isAdmin = roleRow?.role === "admin";
+    let allowed = (leadsRows ?? []) as { id: string; nome: string; telefone: string; canal: string | null }[];
+    if (!isAdmin) {
+      const respId = (profile?.responsavel_id as string | null) ?? null;
+      if (!respId) throw new Error("Sem permissão");
+      const { data: resp } = await supabaseAdmin.from("responsaveis").select("canal").eq("id", respId).maybeSingle();
+      const meuCanal = (resp?.canal as string | null) ?? null;
+      if (!meuCanal) throw new Error("Sem permissão");
+      allowed = allowed.filter((l) => l.canal === meuCanal);
+    }
+    const existingIds = new Set(((existingRows ?? []) as { lead_id: string }[]).map((r) => r.lead_id));
+    const toInsert = allowed.filter((l) => !existingIds.has(l.id));
+    if (toInsert.length) {
+      await supabaseAdmin.from("reuniao_participantes" as never).insert(
+        toInsert.map((l) => ({ reuniao_id: data.reuniao_id, lead_id: l.id, added_by: context.userId })) as never,
+      );
+    }
+    const r = reuniao as unknown as { titulo: string; data_inicio: string; local: string | null; tipo: string };
+    return { ok: true, reuniao: r, added: allowed };
+  });
+
+export const addUsersBatchToReuniao = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({
+    reuniao_id: z.string().uuid(),
+    user_ids: z.array(z.string().uuid()).min(1).max(200),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: roleRow } = await supabaseAdmin
+      .from("user_roles").select("role").eq("user_id", context.userId).maybeSingle();
+    if (roleRow?.role !== "admin") throw new Error("Apenas Admin pode adicionar usuários internos");
+    const { data: existingRows } = await supabaseAdmin
+      .from("reuniao_participantes" as never)
+      .select("user_id").eq("reuniao_id", data.reuniao_id).not("user_id", "is", null);
+    const existingIds = new Set(((existingRows ?? []) as { user_id: string }[]).map((r) => r.user_id));
+    const toInsert = data.user_ids.filter((u) => !existingIds.has(u));
+    if (toInsert.length) {
+      await supabaseAdmin.from("reuniao_participantes" as never).insert(
+        toInsert.map((uid) => ({ reuniao_id: data.reuniao_id, user_id: uid, added_by: context.userId })) as never,
+      );
+    }
+    // Push para cada adicionado
+    try {
+      const appId = process.env.ONESIGNAL_APP_ID;
+      const restKey = process.env.ONESIGNAL_REST_API_KEY;
+      if (appId && restKey && toInsert.length) {
+        const { data: profs } = await supabaseAdmin
+          .from("profiles").select("id, onesignal_external_id").in("id", toInsert);
+        const extIds = ((profs ?? []) as { onesignal_external_id: string | null }[])
+          .map((p) => p.onesignal_external_id).filter((x): x is string => !!x);
+        const { data: reuniao } = await supabaseAdmin
+          .from("reunioes" as never).select("titulo, data_inicio").eq("id", data.reuniao_id).maybeSingle();
+        const r = reuniao as unknown as { titulo: string; data_inicio: string } | null;
+        if (extIds.length && r) {
+          const dt = new Date(r.data_inicio);
+          await fetch("https://api.onesignal.com/notifications?c=push", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Key ${restKey}` },
+            body: JSON.stringify({
+              app_id: appId,
+              include_aliases: { external_id: extIds },
+              target_channel: "push",
+              headings: { en: "🟡 Você foi adicionado a uma reunião!" },
+              contents: { en: `${r.titulo} — ${dt.toLocaleDateString("pt-BR")} ${dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}` },
+              url: "https://iurirodriguesimoveiscrm.lovable.app/agenda",
+            }),
+          });
+        }
+      }
+    } catch (e) {
+      console.warn("[addUsersBatch] push falhou", e);
+    }
+    return { ok: true, addedCount: toInsert.length };
+  });
+
 export const addUserToReuniao = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ reuniao_id: z.string().uuid(), user_id: z.string().uuid() }).parse(d))
