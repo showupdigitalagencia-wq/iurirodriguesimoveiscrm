@@ -127,9 +127,8 @@ function SistemaCorretoresToggle() {
     </div>
   );
 }
-    </div>
-  );
-}
+
+
 
 function MinhaContaSection() {
   const [currentPassword, setCurrentPassword] = useState("");
