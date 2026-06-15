@@ -248,12 +248,9 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
           </DialogHeader>
           <div className="bg-muted rounded-md p-3 text-sm whitespace-pre-wrap break-words">{msg}</div>
           <div className="flex flex-col gap-2">
-            <Button variant="gold" onClick={() => copyText(msg)}>
-              <Copy className="h-4 w-4 mr-1" /> Copiar mensagem
-            </Button>
-            <Button asChild variant="default">
-              <a href={GROUP_WA_URL} target="_blank" rel="noopener noreferrer">
-                <Users className="h-4 w-4 mr-1" /> Enviar para Grupo WhatsApp
+            <Button asChild variant="gold">
+              <a href={`${GROUP_WA_URL}`} target="_blank" rel="noopener noreferrer">
+                <Users className="h-4 w-4 mr-1" /> Enviar no WhatsApp (Grupo)
               </a>
             </Button>
             <Button variant="outline" onClick={() => onOpenChange(false)}>Fechar</Button>
