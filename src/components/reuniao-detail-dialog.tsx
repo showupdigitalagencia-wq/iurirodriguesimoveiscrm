@@ -20,7 +20,7 @@ function onlyDigits(s: string) {
 }
 
 function buildWhatsAppMessage(
-  tipo: "individual" | "institucional" | "alinhamento",
+  tipo: "individual" | "institucional" | "alinhamento" | "mentoria",
   leadNome: string,
   dataHora: Date,
   local: string | null,
