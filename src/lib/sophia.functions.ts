@@ -144,7 +144,7 @@ export const sophiaChat = createServerFn({ method: "POST" })
       }),
 
       contar_leads: tool({
-        description: "Conta leads do escopo permitido por período (hoje/semana/mes/total) e/ou etapa.",
+        description: "PIPELINE DE VENDAS DE IMÓVEIS (corretores atendendo clientes que querem comprar/alugar). Conta leads de vendas por período (hoje/semana/mes/total) e/ou etapa (novo, contato, qualificado, visita, proposta, negociacao, fechado, perdido). Para captação de corretores use captacao_contar_leads.",
         inputSchema: z.object({
           periodo: z.enum(["hoje", "semana", "mes", "total"]).default("hoje"),
           etapa: z.string().optional(),
@@ -171,7 +171,7 @@ export const sophiaChat = createServerFn({ method: "POST" })
       }),
 
       buscar_lead: tool({
-        description: "Busca leads do escopo permitido por nome ou telefone. Retorna até 10 resultados.",
+        description: "PIPELINE DE VENDAS DE IMÓVEIS. Busca leads de vendas (clientes querendo comprar/alugar imóvel) por nome ou telefone. Para captação de corretores use captacao_buscar_lead.",
         inputSchema: z.object({ termo: z.string().min(2) }),
         execute: async ({ termo }) => {
           const permitidos = corretoresPermitidos();
@@ -212,7 +212,7 @@ export const sophiaChat = createServerFn({ method: "POST" })
       }),
 
       relatorio_rapido: tool({
-        description: "Resumo dos últimos 7 dias: leads por etapa, dentro do escopo permitido.",
+        description: "PIPELINE DE VENDAS DE IMÓVEIS. Resumo dos últimos 7 dias por etapa. Para captação de corretores use captacao_relatorio.",
         inputSchema: z.object({}),
         execute: async () => {
           const permitidos = corretoresPermitidos();
@@ -390,6 +390,65 @@ export const sophiaChat = createServerFn({ method: "POST" })
           };
         },
       }),
+
+      // ============ PIPELINE DE CAPTAÇÃO DE CORRETORES (tabela `leads`) ============
+      captacao_contar_leads: tool({
+        description: "PIPELINE DE CAPTAÇÃO DE CORRETORES (executivos recrutando novos corretores para o time). Conta leads de captação por período e/ou etapa (novos_leads, em_atendimento, reuniao_agendada, fechado, descartado). Admin vê todos; executivo vê apenas o próprio funil (responsavel_id); corretor não tem acesso.",
+        inputSchema: z.object({
+          periodo: z.enum(["hoje", "semana", "mes", "total"]).default("hoje"),
+          etapa: z.string().optional(),
+        }),
+        execute: async ({ periodo, etapa }) => {
+          if (scope.tipo === "corretor") return { erro: NEGADO };
+          let q = supabaseAdmin.from("leads").select("id, etapa, created_at, responsavel_id", { count: "exact" });
+          if (scope.tipo === "executivo") q = q.eq("responsavel_id", scope.responsavelId);
+          const now = new Date();
+          if (periodo === "hoje") {
+            const d = new Date(now); d.setHours(0, 0, 0, 0);
+            q = q.gte("created_at", d.toISOString());
+          } else if (periodo === "semana") {
+            const d = new Date(now); d.setDate(d.getDate() - 7);
+            q = q.gte("created_at", d.toISOString());
+          } else if (periodo === "mes") {
+            const d = new Date(now); d.setMonth(d.getMonth() - 1);
+            q = q.gte("created_at", d.toISOString());
+          }
+          if (etapa) q = q.eq("etapa", etapa as never);
+          const { data, count } = await q;
+          return { pipeline: "captacao_corretores", total: count ?? data?.length ?? 0, periodo, etapa: etapa ?? null };
+        },
+      }),
+
+      captacao_buscar_lead: tool({
+        description: "PIPELINE DE CAPTAÇÃO DE CORRETORES. Busca leads de captação (pessoas querendo trabalhar como corretor) por nome ou telefone.",
+        inputSchema: z.object({ termo: z.string().min(2) }),
+        execute: async ({ termo }) => {
+          if (scope.tipo === "corretor") return { erro: NEGADO };
+          let q = supabaseAdmin
+            .from("leads")
+            .select("id, nome, telefone, etapa, regiao, canal, responsavel_id")
+            .or(`nome.ilike.%${termo}%,telefone.ilike.%${termo}%`)
+            .limit(10);
+          if (scope.tipo === "executivo") q = q.eq("responsavel_id", scope.responsavelId);
+          const { data } = await q;
+          return { pipeline: "captacao_corretores", leads: data ?? [] };
+        },
+      }),
+
+      captacao_relatorio: tool({
+        description: "PIPELINE DE CAPTAÇÃO DE CORRETORES. Resumo dos últimos 7 dias por etapa (novos_leads, em_atendimento, reuniao_agendada, fechado, descartado).",
+        inputSchema: z.object({}),
+        execute: async () => {
+          if (scope.tipo === "corretor") return { erro: NEGADO };
+          const since = new Date(); since.setDate(since.getDate() - 7);
+          let q = supabaseAdmin.from("leads").select("etapa, responsavel_id").gte("created_at", since.toISOString());
+          if (scope.tipo === "executivo") q = q.eq("responsavel_id", scope.responsavelId);
+          const { data } = await q;
+          const por_etapa: Record<string, number> = {};
+          (data ?? []).forEach((l) => { por_etapa[l.etapa] = (por_etapa[l.etapa] ?? 0) + 1; });
+          return { pipeline: "captacao_corretores", total_7d: data?.length ?? 0, por_etapa };
+        },
+      }),
     };
 
     const escopoTexto =
@@ -423,6 +482,27 @@ Se perguntarem sobre corretor fora do seu escopo: "Não tenho autorização para
 3. **Zero vazamento**: se o dado pertencer a alguém fora do seu escopo, responda EXATAMENTE: "Não tenho acesso a essa informação." (sem dizer que existe).
 4. **Cite os números reais** que vieram da ferramenta — nunca "muitos leads" quando há um número exato.
 5. **Refaça a busca a cada turno**: mesmo se a pergunta for parecida com a anterior, chame a ferramenta de novo — o banco pode ter mudado entre as duas mensagens.
+
+🔀 DOIS PIPELINES DISTINTOS — NUNCA MISTURE:
+
+**A) PIPELINE DE CAPTAÇÃO DE CORRETORES** (gerido pelos EXECUTIVOS)
+- Sobre quem: pessoas que querem **trabalhar como corretor** no time.
+- Etapas: Novos Leads → Em Atendimento → Reunião Agendada → Fechado → Descartado.
+- Palavras-chave: "corretor", "captação", "recrutamento", "time", "equipe", "recrutar".
+- Ferramentas: captacao_contar_leads, captacao_buscar_lead, captacao_relatorio.
+
+**B) PIPELINE DE VENDAS DE IMÓVEIS** (gerido pelos CORRETORES)
+- Sobre quem: clientes que querem **comprar ou alugar imóvel**.
+- Etapas: Novo Lead → Contato Realizado → Visita Agendada → Proposta → Negociação → Fechado.
+- Palavras-chave: "venda", "aluguel", "imóvel", "compra", "locação", "cliente".
+- Ferramentas: contar_leads, buscar_lead, relatorio_rapido.
+
+REGRAS DE PIPELINE:
+- Se a pergunta for **ambígua** ("quantos leads chegaram hoje?", "como está o pipeline?"), faça UMA de duas coisas:
+  (a) pergunte rapidamente: "Você quer ver **captação de corretores** ou **vendas de imóveis**?", OU
+  (b) chame AMBAS as ferramentas e responda separado: "📋 **Captação:** X leads novos hoje | 🏠 **Vendas:** Y leads novos hoje".
+- Se a pergunta deixa claro o pipeline, chame só a ferramenta correta e **identifique a fonte** no início ("No pipeline de **vendas**, ...").
+- **NUNCA** misture números dos dois pipelines no mesmo total sem rotular cada um.
 
 CONTROLE DE ACESSO DO USUÁRIO ATUAL:
 ${escopoTexto}${regrasComuns}
