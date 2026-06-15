@@ -40,7 +40,18 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
   const [historico, setHistorico] = useState<HistoricoRow[]>([]);
   const [nota, setNota] = useState("");
   const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState({ nome: "", email: "", telefone: "", observacoes: "", canal: "denise" as LeadRow["canal"] });
+  const [form, setForm] = useState({
+    nome: "", email: "", telefone: "", observacoes: "",
+    canal: "denise" as LeadRow["canal"],
+    regiao: "barra_da_tijuca" as LeadRegiao,
+    etapa: "novos_leads" as LeadRow["etapa"],
+    ja_corretor: "",
+    creci_ativo: "",
+    numero_creci: "",
+    disponibilidade_regiao: "",
+    disponibilidade_video: "",
+    possui_veiculo: "",
+  });
   const [agendarOpen, setAgendarOpen] = useState(false);
 
   const callUpdate = useServerFn(updateLead);
