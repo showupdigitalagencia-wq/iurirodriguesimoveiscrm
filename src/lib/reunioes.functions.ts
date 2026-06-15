@@ -452,6 +452,7 @@ export const createReuniao = createServerFn({ method: "POST" })
         const userIds = Array.from(new Set([
           context.userId,
           ...((profilesRows ?? []) as { id: string; responsavel_id: string }[]).map((p) => p.id),
+          ...allUserIds,
         ]));
         let primaryMeetLink: string | null = null;
         let primaryEventId: string | null = null;
