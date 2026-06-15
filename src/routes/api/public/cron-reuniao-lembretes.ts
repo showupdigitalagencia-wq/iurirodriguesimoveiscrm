@@ -77,7 +77,7 @@ export const Route = createFileRoute("/api/public/cron-reuniao-lembretes")({
 
             const dt = new Date(rRaw.data_inicio);
             const label = w.tipo === "1d" ? "Amanhã" : w.tipo === "1h" ? "Em 1 hora" : "Em 15 minutos";
-            const hora = dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+            const hora = dt.toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" });
             const title = `Lembrete: ${rRaw.titulo}`;
             const message = `${label} às ${hora}`;
             const url = `https://iurirodriguesimoveiscrm.lovable.app/agenda?open=${rRaw.id}`;

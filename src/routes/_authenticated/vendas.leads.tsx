@@ -267,8 +267,8 @@ function AgendarVisitaButton({ lead, onDone }: { lead: VendasLead; onDone: () =>
       toast.success("Visita agendada");
       // WhatsApp confirmação
       const dt = new Date(dataInicio);
-      const dataBR = dt.toLocaleDateString("pt-BR");
-      const horaBR = dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+      const dataBR = dt.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
+      const horaBR = dt.toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" });
       const msg = `Olá ${lead.nome}! Confirmando sua visita ao imóvel em ${endereco.trim()} no dia ${dataBR} às ${horaBR}. Iuri Rodrigues Imóveis 🏢`;
       const tel = (lead.telefone ?? "").replace(/\D/g, "");
       if (tel) window.open(`https://wa.me/${tel.length <= 11 ? "55" + tel : tel}?text=${encodeURIComponent(msg)}`, "_blank");
@@ -328,8 +328,8 @@ function ReuniaoOnlineButton({ lead, onDone }: { lead: VendasLead; onDone: () =>
         toast.warning("Reunião registrada, mas o Google Meet não pôde ser criado. Conecte o Google na Agenda.");
       }
       const dt = new Date(dataInicio);
-      const dataBR = dt.toLocaleDateString("pt-BR");
-      const horaBR = dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+      const dataBR = dt.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
+      const horaBR = dt.toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" });
       const linkPart = res.meetLink ? `\n📍 Link: ${res.meetLink}` : "";
       const msg = `Olá ${lead.nome}! Sua reunião online está confirmada para ${dataBR} às ${horaBR}.${linkPart}\n\nIuri Rodrigues Imóveis 🏢`;
       const tel = (lead.telefone ?? "").replace(/\D/g, "");

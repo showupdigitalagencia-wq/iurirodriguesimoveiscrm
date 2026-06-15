@@ -244,7 +244,7 @@ export const addUsersBatchToReuniao = createServerFn({ method: "POST" })
               include_aliases: { external_id: extIds },
               target_channel: "push",
               headings: { en: "🟡 Você foi adicionado a uma reunião!" },
-              contents: { en: `${r.titulo} — ${dt.toLocaleDateString("pt-BR")} ${dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}` },
+              contents: { en: `${r.titulo} — ${dt.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })} ${dt.toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" })}` },
               url: "https://iurirodriguesimoveiscrm.lovable.app/agenda",
             }),
           });
@@ -292,8 +292,8 @@ export const addUserToReuniao = createServerFn({ method: "POST" })
       const r = reuniao as unknown as { titulo: string; data_inicio: string; local: string | null };
       if (appId && restKey && extId) {
         const dt = new Date(r.data_inicio);
-        const dataStr = dt.toLocaleDateString("pt-BR");
-        const horaStr = dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+        const dataStr = dt.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
+        const horaStr = dt.toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" });
         await fetch("https://api.onesignal.com/notifications?c=push", {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Key ${restKey}` },
@@ -380,8 +380,8 @@ export const createReuniao = createServerFn({ method: "POST" })
           (creatorProfile?.nome ?? "Equipe Iuri Rodrigues");
 
         const dt = new Date(data.data_inicio);
-        const dataBR = dt.toLocaleDateString("pt-BR");
-        const horaBR = dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+        const dataBR = dt.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
+        const horaBR = dt.toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" });
         const isInstitucional = data.tipo === "institucional";
         const summary = isInstitucional
           ? "Reunião Institucional - Iuri Rodrigues Imóveis"
@@ -474,8 +474,8 @@ export const createReuniao = createServerFn({ method: "POST" })
       const nomeCriador = profileCriador?.nome ?? "Sistema";
 
       const dt = new Date(data.data_inicio);
-      const dataStr = dt.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
-      const horaStr = dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+      const dataStr = dt.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit", year: "numeric" });
+      const horaStr = dt.toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" });
 
       let title: string;
       let message: string;
@@ -530,8 +530,8 @@ async function cancelMeetingSideEffects(reuniaoId: string, criadoPorUserId: stri
       .from("profiles").select("nome").eq("id", criadoPorUserId).maybeSingle();
     const nome = prof?.nome ?? "Sistema";
     const dt = new Date(r.data_inicio);
-    const dataStr = dt.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
-    const horaStr = dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    const dataStr = dt.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit", year: "numeric" });
+    const horaStr = dt.toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" });
     await sendOneSignalPush({
       segments: ["All"],
       title: "❌ Reunião Cancelada",
