@@ -195,6 +195,7 @@ function UsuariosPage() {
               <th className="text-left px-4 py-3">Responsável</th>
               <th className="text-left px-4 py-3">Último acesso</th>
               <th className="text-left px-4 py-3">Status</th>
+              <th className="text-left px-4 py-3">Acesso Vendas</th>
               <th className="text-right px-4 py-3">Ações</th>
             </tr>
           </thead>
