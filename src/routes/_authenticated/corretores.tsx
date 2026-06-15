@@ -317,11 +317,21 @@ function CorretoresPage() {
                   <TableCell className="text-muted-foreground text-sm whitespace-nowrap">
                     {format(new Date(l.created_at), "dd/MM/yy HH:mm", { locale: ptBR })}
                   </TableCell>
+                  <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                    {l.telefone && (
+                      <a
+                        href={`tel:${l.telefone.replace(/[^+\d]/g, "")}`}
+                        className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md bg-emerald-600 text-white text-xs font-medium hover:bg-emerald-700"
+                      >
+                        <Phone className="h-3.5 w-3.5" /> Ligar
+                      </a>
+                    )}
+                  </TableCell>
                 </TableRow>
               );
             })}
             {filtered.length === 0 && (
-              <TableRow><TableCell colSpan={isAdmin ? 9 : 8} className="text-center text-muted-foreground py-8">
+              <TableRow><TableCell colSpan={isAdmin ? 10 : 9} className="text-center text-muted-foreground py-8">
                 Nenhuma captação encontrada.
               </TableCell></TableRow>
             )}
