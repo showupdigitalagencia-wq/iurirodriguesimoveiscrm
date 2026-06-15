@@ -16,7 +16,7 @@ export const listExecutivos = createServerFn({ method: "POST" })
 
     const { data: execs } = await supabaseAdmin
       .from("responsaveis")
-      .select("id, nome, canal, whatsapp, ativo, regiao")
+      .select("id, nome, canal, whatsapp, ativo, regiao, avatar_url")
       .order("nome");
 
     // Equipe fechada = leads do recrutamento já contratados (is_corretor + fechado)
