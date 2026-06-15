@@ -8,6 +8,9 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useServerFn } from "@tanstack/react-start";
 import { createReuniao, listEquipeReuniao, listLeadsReuniao, type EquipeMembro } from "@/lib/reunioes.functions";
+import { ETAPAS } from "@/lib/lead-helpers";
+
+const ETAPA_LABEL: Record<string, string> = Object.fromEntries(ETAPAS.map((e) => [e.id, e.nome]));
 import { startGoogleOAuth, getGoogleStatus } from "@/lib/google.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
