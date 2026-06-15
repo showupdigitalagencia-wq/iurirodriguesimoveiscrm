@@ -80,6 +80,8 @@ function AuthLayout() {
         .eq("role", "admin")
         .maybeSingle()
         .then(({ data }) => { if (active) setIsAdmin(data?.role === "admin"); });
+      supabase.from("configuracoes").select("valor").eq("chave", "sistema_corretores_ativo").maybeSingle()
+        .then(({ data }) => { if (active) setVendasAtivo(data?.valor === true); });
     });
 
     const channel = supabase
