@@ -269,6 +269,51 @@ export const createReuniao = createServerFn({ method: "POST" })
     return { id: reuniaoId, local: finalLocal, invitedEmails, leadsSemEmail };
   });
 
+async function cancelMeetingSideEffects(reuniaoId: string, criadoPorUserId: string) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: row } = await supabaseAdmin
+    .from("reunioes" as never)
+    .select("*")
+    .eq("id", reuniaoId)
+    .maybeSingle();
+  if (!row) return;
+  const r = row as unknown as ReuniaoRow & { google_event_ids?: { user_id: string; event_id: string }[] };
+
+  // Delete Google Calendar events for every participant we know about
+  const refs = Array.isArray(r.google_event_ids) ? r.google_event_ids : [];
+  if (refs.length) {
+    try {
+      const { deleteCalendarEvent } = await import("@/lib/google.server");
+      for (const ref of refs) {
+        const ok = await deleteCalendarEvent({ userId: ref.user_id, eventId: ref.event_id });
+        if (!ok) console.warn("[Reuniao] falha ao remover evento Calendar", ref);
+      }
+    } catch (e) {
+      console.error("[Reuniao] erro ao remover eventos Calendar", e);
+    }
+  }
+
+  // Push notification to all
+  try {
+    const { sendOneSignalPush } = await import("@/lib/onesignal.server");
+    const { data: prof } = await supabaseAdmin
+      .from("profiles").select("nome").eq("id", criadoPorUserId).maybeSingle();
+    const nome = prof?.nome ?? "Sistema";
+    const dt = new Date(r.data_inicio);
+    const dataStr = dt.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
+    const horaStr = dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    await sendOneSignalPush({
+      segments: ["All"],
+      title: "❌ Reunião Cancelada",
+      message: `A reunião de ${dataStr} às ${horaStr} foi cancelada por ${nome}`,
+      url: "https://iurirodriguesimoveiscrm.lovable.app/agenda",
+      data: { reuniao_id: reuniaoId },
+    });
+  } catch (e) {
+    console.error("[Reuniao] push cancelamento falhou", e);
+  }
+}
+
 export const updateReuniaoStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({
@@ -282,6 +327,9 @@ export const updateReuniaoStatus = createServerFn({ method: "POST" })
     const { error } = await context.supabase
       .from("reunioes" as never).update(patch as never).eq("id", data.id);
     if (error) throw new Error(error.message);
+    if (data.status === "cancelada") {
+      await cancelMeetingSideEffects(data.id, context.userId);
+    }
     return { ok: true };
   });
 
@@ -289,6 +337,8 @@ export const deleteReuniao = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
+    // Run side effects (calendar delete + push) before removing the row
+    await cancelMeetingSideEffects(data.id, context.userId);
     const { error } = await context.supabase.from("reunioes" as never).delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
