@@ -40,6 +40,15 @@ const MOBILE_BOTTOM = [
   { to: "/corretores", label: "Corretores", icon: BadgeCheck },
 ] as const;
 
+// Bottom bar exclusiva do corretor de vendas (5 itens)
+const CORRETOR_MOBILE_BOTTOM = [
+  { to: "/vendas", label: "Vendas", icon: LayoutDashboard },
+  { to: "/vendas/pipeline", label: "Pipeline", icon: Kanban },
+  { to: "/vendas/leads", label: "Leads", icon: Users },
+  { to: "/agenda", label: "Agenda", icon: CalendarDays },
+  { to: "/configuracoes", label: "Config", icon: Settings },
+] as const;
+
 // Ícones do topo mobile (direita)
 const MOBILE_TOP_ICONS = [
   { to: "/notificacoes", label: "Notificações", icon: BellRing },
@@ -54,6 +63,9 @@ const ADMIN_NAV = [
 const CONFIG_NAV = [
   { to: "/configuracoes", label: "Configurações", icon: Settings },
 ] as const;
+
+// Rotas permitidas para corretor_vendas (puro)
+const CORRETOR_ALLOWED_PREFIXES = ["/vendas", "/agenda", "/configuracoes", "/notificacoes"];
 
 function AuthLayout() {
   const router = useRouter();
