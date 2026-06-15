@@ -1,18 +1,19 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, useCallback } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { listExecutivos, createExecutivo } from "@/lib/executivos.functions";
+import { listExecutivos, createExecutivo, updateExecutivo, setExecutivoAtivo, deleteExecutivo } from "@/lib/executivos.functions";
 import { getMyRole } from "@/lib/users.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, MessageCircle, Users, FileText, MapPin, ChevronRight, Plus } from "lucide-react";
+import { Loader2, MessageCircle, Users, FileText, MapPin, ChevronRight, Plus, Pencil, Power, Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/executivos")({
   head: () => ({ meta: [{ title: "Executivos — Sistema NEXUS" }, { name: "robots", content: "noindex" }] }),
@@ -21,7 +22,7 @@ export const Route = createFileRoute("/_authenticated/executivos")({
 
 type Exec = {
   id: string; nome: string; canal: string; whatsapp: string | null; ativo: boolean;
-  regiao: string | null; total_corretores: number; leads_ativos: number;
+  regiao: string | null; avatar_url: string | null; total_corretores: number; leads_ativos: number;
 };
 
 const REGIOES = [
