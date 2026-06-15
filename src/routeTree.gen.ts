@@ -33,6 +33,7 @@ import { Route as ApiPublicCronUnattendedRouteImport } from './routes/api/public
 import { Route as ApiPublicCronReuniaoLembretesRouteImport } from './routes/api/public/cron-reuniao-lembretes'
 import { Route as AuthenticatedVendasPipelineRouteImport } from './routes/_authenticated/vendas.pipeline'
 import { Route as AuthenticatedVendasLeadsRouteImport } from './routes/_authenticated/vendas.leads'
+import { Route as AuthenticatedVendasAgendaRouteImport } from './routes/_authenticated/vendas.agenda'
 import { Route as AuthenticatedLeadsLeadIdRouteImport } from './routes/_authenticated/leads.$leadId'
 
 const FormularioRoute = FormularioRouteImport.update({
@@ -162,6 +163,12 @@ const AuthenticatedVendasLeadsRoute =
     path: '/leads',
     getParentRoute: () => AuthenticatedVendasRoute,
   } as any)
+const AuthenticatedVendasAgendaRoute =
+  AuthenticatedVendasAgendaRouteImport.update({
+    id: '/agenda',
+    path: '/agenda',
+    getParentRoute: () => AuthenticatedVendasRoute,
+  } as any)
 const AuthenticatedLeadsLeadIdRoute =
   AuthenticatedLeadsLeadIdRouteImport.update({
     id: '/$leadId',
@@ -185,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/vendas': typeof AuthenticatedVendasRouteWithChildren
   '/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
+  '/vendas/agenda': typeof AuthenticatedVendasAgendaRoute
   '/vendas/leads': typeof AuthenticatedVendasLeadsRoute
   '/vendas/pipeline': typeof AuthenticatedVendasPipelineRoute
   '/api/public/cron-reuniao-lembretes': typeof ApiPublicCronReuniaoLembretesRoute
@@ -210,6 +218,7 @@ export interface FileRoutesByTo {
   '/tempo-acesso': typeof AuthenticatedTempoAcessoRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
+  '/vendas/agenda': typeof AuthenticatedVendasAgendaRoute
   '/vendas/leads': typeof AuthenticatedVendasLeadsRoute
   '/vendas/pipeline': typeof AuthenticatedVendasPipelineRoute
   '/api/public/cron-reuniao-lembretes': typeof ApiPublicCronReuniaoLembretesRoute
@@ -238,6 +247,7 @@ export interface FileRoutesById {
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
   '/_authenticated/vendas': typeof AuthenticatedVendasRouteWithChildren
   '/_authenticated/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
+  '/_authenticated/vendas/agenda': typeof AuthenticatedVendasAgendaRoute
   '/_authenticated/vendas/leads': typeof AuthenticatedVendasLeadsRoute
   '/_authenticated/vendas/pipeline': typeof AuthenticatedVendasPipelineRoute
   '/api/public/cron-reuniao-lembretes': typeof ApiPublicCronReuniaoLembretesRoute
@@ -266,6 +276,7 @@ export interface FileRouteTypes {
     | '/usuarios'
     | '/vendas'
     | '/leads/$leadId'
+    | '/vendas/agenda'
     | '/vendas/leads'
     | '/vendas/pipeline'
     | '/api/public/cron-reuniao-lembretes'
@@ -291,6 +302,7 @@ export interface FileRouteTypes {
     | '/tempo-acesso'
     | '/usuarios'
     | '/leads/$leadId'
+    | '/vendas/agenda'
     | '/vendas/leads'
     | '/vendas/pipeline'
     | '/api/public/cron-reuniao-lembretes'
@@ -318,6 +330,7 @@ export interface FileRouteTypes {
     | '/_authenticated/usuarios'
     | '/_authenticated/vendas'
     | '/_authenticated/leads/$leadId'
+    | '/_authenticated/vendas/agenda'
     | '/_authenticated/vendas/leads'
     | '/_authenticated/vendas/pipeline'
     | '/api/public/cron-reuniao-lembretes'
@@ -512,6 +525,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedVendasLeadsRouteImport
       parentRoute: typeof AuthenticatedVendasRoute
     }
+    '/_authenticated/vendas/agenda': {
+      id: '/_authenticated/vendas/agenda'
+      path: '/agenda'
+      fullPath: '/vendas/agenda'
+      preLoaderRoute: typeof AuthenticatedVendasAgendaRouteImport
+      parentRoute: typeof AuthenticatedVendasRoute
+    }
     '/_authenticated/leads/$leadId': {
       id: '/_authenticated/leads/$leadId'
       path: '/$leadId'
@@ -534,12 +554,14 @@ const AuthenticatedLeadsRouteWithChildren =
   AuthenticatedLeadsRoute._addFileChildren(AuthenticatedLeadsRouteChildren)
 
 interface AuthenticatedVendasRouteChildren {
+  AuthenticatedVendasAgendaRoute: typeof AuthenticatedVendasAgendaRoute
   AuthenticatedVendasLeadsRoute: typeof AuthenticatedVendasLeadsRoute
   AuthenticatedVendasPipelineRoute: typeof AuthenticatedVendasPipelineRoute
   AuthenticatedVendasIndexRoute: typeof AuthenticatedVendasIndexRoute
 }
 
 const AuthenticatedVendasRouteChildren: AuthenticatedVendasRouteChildren = {
+  AuthenticatedVendasAgendaRoute: AuthenticatedVendasAgendaRoute,
   AuthenticatedVendasLeadsRoute: AuthenticatedVendasLeadsRoute,
   AuthenticatedVendasPipelineRoute: AuthenticatedVendasPipelineRoute,
   AuthenticatedVendasIndexRoute: AuthenticatedVendasIndexRoute,
