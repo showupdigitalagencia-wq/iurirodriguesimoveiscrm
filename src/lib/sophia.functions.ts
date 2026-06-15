@@ -63,25 +63,26 @@ export const sophiaChat = createServerFn({ method: "POST" })
 
           const { data: disp } = await supabaseAdmin
             .from("corretor_disponibilidade")
-            .select("corretor_id, tipo, dia_semana, hora_inicio, hora_fim, data_inicio, data_fim, regiao")
+            .select("corretor_id, tipo, dia_semana, data, hora_inicio, hora_fim")
             .in("corretor_id", corretores.map((c) => c.id));
 
           const now = new Date();
           const targetDay = now.getDay();
           const targetTime = hora ?? `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+          const todayISO = now.toISOString().slice(0, 10);
 
           const result = corretores.map((c) => {
             const meus = (disp ?? []).filter((d) => d.corretor_id === c.id);
-            const bloqueado = meus.some((d) => d.tipo === "bloqueio" && d.data_inicio && d.data_fim
-              && new Date(d.data_inicio) <= now && now <= new Date(d.data_fim));
+            const bloqueado = meus.some((d) => d.tipo === "bloqueio" && d.data === todayISO);
             const livre = !bloqueado && meus.some((d) => {
               if (d.tipo !== "recorrente") return false;
               if (d.dia_semana !== targetDay) return false;
-              if (regiao && d.regiao && !d.regiao.toLowerCase().includes(regiao.toLowerCase())) return false;
               return (d.hora_inicio ?? "00:00") <= targetTime && targetTime <= (d.hora_fim ?? "23:59");
             });
             return { id: c.id, nome: c.nome, disponivel: livre };
           });
+          // regiao filtering is descriptive only — corretor disponibilidade não tem campo regiao
+          const _ = regiao;
           return { corretores: result.filter((c) => c.disponivel || !hora) };
         },
       }),
@@ -105,7 +106,7 @@ export const sophiaChat = createServerFn({ method: "POST" })
             const d = new Date(now); d.setMonth(d.getMonth() - 1);
             query = query.gte("created_at", d.toISOString());
           }
-          if (etapa) query = query.eq("etapa", etapa);
+          if (etapa) query = query.eq("etapa", etapa as never);
           const { data, count } = await query;
           return { total: count ?? data?.length ?? 0, periodo, etapa: etapa ?? null };
         },
