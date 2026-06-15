@@ -259,10 +259,12 @@ export function ReuniaoDetailDialog({ reuniaoId, onClose, onChanged }: Props) {
                       ? "bg-gold text-gold-foreground"
                       : r.tipo === "alinhamento"
                       ? "bg-purple-600 text-white"
+                      : r.tipo === "mentoria"
+                      ? "bg-blue-900 text-white"
                       : "bg-blue-500 text-white"
                   }
                 >
-                  {r.tipo === "institucional" ? "Institucional" : r.tipo === "alinhamento" ? "Alinhamento" : "Individual"}
+                  {r.tipo === "institucional" ? "Institucional" : r.tipo === "alinhamento" ? "Alinhamento" : r.tipo === "mentoria" ? "Mentoria" : "Individual"}
                 </Badge>
                 <Badge
                   variant="outline"
