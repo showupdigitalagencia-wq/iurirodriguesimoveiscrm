@@ -415,7 +415,14 @@ Se perguntarem sobre corretor fora do seu escopo: "Não tenho autorização para
     const messages: ModelMessage[] = [
       {
         role: "system",
-        content: `Você é a Laura, assistente IA interna do Sistema Nexus da imobiliária Iuri Rodrigues. Tom profissional, prestativa, respostas claras e diretas em português brasileiro. NUNCA invente informações — se não souber, responda "Não tenho essa informação no momento". Use markdown leve quando ajudar a leitura.
+        content: `Você é a Laura, assistente IA interna do Sistema Nexus da imobiliária Iuri Rodrigues. Tom profissional, prestativa, respostas claras e diretas em português brasileiro. Use markdown leve quando ajudar a leitura.
+
+⛔ REGRAS ABSOLUTAS DE PRECISÃO E TEMPO REAL (NUNCA QUEBRE):
+1. **TUDO em tempo real**: para QUALQUER pergunta sobre números, status, leads, corretores, reuniões, agenda, pipeline ou métricas, você SEMPRE chama uma ferramenta NA HORA da resposta. Os dados mudam a cada minuto; nunca trate respostas anteriores como fonte de verdade.
+2. **Zero invenção**: se a ferramenta não retornar o dado pedido, responda EXATAMENTE: "Não encontrei essa informação no sistema." Não estime, não arredonde, não chute.
+3. **Zero vazamento**: se o dado pertencer a alguém fora do seu escopo, responda EXATAMENTE: "Não tenho acesso a essa informação." (sem dizer que existe).
+4. **Cite os números reais** que vieram da ferramenta — nunca "muitos leads" quando há um número exato.
+5. **Refaça a busca a cada turno**: mesmo se a pergunta for parecida com a anterior, chame a ferramenta de novo — o banco pode ter mudado entre as duas mensagens.
 
 CONTROLE DE ACESSO DO USUÁRIO ATUAL:
 ${escopoTexto}${regrasComuns}
@@ -482,4 +489,56 @@ Quando o corretor pedir orientação ("como abordar lead frio", "lead não respo
     });
 
     return { reply: text };
+  });
+
+// Snapshot ao vivo carregado quando o chat abre — dá contexto imediato sem precisar conversar.
+export const sophiaContext = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const scope = await resolverAcesso(context.supabase as unknown as SupabaseClient, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const agora = new Date();
+    const inicioDia = new Date(agora); inicioDia.setHours(0, 0, 0, 0);
+    const h48 = new Date(agora.getTime() - 48 * 3600 * 1000).toISOString();
+    const amanha = new Date(agora.getTime() + 36 * 3600 * 1000).toISOString();
+
+    const permitidos: string[] | "todos" =
+      scope.tipo === "admin" ? "todos" :
+      scope.tipo === "executivo" ? [scope.userId, ...scope.corretorIds] :
+      [scope.userId];
+
+    let lq = supabaseAdmin.from("vendas_leads").select("id, etapa, updated_at, created_at, corretor_id");
+    if (permitidos !== "todos") lq = lq.in("corretor_id", permitidos);
+    const { data: leadsAll } = await lq;
+    const leads = leadsAll ?? [];
+    const ativos = leads.filter((l) => l.etapa !== "fechado" && l.etapa !== "perdido").length;
+    const hoje = leads.filter((l) => new Date(l.created_at) >= inicioDia).length;
+    const parados48h = leads.filter((l) => ["novo", "contato", "qualificado"].includes(l.etapa) && l.updated_at < h48).length;
+
+    const { data: reun } = await supabaseAdmin
+      .from("reunioes" as never)
+      .select("id, titulo, data_inicio")
+      .gte("data_inicio", agora.toISOString())
+      .lt("data_inicio", amanha)
+      .order("data_inicio")
+      .limit(5);
+    const reunioes = (reun ?? []) as unknown as { id: string; titulo: string; data_inicio: string }[];
+
+    return {
+      gerado_em: agora.toISOString(),
+      usuario: { nome: scope.nome, tipo: scope.tipo },
+      snapshot: {
+        leads_ativos: ativos,
+        leads_novos_hoje: hoje,
+        leads_parados_48h: parados48h,
+        proximas_reunioes_36h: reunioes.length,
+      },
+      proxima_reuniao: reunioes[0]
+        ? {
+            titulo: reunioes[0].titulo,
+            quando: new Date(reunioes[0].data_inicio).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", dateStyle: "short", timeStyle: "short" }),
+          }
+        : null,
+    };
   });
