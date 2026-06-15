@@ -112,23 +112,36 @@ export const atribuirLead = createServerFn({ method: "POST" })
       .single();
     if (error) throw new Error(error.message);
 
-    // Push pro corretor
+    // Push: corretor atribuído + quem atribuiu (em paralelo)
     try {
       const { sendOneSignalPush } = await import("@/lib/onesignal.server");
-      const { data: prof } = await supabaseAdmin
-        .from("profiles").select("onesignal_external_id").eq("id", data.corretor_id).maybeSingle();
-      const ext = prof?.onesignal_external_id;
-      if (ext) {
-        const lead = updated as { nome: string; telefone: string; regiao: string };
-        const regiaoFmt = (lead.regiao ?? "").replace(/_/g, " ");
-        await sendOneSignalPush({
-          externalId: ext,
+      const [{ data: corretorProf }, { data: assignerProf }] = await Promise.all([
+        supabaseAdmin.from("profiles").select("onesignal_external_id, nome").eq("id", data.corretor_id).maybeSingle(),
+        supabaseAdmin.from("profiles").select("onesignal_external_id").eq("id", context.userId).maybeSingle(),
+      ]);
+      const lead = updated as { nome: string; telefone: string; regiao: string };
+      const regiaoFmt = (lead.regiao ?? "").replace(/_/g, " ");
+      const url = `https://iurirodriguesimoveiscrm.lovable.app/vendas/leads?lead=${data.lead_id}`;
+      const tasks: Promise<unknown>[] = [];
+      if (corretorProf?.onesignal_external_id) {
+        tasks.push(sendOneSignalPush({
+          externalId: corretorProf.onesignal_external_id,
           title: "🏠 Novo Lead Atribuído!",
-          message: `Nome: ${lead.nome} | Tel: ${lead.telefone} | Região: ${regiaoFmt}`,
-          url: `https://iurirodriguesimoveiscrm.lovable.app/vendas/leads?lead=${data.lead_id}`,
+          message: `Você recebeu um novo lead! Nome: ${lead.nome} | Tel: ${lead.telefone} | Região: ${regiaoFmt}`,
+          url,
           data: { lead_id: data.lead_id },
-        });
+        }));
       }
+      if (assignerProf?.onesignal_external_id) {
+        tasks.push(sendOneSignalPush({
+          externalId: assignerProf.onesignal_external_id,
+          title: "✅ Lead Atribuído com Sucesso!",
+          message: `Lead ${lead.nome} foi atribuído para ${corretorProf?.nome ?? "corretor"}`,
+          url,
+          data: { lead_id: data.lead_id },
+        }));
+      }
+      await Promise.all(tasks);
     } catch (e) {
       console.warn("[atribuirLead] push falhou", e);
     }
