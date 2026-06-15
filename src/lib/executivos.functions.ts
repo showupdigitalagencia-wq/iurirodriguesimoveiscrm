@@ -8,8 +8,6 @@ async function assertAdmin(supabase: SupabaseClient, userId: string) {
   if (!data) throw new Error("Acesso restrito a administradores");
 }
 
-const ETAPAS_ATIVAS = ["novo", "atendimento", "qualificado", "proposta", "visita_agendada", "proposta_enviada", "negociacao"];
-
 export const listExecutivos = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -21,30 +19,34 @@ export const listExecutivos = createServerFn({ method: "POST" })
       .select("id, nome, canal, whatsapp, ativo, regiao")
       .order("nome");
 
-    const { data: profiles } = await supabaseAdmin
-      .from("profiles")
-      .select("id, responsavel_id, ativo");
+    // Equipe fechada = leads do recrutamento já contratados (is_corretor + fechado)
+    const { data: contratados } = await supabaseAdmin
+      .from("leads")
+      .select("responsavel_id")
+      .eq("is_corretor", true)
+      .eq("etapa", "fechado");
 
+    // Leads no pipeline = todos os leads do executivo, exceto corretores já contratados
     const { data: leads } = await supabaseAdmin
       .from("leads")
-      .select("responsavel_id, etapa");
+      .select("responsavel_id, etapa, is_corretor");
 
-    const corretorCount = new Map<string, number>();
-    (profiles ?? []).forEach((p) => {
-      if (p.responsavel_id) corretorCount.set(p.responsavel_id, (corretorCount.get(p.responsavel_id) ?? 0) + 1);
+    const corretoresAtivosCount = new Map<string, number>();
+    (contratados ?? []).forEach((c) => {
+      if (c.responsavel_id) corretoresAtivosCount.set(c.responsavel_id, (corretoresAtivosCount.get(c.responsavel_id) ?? 0) + 1);
     });
 
-    const leadsAtivosCount = new Map<string, number>();
+    const leadsCount = new Map<string, number>();
     (leads ?? []).forEach((l) => {
-      if (l.responsavel_id && ETAPAS_ATIVAS.includes(l.etapa)) {
-        leadsAtivosCount.set(l.responsavel_id, (leadsAtivosCount.get(l.responsavel_id) ?? 0) + 1);
-      }
+      if (!l.responsavel_id) return;
+      if (l.is_corretor && l.etapa === "fechado") return;
+      leadsCount.set(l.responsavel_id, (leadsCount.get(l.responsavel_id) ?? 0) + 1);
     });
 
     return (execs ?? []).map((e) => ({
       ...e,
-      total_corretores: corretorCount.get(e.id) ?? 0,
-      leads_ativos: leadsAtivosCount.get(e.id) ?? 0,
+      total_corretores: corretoresAtivosCount.get(e.id) ?? 0,
+      leads_ativos: leadsCount.get(e.id) ?? 0,
     }));
   });
 
@@ -62,42 +64,48 @@ export const getExecutivoDetalhe = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!exec) throw new Error("Executivo não encontrado");
 
-    const { data: corretores } = await supabaseAdmin
-      .from("profiles")
-      .select("id, nome, ativo, responsavel_id")
+    // Equipe ativa = leads de recrutamento já fechados/contratados
+    const { data: contratados } = await supabaseAdmin
+      .from("leads")
+      .select("id, nome, telefone, regiao, email")
       .eq("responsavel_id", data.id)
+      .eq("is_corretor", true)
+      .eq("etapa", "fechado")
       .order("nome");
 
-    const corretorIds = (corretores ?? []).map((c) => c.id);
-    const { data: vendasLeads } = corretorIds.length
-      ? await supabaseAdmin.from("vendas_leads").select("corretor_id, etapa").in("corretor_id", corretorIds)
-      : { data: [] };
+    // Tenta cruzar com profiles via email para descobrir status ativo/inativo
+    const emails = (contratados ?? []).map((c) => c.email).filter(Boolean) as string[];
+    const statusByEmail = new Map<string, boolean>();
+    if (emails.length) {
+      try {
+        const { data: users } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
+        const matched = (users?.users ?? []).filter((u) => u.email && emails.includes(u.email)).map((u) => ({ id: u.id, email: u.email! }));
+        if (matched.length) {
+          const { data: profs } = await supabaseAdmin
+            .from("profiles")
+            .select("id, ativo")
+            .in("id", matched.map((p) => p.id));
+          const ativoById = new Map((profs ?? []).map((p) => [p.id, p.ativo]));
+          matched.forEach((p) => statusByEmail.set(p.email, ativoById.get(p.id) ?? true));
+        }
+      } catch {
+        // Sem acesso ou erro: assume todos ativos
+      }
+    }
 
-    const leadsPorCorretor = new Map<string, { total: number; ativos: number; fechados: number }>();
-    (vendasLeads ?? []).forEach((l) => {
-      if (!l.corretor_id) return;
-      const cur = leadsPorCorretor.get(l.corretor_id) ?? { total: 0, ativos: 0, fechados: 0 };
-      cur.total += 1;
-      if (l.etapa === "fechado") cur.fechados += 1;
-      else if (l.etapa !== "perdido") cur.ativos += 1;
-      leadsPorCorretor.set(l.corretor_id, cur);
-    });
-
-    const corretoresEnriched = (corretores ?? []).map((c) => ({
-      ...c,
-      stats: leadsPorCorretor.get(c.id) ?? { total: 0, ativos: 0, fechados: 0 },
+    const corretores = (contratados ?? []).map((c) => ({
+      id: c.id,
+      nome: c.nome,
+      telefone: c.telefone,
+      regiao: c.regiao as string,
+      ativo: c.email ? statusByEmail.get(c.email) ?? true : true,
     }));
 
-    const equipeStats = corretoresEnriched.reduce(
-      (acc, c) => ({
-        total: acc.total + c.stats.total,
-        ativos: acc.ativos + c.stats.ativos,
-        fechados: acc.fechados + c.stats.fechados,
-      }),
-      { total: 0, ativos: 0, fechados: 0 }
-    );
-
-    return { executivo: exec, corretores: corretoresEnriched, equipeStats };
+    return {
+      executivo: exec,
+      corretores,
+      equipeStats: { total: corretores.length, ativos: corretores.filter((c) => c.ativo).length },
+    };
   });
 
 export const listCorretoresDisponiveis = createServerFn({ method: "POST" })
