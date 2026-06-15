@@ -172,6 +172,7 @@ export const createReuniao = createServerFn({ method: "POST" })
         let primaryMeetLink: string | null = null;
         let primaryEventId: string | null = null;
         let primaryUserId: string | null = null;
+        const eventRefs: { user_id: string; event_id: string }[] = [];
         for (const uid of userIds) {
           const isPrimary = !primaryMeetLink;
           const ev = await createCalendarEventWithMeet({
@@ -182,6 +183,7 @@ export const createReuniao = createServerFn({ method: "POST" })
             durationMin: data.duracao_min,
             attendeesEmails: isPrimary ? invitedEmails : [],
           });
+          if (ev?.eventId) eventRefs.push({ user_id: uid, event_id: ev.eventId });
           if (ev?.meetLink && !primaryMeetLink) {
             primaryMeetLink = ev.meetLink;
             primaryEventId = ev.eventId;
@@ -204,9 +206,15 @@ export const createReuniao = createServerFn({ method: "POST" })
           }
           await supabaseAdmin
             .from("reunioes" as never)
-            .update({ local: primaryMeetLink } as never)
+            .update({ local: primaryMeetLink, google_event_ids: eventRefs } as never)
             .eq("id", reuniaoId);
         } else {
+          if (eventRefs.length) {
+            await supabaseAdmin
+              .from("reunioes" as never)
+              .update({ google_event_ids: eventRefs } as never)
+              .eq("id", reuniaoId);
+          }
           console.warn("[Reuniao] usar_meet=true mas nenhum corretor conectado ao Google");
         }
       } catch (e) {
