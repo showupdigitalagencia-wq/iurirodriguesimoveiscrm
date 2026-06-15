@@ -117,12 +117,14 @@ export const createReuniao = createServerFn({ method: "POST" })
       await supabaseAdmin.from("reuniao_participantes" as never).insert(rows as never);
     }
 
-    // Google Meet: cria evento no Calendar do criador e dos corretores conectados
+    // Google Meet + convite por email aos leads
     let finalLocal = data.local ?? null;
+    let invitedEmails: string[] = [];
+    let leadsSemEmail: string[] = [];
     if (data.usar_meet) {
       try {
         const { createCalendarEventWithMeet } = await import("@/lib/google.server");
-        const [{ data: profilesRows }, { data: leadsRows }] = await Promise.all([
+        const [{ data: profilesRows }, { data: leadsRows }, { data: creatorProfile }, { data: respRows }] = await Promise.all([
           data.responsavel_ids.length
             ? supabaseAdmin
                 .from("profiles")
@@ -130,26 +132,53 @@ export const createReuniao = createServerFn({ method: "POST" })
                 .in("responsavel_id", data.responsavel_ids)
             : Promise.resolve({ data: [] as { id: string; responsavel_id: string }[] }),
           data.lead_ids.length
-            ? supabaseAdmin.from("leads").select("email").in("id", data.lead_ids)
-            : Promise.resolve({ data: [] as { email: string | null }[] }),
+            ? supabaseAdmin.from("leads").select("nome, email").in("id", data.lead_ids)
+            : Promise.resolve({ data: [] as { nome: string; email: string | null }[] }),
+          supabaseAdmin.from("profiles").select("nome").eq("id", context.userId).maybeSingle(),
+          data.responsavel_ids.length
+            ? supabaseAdmin.from("responsaveis").select("nome").in("id", data.responsavel_ids)
+            : Promise.resolve({ data: [] as { nome: string }[] }),
         ]);
-        const attendeesEmails = ((leadsRows ?? []) as { email: string | null }[])
+        const leadList = (leadsRows ?? []) as { nome: string; email: string | null }[];
+        invitedEmails = leadList
           .map((l) => l.email)
           .filter((e): e is string => !!e && /.+@.+\..+/.test(e));
-        // Inclui criador primeiro para garantir tentativa com a conta do logado
+        leadsSemEmail = leadList.filter((l) => !l.email || !/.+@.+\..+/.test(l.email)).map((l) => l.nome);
+
+        const corretorNome =
+          ((respRows ?? []) as { nome: string }[]).map((r) => r.nome).join(", ") ||
+          (creatorProfile?.nome ?? "Equipe Iuri Rodrigues");
+
+        const dt = new Date(data.data_inicio);
+        const dataBR = dt.toLocaleDateString("pt-BR");
+        const horaBR = dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+        const isInstitucional = data.tipo === "institucional";
+        const summary = isInstitucional
+          ? "Reunião Institucional - Iuri Rodrigues Imóveis"
+          : "Reunião - Iuri Rodrigues Imóveis";
+
+        const buildDescription = (meetLink: string) => {
+          const header = isInstitucional
+            ? `Olá!\n\nSua reunião INSTITUCIONAL foi confirmada com a Iuri Rodrigues Imóveis.\nCom nosso Diretor Geral IURI RODRIGUES.`
+            : `Olá!\n\nSua reunião foi confirmada com a Iuri Rodrigues Imóveis.`;
+          return `${header}\n\n👤 Corretor: ${corretorNome}\n📅 Data: ${dataBR}\n🕐 Hora: ${horaBR}\n📍 Link Google Meet: ${meetLink}\n\nQualquer dúvida entre em contato!\nIuri Rodrigues Imóveis 🏢`;
+        };
+
         const userIds = Array.from(new Set([
           context.userId,
           ...((profilesRows ?? []) as { id: string; responsavel_id: string }[]).map((p) => p.id),
         ]));
         let primaryMeetLink: string | null = null;
         for (const uid of userIds) {
+          const isPrimary = !primaryMeetLink;
           const ev = await createCalendarEventWithMeet({
             userId: uid,
-            summary: data.titulo,
-            description: data.descricao ?? null,
+            summary,
+            // só envia convite (com attendees) no evento principal; outros só geram fallback do link
+            description: buildDescription("(será preenchido)"),
             startISO: data.data_inicio,
             durationMin: data.duracao_min,
-            attendeesEmails,
+            attendeesEmails: isPrimary ? invitedEmails : [],
           });
           if (ev?.meetLink && !primaryMeetLink) primaryMeetLink = ev.meetLink;
         }
