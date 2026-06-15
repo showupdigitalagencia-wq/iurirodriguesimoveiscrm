@@ -35,17 +35,7 @@ const QUICK_ACTIONS = [
   "⚡ Leads sem atendimento",
 ];
 
-// Minimal typing for browser SpeechRecognition
-type SRConstructor = new () => {
-  lang: string;
-  interimResults: boolean;
-  continuous: boolean;
-  onresult: (e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void;
-  onerror: (e: { error?: string }) => void;
-  onend: () => void;
-  start: () => void;
-  stop: () => void;
-};
+// (SpeechRecognition types declared above)
 
 function getSpeechRecognition(): SRConstructor | null {
   if (typeof window === "undefined") return null;
