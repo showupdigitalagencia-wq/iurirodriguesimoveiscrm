@@ -107,7 +107,7 @@ function VendasLeads() {
                       <span className="text-xs text-muted-foreground">Atribuído</span>
                     )}
                   </td>
-                  <td className="p-3">
+                  <td className="p-3" onClick={(e) => e.stopPropagation()}>
                     <div className="flex gap-2 justify-end flex-wrap">
                       {isAdmin && (
                         <AtribuirLeadButton lead={l} onDone={invalidate} />
