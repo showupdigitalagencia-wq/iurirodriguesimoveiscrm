@@ -517,74 +517,85 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
           <DialogDescription>Selecione corretores da equipe e/ou leads do pipeline</DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
-          <section className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label className="text-sm font-semibold">Equipe ({equipe.length} pessoas)</Label>
-              <label className="flex items-center gap-2 text-xs cursor-pointer">
-                <Checkbox
-                  checked={equipe.length > 0 && equipe.every((e) => form.user_ids.has(e.id))}
-                  onCheckedChange={(c) =>
-                    setForm({ ...form, user_ids: c ? new Set(equipe.map((e) => e.id)) : new Set<string>() })
-                  }
-                />
-                <span>Selecionar toda a equipe</span>
-              </label>
-            </div>
-            <div className="max-h-56 overflow-y-auto border border-border rounded-md p-2 space-y-1">
-              {equipe.length === 0 && <p className="text-xs text-muted-foreground">Nenhum membro disponível</p>}
-              {equipe.map((m) => (
-                <label key={m.id} className="flex items-center gap-2 text-sm cursor-pointer py-1 px-1 hover:bg-muted rounded">
-                  <Checkbox checked={form.user_ids.has(m.id)} onCheckedChange={() => setForm({ ...form, user_ids: toggle(form.user_ids, m.id) })} />
-                  {m.tipo === "admin" ? <Shield className="h-3.5 w-3.5 text-red-500 shrink-0" /> : m.tipo === "executivo" ? <Briefcase className="h-3.5 w-3.5 text-gold shrink-0" /> : <Users className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
-                  <span className="truncate">
-                    {m.nome}
-                    {m.tipo === "admin" && <span className="text-xs text-red-500 ml-1">(Admin)</span>}
-                    {m.tipo === "executivo" && <span className="text-xs text-gold ml-1">(Executivo)</span>}
-                    {m.tipo === "corretor" && m.executivo && (
-                      <span className="text-xs text-muted-foreground ml-1">— Exec: {m.executivo}</span>
-                    )}
-                  </span>
-                </label>
-              ))}
-            </div>
-          </section>
-
           {(() => {
+            const memberChecked = (m: EquipeMembro) =>
+              m.lead_id ? form.lead_ids.has(m.lead_id) : form.user_ids.has(m.id);
+            const toggleMember = (m: EquipeMembro) => {
+              if (m.lead_id) setForm({ ...form, lead_ids: toggle(form.lead_ids, m.lead_id) });
+              else setForm({ ...form, user_ids: toggle(form.user_ids, m.id) });
+            };
+            const setAll = (members: EquipeMembro[], checked: boolean) => {
+              const u = new Set(form.user_ids);
+              const l = new Set(form.lead_ids);
+              members.forEach((m) => {
+                if (m.lead_id) checked ? l.add(m.lead_id) : l.delete(m.lead_id);
+                else checked ? u.add(m.id) : u.delete(m.id);
+              });
+              setForm({ ...form, user_ids: u, lead_ids: l });
+            };
             const corretoresAtivos = equipe.filter((m) => m.tipo === "corretor");
             return (
-              <section className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-semibold">Corretores Ativos ({corretoresAtivos.length})</Label>
-                  <label className="flex items-center gap-2 text-xs cursor-pointer">
-                    <Checkbox
-                      checked={corretoresAtivos.length > 0 && corretoresAtivos.every((c) => form.user_ids.has(c.id))}
-                      onCheckedChange={(c) => {
-                        const next = new Set(form.user_ids);
-                        if (c) corretoresAtivos.forEach((m) => next.add(m.id));
-                        else corretoresAtivos.forEach((m) => next.delete(m.id));
-                        setForm({ ...form, user_ids: next });
-                      }}
-                    />
-                    <span>Selecionar todos</span>
-                  </label>
-                </div>
-                <div className="max-h-56 overflow-y-auto border border-border rounded-md p-2 space-y-1">
-                  {corretoresAtivos.length === 0 && <p className="text-xs text-muted-foreground">Nenhum corretor ativo</p>}
-                  {corretoresAtivos.map((m) => (
-                    <label key={m.id} className="flex items-center gap-2 text-sm cursor-pointer py-1 px-1 hover:bg-muted rounded">
-                      <Checkbox checked={form.user_ids.has(m.id)} onCheckedChange={() => setForm({ ...form, user_ids: toggle(form.user_ids, m.id) })} />
-                      <Users className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                      <span className="truncate">
-                        {m.nome}
-                        {m.regiao && <span className="text-xs text-muted-foreground ml-1">— {m.regiao}</span>}
-                        {m.executivo && <span className="text-xs text-muted-foreground ml-1">• Exec: {m.executivo}</span>}
-                      </span>
+              <>
+                <section className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-semibold">Equipe ({equipe.length} pessoas)</Label>
+                    <label className="flex items-center gap-2 text-xs cursor-pointer">
+                      <Checkbox
+                        checked={equipe.length > 0 && equipe.every(memberChecked)}
+                        onCheckedChange={(c) => setAll(equipe, !!c)}
+                      />
+                      <span>Selecionar toda a equipe</span>
                     </label>
-                  ))}
-                </div>
-              </section>
+                  </div>
+                  <div className="max-h-56 overflow-y-auto border border-border rounded-md p-2 space-y-1">
+                    {equipe.length === 0 && <p className="text-xs text-muted-foreground">Nenhum membro disponível</p>}
+                    {equipe.map((m) => (
+                      <label key={m.id} className="flex items-center gap-2 text-sm cursor-pointer py-1 px-1 hover:bg-muted rounded">
+                        <Checkbox checked={memberChecked(m)} onCheckedChange={() => toggleMember(m)} />
+                        {m.tipo === "admin" ? <Shield className="h-3.5 w-3.5 text-red-500 shrink-0" /> : m.tipo === "executivo" ? <Briefcase className="h-3.5 w-3.5 text-gold shrink-0" /> : <Users className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
+                        <span className="truncate">
+                          {m.nome}
+                          {m.tipo === "admin" && <span className="text-xs text-red-500 ml-1">(Admin)</span>}
+                          {m.tipo === "executivo" && <span className="text-xs text-gold ml-1">(Executivo)</span>}
+                          {m.tipo === "corretor" && m.executivo && (
+                            <span className="text-xs text-muted-foreground ml-1">— Exec: {m.executivo}</span>
+                          )}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </section>
+
+                <section className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-semibold">Corretores Ativos ({corretoresAtivos.length})</Label>
+                    <label className="flex items-center gap-2 text-xs cursor-pointer">
+                      <Checkbox
+                        checked={corretoresAtivos.length > 0 && corretoresAtivos.every(memberChecked)}
+                        onCheckedChange={(c) => setAll(corretoresAtivos, !!c)}
+                      />
+                      <span>Selecionar todos</span>
+                    </label>
+                  </div>
+                  <div className="max-h-56 overflow-y-auto border border-border rounded-md p-2 space-y-1">
+                    {corretoresAtivos.length === 0 && <p className="text-xs text-muted-foreground">Nenhum corretor ativo</p>}
+                    {corretoresAtivos.map((m) => (
+                      <label key={m.id} className="flex items-center gap-2 text-sm cursor-pointer py-1 px-1 hover:bg-muted rounded">
+                        <Checkbox checked={memberChecked(m)} onCheckedChange={() => toggleMember(m)} />
+                        <Users className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                        <span className="truncate">
+                          {m.nome}
+                          {m.executivo && <span className="text-xs text-muted-foreground ml-1">— Exec: {m.executivo}</span>}
+                          {m.regiao && <span className="text-xs text-muted-foreground ml-1">• {m.regiao}</span>}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </section>
+              </>
             );
           })()}
+
 
 
           <section className="space-y-2">
