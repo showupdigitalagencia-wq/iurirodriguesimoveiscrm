@@ -170,21 +170,38 @@ export const createReuniao = createServerFn({ method: "POST" })
           ...((profilesRows ?? []) as { id: string; responsavel_id: string }[]).map((p) => p.id),
         ]));
         let primaryMeetLink: string | null = null;
+        let primaryEventId: string | null = null;
+        let primaryUserId: string | null = null;
         for (const uid of userIds) {
           const isPrimary = !primaryMeetLink;
           const ev = await createCalendarEventWithMeet({
             userId: uid,
             summary,
-            // só envia convite (com attendees) no evento principal; outros só geram fallback do link
-            description: buildDescription("(será preenchido)"),
+            description: buildDescription(null),
             startISO: data.data_inicio,
             durationMin: data.duracao_min,
             attendeesEmails: isPrimary ? invitedEmails : [],
           });
-          if (ev?.meetLink && !primaryMeetLink) primaryMeetLink = ev.meetLink;
+          if (ev?.meetLink && !primaryMeetLink) {
+            primaryMeetLink = ev.meetLink;
+            primaryEventId = ev.eventId;
+            primaryUserId = uid;
+          }
         }
         if (primaryMeetLink) {
           finalLocal = primaryMeetLink;
+          if (primaryEventId && primaryUserId) {
+            try {
+              const { patchCalendarEventDescription } = await import("@/lib/google.server");
+              await patchCalendarEventDescription({
+                userId: primaryUserId,
+                eventId: primaryEventId,
+                description: buildDescription(primaryMeetLink),
+              });
+            } catch (e) {
+              console.warn("[Reuniao] patch descricao falhou", e);
+            }
+          }
           await supabaseAdmin
             .from("reunioes" as never)
             .update({ local: primaryMeetLink } as never)
