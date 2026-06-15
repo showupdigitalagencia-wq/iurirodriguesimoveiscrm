@@ -549,6 +549,44 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
             </div>
           </section>
 
+          {(() => {
+            const corretoresAtivos = equipe.filter((m) => m.tipo === "corretor");
+            return (
+              <section className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-semibold">Corretores Ativos ({corretoresAtivos.length})</Label>
+                  <label className="flex items-center gap-2 text-xs cursor-pointer">
+                    <Checkbox
+                      checked={corretoresAtivos.length > 0 && corretoresAtivos.every((c) => form.user_ids.has(c.id))}
+                      onCheckedChange={(c) => {
+                        const next = new Set(form.user_ids);
+                        if (c) corretoresAtivos.forEach((m) => next.add(m.id));
+                        else corretoresAtivos.forEach((m) => next.delete(m.id));
+                        setForm({ ...form, user_ids: next });
+                      }}
+                    />
+                    <span>Selecionar todos</span>
+                  </label>
+                </div>
+                <div className="max-h-56 overflow-y-auto border border-border rounded-md p-2 space-y-1">
+                  {corretoresAtivos.length === 0 && <p className="text-xs text-muted-foreground">Nenhum corretor ativo</p>}
+                  {corretoresAtivos.map((m) => (
+                    <label key={m.id} className="flex items-center gap-2 text-sm cursor-pointer py-1 px-1 hover:bg-muted rounded">
+                      <Checkbox checked={form.user_ids.has(m.id)} onCheckedChange={() => setForm({ ...form, user_ids: toggle(form.user_ids, m.id) })} />
+                      <Users className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                      <span className="truncate">
+                        {m.nome}
+                        {m.regiao && <span className="text-xs text-muted-foreground ml-1">— {m.regiao}</span>}
+                        {m.executivo && <span className="text-xs text-muted-foreground ml-1">• Exec: {m.executivo}</span>}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </section>
+            );
+          })()}
+
+
           <section className="space-y-2">
             <div className="flex items-center justify-between">
               <Label className="text-sm font-semibold">Leads ({leads.length} leads)</Label>
