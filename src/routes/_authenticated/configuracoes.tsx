@@ -88,6 +88,8 @@ function ConfigPage() {
         </TabsContent>
         <TabsContent value="admin" className="mt-6 space-y-6">
           <SistemaCorretoresToggle />
+          <SophiaToggle chave="sophia_executivos_acesso" titulo="Liberar Sophia para Executivos" descricao="Quando ativado, executivos podem usar a assistente Sophia." />
+          <SophiaToggle chave="sophia_corretores_acesso" titulo="Liberar Sophia para Corretores" descricao="Quando ativado, corretores podem usar a assistente Sophia." />
         </TabsContent>
       </Tabs>
     </div>
@@ -127,6 +129,40 @@ function SistemaCorretoresToggle() {
     </div>
   );
 }
+
+function SophiaToggle({ chave, titulo, descricao }: { chave: string; titulo: string; descricao: string }) {
+  const [ativo, setAtivo] = useState<boolean | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    supabase.from("configuracoes").select("valor").eq("chave", chave).maybeSingle()
+      .then(({ data }) => setAtivo(data?.valor === true));
+  }, [chave]);
+
+  async function toggle(v: boolean) {
+    setSaving(true);
+    const { error } = await supabase.from("configuracoes")
+      .upsert({ chave, valor: v as never, updated_at: new Date().toISOString() }, { onConflict: "chave" });
+    setSaving(false);
+    if (error) { toast.error("Erro ao salvar"); return; }
+    setAtivo(v);
+    toast.success(v ? "Liberado" : "Desativado");
+  }
+
+  return (
+    <div className="rounded-lg border p-5 space-y-3">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h3 className="font-semibold">✨ {titulo}</h3>
+          <p className="text-sm text-muted-foreground mt-1">{descricao}</p>
+        </div>
+        <Switch checked={ativo === true} disabled={saving || ativo === null} onCheckedChange={toggle} />
+      </div>
+    </div>
+  );
+}
+
+
 
 
 

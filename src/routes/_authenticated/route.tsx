@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { toast } from "sonner";
 import { endUserSession, startUserSession } from "@/lib/session-tracker";
+import { SophiaChat } from "@/components/sophia-chat";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -280,6 +281,7 @@ function AuthLayout() {
         </nav>
       </div>
 
+      {isAdmin && <SophiaChat />}
       <Toaster richColors position="top-right" />
     </div>
   );
