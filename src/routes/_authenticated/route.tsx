@@ -43,11 +43,11 @@ const MOBILE_BOTTOM = [
 
 // Bottom bar exclusiva do corretor de vendas (5 itens)
 const CORRETOR_MOBILE_BOTTOM = [
-  { to: "/vendas", label: "Vendas", icon: LayoutDashboard },
-  { to: "/vendas/pipeline", label: "Pipeline", icon: Kanban },
+  { to: "/vendas", label: "Dashboard", icon: LayoutDashboard },
   { to: "/vendas/leads", label: "Leads", icon: Users },
-  { to: "/agenda", label: "Agenda", icon: CalendarDays },
-  { to: "/configuracoes", label: "Config", icon: Settings },
+  { to: "/vendas/pipeline", label: "Pipeline", icon: Kanban },
+  { to: "/vendas/agenda", label: "Agenda", icon: CalendarDays },
+  { to: "/notificacoes", label: "Notificações", icon: BellRing },
 ] as const;
 
 // Ícones do topo mobile (direita)
@@ -67,7 +67,7 @@ const CONFIG_NAV = [
 ] as const;
 
 // Rotas permitidas para corretor_vendas (puro)
-const CORRETOR_ALLOWED_PREFIXES = ["/vendas", "/agenda", "/configuracoes", "/notificacoes"];
+const CORRETOR_ALLOWED_PREFIXES = ["/vendas", "/notificacoes"];
 
 function AuthLayout() {
   const router = useRouter();
@@ -81,8 +81,16 @@ function AuthLayout() {
     // Corretor de vendas: vê apenas Vendas + Configurações
     if (isCorretorVendas && !isAdmin) {
       const items: Array<{ to: string; label: string; icon: typeof LayoutDashboard }> = [];
-      if (corretorPodeVer) items.push({ to: "/vendas", label: "Vendas", icon: Briefcase });
-      return [...items, ...CONFIG_NAV];
+      if (corretorPodeVer) {
+        items.push(
+          { to: "/vendas", label: "Dashboard", icon: LayoutDashboard },
+          { to: "/vendas/leads", label: "Leads", icon: Users },
+          { to: "/vendas/pipeline", label: "Pipeline", icon: Kanban },
+          { to: "/vendas/agenda", label: "Agenda", icon: CalendarDays },
+          { to: "/notificacoes", label: "Notificações", icon: BellRing },
+        );
+      }
+      return items;
     }
     const base: Array<{ to: string; label: string; icon: typeof LayoutDashboard }> = [...NAV];
     if (isAdmin && vendasAtivo) base.push({ to: "/vendas", label: "Vendas", icon: Briefcase });
@@ -158,6 +166,7 @@ function AuthLayout() {
             const Icon = item.icon;
             return (
               <Link key={item.to} to={item.to as "/dashboard"}
+                activeOptions={item.to === "/vendas" ? { exact: true } : undefined}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm hover:bg-sidebar-accent transition-colors [&.active]:bg-sidebar-accent [&.active]:text-gold"
                 activeProps={{ className: "active" }}>
                 <Icon className="h-4 w-4" />
