@@ -7,11 +7,11 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useServerFn } from "@tanstack/react-start";
-import { createReuniao } from "@/lib/reunioes.functions";
+import { createReuniao, listEquipeReuniao, type EquipeMembro } from "@/lib/reunioes.functions";
 import { startGoogleOAuth, getGoogleStatus } from "@/lib/google.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { MessageCircle, Video, CheckCircle2, Users } from "lucide-react";
+import { MessageCircle, Video, CheckCircle2, Users, Shield, Briefcase } from "lucide-react";
 
 type Tipo = "individual" | "institucional" | "alinhamento";
 type LeadOpt = { id: string; nome: string; telefone: string };
