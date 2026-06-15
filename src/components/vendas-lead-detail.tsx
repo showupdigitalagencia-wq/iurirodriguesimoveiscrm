@@ -238,3 +238,91 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
     </Dialog>
   );
 }
+
+function AgendarVisitaInline({ lead, onDone }: { lead: VendasLead; onDone: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [endereco, setEndereco] = useState("");
+  const [dataInicio, setDataInicio] = useState(() => { const d = new Date(); d.setHours(d.getHours() + 1, 0, 0, 0); return toLocalInputValue(d); });
+  const [duracao, setDuracao] = useState(60);
+  const [observacoes, setObservacoes] = useState("");
+  const fn = useServerFn(createVisita);
+
+  async function submit() {
+    if (!endereco.trim()) { toast.error("Informe o endereço"); return; }
+    setSaving(true);
+    try {
+      await fn({ data: { lead_id: lead.id, endereco: endereco.trim(), data_inicio: new Date(dataInicio).toISOString(), duracao_min: duracao, observacoes: observacoes.trim() || undefined } });
+      toast.success("Visita agendada");
+      const dt = new Date(dataInicio);
+      const msg = `Olá ${lead.nome}! Confirmando sua visita ao imóvel em ${endereco.trim()} no dia ${dt.toLocaleDateString("pt-BR")} às ${dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}. Iuri Rodrigues Imóveis 🏢`;
+      const tel = (lead.telefone ?? "").replace(/\D/g, "");
+      if (tel) window.open(`https://wa.me/${tel.length <= 11 ? "55" + tel : tel}?text=${encodeURIComponent(msg)}`, "_blank");
+      setOpen(false); onDone();
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); } finally { setSaving(false); }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild><Button variant="outline" size="sm" className="gap-1"><MapPin className="h-3.5 w-3.5" />Agendar Visita</Button></DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader><DialogTitle>Agendar visita — {lead.nome}</DialogTitle></DialogHeader>
+        <div className="space-y-3 py-2">
+          <div><Label>Endereço *</Label><Input value={endereco} onChange={(e) => setEndereco(e.target.value)} /></div>
+          <div className="grid grid-cols-2 gap-2">
+            <div><Label>Data/hora</Label><Input type="datetime-local" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} /></div>
+            <div><Label>Duração (min)</Label><Input type="number" min={15} value={duracao} onChange={(e) => setDuracao(Number(e.target.value) || 60)} /></div>
+          </div>
+          <div><Label>Observações</Label><Textarea rows={2} value={observacoes} onChange={(e) => setObservacoes(e.target.value)} /></div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
+          <Button variant="gold" onClick={submit} disabled={saving}>{saving ? "..." : "Agendar"}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function ReuniaoOnlineInline({ lead, onDone }: { lead: VendasLead; onDone: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [dataInicio, setDataInicio] = useState(() => { const d = new Date(); d.setHours(d.getHours() + 1, 0, 0, 0); return toLocalInputValue(d); });
+  const [duracao, setDuracao] = useState(45);
+  const [observacoes, setObservacoes] = useState("");
+  const fn = useServerFn(createReuniaoOnlineVenda);
+
+  async function submit() {
+    setSaving(true);
+    try {
+      const res = await fn({ data: { lead_id: lead.id, data_inicio: new Date(dataInicio).toISOString(), duracao_min: duracao, observacoes: observacoes.trim() || undefined } });
+      toast.success(res.meetLink ? "Reunião criada" : "Reunião registrada (sem Meet)");
+      const dt = new Date(dataInicio);
+      const linkPart = res.meetLink ? `\n📍 Link: ${res.meetLink}` : "";
+      const msg = `Olá ${lead.nome}! Sua reunião online está confirmada para ${dt.toLocaleDateString("pt-BR")} às ${dt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}.${linkPart}\n\nIuri Rodrigues Imóveis 🏢`;
+      const tel = (lead.telefone ?? "").replace(/\D/g, "");
+      if (tel) window.open(`https://wa.me/${tel.length <= 11 ? "55" + tel : tel}?text=${encodeURIComponent(msg)}`, "_blank");
+      setOpen(false); onDone();
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); } finally { setSaving(false); }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild><Button variant="outline" size="sm" className="gap-1"><Video className="h-3.5 w-3.5" />Reunião Online</Button></DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader><DialogTitle>Reunião online — {lead.nome}</DialogTitle></DialogHeader>
+        <div className="space-y-3 py-2">
+          <div className="grid grid-cols-2 gap-2">
+            <div><Label>Data/hora</Label><Input type="datetime-local" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} /></div>
+            <div><Label>Duração (min)</Label><Input type="number" min={15} value={duracao} onChange={(e) => setDuracao(Number(e.target.value) || 45)} /></div>
+          </div>
+          <div><Label>Pauta</Label><Textarea rows={2} value={observacoes} onChange={(e) => setObservacoes(e.target.value)} /></div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
+          <Button variant="gold" onClick={submit} disabled={saving}>{saving ? "..." : "Criar"}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
