@@ -289,12 +289,17 @@ function CorretoresPage() {
                       <Checkbox checked={selected.has(l.id)} onCheckedChange={() => toggleOne(l.id)} />
                     </TableCell>
                   )}
-                  <TableCell className="font-medium cursor-pointer" onClick={() => setOpenLead(l.id)}>{l.nome}</TableCell>
+                  <TableCell className="font-medium cursor-pointer" onClick={() => setOpenLead(l.id)}>
+                    <div className="flex items-center gap-2">
+                      <span>{l.nome}</span>
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 dark:bg-blue-500/15 dark:text-blue-300">CORRETOR</span>
+                    </div>
+                  </TableCell>
                   <TableCell className="text-sm cursor-pointer" onClick={() => setOpenLead(l.id)}>
                     <div>{l.telefone}</div>
                     {l.email && <div className="text-muted-foreground text-xs">{l.email}</div>}
                   </TableCell>
-                  <TableCell className="text-sm">{l.responsavel_id ? respMap[l.responsavel_id] : <span className="text-muted-foreground">—</span>}</TableCell>
+                  <TableCell className="text-sm">{l.responsavel_id ? <span><span className="text-[10px] font-bold text-gold mr-1">EXEC.</span>{respMap[l.responsavel_id]}</span> : <span className="text-muted-foreground">—</span>}</TableCell>
                   <TableCell><YesNo value={d.ja_corretor} /></TableCell>
                   <TableCell><YesNo value={d.creci_ativo} /></TableCell>
                   <TableCell className="text-sm">{d.numero_creci ?? <span className="text-muted-foreground">—</span>}</TableCell>
