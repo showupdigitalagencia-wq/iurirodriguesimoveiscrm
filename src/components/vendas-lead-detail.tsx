@@ -227,8 +227,8 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
           ) : (
             <>
               <Button variant="outline" size="sm" className="gap-1" onClick={openWhatsApp}><MessageCircle className="h-3.5 w-3.5" />WhatsApp</Button>
-              {onAgendarVisita && <Button variant="outline" size="sm" className="gap-1" onClick={() => onAgendarVisita(lead)}><MapPin className="h-3.5 w-3.5" />Agendar Visita</Button>}
-              {onReuniaoOnline && <Button variant="outline" size="sm" className="gap-1" onClick={() => onReuniaoOnline(lead)}><Video className="h-3.5 w-3.5" />Reunião Online</Button>}
+              <AgendarVisitaInline lead={lead} onDone={() => { invalidate(); refetch(); }} />
+              <ReuniaoOnlineInline lead={lead} onDone={() => { invalidate(); refetch(); }} />
               <Button variant="outline" size="sm" className="gap-1" onClick={() => setEditing(true)}><Pencil className="h-3.5 w-3.5" />Editar</Button>
               {isAdmin && <Button variant="destructive" size="sm" className="gap-1" onClick={deleteLead}><Trash2 className="h-3.5 w-3.5" />Excluir</Button>}
             </>
