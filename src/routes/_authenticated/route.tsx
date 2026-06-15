@@ -60,18 +60,20 @@ function AuthLayout() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isCorretorVendas, setIsCorretorVendas] = useState(false);
   const [vendasAtivo, setVendasAtivo] = useState(false);
+  const [vendasAcessoIndividual, setVendasAcessoIndividual] = useState(false);
 
   const navItems = useMemo(() => {
+    const corretorPodeVer = isCorretorVendas && (vendasAtivo || vendasAcessoIndividual);
     // Corretor de vendas: vê apenas Vendas + Configurações
     if (isCorretorVendas && !isAdmin) {
       const items: Array<{ to: string; label: string; icon: typeof LayoutDashboard }> = [];
-      if (vendasAtivo) items.push({ to: "/vendas", label: "Vendas", icon: Briefcase });
+      if (corretorPodeVer) items.push({ to: "/vendas", label: "Vendas", icon: Briefcase });
       return [...items, ...CONFIG_NAV];
     }
     const base: Array<{ to: string; label: string; icon: typeof LayoutDashboard }> = [...NAV];
     if (isAdmin && vendasAtivo) base.push({ to: "/vendas", label: "Vendas", icon: Briefcase });
     return isAdmin ? [...base, ...ADMIN_NAV, ...CONFIG_NAV] : [...base, ...CONFIG_NAV];
-  }, [isAdmin, isCorretorVendas, vendasAtivo]);
+  }, [isAdmin, isCorretorVendas, vendasAtivo, vendasAcessoIndividual]);
 
   useEffect(() => {
     let active = true;
@@ -92,6 +94,8 @@ function AuthLayout() {
         });
       supabase.from("configuracoes").select("valor").eq("chave", "sistema_corretores_ativo").maybeSingle()
         .then(({ data }) => { if (active) setVendasAtivo(data?.valor === true); });
+      supabase.from("profiles").select("vendas_acesso").eq("id", userId).maybeSingle()
+        .then(({ data }) => { if (active) setVendasAcessoIndividual((data as { vendas_acesso?: boolean } | null)?.vendas_acesso === true); });
     });
 
     const channel = supabase
