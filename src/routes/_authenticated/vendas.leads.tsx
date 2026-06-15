@@ -56,11 +56,14 @@ function VendasLeads() {
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["vendas_leads"] });
 
+  const [detailId, setDetailId] = useState<string | null>(null);
+
   return (
     <div className="space-y-3">
       <div className="flex justify-end">
         <CreateVendasLeadDialog onCreated={invalidate} />
       </div>
+      <VendasLeadDetail leadId={detailId} open={!!detailId} onOpenChange={(o) => !o && setDetailId(null)} isAdmin={isAdmin} onChanged={invalidate} />
 
       <div className="rounded-md border overflow-x-auto">
         <table className="w-full text-sm">
