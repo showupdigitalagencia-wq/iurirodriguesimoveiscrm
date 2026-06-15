@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 // Recurring institutional meeting slots (local time, America/Sao_Paulo = UTC-3)
-// Mon 19h, Tue 15h, Thu 17h
+// Mon 19h, Tue 15h, Thu 17h, Sat 15h
 const SLOTS: { weekday: number; hour: number; minute: number }[] = [
   { weekday: 1, hour: 19, minute: 0 },
   { weekday: 2, hour: 15, minute: 0 },
   { weekday: 4, hour: 17, minute: 0 },
+  { weekday: 6, hour: 15, minute: 0 },
 ];
 
 // Sao Paulo is UTC-3 (no DST since 2019)
