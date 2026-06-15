@@ -137,6 +137,32 @@ export function ReuniaoDetailDialog({ reuniaoId, onClose, onChanged }: Props) {
     }
   }
 
+  async function openAddUser() {
+    setAddUserOpen(true);
+    setSelectedUserId("");
+    const { data: roles } = await supabase.from("user_roles").select("user_id, role");
+    const ids = (roles ?? []).map((r) => r.user_id);
+    const { data: profs } = await supabase.from("profiles").select("id, nome").in("id", ids);
+    const rolesById = new Map((roles ?? []).map((r) => [r.user_id, r.role]));
+    setAllUsers(((profs ?? []) as { id: string; nome: string }[])
+      .map((p) => ({ ...p, role: rolesById.get(p.id) ?? "" }))
+      .sort((a, b) => a.nome.localeCompare(b.nome)));
+  }
+
+  async function submitAddUser() {
+    if (!reuniaoId || !selectedUserId) return;
+    try {
+      await callAddUser({ data: { reuniao_id: reuniaoId, user_id: selectedUserId } });
+      toast.success("Participante adicionado e notificado");
+      setAddUserOpen(false);
+      onChanged?.();
+      const fresh = await callGet({ data: { id: reuniaoId } });
+      setR(fresh);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha");
+    }
+  }
+
   async function setStatus(status: ReuniaoStatus) {
     if (!reuniaoId) return;
     try {
