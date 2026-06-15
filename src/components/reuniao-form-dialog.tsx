@@ -465,11 +465,10 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
             </RadioGroup>
           </div>
 
-          {form.tipo !== "alinhamento" && (
+          {form.tipo !== "alinhamento" && defaultLeadId && leads.length > 0 && (
             <div>
-              <Label>Leads participantes</Label>
-              <div className="mt-2 max-h-40 overflow-y-auto border border-border rounded-md p-2 space-y-1">
-                {leads.length === 0 && <p className="text-xs text-muted-foreground">Nenhum lead disponível</p>}
+              <Label>Lead da reunião</Label>
+              <div className="mt-2 border border-border rounded-md p-2 space-y-1">
                 {leads.map((l) => (
                   <label key={l.id} className="flex items-center gap-2 text-sm cursor-pointer py-1 px-1 hover:bg-muted rounded">
                     <Checkbox checked={form.lead_ids.has(l.id)} onCheckedChange={() => setForm({ ...form, lead_ids: toggle(form.lead_ids, l.id) })} />
@@ -481,12 +480,38 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
           )}
 
           <div>
-            <Label>Corretores participantes</Label>
-            <div className="mt-2 border border-border rounded-md p-2 space-y-1">
-              {resps.map((r) => (
-                <label key={r.id} className="flex items-center gap-2 text-sm cursor-pointer py-1 px-1 hover:bg-muted rounded">
-                  <Checkbox checked={form.resp_ids.has(r.id)} onCheckedChange={() => setForm({ ...form, resp_ids: toggle(form.resp_ids, r.id) })} />
-                  <span>{r.nome}</span>
+            <div className="flex items-center justify-between mb-2">
+              <Label>Equipe (participantes)</Label>
+              <label className="flex items-center gap-2 text-xs cursor-pointer">
+                <Checkbox
+                  checked={equipe.length > 0 && equipe.every((e) => form.user_ids.has(e.id))}
+                  onCheckedChange={(c) =>
+                    setForm({ ...form, user_ids: c ? new Set(equipe.map((e) => e.id)) : new Set<string>() })
+                  }
+                />
+                <span>Selecionar toda a equipe</span>
+              </label>
+            </div>
+            <div className="max-h-56 overflow-y-auto border border-border rounded-md p-2 space-y-1">
+              {equipe.length === 0 && <p className="text-xs text-muted-foreground">Nenhum membro disponível</p>}
+              {equipe.map((m) => (
+                <label key={m.id} className="flex items-center gap-2 text-sm cursor-pointer py-1 px-1 hover:bg-muted rounded">
+                  <Checkbox checked={form.user_ids.has(m.id)} onCheckedChange={() => setForm({ ...form, user_ids: toggle(form.user_ids, m.id) })} />
+                  {m.tipo === "admin" ? (
+                    <Shield className="h-3.5 w-3.5 text-red-500 shrink-0" />
+                  ) : m.tipo === "executivo" ? (
+                    <Briefcase className="h-3.5 w-3.5 text-gold shrink-0" />
+                  ) : (
+                    <Users className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  )}
+                  <span className="truncate">
+                    {m.nome}
+                    {m.tipo === "admin" && <span className="text-xs text-red-500 ml-1">(Admin)</span>}
+                    {m.tipo === "executivo" && <span className="text-xs text-gold ml-1">(Executivo)</span>}
+                    {m.tipo === "corretor" && m.executivo && (
+                      <span className="text-xs text-muted-foreground ml-1">— Exec: {m.executivo}</span>
+                    )}
+                  </span>
                 </label>
               ))}
             </div>
