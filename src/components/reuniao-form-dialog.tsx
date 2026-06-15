@@ -423,7 +423,7 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
               </label>
               {isAdmin && (
                 <label className="flex items-center gap-2 cursor-pointer">
-                  <RadioGroupItem value="alinhamento" /> <span className="text-red-600 font-medium">Alinhamento</span>
+                  <RadioGroupItem value="alinhamento" /> <span className="text-purple-600 font-medium">Alinhamento</span>
                 </label>
               )}
             </RadioGroup>
