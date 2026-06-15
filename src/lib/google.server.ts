@@ -156,8 +156,8 @@ export async function createCalendarEventWithMeet(input: CreateMeetEventInput): 
   const body = {
     summary: input.summary,
     description: input.description ?? undefined,
-    start: { dateTime: start.toISOString() },
-    end: { dateTime: end.toISOString() },
+    start: { dateTime: start.toISOString(), timeZone: "America/Sao_Paulo" },
+    end: { dateTime: end.toISOString(), timeZone: "America/Sao_Paulo" },
     attendees: (input.attendeesEmails ?? []).filter(Boolean).map((email) => ({ email })),
     conferenceData: {
       createRequest: {
