@@ -76,6 +76,16 @@ function CorretoresPage() {
     });
   }, []);
 
+  useEffect(() => {
+    if (exec && exec !== respFilter) setRespFilter(exec);
+  }, [exec]);
+
+  function changeFilter(v: string) {
+    setRespFilter(v);
+    navigate({ search: v === "todos" ? {} : { exec: v }, replace: true });
+  }
+
+
   async function load() {
     const [{ data: ls }, { data: rs }] = await Promise.all([
       supabase.from("leads").select("*").eq("etapa", "fechado").order("fechado_em", { ascending: false, nullsFirst: false }),
