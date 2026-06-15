@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,8 +10,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { REGIOES } from "@/lib/lead-helpers";
 import { VENDAS_ETAPAS, formatBRL, vendasEtapaInfo, type VendasLead, type VendasEtapa, type VendasTipo } from "@/lib/vendas-helpers";
+import { createVisita, createReuniaoOnlineVenda } from "@/lib/visitas.functions";
 import { toast } from "sonner";
 import { MessageCircle, Trash2, Pencil, MapPin, Video } from "lucide-react";
+
+function toLocalInputValue(d: Date) {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
 
 interface Props {
   leadId: string | null;
@@ -18,11 +25,9 @@ interface Props {
   onOpenChange: (o: boolean) => void;
   isAdmin: boolean;
   onChanged?: () => void;
-  onAgendarVisita?: (lead: VendasLead) => void;
-  onReuniaoOnline?: (lead: VendasLead) => void;
 }
 
-export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChanged, onAgendarVisita, onReuniaoOnline }: Props) {
+export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChanged }: Props) {
   const qc = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [savingEtapa, setSavingEtapa] = useState(false);
