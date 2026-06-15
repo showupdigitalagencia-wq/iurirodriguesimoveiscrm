@@ -157,11 +157,12 @@ export const createReuniao = createServerFn({ method: "POST" })
           ? "Reunião Institucional - Iuri Rodrigues Imóveis"
           : "Reunião - Iuri Rodrigues Imóveis";
 
-        const buildDescription = (meetLink: string) => {
+        const buildDescription = (meetLink: string | null) => {
           const header = isInstitucional
             ? `Olá!\n\nSua reunião INSTITUCIONAL foi confirmada com a Iuri Rodrigues Imóveis.\nCom nosso Diretor Geral IURI RODRIGUES.`
             : `Olá!\n\nSua reunião foi confirmada com a Iuri Rodrigues Imóveis.`;
-          return `${header}\n\n👤 Corretor: ${corretorNome}\n📅 Data: ${dataBR}\n🕐 Hora: ${horaBR}\n📍 Link Google Meet: ${meetLink}\n\nQualquer dúvida entre em contato!\nIuri Rodrigues Imóveis 🏢`;
+          const link = meetLink ?? "(disponível no convite)";
+          return `${header}\n\n👤 Corretor: ${corretorNome}\n📅 Data: ${dataBR}\n🕐 Hora: ${horaBR}\n📍 Link Google Meet: ${link}\n\nQualquer dúvida entre em contato!\nIuri Rodrigues Imóveis 🏢`;
         };
 
         const userIds = Array.from(new Set([
