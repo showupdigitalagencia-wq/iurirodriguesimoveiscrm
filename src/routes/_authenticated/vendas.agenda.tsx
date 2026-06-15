@@ -25,6 +25,7 @@ export const Route = createFileRoute("/_authenticated/vendas/agenda")({
 type VisitaItem = VisitaRow & { vendas_leads: { nome: string; telefone: string } | null };
 type ReuniaoItem = ReuniaoCorretorRow;
 type LeadOption = { id: string; nome: string; telefone: string; etapa: string };
+type AgendaSlot = { recs: DisponibilidadeRow[]; blocked: boolean; visitas: VisitaItem[]; reunioes: ReuniaoItem[] };
 
 const DIAS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 type View = "dia" | "semana" | "mes";
@@ -483,10 +484,11 @@ function AgendaCorretorPage() {
   );
 }
 
-function ListView({ view, cursor, slotsForDate, onSlotClick, onRemoveVisita }: {
+function ListView({ view, cursor, slotsForDate, onSlotClick, onReuniaoClick, onRemoveVisita }: {
   view: View; cursor: Date;
-  slotsForDate: (d: Date) => { recs: DisponibilidadeRow[]; blocked: boolean; visitas: VisitaItem[] };
+  slotsForDate: (d: Date) => AgendaSlot;
   onSlotClick: (date: Date, time?: string) => void;
+  onReuniaoClick: (date: Date, time?: string) => void;
   onRemoveVisita: (id: string) => void;
 }) {
   const days = useMemo(() => {
@@ -498,7 +500,7 @@ function ListView({ view, cursor, slotsForDate, onSlotClick, onRemoveVisita }: {
   return (
     <div className="grid gap-2">
       {days.map((d) => {
-        const { recs, blocked, visitas } = slotsForDate(d);
+        const { recs, blocked, visitas, reunioes } = slotsForDate(d);
         const today = isSameDay(d, new Date());
         return (
           <div key={d.toISOString()} className={`rounded-xl border ${today ? "border-gold" : "border-border"} bg-card p-3`}>
@@ -507,9 +509,14 @@ function ListView({ view, cursor, slotsForDate, onSlotClick, onRemoveVisita }: {
               <div className="flex items-center gap-1">
                 {blocked && <Badge variant="destructive">Bloqueado</Badge>}
                 {!blocked && (
-                  <Button size="sm" variant="ghost" className="h-7 text-orange-600 hover:text-orange-700 hover:bg-orange-500/10" onClick={() => onSlotClick(d)}>
-                    <Plus className="h-3.5 w-3.5 mr-1" /> Visita
-                  </Button>
+                  <>
+                    <Button size="sm" variant="ghost" className="h-7 text-orange-600 hover:text-orange-700 hover:bg-orange-500/10" onClick={() => onSlotClick(d)}>
+                      <Plus className="h-3.5 w-3.5 mr-1" /> Visita
+                    </Button>
+                    <Button size="sm" variant="ghost" className="h-7 text-gold hover:text-gold hover:bg-gold/10" onClick={() => onReuniaoClick(d)}>
+                      <Video className="h-3.5 w-3.5 mr-1" /> Online
+                    </Button>
+                  </>
                 )}
               </div>
             </div>
@@ -543,6 +550,20 @@ function ListView({ view, cursor, slotsForDate, onSlotClick, onRemoveVisita }: {
                     <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive shrink-0" onClick={() => onRemoveVisita(v.id)}>
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+            {reunioes.length > 0 && (
+              <div className="mt-2 space-y-1.5">
+                {reunioes.map((r) => (
+                  <div key={r.id} className="rounded-md border border-gold/40 bg-gold/10 px-2.5 py-1.5">
+                    <div className="min-w-0 text-xs">
+                      <div className="font-medium text-gold truncate">
+                        {format(new Date(r.data_inicio), "HH:mm")} · {r.titulo}
+                      </div>
+                      {r.local && <div className="text-muted-foreground truncate flex items-center gap-1"><Video className="h-3 w-3" /> {r.local}</div>}
+                    </div>
                   </div>
                 ))}
               </div>
