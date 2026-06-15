@@ -1,13 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState, useCallback } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { getExecutivoDetalhe, updateExecutivoRegiao } from "@/lib/executivos.functions";
+import { getExecutivoDetalhe, updateExecutivoRegiao, setCorretorAtivo } from "@/lib/executivos.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Loader2, ArrowLeft, MapPin, Save, Phone } from "lucide-react";
+import { Loader2, ArrowLeft, MapPin, Save, Phone, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/executivos/$id")({
@@ -17,6 +18,7 @@ export const Route = createFileRoute("/_authenticated/executivos/$id")({
 
 type Corretor = {
   id: string;
+  profile_id: string | null;
   nome: string;
   telefone: string;
   regiao: string;
@@ -32,6 +34,7 @@ function ExecutivoDetalhePage() {
   const { id } = Route.useParams();
   const fnDetalhe = useServerFn(getExecutivoDetalhe);
   const fnRegiao = useServerFn(updateExecutivoRegiao);
+  const fnAtivo = useServerFn(setCorretorAtivo);
 
   const [detalhe, setDetalhe] = useState<Detalhe | null>(null);
   const [loading, setLoading] = useState(true);
@@ -52,6 +55,18 @@ function ExecutivoDetalhePage() {
     try {
       await fnRegiao({ data: { id, regiao: regiao.trim() || null } });
       toast.success("Região atualizada");
+      refresh();
+    } catch (e) { toast.error((e as Error).message); }
+  };
+
+  const toggleAcesso = async (profileId: string | null, ativo: boolean) => {
+    if (!profileId) {
+      toast.error("Corretor sem conta de acesso vinculada");
+      return;
+    }
+    try {
+      await fnAtivo({ data: { profile_id: profileId, ativo } });
+      toast.success(ativo ? "Acesso liberado" : "Acesso revogado");
       refresh();
     } catch (e) { toast.error((e as Error).message); }
   };
@@ -87,53 +102,66 @@ function ExecutivoDetalhePage() {
             <Button onClick={saveRegiao} size="sm"><Save className="h-4 w-4 mr-1" /> Salvar</Button>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            <div className="rounded-md bg-muted p-3 text-center">
-              <div className="text-[10px] uppercase text-muted-foreground">Corretores ativos</div>
-              <div className="text-2xl font-bold">{equipeStats.ativos}</div>
-            </div>
-            <div className="rounded-md bg-muted p-3 text-center">
-              <div className="text-[10px] uppercase text-muted-foreground">Total da equipe</div>
-              <div className="text-2xl font-bold">{equipeStats.total}</div>
-            </div>
+          <div className="rounded-md bg-muted p-3 text-center">
+            <div className="text-[10px] uppercase text-muted-foreground">Corretores ativos</div>
+            <div className="text-2xl font-bold">{equipeStats.ativos}</div>
           </div>
         </CardContent>
       </Card>
 
-      <h2 className="text-lg font-semibold">Equipe ativa ({equipeStats.ativos})</h2>
+      <h2 className="text-lg font-semibold">Equipe ativa de {executivo.nome} ({equipeStats.ativos})</h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {corretores.map((c) => (
-          <Card key={c.id}>
-            <CardContent className="p-4 flex items-center gap-3">
-              <Avatar className="h-10 w-10">
-                <AvatarFallback>{c.nome.split(" ").slice(0, 2).map((p) => p[0]?.toUpperCase()).join("")}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <div className="font-medium truncate">{c.nome}</div>
-                  <Badge variant={c.ativo ? "default" : "secondary"} className="text-[10px]">
-                    {c.ativo ? "Ativo" : "Inativo"}
-                  </Badge>
-                </div>
-                <div className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
-                  {c.telefone && (
-                    <a href={`https://wa.me/${c.telefone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer" className="flex items-center gap-1 hover:text-foreground">
-                      <Phone className="h-3 w-3" />{c.telefone}
-                    </a>
-                  )}
-                </div>
-                {c.regiao && (
-                  <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                    <MapPin className="h-3 w-3" />{c.regiao}
+        {corretores.map((c) => {
+          const tel = c.telefone?.replace(/\D/g, "") ?? "";
+          return (
+            <Card key={c.id}>
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-10 w-10">
+                    <AvatarFallback>{c.nome.split(" ").slice(0, 2).map((p) => p[0]?.toUpperCase()).join("")}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <div className="font-medium truncate">{c.nome}</div>
+                      <Badge className="text-[10px]">Ativo</Badge>
+                    </div>
+                    {c.telefone && (
+                      <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                        <Phone className="h-3 w-3" />{c.telefone}
+                      </div>
+                    )}
+                    {c.regiao && (
+                      <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                        <MapPin className="h-3 w-3" />{c.regiao}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                </div>
+
+                <div className="flex items-center justify-between gap-2 pt-2 border-t">
+                  {tel ? (
+                    <Button asChild size="sm" variant="outline" className="flex-1">
+                      <a href={`https://wa.me/${tel}`} target="_blank" rel="noreferrer">
+                        <MessageCircle className="h-4 w-4 mr-1" /> WhatsApp
+                      </a>
+                    </Button>
+                  ) : <div className="flex-1" />}
+                  <label className="flex items-center gap-2 text-xs">
+                    <span className="text-muted-foreground">Acesso</span>
+                    <Switch
+                      checked={c.ativo}
+                      disabled={!c.profile_id}
+                      onCheckedChange={(v) => toggleAcesso(c.profile_id, v)}
+                    />
+                  </label>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
         {corretores.length === 0 && (
-          <Card className="sm:col-span-2"><CardContent className="p-8 text-center text-muted-foreground">Nenhum corretor contratado nesta equipe ainda.</CardContent></Card>
+          <Card className="sm:col-span-2"><CardContent className="p-8 text-center text-muted-foreground">Nenhum corretor ativo nesta equipe ainda.</CardContent></Card>
         )}
       </div>
     </div>

@@ -73,9 +73,9 @@ export const getExecutivoDetalhe = createServerFn({ method: "POST" })
       .eq("etapa", "fechado")
       .order("nome");
 
-    // Tenta cruzar com profiles via email para descobrir status ativo/inativo
+    // Cruza com profiles via email para descobrir status ativo/inativo e profile_id
     const emails = (contratados ?? []).map((c) => c.email).filter(Boolean) as string[];
-    const statusByEmail = new Map<string, boolean>();
+    const statusByEmail = new Map<string, { profileId: string; ativo: boolean }>();
     if (emails.length) {
       try {
         const { data: users } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
@@ -86,26 +86,44 @@ export const getExecutivoDetalhe = createServerFn({ method: "POST" })
             .select("id, ativo")
             .in("id", matched.map((p) => p.id));
           const ativoById = new Map((profs ?? []).map((p) => [p.id, p.ativo]));
-          matched.forEach((p) => statusByEmail.set(p.email, ativoById.get(p.id) ?? true));
+          matched.forEach((p) => statusByEmail.set(p.email, { profileId: p.id, ativo: ativoById.get(p.id) ?? true }));
         }
       } catch {
-        // Sem acesso ou erro: assume todos ativos
+        // sem acesso
       }
     }
 
-    const corretores = (contratados ?? []).map((c) => ({
-      id: c.id,
-      nome: c.nome,
-      telefone: c.telefone,
-      regiao: c.regiao as string,
-      ativo: c.email ? statusByEmail.get(c.email) ?? true : true,
-    }));
+    const todos = (contratados ?? []).map((c) => {
+      const info = c.email ? statusByEmail.get(c.email) : undefined;
+      return {
+        id: c.id,
+        profile_id: info?.profileId ?? null,
+        nome: c.nome,
+        telefone: c.telefone,
+        regiao: c.regiao as string,
+        ativo: info?.ativo ?? true,
+      };
+    });
+
+    // Mostrar APENAS corretores ativos
+    const corretores = todos.filter((c) => c.ativo);
 
     return {
       executivo: exec,
       corretores,
-      equipeStats: { total: corretores.length, ativos: corretores.filter((c) => c.ativo).length },
+      equipeStats: { total: todos.length, ativos: corretores.length },
     };
+  });
+
+export const setCorretorAtivo = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ profile_id: z.string().uuid(), ativo: z.boolean() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase as unknown as SupabaseClient, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("profiles").update({ ativo: data.ativo }).eq("id", data.profile_id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
   });
 
 export const listCorretoresDisponiveis = createServerFn({ method: "POST" })
