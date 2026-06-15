@@ -73,7 +73,7 @@ function CorretoresPage() {
 
   async function load() {
     const [{ data: ls }, { data: rs }] = await Promise.all([
-      supabase.from("leads").select("*").eq("is_corretor", true).order("created_at", { ascending: false }),
+      supabase.from("leads").select("*").eq("etapa", "fechado").order("fechado_em", { ascending: false, nullsFirst: false }),
       supabase.from("responsaveis").select("id, nome, canal").order("nome"),
     ]);
     setLeads((ls as CorretorLead[]) ?? []);
