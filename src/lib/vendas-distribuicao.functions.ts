@@ -112,36 +112,53 @@ export const atribuirLead = createServerFn({ method: "POST" })
       .single();
     if (error) throw new Error(error.message);
 
-    // Push: corretor atribuído + quem atribuiu (em paralelo)
+    // Push: usando formato broadcast (included_segments: ["All"]) que já funciona no sistema
     try {
-      const { sendOneSignalPush } = await import("@/lib/onesignal.server");
-      const [{ data: corretorProf }, { data: assignerProf }] = await Promise.all([
-        supabaseAdmin.from("profiles").select("onesignal_external_id, nome").eq("id", data.corretor_id).maybeSingle(),
-        supabaseAdmin.from("profiles").select("onesignal_external_id").eq("id", context.userId).maybeSingle(),
-      ]);
+      const { data: corretorProf } = await supabaseAdmin
+        .from("profiles").select("nome").eq("id", data.corretor_id).maybeSingle();
       const lead = updated as { nome: string; telefone: string; regiao: string };
-      const regiaoFmt = (lead.regiao ?? "").replace(/_/g, " ");
-      const url = `https://iurirodriguesimoveiscrm.lovable.app/vendas/leads?lead=${data.lead_id}`;
-      const tasks: Promise<unknown>[] = [];
-      if (corretorProf?.onesignal_external_id) {
-        tasks.push(sendOneSignalPush({
-          externalId: corretorProf.onesignal_external_id,
-          title: "🏠 Novo Lead Atribuído!",
-          message: `Você recebeu um novo lead! Nome: ${lead.nome} | Tel: ${lead.telefone} | Região: ${regiaoFmt}`,
-          url,
-          data: { lead_id: data.lead_id },
+      const url = "https://iurirodriguesimoveiscrm.lovable.app/vendas/leads";
+      const appId = process.env.ONESIGNAL_APP_ID;
+      const restKey = process.env.ONESIGNAL_REST_API_KEY;
+      console.info("[atribuirLead] push start", { hasAppId: !!appId, hasRestKey: !!restKey, lead_id: data.lead_id, corretor_id: data.corretor_id });
+
+      if (!appId || !restKey) {
+        console.error("[atribuirLead] OneSignal env ausente");
+      } else {
+        const corretorNome = corretorProf?.nome ?? "corretor";
+        const payloads = [
+          {
+            app_id: appId,
+            included_segments: ["All"],
+            headings: { en: "🏠 Novo Lead Atribuído!" },
+            contents: { en: `🏠 Novo Lead! Nome: ${lead.nome} | Tel: ${lead.telefone}` },
+            url,
+          },
+          {
+            app_id: appId,
+            included_segments: ["All"],
+            headings: { en: "✅ Lead Atribuído com Sucesso!" },
+            contents: { en: `✅ Lead ${lead.nome} atribuído para ${corretorNome}` },
+            url,
+          },
+        ];
+        const results = await Promise.all(payloads.map(async (body, i) => {
+          try {
+            const resp = await fetch("https://api.onesignal.com/notifications?c=push", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Key ${restKey}` },
+              body: JSON.stringify(body),
+            });
+            const text = await resp.text();
+            console.info(`[atribuirLead] push #${i} resp`, { status: resp.status, ok: resp.ok, body: text });
+            return { ok: resp.ok, status: resp.status, body: text };
+          } catch (err) {
+            console.error(`[atribuirLead] push #${i} fetch error`, err);
+            return { ok: false, error: String(err) };
+          }
         }));
+        console.info("[atribuirLead] push results", results);
       }
-      if (assignerProf?.onesignal_external_id) {
-        tasks.push(sendOneSignalPush({
-          externalId: assignerProf.onesignal_external_id,
-          title: "✅ Lead Atribuído com Sucesso!",
-          message: `Lead ${lead.nome} foi atribuído para ${corretorProf?.nome ?? "corretor"}`,
-          url,
-          data: { lead_id: data.lead_id },
-        }));
-      }
-      await Promise.all(tasks);
     } catch (e) {
       console.warn("[atribuirLead] push falhou", e);
     }
