@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, Link, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { LayoutDashboard, Kanban, Users } from "lucide-react";
+import { LayoutDashboard, Kanban, Users, CalendarDays } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/vendas")({
   beforeLoad: async () => {
