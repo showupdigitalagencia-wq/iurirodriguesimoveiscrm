@@ -154,6 +154,7 @@ function UsuariosPage() {
                   <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="corretor">Executivo</SelectItem>
+                    <SelectItem value="corretor_vendas">Corretor (Vendas)</SelectItem>
                     <SelectItem value="admin">Administrador</SelectItem>
                   </SelectContent>
                 </Select>
