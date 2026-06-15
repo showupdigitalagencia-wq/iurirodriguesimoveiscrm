@@ -120,11 +120,23 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
   }
 
   async function save() {
-    if (!leadId) return;
+    if (!leadId || !lead) return;
     try {
+      const existingDc = (lead.dados_corretor ?? {}) as Record<string, string | null>;
+      const dados_corretor = {
+        ...existingDc,
+        ja_corretor: form.ja_corretor || null,
+        creci_ativo: form.creci_ativo || null,
+        numero_creci: form.numero_creci || null,
+        disponibilidade_regiao: form.disponibilidade_regiao || null,
+        disponibilidade_video: form.disponibilidade_video || null,
+        possui_veiculo: form.possui_veiculo || null,
+      };
       await callUpdate({ data: { id: leadId, patch: {
         nome: form.nome, email: form.email || null, telefone: form.telefone,
         observacoes: form.observacoes || null, canal: form.canal,
+        regiao: form.regiao, etapa: form.etapa,
+        dados_corretor,
       } } });
       toast.success("Lead atualizado");
       setEditing(false);
