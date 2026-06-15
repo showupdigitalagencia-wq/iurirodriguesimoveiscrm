@@ -354,7 +354,9 @@ function RelatorioPage() {
                       <Bar dataKey="total" name="Total" fill="#c9a35b" radius={[4, 4, 0, 0]} />
                       <Bar dataKey="em_atendimento" name="Em atendimento" fill="#d4b06a" radius={[4, 4, 0, 0]} />
                       <Bar dataKey="reuniao_agendada" name="Reunião" fill="#a8893f" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="solicitacao_documentos" name="Solic. Docs" fill="#7b4f24" radius={[4, 4, 0, 0]} />
                       <Bar dataKey="documentos_enviados" name="Documentos" fill="#8b6f3a" radius={[4, 4, 0, 0]} />
+
                       <Bar dataKey="em_negociacao" name="Negociação" fill="#6c512a" radius={[4, 4, 0, 0]} />
                       <Bar dataKey="fechados" name="Fechados" fill="#5a3f1f" radius={[4, 4, 0, 0]} />
                     </BarChart>
