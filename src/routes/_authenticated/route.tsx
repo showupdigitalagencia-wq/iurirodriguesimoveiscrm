@@ -204,22 +204,38 @@ function AuthLayout() {
 
         {/* Bottom nav mobile — 5 itens principais + menu '...' para secundários */}
         <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-sidebar text-sidebar-foreground border-t border-sidebar-border pb-[env(safe-area-inset-bottom)]">
-          <ul className="grid grid-cols-5 items-stretch">
-            {MOBILE_BOTTOM.slice(0, 4).map((item) => {
-              const Icon = item.icon;
-              return (
-                <li key={item.to}>
-                  <Link to={item.to}
-                    className="flex flex-col items-center justify-center gap-1 h-16 text-[10px] font-medium text-sidebar-foreground/80 hover:text-gold [&.active]:text-gold"
-                    activeProps={{ className: "active" }}>
-                    <Icon className="h-5 w-5" />
-                    <span className="leading-none truncate max-w-[68px]">{item.label}</span>
-                  </Link>
-                </li>
-              );
-            })}
-            {/* 5º slot: Corretores OU menu '...' (se admin tem extras) */}
-            {isAdmin ? (
+          {isCorretorVendas && !isAdmin ? (
+            <ul className="grid grid-cols-5 items-stretch">
+              {CORRETOR_MOBILE_BOTTOM.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <li key={item.to}>
+                    <Link to={item.to}
+                      activeOptions={item.to === "/vendas" ? { exact: true } : undefined}
+                      className="flex flex-col items-center justify-center gap-1 h-16 text-[10px] font-medium text-sidebar-foreground/80 hover:text-gold [&.active]:text-gold"
+                      activeProps={{ className: "active" }}>
+                      <Icon className="h-5 w-5" />
+                      <span className="leading-none truncate max-w-[68px]">{item.label}</span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <ul className="grid grid-cols-5 items-stretch">
+              {MOBILE_BOTTOM.slice(0, 4).map((item) => {
+                const Icon = item.icon;
+                return (
+                  <li key={item.to}>
+                    <Link to={item.to}
+                      className="flex flex-col items-center justify-center gap-1 h-16 text-[10px] font-medium text-sidebar-foreground/80 hover:text-gold [&.active]:text-gold"
+                      activeProps={{ className: "active" }}>
+                      <Icon className="h-5 w-5" />
+                      <span className="leading-none truncate max-w-[68px]">{item.label}</span>
+                    </Link>
+                  </li>
+                );
+              })}
               <li>
                 <Sheet>
                   <SheetTrigger asChild>
@@ -236,7 +252,7 @@ function AuthLayout() {
                       <SheetTitle className="text-gold">Menu</SheetTitle>
                     </SheetHeader>
                     <ul className="mt-4 grid gap-1">
-                      {[MOBILE_BOTTOM[4], { to: "/relatorio", label: "Relatórios", icon: BarChart3 }, ...ADMIN_NAV].map((item) => {
+                      {[MOBILE_BOTTOM[4], { to: "/relatorio", label: "Relatórios", icon: BarChart3 }, ...(isAdmin ? ADMIN_NAV : [])].map((item) => {
                         const Icon = item.icon;
                         return (
                           <li key={item.to}>
@@ -253,42 +269,8 @@ function AuthLayout() {
                   </SheetContent>
                 </Sheet>
               </li>
-            ) : (
-              <li>
-                <Sheet>
-                  <SheetTrigger asChild>
-                    <button
-                      className="flex flex-col items-center justify-center gap-1 h-16 w-full text-[10px] font-medium text-sidebar-foreground/80 hover:text-gold"
-                      aria-label="Mais"
-                    >
-                      <MoreHorizontal className="h-5 w-5" />
-                      <span className="leading-none">Mais</span>
-                    </button>
-                  </SheetTrigger>
-                  <SheetContent side="bottom" className="bg-sidebar text-sidebar-foreground border-sidebar-border">
-                    <SheetHeader>
-                      <SheetTitle className="text-gold">Menu</SheetTitle>
-                    </SheetHeader>
-                    <ul className="mt-4 grid gap-1">
-                      {[MOBILE_BOTTOM[4], { to: "/relatorio", label: "Relatórios", icon: BarChart3 }].map((item) => {
-                        const Icon = item.icon;
-                        return (
-                          <li key={item.to}>
-                            <Link to={item.to}
-                              className="flex items-center gap-3 px-3 py-3 rounded-md text-sm hover:bg-sidebar-accent [&.active]:bg-sidebar-accent [&.active]:text-gold"
-                              activeProps={{ className: "active" }}>
-                              <Icon className="h-5 w-5" />
-                              {item.label}
-                            </Link>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </SheetContent>
-                </Sheet>
-              </li>
-            )}
-          </ul>
+            </ul>
+          )}
         </nav>
       </div>
 
