@@ -493,6 +493,57 @@ export type Database = {
         }
         Relationships: []
       }
+      vendas_leads: {
+        Row: {
+          corretor_id: string | null
+          created_at: string
+          created_by: string | null
+          email: string | null
+          etapa: Database["public"]["Enums"]["vendas_etapa"]
+          executivo_canal: Database["public"]["Enums"]["lead_canal"] | null
+          id: string
+          nome: string
+          observacoes: string | null
+          regiao: Database["public"]["Enums"]["lead_regiao"]
+          telefone: string
+          tipo: Database["public"]["Enums"]["vendas_tipo"]
+          updated_at: string
+          valor: number | null
+        }
+        Insert: {
+          corretor_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          etapa?: Database["public"]["Enums"]["vendas_etapa"]
+          executivo_canal?: Database["public"]["Enums"]["lead_canal"] | null
+          id?: string
+          nome: string
+          observacoes?: string | null
+          regiao?: Database["public"]["Enums"]["lead_regiao"]
+          telefone: string
+          tipo?: Database["public"]["Enums"]["vendas_tipo"]
+          updated_at?: string
+          valor?: number | null
+        }
+        Update: {
+          corretor_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          etapa?: Database["public"]["Enums"]["vendas_etapa"]
+          executivo_canal?: Database["public"]["Enums"]["lead_canal"] | null
+          id?: string
+          nome?: string
+          observacoes?: string | null
+          regiao?: Database["public"]["Enums"]["lead_regiao"]
+          telefone?: string
+          tipo?: Database["public"]["Enums"]["vendas_tipo"]
+          updated_at?: string
+          valor?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -513,7 +564,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "corretor"
+      app_role: "admin" | "corretor" | "corretor_vendas"
       lead_canal: "denise" | "fabiola" | "renata" | "robson"
       lead_etapa:
         | "novos_leads"
@@ -539,6 +590,16 @@ export type Database = {
       reuniao_lembrete_tipo: "1d" | "1h" | "15min"
       reuniao_status: "agendada" | "realizada" | "cancelada"
       reuniao_tipo: "individual" | "institucional" | "alinhamento"
+      vendas_etapa:
+        | "novo_lead"
+        | "contato_realizado"
+        | "visita_agendada"
+        | "proposta_enviada"
+        | "em_negociacao"
+        | "follow_up"
+        | "fechado"
+        | "perdido"
+      vendas_tipo: "compra" | "locacao"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -666,7 +727,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "corretor"],
+      app_role: ["admin", "corretor", "corretor_vendas"],
       lead_canal: ["denise", "fabiola", "renata", "robson"],
       lead_etapa: [
         "novos_leads",
@@ -694,6 +755,17 @@ export const Constants = {
       reuniao_lembrete_tipo: ["1d", "1h", "15min"],
       reuniao_status: ["agendada", "realizada", "cancelada"],
       reuniao_tipo: ["individual", "institucional", "alinhamento"],
+      vendas_etapa: [
+        "novo_lead",
+        "contato_realizado",
+        "visita_agendada",
+        "proposta_enviada",
+        "em_negociacao",
+        "follow_up",
+        "fechado",
+        "perdido",
+      ],
+      vendas_tipo: ["compra", "locacao"],
     },
   },
 } as const

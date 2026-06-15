@@ -13,6 +13,7 @@ import { Route as FormularioRouteImport } from './routes/formulario'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedVendasRouteImport } from './routes/_authenticated/vendas'
 import { Route as AuthenticatedUsuariosRouteImport } from './routes/_authenticated/usuarios'
 import { Route as AuthenticatedTempoAcessoRouteImport } from './routes/_authenticated/tempo-acesso'
 import { Route as AuthenticatedRelatorioRouteImport } from './routes/_authenticated/relatorio'
@@ -23,12 +24,15 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedCorretoresRouteImport } from './routes/_authenticated/corretores'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as AuthenticatedAgendaRouteImport } from './routes/_authenticated/agenda'
+import { Route as AuthenticatedVendasIndexRouteImport } from './routes/_authenticated/vendas.index'
 import { Route as ApiPublicWebhookRouteImport } from './routes/api/public/webhook'
 import { Route as ApiPublicOnesignalTestRouteImport } from './routes/api/public/onesignal-test'
 import { Route as ApiPublicLeadRouteImport } from './routes/api/public/lead'
 import { Route as ApiPublicGoogleOauthCallbackRouteImport } from './routes/api/public/google-oauth-callback'
 import { Route as ApiPublicCronUnattendedRouteImport } from './routes/api/public/cron-unattended'
 import { Route as ApiPublicCronReuniaoLembretesRouteImport } from './routes/api/public/cron-reuniao-lembretes'
+import { Route as AuthenticatedVendasPipelineRouteImport } from './routes/_authenticated/vendas.pipeline'
+import { Route as AuthenticatedVendasLeadsRouteImport } from './routes/_authenticated/vendas.leads'
 import { Route as AuthenticatedLeadsLeadIdRouteImport } from './routes/_authenticated/leads.$leadId'
 
 const FormularioRoute = FormularioRouteImport.update({
@@ -49,6 +53,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedVendasRoute = AuthenticatedVendasRouteImport.update({
+  id: '/vendas',
+  path: '/vendas',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedUsuariosRoute = AuthenticatedUsuariosRouteImport.update({
   id: '/usuarios',
@@ -103,6 +112,12 @@ const AuthenticatedAgendaRoute = AuthenticatedAgendaRouteImport.update({
   path: '/agenda',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedVendasIndexRoute =
+  AuthenticatedVendasIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedVendasRoute,
+  } as any)
 const ApiPublicWebhookRoute = ApiPublicWebhookRouteImport.update({
   id: '/api/public/webhook',
   path: '/api/public/webhook',
@@ -135,6 +150,18 @@ const ApiPublicCronReuniaoLembretesRoute =
     path: '/api/public/cron-reuniao-lembretes',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AuthenticatedVendasPipelineRoute =
+  AuthenticatedVendasPipelineRouteImport.update({
+    id: '/pipeline',
+    path: '/pipeline',
+    getParentRoute: () => AuthenticatedVendasRoute,
+  } as any)
+const AuthenticatedVendasLeadsRoute =
+  AuthenticatedVendasLeadsRouteImport.update({
+    id: '/leads',
+    path: '/leads',
+    getParentRoute: () => AuthenticatedVendasRoute,
+  } as any)
 const AuthenticatedLeadsLeadIdRoute =
   AuthenticatedLeadsLeadIdRouteImport.update({
     id: '/$leadId',
@@ -156,13 +183,17 @@ export interface FileRoutesByFullPath {
   '/relatorio': typeof AuthenticatedRelatorioRoute
   '/tempo-acesso': typeof AuthenticatedTempoAcessoRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
+  '/vendas': typeof AuthenticatedVendasRouteWithChildren
   '/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
+  '/vendas/leads': typeof AuthenticatedVendasLeadsRoute
+  '/vendas/pipeline': typeof AuthenticatedVendasPipelineRoute
   '/api/public/cron-reuniao-lembretes': typeof ApiPublicCronReuniaoLembretesRoute
   '/api/public/cron-unattended': typeof ApiPublicCronUnattendedRoute
   '/api/public/google-oauth-callback': typeof ApiPublicGoogleOauthCallbackRoute
   '/api/public/lead': typeof ApiPublicLeadRoute
   '/api/public/onesignal-test': typeof ApiPublicOnesignalTestRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
+  '/vendas/': typeof AuthenticatedVendasIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -179,12 +210,15 @@ export interface FileRoutesByTo {
   '/tempo-acesso': typeof AuthenticatedTempoAcessoRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
+  '/vendas/leads': typeof AuthenticatedVendasLeadsRoute
+  '/vendas/pipeline': typeof AuthenticatedVendasPipelineRoute
   '/api/public/cron-reuniao-lembretes': typeof ApiPublicCronReuniaoLembretesRoute
   '/api/public/cron-unattended': typeof ApiPublicCronUnattendedRoute
   '/api/public/google-oauth-callback': typeof ApiPublicGoogleOauthCallbackRoute
   '/api/public/lead': typeof ApiPublicLeadRoute
   '/api/public/onesignal-test': typeof ApiPublicOnesignalTestRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
+  '/vendas': typeof AuthenticatedVendasIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -202,13 +236,17 @@ export interface FileRoutesById {
   '/_authenticated/relatorio': typeof AuthenticatedRelatorioRoute
   '/_authenticated/tempo-acesso': typeof AuthenticatedTempoAcessoRoute
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
+  '/_authenticated/vendas': typeof AuthenticatedVendasRouteWithChildren
   '/_authenticated/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
+  '/_authenticated/vendas/leads': typeof AuthenticatedVendasLeadsRoute
+  '/_authenticated/vendas/pipeline': typeof AuthenticatedVendasPipelineRoute
   '/api/public/cron-reuniao-lembretes': typeof ApiPublicCronReuniaoLembretesRoute
   '/api/public/cron-unattended': typeof ApiPublicCronUnattendedRoute
   '/api/public/google-oauth-callback': typeof ApiPublicGoogleOauthCallbackRoute
   '/api/public/lead': typeof ApiPublicLeadRoute
   '/api/public/onesignal-test': typeof ApiPublicOnesignalTestRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
+  '/_authenticated/vendas/': typeof AuthenticatedVendasIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -226,13 +264,17 @@ export interface FileRouteTypes {
     | '/relatorio'
     | '/tempo-acesso'
     | '/usuarios'
+    | '/vendas'
     | '/leads/$leadId'
+    | '/vendas/leads'
+    | '/vendas/pipeline'
     | '/api/public/cron-reuniao-lembretes'
     | '/api/public/cron-unattended'
     | '/api/public/google-oauth-callback'
     | '/api/public/lead'
     | '/api/public/onesignal-test'
     | '/api/public/webhook'
+    | '/vendas/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -249,12 +291,15 @@ export interface FileRouteTypes {
     | '/tempo-acesso'
     | '/usuarios'
     | '/leads/$leadId'
+    | '/vendas/leads'
+    | '/vendas/pipeline'
     | '/api/public/cron-reuniao-lembretes'
     | '/api/public/cron-unattended'
     | '/api/public/google-oauth-callback'
     | '/api/public/lead'
     | '/api/public/onesignal-test'
     | '/api/public/webhook'
+    | '/vendas'
   id:
     | '__root__'
     | '/'
@@ -271,13 +316,17 @@ export interface FileRouteTypes {
     | '/_authenticated/relatorio'
     | '/_authenticated/tempo-acesso'
     | '/_authenticated/usuarios'
+    | '/_authenticated/vendas'
     | '/_authenticated/leads/$leadId'
+    | '/_authenticated/vendas/leads'
+    | '/_authenticated/vendas/pipeline'
     | '/api/public/cron-reuniao-lembretes'
     | '/api/public/cron-unattended'
     | '/api/public/google-oauth-callback'
     | '/api/public/lead'
     | '/api/public/onesignal-test'
     | '/api/public/webhook'
+    | '/_authenticated/vendas/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -322,6 +371,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/vendas': {
+      id: '/_authenticated/vendas'
+      path: '/vendas'
+      fullPath: '/vendas'
+      preLoaderRoute: typeof AuthenticatedVendasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/usuarios': {
       id: '/_authenticated/usuarios'
@@ -393,6 +449,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAgendaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/vendas/': {
+      id: '/_authenticated/vendas/'
+      path: '/'
+      fullPath: '/vendas/'
+      preLoaderRoute: typeof AuthenticatedVendasIndexRouteImport
+      parentRoute: typeof AuthenticatedVendasRoute
+    }
     '/api/public/webhook': {
       id: '/api/public/webhook'
       path: '/api/public/webhook'
@@ -435,6 +498,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronReuniaoLembretesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/vendas/pipeline': {
+      id: '/_authenticated/vendas/pipeline'
+      path: '/pipeline'
+      fullPath: '/vendas/pipeline'
+      preLoaderRoute: typeof AuthenticatedVendasPipelineRouteImport
+      parentRoute: typeof AuthenticatedVendasRoute
+    }
+    '/_authenticated/vendas/leads': {
+      id: '/_authenticated/vendas/leads'
+      path: '/leads'
+      fullPath: '/vendas/leads'
+      preLoaderRoute: typeof AuthenticatedVendasLeadsRouteImport
+      parentRoute: typeof AuthenticatedVendasRoute
+    }
     '/_authenticated/leads/$leadId': {
       id: '/_authenticated/leads/$leadId'
       path: '/$leadId'
@@ -456,6 +533,21 @@ const AuthenticatedLeadsRouteChildren: AuthenticatedLeadsRouteChildren = {
 const AuthenticatedLeadsRouteWithChildren =
   AuthenticatedLeadsRoute._addFileChildren(AuthenticatedLeadsRouteChildren)
 
+interface AuthenticatedVendasRouteChildren {
+  AuthenticatedVendasLeadsRoute: typeof AuthenticatedVendasLeadsRoute
+  AuthenticatedVendasPipelineRoute: typeof AuthenticatedVendasPipelineRoute
+  AuthenticatedVendasIndexRoute: typeof AuthenticatedVendasIndexRoute
+}
+
+const AuthenticatedVendasRouteChildren: AuthenticatedVendasRouteChildren = {
+  AuthenticatedVendasLeadsRoute: AuthenticatedVendasLeadsRoute,
+  AuthenticatedVendasPipelineRoute: AuthenticatedVendasPipelineRoute,
+  AuthenticatedVendasIndexRoute: AuthenticatedVendasIndexRoute,
+}
+
+const AuthenticatedVendasRouteWithChildren =
+  AuthenticatedVendasRoute._addFileChildren(AuthenticatedVendasRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAgendaRoute: typeof AuthenticatedAgendaRoute
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
@@ -467,6 +559,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedRelatorioRoute: typeof AuthenticatedRelatorioRoute
   AuthenticatedTempoAcessoRoute: typeof AuthenticatedTempoAcessoRoute
   AuthenticatedUsuariosRoute: typeof AuthenticatedUsuariosRoute
+  AuthenticatedVendasRoute: typeof AuthenticatedVendasRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -480,6 +573,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedRelatorioRoute: AuthenticatedRelatorioRoute,
   AuthenticatedTempoAcessoRoute: AuthenticatedTempoAcessoRoute,
   AuthenticatedUsuariosRoute: AuthenticatedUsuariosRoute,
+  AuthenticatedVendasRoute: AuthenticatedVendasRouteWithChildren,
 }
 
 const AuthenticatedRouteRouteWithChildren =

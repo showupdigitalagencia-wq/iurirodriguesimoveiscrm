@@ -2,7 +2,7 @@ import { createFileRoute, Outlet, redirect, Link, useRouter } from "@tanstack/re
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useMemo, useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
-import { LayoutDashboard, Kanban, Users, BarChart3, Settings, LogOut, BadgeCheck, UserCog, BellRing, Clock, CalendarDays, MoreHorizontal } from "lucide-react";
+import { LayoutDashboard, Kanban, Users, BarChart3, Settings, LogOut, BadgeCheck, UserCog, BellRing, Clock, CalendarDays, MoreHorizontal, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { toast } from "sonner";
@@ -58,8 +58,13 @@ const CONFIG_NAV = [
 function AuthLayout() {
   const router = useRouter();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [vendasAtivo, setVendasAtivo] = useState(false);
 
-  const navItems = useMemo(() => isAdmin ? [...NAV, ...ADMIN_NAV, ...CONFIG_NAV] : [...NAV, ...CONFIG_NAV], [isAdmin]);
+  const navItems = useMemo(() => {
+    const base: Array<{ to: string; label: string; icon: typeof LayoutDashboard }> = [...NAV];
+    if (isAdmin && vendasAtivo) base.push({ to: "/vendas", label: "Vendas", icon: Briefcase });
+    return isAdmin ? [...base, ...ADMIN_NAV, ...CONFIG_NAV] : [...base, ...CONFIG_NAV];
+  }, [isAdmin, vendasAtivo]);
 
   useEffect(() => {
     let active = true;
@@ -75,6 +80,8 @@ function AuthLayout() {
         .eq("role", "admin")
         .maybeSingle()
         .then(({ data }) => { if (active) setIsAdmin(data?.role === "admin"); });
+      supabase.from("configuracoes").select("valor").eq("chave", "sistema_corretores_ativo").maybeSingle()
+        .then(({ data }) => { if (active) setVendasAtivo(data?.valor === true); });
     });
 
     const channel = supabase
@@ -113,7 +120,7 @@ function AuthLayout() {
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
-              <Link key={item.to} to={item.to}
+              <Link key={item.to} to={item.to as "/dashboard"}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm hover:bg-sidebar-accent transition-colors [&.active]:bg-sidebar-accent [&.active]:text-gold"
                 activeProps={{ className: "active" }}>
                 <Icon className="h-4 w-4" />
