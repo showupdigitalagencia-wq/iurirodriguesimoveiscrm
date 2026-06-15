@@ -15,6 +15,7 @@ import { createVisita, createReuniaoOnlineVenda } from "@/lib/visitas.functions"
 import { listCorretoresDisponibilidade, atribuirLead, aceitarLead, recusarLead, type CorretorAvail } from "@/lib/vendas-distribuicao.functions";
 import { toast } from "sonner";
 import { Plus, MapPin, Video, UserPlus, Check, X } from "lucide-react";
+import { VendasLeadDetail } from "@/components/vendas-lead-detail";
 
 type VendasLeadExt = VendasLead & {
   atribuicao_status?: "pendente" | "aceito" | "recusado" | null;
@@ -55,11 +56,14 @@ function VendasLeads() {
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["vendas_leads"] });
 
+  const [detailId, setDetailId] = useState<string | null>(null);
+
   return (
     <div className="space-y-3">
       <div className="flex justify-end">
         <CreateVendasLeadDialog onCreated={invalidate} />
       </div>
+      <VendasLeadDetail leadId={detailId} open={!!detailId} onOpenChange={(o) => !o && setDetailId(null)} isAdmin={isAdmin} onChanged={invalidate} />
 
       <div className="rounded-md border overflow-x-auto">
         <table className="w-full text-sm">
@@ -82,8 +86,8 @@ function VendasLeads() {
               const info = vendasEtapaInfo(l.etapa);
               const isMyPending = l.corretor_id === myUid && l.atribuicao_status === "pendente";
               return (
-                <tr key={l.id} className="border-t">
-                  <td className="p-3 font-medium">{l.nome}</td>
+                <tr key={l.id} className="border-t hover:bg-muted/30 cursor-pointer" onClick={() => setDetailId(l.id)}>
+                  <td className="p-3 font-medium underline-offset-2 hover:underline">{l.nome}</td>
                   <td className="p-3">{l.tipo === "compra" ? "Compra" : "Locação"}</td>
                   <td className="p-3">{l.telefone}</td>
                   <td className="p-3">{formatBRL(l.valor != null ? Number(l.valor) : null)}</td>
@@ -103,7 +107,7 @@ function VendasLeads() {
                       <span className="text-xs text-muted-foreground">Atribuído</span>
                     )}
                   </td>
-                  <td className="p-3">
+                  <td className="p-3" onClick={(e) => e.stopPropagation()}>
                     <div className="flex gap-2 justify-end flex-wrap">
                       {isAdmin && (
                         <AtribuirLeadButton lead={l} onDone={invalidate} />
