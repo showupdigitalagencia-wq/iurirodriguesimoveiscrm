@@ -58,8 +58,13 @@ const CONFIG_NAV = [
 function AuthLayout() {
   const router = useRouter();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [vendasAtivo, setVendasAtivo] = useState(false);
 
-  const navItems = useMemo(() => isAdmin ? [...NAV, ...ADMIN_NAV, ...CONFIG_NAV] : [...NAV, ...CONFIG_NAV], [isAdmin]);
+  const navItems = useMemo(() => {
+    const base = [...NAV];
+    if (isAdmin && vendasAtivo) base.push({ to: "/vendas", label: "Vendas", icon: Briefcase });
+    return isAdmin ? [...base, ...ADMIN_NAV, ...CONFIG_NAV] : [...base, ...CONFIG_NAV];
+  }, [isAdmin, vendasAtivo]);
 
   useEffect(() => {
     let active = true;
