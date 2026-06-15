@@ -4,7 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const LeadEtapa = z.enum([
   "novos_leads", "em_atendimento", "reuniao_agendada",
-  "documentos_enviados", "em_negociacao", "follow_up", "fechado", "descartado",
+  "solicitacao_documentos", "documentos_enviados", "em_negociacao", "follow_up", "fechado", "descartado",
 ]);
 
 export const updateLeadEtapa = createServerFn({ method: "POST" })
