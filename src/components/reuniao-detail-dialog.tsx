@@ -112,7 +112,7 @@ export function ReuniaoDetailDialog({ reuniaoId, onClose, onChanged }: Props) {
     }
     // Leads do pipeline (não fechado)
     let q = supabase.from("leads").select("id, nome, telefone, canal, etapa, is_corretor").order("nome").limit(500);
-    if (!isAdmin && myCanal) q = q.eq("canal", myCanal);
+    if (!isAdmin && myCanal) q = q.eq("canal", myCanal as never);
     const { data: rows } = await q;
     const all = ((rows ?? []) as (LeadOpt & { etapa: string; is_corretor: boolean; canal: string })[]);
     setMyLeads(all.filter((l) => l.etapa !== "fechado").map(({ id, nome, telefone }) => ({ id, nome, telefone })));
