@@ -66,11 +66,11 @@ function ExecutivosPage() {
             <CardContent className="space-y-3">
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div className="rounded-md bg-muted p-2">
-                  <div className="text-[10px] uppercase text-muted-foreground flex items-center gap-1"><Users className="h-3 w-3" /> Corretores</div>
+                  <div className="text-[10px] uppercase text-muted-foreground flex items-center gap-1"><Users className="h-3 w-3" /> Corretores ativos</div>
                   <div className="text-xl font-bold">{e.total_corretores}</div>
                 </div>
                 <div className="rounded-md bg-muted p-2">
-                  <div className="text-[10px] uppercase text-muted-foreground flex items-center gap-1"><FileText className="h-3 w-3" /> Leads ativos</div>
+                  <div className="text-[10px] uppercase text-muted-foreground flex items-center gap-1"><FileText className="h-3 w-3" /> Leads</div>
                   <div className="text-xl font-bold">{e.leads_ativos}</div>
                 </div>
               </div>
