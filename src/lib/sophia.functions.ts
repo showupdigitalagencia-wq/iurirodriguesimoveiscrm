@@ -390,6 +390,65 @@ export const sophiaChat = createServerFn({ method: "POST" })
           };
         },
       }),
+
+      // ============ PIPELINE DE CAPTAÇÃO DE CORRETORES (tabela `leads`) ============
+      captacao_contar_leads: tool({
+        description: "PIPELINE DE CAPTAÇÃO DE CORRETORES (executivos recrutando novos corretores para o time). Conta leads de captação por período e/ou etapa (novos_leads, em_atendimento, reuniao_agendada, fechado, descartado). Admin vê todos; executivo vê apenas o próprio funil (responsavel_id); corretor não tem acesso.",
+        inputSchema: z.object({
+          periodo: z.enum(["hoje", "semana", "mes", "total"]).default("hoje"),
+          etapa: z.string().optional(),
+        }),
+        execute: async ({ periodo, etapa }) => {
+          if (scope.tipo === "corretor") return { erro: NEGADO };
+          let q = supabaseAdmin.from("leads").select("id, etapa, created_at, responsavel_id", { count: "exact" });
+          if (scope.tipo === "executivo") q = q.eq("responsavel_id", scope.responsavelId);
+          const now = new Date();
+          if (periodo === "hoje") {
+            const d = new Date(now); d.setHours(0, 0, 0, 0);
+            q = q.gte("created_at", d.toISOString());
+          } else if (periodo === "semana") {
+            const d = new Date(now); d.setDate(d.getDate() - 7);
+            q = q.gte("created_at", d.toISOString());
+          } else if (periodo === "mes") {
+            const d = new Date(now); d.setMonth(d.getMonth() - 1);
+            q = q.gte("created_at", d.toISOString());
+          }
+          if (etapa) q = q.eq("etapa", etapa as never);
+          const { data, count } = await q;
+          return { pipeline: "captacao_corretores", total: count ?? data?.length ?? 0, periodo, etapa: etapa ?? null };
+        },
+      }),
+
+      captacao_buscar_lead: tool({
+        description: "PIPELINE DE CAPTAÇÃO DE CORRETORES. Busca leads de captação (pessoas querendo trabalhar como corretor) por nome ou telefone.",
+        inputSchema: z.object({ termo: z.string().min(2) }),
+        execute: async ({ termo }) => {
+          if (scope.tipo === "corretor") return { erro: NEGADO };
+          let q = supabaseAdmin
+            .from("leads")
+            .select("id, nome, telefone, etapa, regiao, canal, responsavel_id")
+            .or(`nome.ilike.%${termo}%,telefone.ilike.%${termo}%`)
+            .limit(10);
+          if (scope.tipo === "executivo") q = q.eq("responsavel_id", scope.responsavelId);
+          const { data } = await q;
+          return { pipeline: "captacao_corretores", leads: data ?? [] };
+        },
+      }),
+
+      captacao_relatorio: tool({
+        description: "PIPELINE DE CAPTAÇÃO DE CORRETORES. Resumo dos últimos 7 dias por etapa (novos_leads, em_atendimento, reuniao_agendada, fechado, descartado).",
+        inputSchema: z.object({}),
+        execute: async () => {
+          if (scope.tipo === "corretor") return { erro: NEGADO };
+          const since = new Date(); since.setDate(since.getDate() - 7);
+          let q = supabaseAdmin.from("leads").select("etapa, responsavel_id").gte("created_at", since.toISOString());
+          if (scope.tipo === "executivo") q = q.eq("responsavel_id", scope.responsavelId);
+          const { data } = await q;
+          const por_etapa: Record<string, number> = {};
+          (data ?? []).forEach((l) => { por_etapa[l.etapa] = (por_etapa[l.etapa] ?? 0) + 1; });
+          return { pipeline: "captacao_corretores", total_7d: data?.length ?? 0, por_etapa };
+        },
+      }),
     };
 
     const escopoTexto =
