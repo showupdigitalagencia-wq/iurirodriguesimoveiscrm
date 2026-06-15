@@ -50,14 +50,8 @@ function buildGroupMessage(opts: { data: string; hora: string; local: string }):
   return `⚠️ REUNIÃO DE ALINHAMENTO\n\nAtenção equipe! 👥\n\n📅 Data: ${dataBR}\n🕐 Hora: ${opts.hora}\n📍 Link Google Meet: ${opts.local || "a definir"}\n\nPresença de TODOS obrigatória!\n\n— Iuri Rodrigues\nDiretor Geral | Iuri Rodrigues Imóveis 🏢`;
 }
 
-async function copyText(text: string) {
-  try {
-    await navigator.clipboard.writeText(text);
-    toast.success("Mensagem copiada");
-  } catch {
-    toast.error("Falha ao copiar");
-  }
-}
+
+
 
 interface Props {
   open: boolean;
