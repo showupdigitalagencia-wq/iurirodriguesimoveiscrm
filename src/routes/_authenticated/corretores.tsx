@@ -32,6 +32,9 @@ type Responsavel = { id: string; nome: string; canal: string };
 
 export const Route = createFileRoute("/_authenticated/corretores")({
   head: () => ({ meta: [{ title: "Captação de Corretores — Sistema NEXUS" }] }),
+  validateSearch: (search: Record<string, unknown>): { exec?: string } => ({
+    exec: typeof search.exec === "string" ? search.exec : undefined,
+  }),
   component: CorretoresPage,
 });
 
@@ -54,11 +57,13 @@ function YesNo({ value }: { value?: string | null }) {
 }
 
 function CorretoresPage() {
+  const { exec } = Route.useSearch();
+  const navigate = Route.useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
   const [leads, setLeads] = useState<CorretorLead[]>([]);
   const [responsaveis, setResponsaveis] = useState<Responsavel[]>([]);
   const [q, setQ] = useState("");
-  const [respFilter, setRespFilter] = useState<string>("todos");
+  const [respFilter, setRespFilter] = useState<string>(exec ?? "todos");
   const [openLead, setOpenLead] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
@@ -70,6 +75,16 @@ function CorretoresPage() {
       setIsAdmin(data?.role === "admin");
     });
   }, []);
+
+  useEffect(() => {
+    if (exec && exec !== respFilter) setRespFilter(exec);
+  }, [exec]);
+
+  function changeFilter(v: string) {
+    setRespFilter(v);
+    navigate({ search: v === "todos" ? {} : { exec: v }, replace: true });
+  }
+
 
   async function load() {
     const [{ data: ls }, { data: rs }] = await Promise.all([
@@ -179,11 +194,11 @@ function CorretoresPage() {
       {/* Filtro por executivo — admin only */}
       {isAdmin && (
         <div className="flex flex-wrap gap-2">
-          <Button variant={respFilter === "todos" ? "default" : "outline"} size="sm" onClick={() => setRespFilter("todos")} className="h-11">
+          <Button variant={respFilter === "todos" ? "default" : "outline"} size="sm" onClick={() => changeFilter("todos")} className="h-11">
             Todos <span className="ml-1.5 text-xs opacity-70">({countsByResp["todos"] ?? 0})</span>
           </Button>
           {responsaveis.map((r) => (
-            <Button key={r.id} variant={respFilter === r.id ? "default" : "outline"} size="sm" onClick={() => setRespFilter(r.id)} className="h-11">
+            <Button key={r.id} variant={respFilter === r.id ? "default" : "outline"} size="sm" onClick={() => changeFilter(r.id)} className="h-11">
               <span className="text-[10px] font-bold text-gold mr-1">EXEC.</span>{r.nome} <span className="ml-1.5 text-xs opacity-70">({countsByResp[r.id] ?? 0})</span>
             </Button>
           ))}

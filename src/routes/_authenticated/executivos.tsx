@@ -83,7 +83,7 @@ function ExecutivosPage() {
                   </Button>
                 )}
                 <Button asChild size="sm" className="flex-1">
-                  <Link to="/executivos/$id" params={{ id: e.id }}>
+                  <Link to="/corretores" search={{ exec: e.id }}>
                     Ver equipe <ChevronRight className="h-4 w-4 ml-1" />
                   </Link>
                 </Button>
