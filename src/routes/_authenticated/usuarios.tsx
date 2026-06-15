@@ -22,6 +22,7 @@ type UserRole = "admin" | "corretor" | "corretor_vendas";
 type UserRow = {
   id: string; email: string; nome: string; ativo: boolean;
   responsavel_id: string | null; role: UserRole;
+  vendas_acesso: boolean;
   last_sign_in_at: string | null; created_at: string;
 };
 
@@ -110,6 +111,14 @@ function UsuariosPage() {
     } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
   }
 
+  async function toggleVendasAcesso(u: UserRow) {
+    try {
+      await fnUpdate({ data: { id: u.id, vendas_acesso: !u.vendas_acesso } });
+      toast.success(!u.vendas_acesso ? "Acesso ao Vendas liberado" : "Acesso ao Vendas removido");
+      refresh();
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
+  }
+
   async function handleReset(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!resetting) return;
@@ -186,6 +195,7 @@ function UsuariosPage() {
               <th className="text-left px-4 py-3">Responsável</th>
               <th className="text-left px-4 py-3">Último acesso</th>
               <th className="text-left px-4 py-3">Status</th>
+              <th className="text-left px-4 py-3">Acesso Vendas</th>
               <th className="text-right px-4 py-3">Ações</th>
             </tr>
           </thead>
@@ -226,6 +236,14 @@ function UsuariosPage() {
                       : <Badge variant="destructive" className="gap-1"><ShieldOff className="h-3 w-3" /> Bloqueado</Badge>}
                   </div>
                 </td>
+                <td className="px-4 py-3">
+                  {u.role === "corretor_vendas" ? (
+                    <div className="flex items-center gap-2">
+                      <Switch checked={u.vendas_acesso} onCheckedChange={() => toggleVendasAcesso(u)} />
+                      <span className="text-xs text-muted-foreground">{u.vendas_acesso ? "Liberado" : "Bloqueado"}</span>
+                    </div>
+                  ) : <span className="text-xs text-muted-foreground">—</span>}
+                </td>
                 <td className="px-4 py-3 text-right">
                   <Button size="sm" variant="ghost" onClick={() => setResetting(u)} title="Redefinir senha">
                     <KeyRound className="h-4 w-4" />
@@ -237,7 +255,7 @@ function UsuariosPage() {
               </tr>
             ))}
             {users.length === 0 && (
-              <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">Nenhum usuário cadastrado.</td></tr>
+              <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">Nenhum usuário cadastrado.</td></tr>
             )}
           </tbody>
         </table>
