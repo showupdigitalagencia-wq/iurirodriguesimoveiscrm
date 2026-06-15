@@ -163,7 +163,7 @@ export const sophiaChat = createServerFn({ method: "POST" })
             const d = new Date(now); d.setMonth(d.getMonth() - 1);
             query = query.gte("created_at", d.toISOString());
           }
-          if (etapa) query = query.eq("etapa", etapa);
+          if (etapa) query = query.eq("etapa", etapa as never);
           const { data, count } = await query;
           return { total: count ?? data?.length ?? 0, periodo, etapa: etapa ?? null, escopo: scope.tipo };
         },
