@@ -250,6 +250,15 @@ function CorretoresPage() {
                     </div>
                   </div>
                 </div>
+                {l.telefone && (
+                  <a
+                    href={`tel:${l.telefone.replace(/[^+\d]/g, "")}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex items-center justify-center gap-2 w-full h-10 rounded-md bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 active:bg-emerald-800"
+                  >
+                    <Phone className="h-4 w-4" /> Ligar
+                  </a>
+                )}
               </CardContent>
             </Card>
           );
