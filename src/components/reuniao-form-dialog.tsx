@@ -13,7 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { MessageCircle, Video, CheckCircle2, Users, Shield, Briefcase } from "lucide-react";
 
-type Tipo = "individual" | "institucional" | "alinhamento";
+type Tipo = "individual" | "institucional" | "alinhamento" | "mentoria";
 type LeadOpt = { id: string; nome: string; telefone: string };
 
 const GROUP_WA_URL = "https://chat.whatsapp.com/GCRzxSX7Ou51J8qgNjLiyu";
@@ -453,10 +453,13 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
             <Label>Tipo</Label>
             <RadioGroup value={form.tipo} onValueChange={(v) => setForm({ ...form, tipo: v as Tipo })} className="flex flex-wrap gap-4 mt-2">
               <label className="flex items-center gap-2 cursor-pointer">
-                <RadioGroupItem value="individual" /> <span>Individual</span>
+                <RadioGroupItem value="individual" /> <span className="text-blue-500 font-medium">Individual</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
-                <RadioGroupItem value="institucional" /> <span>Institucional</span>
+                <RadioGroupItem value="institucional" /> <span className="text-gold font-medium">Institucional</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <RadioGroupItem value="mentoria" /> <span className="text-blue-900 dark:text-blue-300 font-medium">Mentoria</span>
               </label>
               {isAdmin && (
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -466,10 +469,23 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
             </RadioGroup>
           </div>
 
-          {form.tipo !== "alinhamento" && defaultLeadId && leads.length > 0 && (
+          {form.tipo !== "alinhamento" && leads.length > 0 && (
             <div>
-              <Label>Lead da reunião</Label>
-              <div className="mt-2 border border-border rounded-md p-2 space-y-1">
+              <div className="flex items-center justify-between mb-2">
+                <Label>{defaultLeadId ? "Lead da reunião" : "Leads do pipeline"}</Label>
+                {!defaultLeadId && (
+                  <label className="flex items-center gap-2 text-xs cursor-pointer">
+                    <Checkbox
+                      checked={leads.length > 0 && leads.every((l) => form.lead_ids.has(l.id))}
+                      onCheckedChange={(c) =>
+                        setForm({ ...form, lead_ids: c ? new Set(leads.map((l) => l.id)) : new Set<string>() })
+                      }
+                    />
+                    <span>Selecionar todos</span>
+                  </label>
+                )}
+              </div>
+              <div className="max-h-56 overflow-y-auto border border-border rounded-md p-2 space-y-1">
                 {leads.map((l) => (
                   <label key={l.id} className="flex items-center gap-2 text-sm cursor-pointer py-1 px-1 hover:bg-muted rounded">
                     <Checkbox checked={form.lead_ids.has(l.id)} onCheckedChange={() => setForm({ ...form, lead_ids: toggle(form.lead_ids, l.id) })} />

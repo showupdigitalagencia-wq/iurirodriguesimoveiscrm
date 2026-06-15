@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { ETAPAS, CANAIS, REGIOES, etapaNome, canalNome, regiaoNome, etapaColor, type LeadRow, type LeadRegiao } from "@/lib/lead-helpers";
+import { ETAPAS, REGIOES, etapaNome, canalNome, regiaoNome, etapaColor, type LeadRow, type LeadRegiao } from "@/lib/lead-helpers";
 import { updateLead, updateLeadEtapa, addNote, markFirstResponse } from "@/lib/leads.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -36,6 +36,7 @@ interface Props {
 export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Voltar" }: Props) {
   const [lead, setLead] = useState<LeadRow | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [responsaveis, setResponsaveis] = useState<{ id: string; nome: string; canal: string | null }[]>([]);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const [historico, setHistorico] = useState<HistoricoRow[]>([]);
   const [nota, setNota] = useState("");
@@ -43,6 +44,7 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
   const [form, setForm] = useState({
     nome: "", email: "", telefone: "", observacoes: "",
     canal: "denise" as LeadRow["canal"],
+    responsavel_id: "" as string,
     regiao: "barra_da_tijuca" as LeadRegiao,
     etapa: "novos_leads" as LeadRow["etapa"],
     ja_corretor: "",
@@ -66,6 +68,8 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
       supabase.from("user_roles").select("role").eq("user_id", uid).eq("role", "admin").maybeSingle()
         .then(({ data: r }) => setIsAdmin(r?.role === "admin"));
     });
+    supabase.from("responsaveis").select("id, nome, canal").eq("ativo", true).order("nome")
+      .then(({ data }) => setResponsaveis((data as { id: string; nome: string; canal: string | null }[] | null) ?? []));
   }, []);
 
   useEffect(() => {
@@ -85,6 +89,7 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
         setForm({
           nome: ll.nome, email: ll.email ?? "", telefone: ll.telefone,
           observacoes: ll.observacoes ?? "", canal: ll.canal,
+          responsavel_id: ll.responsavel_id ?? "",
           regiao: ll.regiao, etapa: ll.etapa,
           ja_corretor: dc.ja_corretor ?? "",
           creci_ativo: dc.creci_ativo ?? "",
@@ -132,9 +137,12 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
         disponibilidade_video: form.disponibilidade_video || null,
         possui_veiculo: form.possui_veiculo || null,
       };
+      const matchResp = responsaveis.find((r) => r.id === form.responsavel_id);
+      const resolvedCanal = (matchResp?.canal as LeadRow["canal"] | undefined) ?? form.canal;
       await callUpdate({ data: { id: leadId, patch: {
         nome: form.nome, email: form.email || null, telefone: form.telefone,
-        observacoes: form.observacoes || null, canal: form.canal,
+        observacoes: form.observacoes || null, canal: resolvedCanal,
+        responsavel_id: form.responsavel_id || null,
         regiao: form.regiao, etapa: form.etapa,
         dados_corretor,
       } } });
@@ -323,10 +331,15 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
                       </Select>
                     </Field>
                     <Field label="Responsável / Executivo">
-                      <Select value={form.canal} onValueChange={(v) => setForm({ ...form, canal: v as LeadRow["canal"] })}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
+                      <Select
+                        value={form.responsavel_id || ""}
+                        onValueChange={(v) => setForm({ ...form, responsavel_id: v })}
+                      >
+                        <SelectTrigger><SelectValue placeholder="Selecione um executivo" /></SelectTrigger>
                         <SelectContent>
-                          {CANAIS.map((c) => <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>)}
+                          {responsaveis.map((r) => (
+                            <SelectItem key={r.id} value={r.id}>{r.nome}</SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </Field>
