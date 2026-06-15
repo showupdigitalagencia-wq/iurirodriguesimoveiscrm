@@ -15,7 +15,6 @@ import { MessageCircle, Video, CheckCircle2, Users, Shield, Briefcase } from "lu
 
 type Tipo = "individual" | "institucional" | "alinhamento";
 type LeadOpt = { id: string; nome: string; telefone: string };
-type RespOpt = { id: string; nome: string; canal: string };
 
 const GROUP_WA_URL = "https://chat.whatsapp.com/GCRzxSX7Ou51J8qgNjLiyu";
 
