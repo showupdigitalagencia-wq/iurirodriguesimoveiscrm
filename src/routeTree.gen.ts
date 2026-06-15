@@ -31,6 +31,7 @@ import { Route as ApiPublicOnesignalTestRouteImport } from './routes/api/public/
 import { Route as ApiPublicLeadRouteImport } from './routes/api/public/lead'
 import { Route as ApiPublicGoogleOauthCallbackRouteImport } from './routes/api/public/google-oauth-callback'
 import { Route as ApiPublicCronUnattendedRouteImport } from './routes/api/public/cron-unattended'
+import { Route as ApiPublicCronReunioesInstitucionaisRouteImport } from './routes/api/public/cron-reunioes-institucionais'
 import { Route as ApiPublicCronReuniaoLembretesRouteImport } from './routes/api/public/cron-reuniao-lembretes'
 import { Route as AuthenticatedVendasPipelineRouteImport } from './routes/_authenticated/vendas.pipeline'
 import { Route as AuthenticatedVendasLeadsRouteImport } from './routes/_authenticated/vendas.leads'
@@ -152,6 +153,12 @@ const ApiPublicCronUnattendedRoute = ApiPublicCronUnattendedRouteImport.update({
   path: '/api/public/cron-unattended',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCronReunioesInstitucionaisRoute =
+  ApiPublicCronReunioesInstitucionaisRouteImport.update({
+    id: '/api/public/cron-reunioes-institucionais',
+    path: '/api/public/cron-reunioes-institucionais',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCronReuniaoLembretesRoute =
   ApiPublicCronReuniaoLembretesRouteImport.update({
     id: '/api/public/cron-reuniao-lembretes',
@@ -211,6 +218,7 @@ export interface FileRoutesByFullPath {
   '/vendas/leads': typeof AuthenticatedVendasLeadsRoute
   '/vendas/pipeline': typeof AuthenticatedVendasPipelineRoute
   '/api/public/cron-reuniao-lembretes': typeof ApiPublicCronReuniaoLembretesRoute
+  '/api/public/cron-reunioes-institucionais': typeof ApiPublicCronReunioesInstitucionaisRoute
   '/api/public/cron-unattended': typeof ApiPublicCronUnattendedRoute
   '/api/public/google-oauth-callback': typeof ApiPublicGoogleOauthCallbackRoute
   '/api/public/lead': typeof ApiPublicLeadRoute
@@ -239,6 +247,7 @@ export interface FileRoutesByTo {
   '/vendas/leads': typeof AuthenticatedVendasLeadsRoute
   '/vendas/pipeline': typeof AuthenticatedVendasPipelineRoute
   '/api/public/cron-reuniao-lembretes': typeof ApiPublicCronReuniaoLembretesRoute
+  '/api/public/cron-reunioes-institucionais': typeof ApiPublicCronReunioesInstitucionaisRoute
   '/api/public/cron-unattended': typeof ApiPublicCronUnattendedRoute
   '/api/public/google-oauth-callback': typeof ApiPublicGoogleOauthCallbackRoute
   '/api/public/lead': typeof ApiPublicLeadRoute
@@ -270,6 +279,7 @@ export interface FileRoutesById {
   '/_authenticated/vendas/leads': typeof AuthenticatedVendasLeadsRoute
   '/_authenticated/vendas/pipeline': typeof AuthenticatedVendasPipelineRoute
   '/api/public/cron-reuniao-lembretes': typeof ApiPublicCronReuniaoLembretesRoute
+  '/api/public/cron-reunioes-institucionais': typeof ApiPublicCronReunioesInstitucionaisRoute
   '/api/public/cron-unattended': typeof ApiPublicCronUnattendedRoute
   '/api/public/google-oauth-callback': typeof ApiPublicGoogleOauthCallbackRoute
   '/api/public/lead': typeof ApiPublicLeadRoute
@@ -301,6 +311,7 @@ export interface FileRouteTypes {
     | '/vendas/leads'
     | '/vendas/pipeline'
     | '/api/public/cron-reuniao-lembretes'
+    | '/api/public/cron-reunioes-institucionais'
     | '/api/public/cron-unattended'
     | '/api/public/google-oauth-callback'
     | '/api/public/lead'
@@ -329,6 +340,7 @@ export interface FileRouteTypes {
     | '/vendas/leads'
     | '/vendas/pipeline'
     | '/api/public/cron-reuniao-lembretes'
+    | '/api/public/cron-reunioes-institucionais'
     | '/api/public/cron-unattended'
     | '/api/public/google-oauth-callback'
     | '/api/public/lead'
@@ -359,6 +371,7 @@ export interface FileRouteTypes {
     | '/_authenticated/vendas/leads'
     | '/_authenticated/vendas/pipeline'
     | '/api/public/cron-reuniao-lembretes'
+    | '/api/public/cron-reunioes-institucionais'
     | '/api/public/cron-unattended'
     | '/api/public/google-oauth-callback'
     | '/api/public/lead'
@@ -373,6 +386,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   FormularioRoute: typeof FormularioRoute
   ApiPublicCronReuniaoLembretesRoute: typeof ApiPublicCronReuniaoLembretesRoute
+  ApiPublicCronReunioesInstitucionaisRoute: typeof ApiPublicCronReunioesInstitucionaisRoute
   ApiPublicCronUnattendedRoute: typeof ApiPublicCronUnattendedRoute
   ApiPublicGoogleOauthCallbackRoute: typeof ApiPublicGoogleOauthCallbackRoute
   ApiPublicLeadRoute: typeof ApiPublicLeadRoute
@@ -536,6 +550,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronUnattendedRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron-reunioes-institucionais': {
+      id: '/api/public/cron-reunioes-institucionais'
+      path: '/api/public/cron-reunioes-institucionais'
+      fullPath: '/api/public/cron-reunioes-institucionais'
+      preLoaderRoute: typeof ApiPublicCronReunioesInstitucionaisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cron-reuniao-lembretes': {
       id: '/api/public/cron-reuniao-lembretes'
       path: '/api/public/cron-reuniao-lembretes'
@@ -662,6 +683,8 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   FormularioRoute: FormularioRoute,
   ApiPublicCronReuniaoLembretesRoute: ApiPublicCronReuniaoLembretesRoute,
+  ApiPublicCronReunioesInstitucionaisRoute:
+    ApiPublicCronReunioesInstitucionaisRoute,
   ApiPublicCronUnattendedRoute: ApiPublicCronUnattendedRoute,
   ApiPublicGoogleOauthCallbackRoute: ApiPublicGoogleOauthCallbackRoute,
   ApiPublicLeadRoute: ApiPublicLeadRoute,
