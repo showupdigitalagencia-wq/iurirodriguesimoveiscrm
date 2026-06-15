@@ -90,8 +90,9 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
   const call = useServerFn(createReuniao);
   const startOAuth = useServerFn(startGoogleOAuth);
   const checkStatus = useServerFn(getGoogleStatus);
+  const fetchEquipe = useServerFn(listEquipeReuniao);
   const [leads, setLeads] = useState<LeadOpt[]>([]);
-  const [resps, setResps] = useState<RespOpt[]>([]);
+  const [equipe, setEquipe] = useState<EquipeMembro[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [saving, setSaving] = useState(false);
   const [googleConnected, setGoogleConnected] = useState<boolean | null>(null);
@@ -115,7 +116,7 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
     tipo: "individual" as Tipo,
     descricao: "",
     lead_ids: new Set<string>(),
-    resp_ids: new Set<string>(),
+    user_ids: new Set<string>(),
   });
 
   async function refreshGoogleStatus() {
@@ -130,10 +131,13 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
 
   useEffect(() => {
     if (!open) return;
-    supabase.from("leads").select("id, nome, telefone").order("created_at", { ascending: false }).limit(500)
-      .then(({ data }) => setLeads((data as LeadOpt[]) ?? []));
-    supabase.from("responsaveis").select("id, nome, canal").order("nome")
-      .then(({ data }) => setResps((data as RespOpt[]) ?? []));
+    if (defaultLeadId) {
+      supabase.from("leads").select("id, nome, telefone").eq("id", defaultLeadId).maybeSingle()
+        .then(({ data }) => setLeads(data ? [data as LeadOpt] : []));
+    } else {
+      setLeads([]);
+    }
+    fetchEquipe().then((r) => setEquipe(r.equipe)).catch(() => setEquipe([]));
     supabase.auth.getUser().then(async ({ data }) => {
       const uid = data.user?.id;
       if (!uid) return setIsAdmin(false);
@@ -141,7 +145,7 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
       setIsAdmin(!!r);
     });
     refreshGoogleStatus();
-  }, [open]);
+  }, [open, defaultLeadId]);
 
   useEffect(() => {
     if (!open) return;
