@@ -99,7 +99,55 @@ function AgendaCorretorPage() {
     const dateStr = format(date, "yyyy-MM-dd");
     const recs = recorrentes.filter((r) => r.dia_semana === dow);
     const blocked = bloqueios.some((b) => b.data === dateStr && !b.hora_inicio);
-    return { recs, blocked };
+    const vis = visitas.filter((v) => format(new Date(v.data_inicio), "yyyy-MM-dd") === dateStr);
+    return { recs, blocked, visitas: vis };
+  }
+
+  function openVisitaFor(date: Date, time?: string) {
+    setVisitaDefaults({ date: format(date, "yyyy-MM-dd"), time: time ?? "09:00" });
+    setOpenVisita(true);
+  }
+
+  function whatsappLink(telefone: string, msg: string) {
+    const tel = telefone.replace(/\D/g, "");
+    return `https://wa.me/${tel}?text=${encodeURIComponent(msg)}`;
+  }
+
+  async function handleAddVisita(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const leadId = String(fd.get("lead_id") || "");
+    const endereco = String(fd.get("endereco") || "").trim();
+    const data = String(fd.get("data") || "");
+    const hora = String(fd.get("hora") || "");
+    const observacoes = String(fd.get("observacoes") || "").trim();
+    if (!leadId || !endereco || !data || !hora) { toast.error("Preencha todos os campos"); return; }
+    setSavingVisita(true);
+    try {
+      const iso = new Date(`${data}T${hora}:00`).toISOString();
+      const res = await fnCreateVisita({ data: {
+        lead_id: leadId,
+        endereco,
+        data_inicio: iso,
+        duracao_min: 60,
+        observacoes: observacoes || undefined,
+      }});
+      toast.success("Visita agendada!");
+      setOpenVisita(false);
+      refresh();
+      if (res.lead?.telefone) {
+        const dataFmt = format(new Date(iso), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
+        const msg = `Olá ${res.lead.nome}! Confirmando nossa visita ao imóvel em ${endereco} no dia ${dataFmt}. Qualquer dúvida estou à disposição.`;
+        window.open(whatsappLink(res.lead.telefone, msg), "_blank");
+      }
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Erro ao agendar"); }
+    finally { setSavingVisita(false); }
+  }
+
+  async function handleDeleteVisita(id: string) {
+    if (!confirm("Cancelar esta visita?")) return;
+    try { await fnDeleteVisita({ data: { id } }); toast.success("Visita removida"); refresh(); }
+    catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
   }
 
   async function handleAddRec(e: React.FormEvent<HTMLFormElement>) {
