@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, MessageCircle, Users, FileText, MapPin, ChevronRight, Plus, Pencil, Power, Trash2 } from "lucide-react";
+import { Loader2, MessageCircle, Users, FileText, MapPin, Plus, Pencil, Power, Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/executivos")({
   head: () => ({ meta: [{ title: "Executivos — Sistema NEXUS" }, { name: "robots", content: "noindex" }] }),
