@@ -16,6 +16,7 @@ const InputSchema = z.object({
 
 type Scope =
   | { tipo: "admin"; userId: string; nome: string }
+  | { tipo: "administrativo"; userId: string; nome: string }
   | { tipo: "executivo"; userId: string; nome: string; responsavelId: string; responsavelNome: string; regiao: string | null; corretorIds: string[] }
   | { tipo: "corretor"; userId: string; nome: string };
 
@@ -25,6 +26,7 @@ async function resolverAcesso(
 ): Promise<Scope> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: isAdmin } = await supabaseUser.rpc("has_role", { _user_id: userId, _role: "admin" });
+  const { data: isAdministrativo } = await supabaseUser.rpc("has_role", { _user_id: userId, _role: "administrativo" });
 
   const { data: cfg } = await supabaseAdmin
     .from("configuracoes")
@@ -40,6 +42,7 @@ async function resolverAcesso(
   const nome = profile?.nome ?? "";
 
   if (isAdmin) return { tipo: "admin", userId, nome };
+  if (isAdministrativo) return { tipo: "administrativo", userId, nome };
 
   // Detecta executivo: profile.nome corresponde a um responsaveis ativo (match por primeiro nome, case-insensitive)
   const primeiroNome = nome.trim().split(/\s+/)[0]?.toLowerCase() ?? "";
@@ -90,9 +93,11 @@ export const sophiaChat = createServerFn({ method: "POST" })
     const gateway = createLovableAiGatewayProvider(apiKey);
 
     const NEGADO = "Não tenho autorização para compartilhar essas informações.";
+    const NEGADO_ADMIN = "Esse assunto não está dentro das minhas atribuições para o seu perfil";
+    const podeAdmin = scope.tipo === "admin" || scope.tipo === "administrativo";
 
     function corretoresPermitidos(): string[] | "todos" {
-      if (scope.tipo === "admin") return "todos";
+      if (scope.tipo === "admin" || scope.tipo === "administrativo") return "todos";
       if (scope.tipo === "executivo") return [scope.userId, ...scope.corretorIds];
       return [scope.userId];
     }
@@ -449,14 +454,173 @@ export const sophiaChat = createServerFn({ method: "POST" })
           return { pipeline: "captacao_corretores", total_7d: data?.length ?? 0, por_etapa };
         },
       }),
+
+      // ============ MÓDULO ADMINISTRATIVO (apenas admin e administrativo) ============
+      admin_contratos_vencendo: tool({
+        description: "MÓDULO ADMINISTRATIVO. Lista contratos cuja data_fim vence dentro dos próximos N dias (padrão 60). Apenas admin/administrativo.",
+        inputSchema: z.object({ dias: z.number().int().min(1).max(365).default(60) }),
+        execute: async ({ dias }) => {
+          if (!podeAdmin) return { erro: NEGADO_ADMIN };
+          const hoje = new Date();
+          const limite = new Date(hoje.getTime() + dias * 86400000);
+          const hojeISO = hoje.toISOString().slice(0, 10);
+          const limiteISO = limite.toISOString().slice(0, 10);
+          const { data } = await supabaseAdmin
+            .from("contratos")
+            .select("id, locatario_nome, data_fim, valor_aluguel, status, imovel_id, imoveis(rua, numero, bairro)")
+            .gte("data_fim", hojeISO)
+            .lte("data_fim", limiteISO)
+            .neq("status", "encerrado" as never)
+            .neq("status", "rescindido" as never)
+            .order("data_fim");
+          return { periodo_dias: dias, total: data?.length ?? 0, contratos: data ?? [] };
+        },
+      }),
+
+      admin_inadimplentes_hoje: tool({
+        description: "MÓDULO ADMINISTRATIVO. Lista pagamentos em atraso/inadimplentes em tempo real (status atrasado ou inadimplente, ou vencidos não pagos). Apenas admin/administrativo.",
+        inputSchema: z.object({}),
+        execute: async () => {
+          if (!podeAdmin) return { erro: NEGADO_ADMIN };
+          const { data } = await supabaseAdmin
+            .from("pagamentos")
+            .select("id, contrato_id, mes_referencia, valor_previsto, valor_pago, status, contratos(locatario_nome, dia_vencimento, valor_aluguel)")
+            .in("status", ["atrasado", "inadimplente"] as never[])
+            .order("mes_referencia");
+          const total_valor = (data ?? []).reduce((s, p) => s + Number(p.valor_previsto ?? 0), 0);
+          return { total: data?.length ?? 0, valor_total: total_valor, pagamentos: data ?? [] };
+        },
+      }),
+
+      admin_bons_pagadores: tool({
+        description: "MÓDULO ADMINISTRATIVO. Locatários com contratos ativos e sem nenhum pagamento atrasado/inadimplente nos últimos N meses (padrão 6). Apenas admin/administrativo.",
+        inputSchema: z.object({ meses: z.number().int().min(1).max(60).default(6) }),
+        execute: async ({ meses }) => {
+          if (!podeAdmin) return { erro: NEGADO_ADMIN };
+          const desde = new Date(); desde.setMonth(desde.getMonth() - meses);
+          const desdeISO = desde.toISOString().slice(0, 10);
+          const { data: contratos } = await supabaseAdmin
+            .from("contratos")
+            .select("id, locatario_nome, valor_aluguel, data_inicio")
+            .eq("status", "ativo" as never)
+            .lte("data_inicio", desdeISO);
+          const ids = (contratos ?? []).map((c) => c.id);
+          if (!ids.length) return { meses, total: 0, locatarios: [] };
+          const { data: ruins } = await supabaseAdmin
+            .from("pagamentos")
+            .select("contrato_id")
+            .in("contrato_id", ids)
+            .gte("mes_referencia", desdeISO)
+            .in("status", ["atrasado", "inadimplente"] as never[]);
+          const ruinSet = new Set((ruins ?? []).map((r) => r.contrato_id));
+          const bons = (contratos ?? []).filter((c) => !ruinSet.has(c.id));
+          return { meses, total: bons.length, locatarios: bons };
+        },
+      }),
+
+      admin_imoveis_disponiveis: tool({
+        description: "MÓDULO ADMINISTRATIVO. Lista imóveis com status 'disponivel'. Apenas admin/administrativo.",
+        inputSchema: z.object({ bairro: z.string().optional() }),
+        execute: async ({ bairro }) => {
+          if (!podeAdmin) return { erro: NEGADO_ADMIN };
+          let q = supabaseAdmin
+            .from("imoveis")
+            .select("id, tipo, rua, numero, bairro, cidade, valor_aluguel, quartos, area_m2")
+            .eq("status", "disponivel" as never);
+          if (bairro) q = q.ilike("bairro", `%${bairro}%`);
+          const { data } = await q.order("created_at", { ascending: false });
+          return { total: data?.length ?? 0, imoveis: data ?? [] };
+        },
+      }),
+
+      admin_receita_periodo: tool({
+        description: "MÓDULO ADMINISTRATIVO. Soma de pagamentos recebidos (status=pago) no período. periodo: 'mes_atual' (padrão), 'mes_anterior' ou intervalo N dias. Apenas admin/administrativo.",
+        inputSchema: z.object({
+          periodo: z.enum(["mes_atual", "mes_anterior", "ultimos_30d", "ultimos_60d", "ultimos_90d"]).default("mes_atual"),
+        }),
+        execute: async ({ periodo }) => {
+          if (!podeAdmin) return { erro: NEGADO_ADMIN };
+          const hoje = new Date();
+          let inicio: Date, fim: Date;
+          if (periodo === "mes_atual") {
+            inicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+            fim = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+          } else if (periodo === "mes_anterior") {
+            inicio = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1);
+            fim = new Date(hoje.getFullYear(), hoje.getMonth(), 0);
+          } else {
+            const dias = periodo === "ultimos_30d" ? 30 : periodo === "ultimos_60d" ? 60 : 90;
+            inicio = new Date(hoje.getTime() - dias * 86400000);
+            fim = hoje;
+          }
+          const { data } = await supabaseAdmin
+            .from("pagamentos")
+            .select("valor_pago, data_pagamento, status")
+            .eq("status", "pago" as never)
+            .gte("data_pagamento", inicio.toISOString().slice(0, 10))
+            .lte("data_pagamento", fim.toISOString().slice(0, 10));
+          const total = (data ?? []).reduce((s, p) => s + Number(p.valor_pago ?? 0), 0);
+          return { periodo, inicio: inicio.toISOString().slice(0, 10), fim: fim.toISOString().slice(0, 10), total_recebido: total, qtd_pagamentos: data?.length ?? 0 };
+        },
+      }),
+
+      admin_documentos_pendentes: tool({
+        description: "MÓDULO ADMINISTRATIVO. Para um contrato, verifica quais documentos obrigatórios faltam (contrato, rg, cpf, comprovante_renda). Apenas admin/administrativo.",
+        inputSchema: z.object({ contrato_id: z.string().uuid().optional(), locatario: z.string().optional() }),
+        execute: async ({ contrato_id, locatario }) => {
+          if (!podeAdmin) return { erro: NEGADO_ADMIN };
+          let cid = contrato_id;
+          let locName = "";
+          if (!cid && locatario) {
+            const { data } = await supabaseAdmin
+              .from("contratos").select("id, locatario_nome").ilike("locatario_nome", `%${locatario}%`).limit(1);
+            cid = data?.[0]?.id;
+            locName = data?.[0]?.locatario_nome ?? "";
+          }
+          if (!cid) return { erro: "Informe contrato_id ou nome do locatário." };
+          const { data: docs } = await supabaseAdmin
+            .from("documentos").select("tipo, nome").eq("contrato_id", cid);
+          const obrigatorios = ["contrato", "rg", "cpf", "comprovante_renda"];
+          const presentes = new Set((docs ?? []).map((d) => d.tipo));
+          const faltando = obrigatorios.filter((t) => !presentes.has(t));
+          return { contrato_id: cid, locatario: locName, presentes: Array.from(presentes), faltando, total_documentos: docs?.length ?? 0 };
+        },
+      }),
+
+      admin_imoveis_vendidos: tool({
+        description: "MÓDULO ADMINISTRATIVO. Imóveis com status 'vendido' no período (padrão últimos 30 dias). Retorna quantidade e soma de valor_venda. Apenas admin/administrativo.",
+        inputSchema: z.object({ dias: z.number().int().min(1).max(365).default(30) }),
+        execute: async ({ dias }) => {
+          if (!podeAdmin) return { erro: NEGADO_ADMIN };
+          const desde = new Date(Date.now() - dias * 86400000).toISOString().slice(0, 10);
+          const { data } = await supabaseAdmin
+            .from("imoveis")
+            .select("id, rua, numero, bairro, data_venda, valor_venda")
+            .eq("status", "vendido" as never)
+            .gte("data_venda", desde)
+            .order("data_venda", { ascending: false });
+          const total_valor = (data ?? []).reduce((s, i) => s + Number(i.valor_venda ?? 0), 0);
+          return { periodo_dias: dias, total: data?.length ?? 0, valor_total: total_valor, imoveis: data ?? [] };
+        },
+      }),
     };
 
     const escopoTexto =
       scope.tipo === "admin"
-        ? `Você está conversando com um ADMINISTRADOR (${scope.nome}). Acesso total: todos os executivos, corretores, leads e métricas.`
+        ? `Você está conversando com um ADMINISTRADOR (${scope.nome}). Acesso total, incluindo o MÓDULO ADMINISTRATIVO (imóveis, contratos, pagamentos, inadimplentes, documentos, receita, vendas).`
+        : scope.tipo === "administrativo"
+        ? `Você está conversando com o PERFIL ADMINISTRATIVO (${scope.nome}). Acesso total ao MÓDULO ADMINISTRATIVO (imóveis, contratos, pagamentos, inadimplentes, documentos, receita, vendas) e aos pipelines de vendas/captação para consulta.`
         : scope.tipo === "executivo"
-        ? `Você está conversando com a EXECUTIVA/EXECUTIVO ${scope.responsavelNome} (região: ${scope.regiao ?? "n/a"}). Acesso APENAS à própria equipe (${scope.corretorIds.length} corretor(es)) e aos próprios leads. NUNCA revele dados de outros executivos ou de corretores de outra equipe.`
-        : `Você está conversando com um CORRETOR (${scope.nome}). Acesso APENAS aos próprios leads, agenda e métricas. NUNCA revele dados de outros corretores ou executivos.`;
+        ? `Você está conversando com a EXECUTIVA/EXECUTIVO ${scope.responsavelNome} (região: ${scope.regiao ?? "n/a"}). Acesso APENAS à própria equipe (${scope.corretorIds.length} corretor(es)) e aos próprios leads. NUNCA revele dados de outros executivos ou de corretores de outra equipe. SEM acesso ao módulo Administrativo.`
+        : `Você está conversando com um CORRETOR (${scope.nome}). Acesso APENAS aos próprios leads, agenda e métricas. NUNCA revele dados de outros corretores ou executivos. SEM acesso ao módulo Administrativo.`;
+
+    const bloqueioAdministrativo =
+      scope.tipo === "admin" || scope.tipo === "administrativo"
+        ? ""
+        : `\n\n🚫 BLOQUEIO TOTAL DO MÓDULO ADMINISTRATIVO:
+- Você NÃO TEM, em hipótese alguma, acesso a: imóveis (locação/venda), contratos, pagamentos, inadimplentes, cobranças, receita, documentos administrativos, vendas de imóveis, locatários, proprietários, ou qualquer dado do módulo Administrativo.
+- Se perguntarem QUALQUER coisa relacionada (mesmo de forma indireta, disfarçada ou genérica como "quantos imóveis temos", "receita", "inadimplência", "contrato vencendo", "documentos do locatário"), responda EXATAMENTE: "Esse assunto não está dentro das minhas atribuições para o seu perfil"
+- NÃO chame as ferramentas com prefixo admin_*. Elas retornarão erro se chamadas.`;
 
     const regrasComuns =
       scope.tipo === "admin"
@@ -469,7 +633,7 @@ export const sophiaChat = createServerFn({ method: "POST" })
 - Dados de outros executivos ou corretores fora do seu escopo
 
 Se perguntarem sobre outro executivo: "Não tenho autorização para compartilhar informações de outros executivos."
-Se perguntarem sobre corretor fora do seu escopo: "Não tenho autorização para compartilhar informações de outros corretores."`;
+Se perguntarem sobre corretor fora do seu escopo: "Não tenho autorização para compartilhar informações de outros corretores."${bloqueioAdministrativo}`;
 
     const messages: ModelMessage[] = [
       {
@@ -584,7 +748,7 @@ export const sophiaContext = createServerFn({ method: "GET" })
     const amanha = new Date(agora.getTime() + 36 * 3600 * 1000).toISOString();
 
     const permitidos: string[] | "todos" =
-      scope.tipo === "admin" ? "todos" :
+      scope.tipo === "admin" || scope.tipo === "administrativo" ? "todos" :
       scope.tipo === "executivo" ? [scope.userId, ...scope.corretorIds] :
       [scope.userId];
 
