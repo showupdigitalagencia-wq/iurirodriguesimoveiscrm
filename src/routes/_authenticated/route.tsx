@@ -2,7 +2,7 @@ import { createFileRoute, Outlet, redirect, Link, useRouter, useRouterState } fr
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useMemo, useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
-import { LayoutDashboard, Kanban, Users, BarChart3, Settings, LogOut, BadgeCheck, UserCog, BellRing, Clock, CalendarDays, MoreHorizontal, Briefcase, Users2 } from "lucide-react";
+import { LayoutDashboard, Kanban, Users, BarChart3, Settings, LogOut, BadgeCheck, UserCog, BellRing, Clock, CalendarDays, MoreHorizontal, Briefcase, Users2, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { toast } from "sonner";
@@ -68,16 +68,32 @@ const CONFIG_NAV = [
 
 // Rotas permitidas para corretor_vendas (puro)
 const CORRETOR_ALLOWED_PREFIXES = ["/vendas", "/notificacoes"];
+// Rotas permitidas para administrativo (puro)
+const ADMINISTRATIVO_ALLOWED_PREFIXES = ["/admin", "/notificacoes", "/configuracoes"];
 
 function AuthLayout() {
   const router = useRouter();
   const [isAdmin, setIsAdmin] = useState(false);
   const [isCorretorVendas, setIsCorretorVendas] = useState(false);
+  const [isAdministrativo, setIsAdministrativo] = useState(false);
   const [vendasAtivo, setVendasAtivo] = useState(false);
   const [vendasAcessoIndividual, setVendasAcessoIndividual] = useState(false);
+  const [adminModuloAtivo, setAdminModuloAtivo] = useState(false);
 
   const navItems = useMemo(() => {
     const corretorPodeVer = isCorretorVendas && (vendasAtivo || vendasAcessoIndividual);
+    // Administrativo puro: só módulo Administração
+    if (isAdministrativo && !isAdmin && !isCorretorVendas) {
+      const items: Array<{ to: string; label: string; icon: typeof LayoutDashboard }> = [];
+      if (adminModuloAtivo) {
+        items.push(
+          { to: "/admin", label: "Administração", icon: Building2 },
+          { to: "/notificacoes", label: "Notificações", icon: BellRing },
+          { to: "/configuracoes", label: "Configurações", icon: Settings },
+        );
+      }
+      return items;
+    }
     // Corretor de vendas: vê apenas as funções do sistema de vendas
     if (isCorretorVendas && !isAdmin) {
       const items: Array<{ to: string; label: string; icon: typeof LayoutDashboard }> = [];
@@ -94,8 +110,9 @@ function AuthLayout() {
     }
     const base: Array<{ to: string; label: string; icon: typeof LayoutDashboard }> = [...NAV];
     if (isAdmin && vendasAtivo) base.push({ to: "/vendas", label: "Vendas", icon: Briefcase });
+    if (isAdmin && adminModuloAtivo) base.push({ to: "/admin", label: "Administração", icon: Building2 });
     return isAdmin ? [...base, ...ADMIN_NAV, ...CONFIG_NAV] : [...base, ...CONFIG_NAV];
-  }, [isAdmin, isCorretorVendas, vendasAtivo, vendasAcessoIndividual]);
+  }, [isAdmin, isCorretorVendas, isAdministrativo, vendasAtivo, vendasAcessoIndividual, adminModuloAtivo]);
 
   useEffect(() => {
     let active = true;
@@ -113,9 +130,12 @@ function AuthLayout() {
           const roles = (data ?? []).map((r) => r.role);
           setIsAdmin(roles.includes("admin"));
           setIsCorretorVendas(roles.includes("corretor_vendas"));
+          setIsAdministrativo(roles.includes("administrativo"));
         });
       supabase.from("configuracoes").select("valor").eq("chave", "sistema_corretores_ativo").maybeSingle()
         .then(({ data }) => { if (active) setVendasAtivo(data?.valor === true); });
+      supabase.from("configuracoes").select("valor").eq("chave", "modulo_administrativo_ativo").maybeSingle()
+        .then(({ data }) => { if (active) setAdminModuloAtivo(data?.valor === true); });
       supabase.from("profiles").select("vendas_acesso").eq("id", userId).maybeSingle()
         .then(({ data }) => { if (active) setVendasAcessoIndividual((data as { vendas_acesso?: boolean } | null)?.vendas_acesso === true); });
     });
@@ -144,8 +164,11 @@ function AuthLayout() {
     if (isCorretorVendas && !isAdmin) {
       const allowed = CORRETOR_ALLOWED_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"));
       if (!allowed) router.navigate({ to: "/vendas" });
+    } else if (isAdministrativo && !isAdmin && !isCorretorVendas) {
+      const allowed = ADMINISTRATIVO_ALLOWED_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"));
+      if (!allowed) router.navigate({ to: "/admin" });
     }
-  }, [isCorretorVendas, isAdmin, pathname, router]);
+  }, [isCorretorVendas, isAdministrativo, isAdmin, pathname, router]);
 
   async function logout() {
     await endUserSession();
