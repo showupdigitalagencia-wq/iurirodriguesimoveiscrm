@@ -174,6 +174,18 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
               </SelectContent>
             </Select>
           </div>
+          {form.status === "vendido" && (
+            <>
+              <div>
+                <Label>Data da venda</Label>
+                <Input type="date" value={(form as any).data_venda ?? ""} onChange={(e) => set("data_venda" as any, e.target.value || null as any)} />
+              </div>
+              <div>
+                <Label>Valor da venda (R$)</Label>
+                <Input type="number" step="0.01" value={(form as any).valor_venda ?? ""} onChange={(e) => set("valor_venda" as any, (e.target.value ? Number(e.target.value) : null) as any)} />
+              </div>
+            </>
+          )}
           <div className="md:col-span-2"><Label>Rua *</Label><Input value={form.rua ?? ""} onChange={(e) => set("rua", e.target.value)} /></div>
           <div><Label>Número</Label><Input value={form.numero ?? ""} onChange={(e) => set("numero", e.target.value)} /></div>
           <div><Label>Complemento</Label><Input value={form.complemento ?? ""} onChange={(e) => set("complemento", e.target.value)} /></div>
