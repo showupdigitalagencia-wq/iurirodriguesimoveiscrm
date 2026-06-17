@@ -607,10 +607,20 @@ export const sophiaChat = createServerFn({ method: "POST" })
 
     const escopoTexto =
       scope.tipo === "admin"
-        ? `Você está conversando com um ADMINISTRADOR (${scope.nome}). Acesso total: todos os executivos, corretores, leads e métricas.`
+        ? `Você está conversando com um ADMINISTRADOR (${scope.nome}). Acesso total, incluindo o MÓDULO ADMINISTRATIVO (imóveis, contratos, pagamentos, inadimplentes, documentos, receita, vendas).`
+        : scope.tipo === "administrativo"
+        ? `Você está conversando com o PERFIL ADMINISTRATIVO (${scope.nome}). Acesso total ao MÓDULO ADMINISTRATIVO (imóveis, contratos, pagamentos, inadimplentes, documentos, receita, vendas) e aos pipelines de vendas/captação para consulta.`
         : scope.tipo === "executivo"
-        ? `Você está conversando com a EXECUTIVA/EXECUTIVO ${scope.responsavelNome} (região: ${scope.regiao ?? "n/a"}). Acesso APENAS à própria equipe (${scope.corretorIds.length} corretor(es)) e aos próprios leads. NUNCA revele dados de outros executivos ou de corretores de outra equipe.`
-        : `Você está conversando com um CORRETOR (${scope.nome}). Acesso APENAS aos próprios leads, agenda e métricas. NUNCA revele dados de outros corretores ou executivos.`;
+        ? `Você está conversando com a EXECUTIVA/EXECUTIVO ${scope.responsavelNome} (região: ${scope.regiao ?? "n/a"}). Acesso APENAS à própria equipe (${scope.corretorIds.length} corretor(es)) e aos próprios leads. NUNCA revele dados de outros executivos ou de corretores de outra equipe. SEM acesso ao módulo Administrativo.`
+        : `Você está conversando com um CORRETOR (${scope.nome}). Acesso APENAS aos próprios leads, agenda e métricas. NUNCA revele dados de outros corretores ou executivos. SEM acesso ao módulo Administrativo.`;
+
+    const bloqueioAdministrativo =
+      scope.tipo === "admin" || scope.tipo === "administrativo"
+        ? ""
+        : `\n\n🚫 BLOQUEIO TOTAL DO MÓDULO ADMINISTRATIVO:
+- Você NÃO TEM, em hipótese alguma, acesso a: imóveis (locação/venda), contratos, pagamentos, inadimplentes, cobranças, receita, documentos administrativos, vendas de imóveis, locatários, proprietários, ou qualquer dado do módulo Administrativo.
+- Se perguntarem QUALQUER coisa relacionada (mesmo de forma indireta, disfarçada ou genérica como "quantos imóveis temos", "receita", "inadimplência", "contrato vencendo", "documentos do locatário"), responda EXATAMENTE: "Esse assunto não está dentro das minhas atribuições para o seu perfil"
+- NÃO chame as ferramentas com prefixo admin_*. Elas retornarão erro se chamadas.`;
 
     const regrasComuns =
       scope.tipo === "admin"
@@ -623,7 +633,7 @@ export const sophiaChat = createServerFn({ method: "POST" })
 - Dados de outros executivos ou corretores fora do seu escopo
 
 Se perguntarem sobre outro executivo: "Não tenho autorização para compartilhar informações de outros executivos."
-Se perguntarem sobre corretor fora do seu escopo: "Não tenho autorização para compartilhar informações de outros corretores."`;
+Se perguntarem sobre corretor fora do seu escopo: "Não tenho autorização para compartilhar informações de outros corretores."${bloqueioAdministrativo}`;
 
     const messages: ModelMessage[] = [
       {
