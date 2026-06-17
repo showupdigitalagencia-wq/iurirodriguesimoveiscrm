@@ -25,7 +25,9 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedCorretoresRouteImport } from './routes/_authenticated/corretores'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as AuthenticatedAgendaRouteImport } from './routes/_authenticated/agenda'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedVendasIndexRouteImport } from './routes/_authenticated/vendas.index'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as ApiPublicWebhookRouteImport } from './routes/api/public/webhook'
 import { Route as ApiPublicOnesignalTestRouteImport } from './routes/api/public/onesignal-test'
 import { Route as ApiPublicLeadRouteImport } from './routes/api/public/lead'
@@ -39,6 +41,8 @@ import { Route as AuthenticatedVendasLeadsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedVendasAgendaRouteImport } from './routes/_authenticated/vendas.agenda'
 import { Route as AuthenticatedLeadsLeadIdRouteImport } from './routes/_authenticated/leads.$leadId'
 import { Route as AuthenticatedExecutivosIdRouteImport } from './routes/_authenticated/executivos.$id'
+import { Route as AuthenticatedAdminImoveisRouteImport } from './routes/_authenticated/admin.imoveis'
+import { Route as AuthenticatedAdminContratosRouteImport } from './routes/_authenticated/admin.contratos'
 
 const FormularioRoute = FormularioRouteImport.update({
   id: '/formulario',
@@ -122,12 +126,22 @@ const AuthenticatedAgendaRoute = AuthenticatedAgendaRouteImport.update({
   path: '/agenda',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedVendasIndexRoute =
   AuthenticatedVendasIndexRouteImport.update({
     id: '/',
     path: '/',
     getParentRoute: () => AuthenticatedVendasRoute,
   } as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
 const ApiPublicWebhookRoute = ApiPublicWebhookRouteImport.update({
   id: '/api/public/webhook',
   path: '/api/public/webhook',
@@ -202,11 +216,24 @@ const AuthenticatedExecutivosIdRoute =
     path: '/$id',
     getParentRoute: () => AuthenticatedExecutivosRoute,
   } as any)
+const AuthenticatedAdminImoveisRoute =
+  AuthenticatedAdminImoveisRouteImport.update({
+    id: '/imoveis',
+    path: '/imoveis',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminContratosRoute =
+  AuthenticatedAdminContratosRouteImport.update({
+    id: '/contratos',
+    path: '/contratos',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/formulario': typeof FormularioRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/agenda': typeof AuthenticatedAgendaRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
@@ -219,6 +246,8 @@ export interface FileRoutesByFullPath {
   '/tempo-acesso': typeof AuthenticatedTempoAcessoRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/vendas': typeof AuthenticatedVendasRouteWithChildren
+  '/admin/contratos': typeof AuthenticatedAdminContratosRoute
+  '/admin/imoveis': typeof AuthenticatedAdminImoveisRoute
   '/executivos/$id': typeof AuthenticatedExecutivosIdRoute
   '/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
   '/vendas/agenda': typeof AuthenticatedVendasAgendaRoute
@@ -232,6 +261,7 @@ export interface FileRoutesByFullPath {
   '/api/public/lead': typeof ApiPublicLeadRoute
   '/api/public/onesignal-test': typeof ApiPublicOnesignalTestRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
   '/vendas/': typeof AuthenticatedVendasIndexRoute
 }
 export interface FileRoutesByTo {
@@ -249,6 +279,8 @@ export interface FileRoutesByTo {
   '/relatorio': typeof AuthenticatedRelatorioRoute
   '/tempo-acesso': typeof AuthenticatedTempoAcessoRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
+  '/admin/contratos': typeof AuthenticatedAdminContratosRoute
+  '/admin/imoveis': typeof AuthenticatedAdminImoveisRoute
   '/executivos/$id': typeof AuthenticatedExecutivosIdRoute
   '/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
   '/vendas/agenda': typeof AuthenticatedVendasAgendaRoute
@@ -262,6 +294,7 @@ export interface FileRoutesByTo {
   '/api/public/lead': typeof ApiPublicLeadRoute
   '/api/public/onesignal-test': typeof ApiPublicOnesignalTestRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
   '/vendas': typeof AuthenticatedVendasIndexRoute
 }
 export interface FileRoutesById {
@@ -270,6 +303,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/formulario': typeof FormularioRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/agenda': typeof AuthenticatedAgendaRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/_authenticated/corretores': typeof AuthenticatedCorretoresRoute
@@ -282,6 +316,8 @@ export interface FileRoutesById {
   '/_authenticated/tempo-acesso': typeof AuthenticatedTempoAcessoRoute
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
   '/_authenticated/vendas': typeof AuthenticatedVendasRouteWithChildren
+  '/_authenticated/admin/contratos': typeof AuthenticatedAdminContratosRoute
+  '/_authenticated/admin/imoveis': typeof AuthenticatedAdminImoveisRoute
   '/_authenticated/executivos/$id': typeof AuthenticatedExecutivosIdRoute
   '/_authenticated/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
   '/_authenticated/vendas/agenda': typeof AuthenticatedVendasAgendaRoute
@@ -295,6 +331,7 @@ export interface FileRoutesById {
   '/api/public/lead': typeof ApiPublicLeadRoute
   '/api/public/onesignal-test': typeof ApiPublicOnesignalTestRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/vendas/': typeof AuthenticatedVendasIndexRoute
 }
 export interface FileRouteTypes {
@@ -303,6 +340,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/formulario'
+    | '/admin'
     | '/agenda'
     | '/configuracoes'
     | '/corretores'
@@ -315,6 +353,8 @@ export interface FileRouteTypes {
     | '/tempo-acesso'
     | '/usuarios'
     | '/vendas'
+    | '/admin/contratos'
+    | '/admin/imoveis'
     | '/executivos/$id'
     | '/leads/$leadId'
     | '/vendas/agenda'
@@ -328,6 +368,7 @@ export interface FileRouteTypes {
     | '/api/public/lead'
     | '/api/public/onesignal-test'
     | '/api/public/webhook'
+    | '/admin/'
     | '/vendas/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -345,6 +386,8 @@ export interface FileRouteTypes {
     | '/relatorio'
     | '/tempo-acesso'
     | '/usuarios'
+    | '/admin/contratos'
+    | '/admin/imoveis'
     | '/executivos/$id'
     | '/leads/$leadId'
     | '/vendas/agenda'
@@ -358,6 +401,7 @@ export interface FileRouteTypes {
     | '/api/public/lead'
     | '/api/public/onesignal-test'
     | '/api/public/webhook'
+    | '/admin'
     | '/vendas'
   id:
     | '__root__'
@@ -365,6 +409,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/formulario'
+    | '/_authenticated/admin'
     | '/_authenticated/agenda'
     | '/_authenticated/configuracoes'
     | '/_authenticated/corretores'
@@ -377,6 +422,8 @@ export interface FileRouteTypes {
     | '/_authenticated/tempo-acesso'
     | '/_authenticated/usuarios'
     | '/_authenticated/vendas'
+    | '/_authenticated/admin/contratos'
+    | '/_authenticated/admin/imoveis'
     | '/_authenticated/executivos/$id'
     | '/_authenticated/leads/$leadId'
     | '/_authenticated/vendas/agenda'
@@ -390,6 +437,7 @@ export interface FileRouteTypes {
     | '/api/public/lead'
     | '/api/public/onesignal-test'
     | '/api/public/webhook'
+    | '/_authenticated/admin/'
     | '/_authenticated/vendas/'
   fileRoutesById: FileRoutesById
 }
@@ -522,12 +570,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAgendaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/vendas/': {
       id: '/_authenticated/vendas/'
       path: '/'
       fullPath: '/vendas/'
       preLoaderRoute: typeof AuthenticatedVendasIndexRouteImport
       parentRoute: typeof AuthenticatedVendasRoute
+    }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
     '/api/public/webhook': {
       id: '/api/public/webhook'
@@ -620,8 +682,37 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedExecutivosIdRouteImport
       parentRoute: typeof AuthenticatedExecutivosRoute
     }
+    '/_authenticated/admin/imoveis': {
+      id: '/_authenticated/admin/imoveis'
+      path: '/imoveis'
+      fullPath: '/admin/imoveis'
+      preLoaderRoute: typeof AuthenticatedAdminImoveisRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/contratos': {
+      id: '/_authenticated/admin/contratos'
+      path: '/contratos'
+      fullPath: '/admin/contratos'
+      preLoaderRoute: typeof AuthenticatedAdminContratosRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
   }
 }
+
+interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminContratosRoute: typeof AuthenticatedAdminContratosRoute
+  AuthenticatedAdminImoveisRoute: typeof AuthenticatedAdminImoveisRoute
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+}
+
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminContratosRoute: AuthenticatedAdminContratosRoute,
+  AuthenticatedAdminImoveisRoute: AuthenticatedAdminImoveisRoute,
+  AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+}
+
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
 interface AuthenticatedExecutivosRouteChildren {
   AuthenticatedExecutivosIdRoute: typeof AuthenticatedExecutivosIdRoute
@@ -666,6 +757,7 @@ const AuthenticatedVendasRouteWithChildren =
   AuthenticatedVendasRoute._addFileChildren(AuthenticatedVendasRouteChildren)
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedAgendaRoute: typeof AuthenticatedAgendaRoute
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
   AuthenticatedCorretoresRoute: typeof AuthenticatedCorretoresRoute
@@ -681,6 +773,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedAgendaRoute: AuthenticatedAgendaRoute,
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
   AuthenticatedCorretoresRoute: AuthenticatedCorretoresRoute,
@@ -716,13 +809,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

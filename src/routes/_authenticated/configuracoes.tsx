@@ -88,6 +88,7 @@ function ConfigPage() {
         </TabsContent>
         <TabsContent value="admin" className="mt-6 space-y-6">
           <SistemaCorretoresToggle />
+          <ModuloAdministrativoToggle />
           <SophiaToggle chave="sophia_executivos_acesso" titulo="Liberar Laura para Executivos" descricao="Quando ativado, executivos podem usar a assistente Laura." />
           <SophiaToggle chave="sophia_corretores_acesso" titulo="Liberar Laura para Corretores" descricao="Quando ativado, corretores podem usar a assistente Laura." />
         </TabsContent>
@@ -122,6 +123,40 @@ function SistemaCorretoresToggle() {
           <h3 className="font-semibold">Liberar sistema de Corretores de Vendas</h3>
           <p className="text-sm text-muted-foreground mt-1">
             Quando ativado, o menu <strong>Vendas</strong> fica visível para administradores e corretores de vendas habilitados.
+          </p>
+        </div>
+        <Switch checked={ativo === true} disabled={saving || ativo === null} onCheckedChange={toggle} />
+      </div>
+    </div>
+  );
+}
+
+function ModuloAdministrativoToggle() {
+  const [ativo, setAtivo] = useState<boolean | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    supabase.from("configuracoes").select("valor").eq("chave", "modulo_administrativo_ativo").maybeSingle()
+      .then(({ data }) => setAtivo(data?.valor === true));
+  }, []);
+
+  async function toggle(v: boolean) {
+    setSaving(true);
+    const { error } = await supabase.from("configuracoes")
+      .upsert({ chave: "modulo_administrativo_ativo", valor: v as never, updated_at: new Date().toISOString() }, { onConflict: "chave" });
+    setSaving(false);
+    if (error) { toast.error("Erro ao salvar"); return; }
+    setAtivo(v);
+    toast.success(v ? "Módulo Administrativo liberado" : "Módulo Administrativo desativado");
+  }
+
+  return (
+    <div className="rounded-lg border p-5 space-y-3">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h3 className="font-semibold">Liberar módulo Administrativo</h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            Quando ativado, o menu <strong>Administração</strong> (imóveis, contratos e locações) fica visível para administradores e usuários com perfil <strong>Administrativo</strong>.
           </p>
         </div>
         <Switch checked={ativo === true} disabled={saving || ativo === null} onCheckedChange={toggle} />
