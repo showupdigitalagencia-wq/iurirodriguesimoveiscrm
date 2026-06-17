@@ -153,13 +153,14 @@ function ContratoDialog({ open, onOpenChange, contrato, imoveis, onSaved }: {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<Partial<ContratoInsert>>({});
 
-  if (open && contrato?.id !== (form as Contrato).id) {
+  useEffect(() => {
+    if (!open) return;
     setForm(contrato ? { ...contrato } : {
       imovel_id: imoveis[0]?.id, locatario_nome: "", data_inicio: new Date().toISOString().slice(0, 10),
       data_fim: new Date(Date.now() + 365 * 86400000).toISOString().slice(0, 10),
       duracao_meses: 12, valor_aluguel: 0, dia_vencimento: 10, status: "ativo",
     });
-  }
+  }, [open, contrato, imoveis]);
   function set<K extends keyof ContratoInsert>(k: K, v: ContratoInsert[K]) { setForm((f) => ({ ...f, [k]: v })); }
 
   async function save() {
