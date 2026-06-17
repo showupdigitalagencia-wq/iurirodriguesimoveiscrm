@@ -239,6 +239,12 @@ function ContratoDialog({ open, onOpenChange, contrato, imoveis, onSaved }: {
           </div>
           <div className="md:col-span-2"><Label>Observações</Label><Textarea value={form.observacoes ?? ""} onChange={(e) => set("observacoes", e.target.value)} /></div>
         </div>
+        {contrato && (
+          <div className="border-t pt-4 mt-2 space-y-3">
+            <h3 className="font-semibold text-sm">Documentos do contrato (Google Drive)</h3>
+            <DocumentosManager contratoId={contrato.id} />
+          </div>
+        )}
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
           <Button onClick={save} disabled={saving}>{saving ? "Salvando..." : "Salvar"}</Button>
