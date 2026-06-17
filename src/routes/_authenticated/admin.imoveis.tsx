@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -115,13 +115,13 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<Partial<ImovelInsert>>({});
 
-  // reset on open
-  if (open && form && imovel?.id !== (form as Imovel).id) {
+  useEffect(() => {
+    if (!open) return;
     setForm(imovel ? { ...imovel } : {
       tipo: "apartamento", status: "disponivel", valor_aluguel: 0, iptu: 0, condominio: 0,
       quartos: 0, banheiros: 0, vagas: 0, rua: "", proprietario_nome: "",
     });
-  }
+  }, [open, imovel]);
 
   function set<K extends keyof ImovelInsert>(k: K, v: ImovelInsert[K]) {
     setForm((f) => ({ ...f, [k]: v }));
