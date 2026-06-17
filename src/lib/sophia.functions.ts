@@ -93,9 +93,11 @@ export const sophiaChat = createServerFn({ method: "POST" })
     const gateway = createLovableAiGatewayProvider(apiKey);
 
     const NEGADO = "Não tenho autorização para compartilhar essas informações.";
+    const NEGADO_ADMIN = "Esse assunto não está dentro das minhas atribuições para o seu perfil";
+    const podeAdmin = scope.tipo === "admin" || scope.tipo === "administrativo";
 
     function corretoresPermitidos(): string[] | "todos" {
-      if (scope.tipo === "admin") return "todos";
+      if (scope.tipo === "admin" || scope.tipo === "administrativo") return "todos";
       if (scope.tipo === "executivo") return [scope.userId, ...scope.corretorIds];
       return [scope.userId];
     }
