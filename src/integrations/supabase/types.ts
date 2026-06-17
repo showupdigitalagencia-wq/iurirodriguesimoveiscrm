@@ -32,6 +32,80 @@ export type Database = {
         }
         Relationships: []
       }
+      contratos: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          data_fim: string
+          data_inicio: string
+          dia_vencimento: number | null
+          duracao_meses: number
+          endereco_anterior: string | null
+          id: string
+          imovel_id: string
+          indice_reajuste: string | null
+          locatario_cpf: string | null
+          locatario_email: string | null
+          locatario_nome: string
+          locatario_rg: string | null
+          locatario_telefone: string | null
+          observacoes: string | null
+          status: string
+          updated_at: string
+          valor_aluguel: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          data_fim: string
+          data_inicio: string
+          dia_vencimento?: number | null
+          duracao_meses?: number
+          endereco_anterior?: string | null
+          id?: string
+          imovel_id: string
+          indice_reajuste?: string | null
+          locatario_cpf?: string | null
+          locatario_email?: string | null
+          locatario_nome: string
+          locatario_rg?: string | null
+          locatario_telefone?: string | null
+          observacoes?: string | null
+          status?: string
+          updated_at?: string
+          valor_aluguel?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          data_fim?: string
+          data_inicio?: string
+          dia_vencimento?: number | null
+          duracao_meses?: number
+          endereco_anterior?: string | null
+          id?: string
+          imovel_id?: string
+          indice_reajuste?: string | null
+          locatario_cpf?: string | null
+          locatario_email?: string | null
+          locatario_nome?: string
+          locatario_rg?: string | null
+          locatario_telefone?: string | null
+          observacoes?: string | null
+          status?: string
+          updated_at?: string
+          valor_aluguel?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contratos_imovel_id_fkey"
+            columns: ["imovel_id"]
+            isOneToOne: false
+            referencedRelation: "imoveis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       corretor_disponibilidade: {
         Row: {
           corretor_id: string
@@ -101,6 +175,93 @@ export type Database = {
           scope?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      imoveis: {
+        Row: {
+          area_m2: number | null
+          bairro: string | null
+          banheiros: number | null
+          cep: string | null
+          cidade: string | null
+          complemento: string | null
+          condominio: number | null
+          created_at: string
+          created_by: string | null
+          fotos: string[] | null
+          garantia: string | null
+          id: string
+          iptu: number | null
+          numero: string | null
+          observacoes: string | null
+          proprietario_documento: string | null
+          proprietario_email: string | null
+          proprietario_nome: string
+          proprietario_telefone: string | null
+          quartos: number | null
+          rua: string
+          status: string
+          tipo: string
+          updated_at: string
+          vagas: number | null
+          valor_aluguel: number
+        }
+        Insert: {
+          area_m2?: number | null
+          bairro?: string | null
+          banheiros?: number | null
+          cep?: string | null
+          cidade?: string | null
+          complemento?: string | null
+          condominio?: number | null
+          created_at?: string
+          created_by?: string | null
+          fotos?: string[] | null
+          garantia?: string | null
+          id?: string
+          iptu?: number | null
+          numero?: string | null
+          observacoes?: string | null
+          proprietario_documento?: string | null
+          proprietario_email?: string | null
+          proprietario_nome: string
+          proprietario_telefone?: string | null
+          quartos?: number | null
+          rua: string
+          status?: string
+          tipo: string
+          updated_at?: string
+          vagas?: number | null
+          valor_aluguel?: number
+        }
+        Update: {
+          area_m2?: number | null
+          bairro?: string | null
+          banheiros?: number | null
+          cep?: string | null
+          cidade?: string | null
+          complemento?: string | null
+          condominio?: number | null
+          created_at?: string
+          created_by?: string | null
+          fotos?: string[] | null
+          garantia?: string | null
+          id?: string
+          iptu?: number | null
+          numero?: string | null
+          observacoes?: string | null
+          proprietario_documento?: string | null
+          proprietario_email?: string | null
+          proprietario_nome?: string
+          proprietario_telefone?: string | null
+          quartos?: number | null
+          rua?: string
+          status?: string
+          tipo?: string
+          updated_at?: string
+          vagas?: number | null
+          valor_aluguel?: number
         }
         Relationships: []
       }
@@ -689,9 +850,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_administrativo: { Args: { _user_id?: string }; Returns: boolean }
     }
     Enums: {
-      app_role: "admin" | "corretor" | "corretor_vendas"
+      app_role: "admin" | "corretor" | "corretor_vendas" | "administrativo"
       lead_canal: "denise" | "fabiola" | "renata" | "robson" | "teste_nego"
       lead_etapa:
         | "novos_leads"
@@ -855,7 +1017,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "corretor", "corretor_vendas"],
+      app_role: ["admin", "corretor", "corretor_vendas", "administrativo"],
       lead_canal: ["denise", "fabiola", "renata", "robson", "teste_nego"],
       lead_etapa: [
         "novos_leads",
