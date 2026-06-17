@@ -84,6 +84,7 @@ export type Database = {
           data_fim: string
           data_inicio: string
           dia_vencimento: number | null
+          drive_folder_id: string | null
           duracao_meses: number
           endereco_anterior: string | null
           id: string
@@ -105,6 +106,7 @@ export type Database = {
           data_fim: string
           data_inicio: string
           dia_vencimento?: number | null
+          drive_folder_id?: string | null
           duracao_meses?: number
           endereco_anterior?: string | null
           id?: string
@@ -126,6 +128,7 @@ export type Database = {
           data_fim?: string
           data_inicio?: string
           dia_vencimento?: number | null
+          drive_folder_id?: string | null
           duracao_meses?: number
           endereco_anterior?: string | null
           id?: string
@@ -190,6 +193,69 @@ export type Database = {
         }
         Relationships: []
       }
+      documentos: {
+        Row: {
+          contrato_id: string | null
+          created_at: string
+          drive_file_id: string
+          drive_web_content_link: string | null
+          drive_web_view_link: string | null
+          id: string
+          imovel_id: string | null
+          mime_type: string | null
+          nome: string
+          tamanho_bytes: number | null
+          tipo: string
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          contrato_id?: string | null
+          created_at?: string
+          drive_file_id: string
+          drive_web_content_link?: string | null
+          drive_web_view_link?: string | null
+          id?: string
+          imovel_id?: string | null
+          mime_type?: string | null
+          nome: string
+          tamanho_bytes?: number | null
+          tipo?: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          contrato_id?: string | null
+          created_at?: string
+          drive_file_id?: string
+          drive_web_content_link?: string | null
+          drive_web_view_link?: string | null
+          id?: string
+          imovel_id?: string | null
+          mime_type?: string | null
+          nome?: string
+          tamanho_bytes?: number | null
+          tipo?: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documentos_contrato_id_fkey"
+            columns: ["contrato_id"]
+            isOneToOne: false
+            referencedRelation: "contratos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documentos_imovel_id_fkey"
+            columns: ["imovel_id"]
+            isOneToOne: false
+            referencedRelation: "imoveis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       google_tokens: {
         Row: {
           access_token: string
@@ -235,6 +301,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           data_venda: string | null
+          drive_folder_id: string | null
           fotos: string[] | null
           garantia: string | null
           id: string
@@ -265,6 +332,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           data_venda?: string | null
+          drive_folder_id?: string | null
           fotos?: string[] | null
           garantia?: string | null
           id?: string
@@ -295,6 +363,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           data_venda?: string | null
+          drive_folder_id?: string | null
           fotos?: string[] | null
           garantia?: string | null
           id?: string
