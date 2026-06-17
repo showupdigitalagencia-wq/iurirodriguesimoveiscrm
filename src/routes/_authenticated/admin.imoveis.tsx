@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
+import { DocumentosManager } from "@/components/admin/DocumentosManager";
 
 type Imovel = Database["public"]["Tables"]["imoveis"]["Row"];
 type ImovelInsert = Database["public"]["Tables"]["imoveis"]["Insert"];
@@ -228,6 +229,12 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
           </div>
           <div className="md:col-span-2"><Label>Observações</Label><Textarea value={form.observacoes ?? ""} onChange={(e) => set("observacoes", e.target.value)} /></div>
         </div>
+        {imovel && (
+          <div className="border-t pt-4 mt-2 space-y-3">
+            <h3 className="font-semibold text-sm">Documentos do imóvel (Google Drive)</h3>
+            <DocumentosManager imovelId={imovel.id} />
+          </div>
+        )}
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
           <Button onClick={save} disabled={saving}>{saving ? "Salvando..." : "Salvar"}</Button>
