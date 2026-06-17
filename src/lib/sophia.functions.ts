@@ -16,6 +16,7 @@ const InputSchema = z.object({
 
 type Scope =
   | { tipo: "admin"; userId: string; nome: string }
+  | { tipo: "administrativo"; userId: string; nome: string }
   | { tipo: "executivo"; userId: string; nome: string; responsavelId: string; responsavelNome: string; regiao: string | null; corretorIds: string[] }
   | { tipo: "corretor"; userId: string; nome: string };
 
@@ -25,6 +26,7 @@ async function resolverAcesso(
 ): Promise<Scope> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: isAdmin } = await supabaseUser.rpc("has_role", { _user_id: userId, _role: "admin" });
+  const { data: isAdministrativo } = await supabaseUser.rpc("has_role", { _user_id: userId, _role: "administrativo" });
 
   const { data: cfg } = await supabaseAdmin
     .from("configuracoes")
@@ -40,6 +42,7 @@ async function resolverAcesso(
   const nome = profile?.nome ?? "";
 
   if (isAdmin) return { tipo: "admin", userId, nome };
+  if (isAdministrativo) return { tipo: "administrativo", userId, nome };
 
   // Detecta executivo: profile.nome corresponde a um responsaveis ativo (match por primeiro nome, case-insensitive)
   const primeiroNome = nome.trim().split(/\s+/)[0]?.toLowerCase() ?? "";
