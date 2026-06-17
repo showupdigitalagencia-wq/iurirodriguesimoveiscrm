@@ -97,8 +97,13 @@ export const uploadDocumento = createServerFn({ method: "POST" })
 
     // Load imovel (and contrato) to build folder path.
     let imovelId = data.imovelId;
-    let contrato: { id: string; locatario_nome: string; imovel_id: string; drive_folder_id: string | null } | null =
-      null;
+    type ContratoRow = {
+      id: string;
+      locatario_nome: string;
+      imovel_id: string;
+      drive_folder_id: string | null;
+    };
+    let contrato: ContratoRow | null = null;
 
     if (data.contratoId) {
       const { data: c, error } = await supabaseAdmin
@@ -107,8 +112,8 @@ export const uploadDocumento = createServerFn({ method: "POST" })
         .eq("id", data.contratoId)
         .maybeSingle();
       if (error || !c) throw new Error("Contrato não encontrado");
-      contrato = c as unknown as typeof contrato;
-      imovelId = contrato!.imovel_id;
+      contrato = c as unknown as ContratoRow;
+      imovelId = contrato.imovel_id;
     }
 
     const { data: imovel, error: imErr } = await supabaseAdmin
@@ -179,7 +184,8 @@ export const uploadDocumento = createServerFn({ method: "POST" })
       .single();
     if (insErr) throw new Error(insErr.message);
 
-    return { documento: inserted as unknown as Record<string, unknown> };
+    const ins = inserted as unknown as { id: string; drive_web_view_link: string | null };
+    return { ok: true as const, id: ins.id, link: ins.drive_web_view_link };
   });
 
 /** Delete a document from Drive and the `documentos` table. */
