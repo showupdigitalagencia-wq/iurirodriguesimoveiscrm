@@ -48,7 +48,19 @@ export const listDocumentos = createServerFn({ method: "POST" })
     else if (data.imovelId) q = q.eq("imovel_id", data.imovelId);
     const { data: rows, error } = await q;
     if (error) throw new Error(error.message);
-    return { documentos: (rows ?? []) as Array<Record<string, unknown>> };
+    type Doc = {
+      id: string;
+      tipo: string;
+      nome: string;
+      mime_type: string | null;
+      tamanho_bytes: number | null;
+      drive_file_id: string;
+      drive_web_view_link: string | null;
+      created_at: string;
+      imovel_id: string | null;
+      contrato_id: string | null;
+    };
+    return { documentos: ((rows ?? []) as unknown as Doc[]) };
   });
 
 /** Upload a document to Drive and persist a row in `documentos`. */
