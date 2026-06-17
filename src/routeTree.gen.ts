@@ -41,6 +41,7 @@ import { Route as AuthenticatedVendasLeadsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedVendasAgendaRouteImport } from './routes/_authenticated/vendas.agenda'
 import { Route as AuthenticatedLeadsLeadIdRouteImport } from './routes/_authenticated/leads.$leadId'
 import { Route as AuthenticatedExecutivosIdRouteImport } from './routes/_authenticated/executivos.$id'
+import { Route as AuthenticatedAdminPagamentosRouteImport } from './routes/_authenticated/admin.pagamentos'
 import { Route as AuthenticatedAdminImoveisRouteImport } from './routes/_authenticated/admin.imoveis'
 import { Route as AuthenticatedAdminContratosRouteImport } from './routes/_authenticated/admin.contratos'
 
@@ -216,6 +217,12 @@ const AuthenticatedExecutivosIdRoute =
     path: '/$id',
     getParentRoute: () => AuthenticatedExecutivosRoute,
   } as any)
+const AuthenticatedAdminPagamentosRoute =
+  AuthenticatedAdminPagamentosRouteImport.update({
+    id: '/pagamentos',
+    path: '/pagamentos',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminImoveisRoute =
   AuthenticatedAdminImoveisRouteImport.update({
     id: '/imoveis',
@@ -248,6 +255,7 @@ export interface FileRoutesByFullPath {
   '/vendas': typeof AuthenticatedVendasRouteWithChildren
   '/admin/contratos': typeof AuthenticatedAdminContratosRoute
   '/admin/imoveis': typeof AuthenticatedAdminImoveisRoute
+  '/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
   '/executivos/$id': typeof AuthenticatedExecutivosIdRoute
   '/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
   '/vendas/agenda': typeof AuthenticatedVendasAgendaRoute
@@ -281,6 +289,7 @@ export interface FileRoutesByTo {
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/admin/contratos': typeof AuthenticatedAdminContratosRoute
   '/admin/imoveis': typeof AuthenticatedAdminImoveisRoute
+  '/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
   '/executivos/$id': typeof AuthenticatedExecutivosIdRoute
   '/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
   '/vendas/agenda': typeof AuthenticatedVendasAgendaRoute
@@ -318,6 +327,7 @@ export interface FileRoutesById {
   '/_authenticated/vendas': typeof AuthenticatedVendasRouteWithChildren
   '/_authenticated/admin/contratos': typeof AuthenticatedAdminContratosRoute
   '/_authenticated/admin/imoveis': typeof AuthenticatedAdminImoveisRoute
+  '/_authenticated/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
   '/_authenticated/executivos/$id': typeof AuthenticatedExecutivosIdRoute
   '/_authenticated/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
   '/_authenticated/vendas/agenda': typeof AuthenticatedVendasAgendaRoute
@@ -355,6 +365,7 @@ export interface FileRouteTypes {
     | '/vendas'
     | '/admin/contratos'
     | '/admin/imoveis'
+    | '/admin/pagamentos'
     | '/executivos/$id'
     | '/leads/$leadId'
     | '/vendas/agenda'
@@ -388,6 +399,7 @@ export interface FileRouteTypes {
     | '/usuarios'
     | '/admin/contratos'
     | '/admin/imoveis'
+    | '/admin/pagamentos'
     | '/executivos/$id'
     | '/leads/$leadId'
     | '/vendas/agenda'
@@ -424,6 +436,7 @@ export interface FileRouteTypes {
     | '/_authenticated/vendas'
     | '/_authenticated/admin/contratos'
     | '/_authenticated/admin/imoveis'
+    | '/_authenticated/admin/pagamentos'
     | '/_authenticated/executivos/$id'
     | '/_authenticated/leads/$leadId'
     | '/_authenticated/vendas/agenda'
@@ -682,6 +695,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedExecutivosIdRouteImport
       parentRoute: typeof AuthenticatedExecutivosRoute
     }
+    '/_authenticated/admin/pagamentos': {
+      id: '/_authenticated/admin/pagamentos'
+      path: '/pagamentos'
+      fullPath: '/admin/pagamentos'
+      preLoaderRoute: typeof AuthenticatedAdminPagamentosRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/imoveis': {
       id: '/_authenticated/admin/imoveis'
       path: '/imoveis'
@@ -702,12 +722,14 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminContratosRoute: typeof AuthenticatedAdminContratosRoute
   AuthenticatedAdminImoveisRoute: typeof AuthenticatedAdminImoveisRoute
+  AuthenticatedAdminPagamentosRoute: typeof AuthenticatedAdminPagamentosRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminContratosRoute: AuthenticatedAdminContratosRoute,
   AuthenticatedAdminImoveisRoute: AuthenticatedAdminImoveisRoute,
+  AuthenticatedAdminPagamentosRoute: AuthenticatedAdminPagamentosRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
 }
 
