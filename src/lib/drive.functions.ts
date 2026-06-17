@@ -107,7 +107,7 @@ export const uploadDocumento = createServerFn({ method: "POST" })
         .eq("id", data.contratoId)
         .maybeSingle();
       if (error || !c) throw new Error("Contrato não encontrado");
-      contrato = c as never;
+      contrato = c as unknown as typeof contrato;
       imovelId = contrato!.imovel_id;
     }
 
@@ -179,7 +179,7 @@ export const uploadDocumento = createServerFn({ method: "POST" })
       .single();
     if (insErr) throw new Error(insErr.message);
 
-    return { documento: inserted };
+    return { documento: inserted as unknown as Record<string, unknown> };
   });
 
 /** Delete a document from Drive and the `documentos` table. */
