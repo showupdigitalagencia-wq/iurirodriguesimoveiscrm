@@ -26,6 +26,8 @@ const TABS = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/imoveis", label: "Imóveis", icon: Building2, exact: false },
   { to: "/admin/contratos", label: "Contratos", icon: FileText, exact: false },
+  { to: "/admin/pagamentos", label: "Pagamentos", icon: DollarSign, exact: false },
+  { to: "/admin/inadimplentes", label: "Inadimplentes", icon: AlertOctagon, exact: false },
 ] as const;
 
 function AdminLayout() {
