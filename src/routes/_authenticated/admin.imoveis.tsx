@@ -26,12 +26,14 @@ const STATUS_LABEL: Record<string, string> = {
   locado: "Locado",
   manutencao: "Em manutenção",
   rescindido: "Rescindido",
+  vendido: "Vendido",
 };
 const STATUS_COLOR: Record<string, string> = {
   disponivel: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
   locado: "bg-blue-500/10 text-blue-700 dark:text-blue-400",
   manutencao: "bg-amber-500/10 text-amber-700 dark:text-amber-400",
   rescindido: "bg-rose-500/10 text-rose-700 dark:text-rose-400",
+  vendido: "bg-violet-500/10 text-violet-700 dark:text-violet-400",
 };
 
 function formatBRL(v: number | null | undefined) {
@@ -172,6 +174,18 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
               </SelectContent>
             </Select>
           </div>
+          {form.status === "vendido" && (
+            <>
+              <div>
+                <Label>Data da venda</Label>
+                <Input type="date" value={(form as any).data_venda ?? ""} onChange={(e) => set("data_venda" as any, e.target.value || null as any)} />
+              </div>
+              <div>
+                <Label>Valor da venda (R$)</Label>
+                <Input type="number" step="0.01" value={(form as any).valor_venda ?? ""} onChange={(e) => set("valor_venda" as any, (e.target.value ? Number(e.target.value) : null) as any)} />
+              </div>
+            </>
+          )}
           <div className="md:col-span-2"><Label>Rua *</Label><Input value={form.rua ?? ""} onChange={(e) => set("rua", e.target.value)} /></div>
           <div><Label>Número</Label><Input value={form.numero ?? ""} onChange={(e) => set("numero", e.target.value)} /></div>
           <div><Label>Complemento</Label><Input value={form.complemento ?? ""} onChange={(e) => set("complemento", e.target.value)} /></div>

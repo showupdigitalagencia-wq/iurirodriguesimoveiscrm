@@ -234,6 +234,7 @@ export type Database = {
           condominio: number | null
           created_at: string
           created_by: string | null
+          data_venda: string | null
           fotos: string[] | null
           garantia: string | null
           id: string
@@ -251,6 +252,7 @@ export type Database = {
           updated_at: string
           vagas: number | null
           valor_aluguel: number
+          valor_venda: number | null
         }
         Insert: {
           area_m2?: number | null
@@ -262,6 +264,7 @@ export type Database = {
           condominio?: number | null
           created_at?: string
           created_by?: string | null
+          data_venda?: string | null
           fotos?: string[] | null
           garantia?: string | null
           id?: string
@@ -279,6 +282,7 @@ export type Database = {
           updated_at?: string
           vagas?: number | null
           valor_aluguel?: number
+          valor_venda?: number | null
         }
         Update: {
           area_m2?: number | null
@@ -290,6 +294,7 @@ export type Database = {
           condominio?: number | null
           created_at?: string
           created_by?: string | null
+          data_venda?: string | null
           fotos?: string[] | null
           garantia?: string | null
           id?: string
@@ -307,6 +312,7 @@ export type Database = {
           updated_at?: string
           vagas?: number | null
           valor_aluguel?: number
+          valor_venda?: number | null
         }
         Relationships: []
       }
