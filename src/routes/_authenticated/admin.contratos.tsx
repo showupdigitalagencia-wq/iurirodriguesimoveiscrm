@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, AlertTriangle } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
+import { DocumentosManager } from "@/components/admin/DocumentosManager";
 
 type Contrato = Database["public"]["Tables"]["contratos"]["Row"];
 type ContratoInsert = Database["public"]["Tables"]["contratos"]["Insert"];
