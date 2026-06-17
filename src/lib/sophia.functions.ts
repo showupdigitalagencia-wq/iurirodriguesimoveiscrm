@@ -748,7 +748,7 @@ export const sophiaContext = createServerFn({ method: "GET" })
     const amanha = new Date(agora.getTime() + 36 * 3600 * 1000).toISOString();
 
     const permitidos: string[] | "todos" =
-      scope.tipo === "admin" ? "todos" :
+      scope.tipo === "admin" || scope.tipo === "administrativo" ? "todos" :
       scope.tipo === "executivo" ? [scope.userId, ...scope.corretorIds] :
       [scope.userId];
 
