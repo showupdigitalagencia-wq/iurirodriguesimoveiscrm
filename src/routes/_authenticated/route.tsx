@@ -289,17 +289,36 @@ function AuthLayout() {
                     <SheetHeader>
                       <SheetTitle className="text-gold">Menu</SheetTitle>
                     </SheetHeader>
-                    <ul className="mt-4 grid gap-1">
+                    <ul className="mt-4 grid gap-1 max-h-[70vh] overflow-y-auto">
                       {[
                         MOBILE_BOTTOM[4],
                         { to: "/relatorio", label: "Relatórios", icon: BarChart3 },
-                        ...(isAdmin && vendasAtivo ? [{ to: "/vendas", label: "Vendas", icon: Briefcase }] : []),
+                        ...(isAdmin && vendasAtivo
+                          ? [
+                              { to: "/vendas", label: "Vendas — Dashboard", icon: Briefcase },
+                              { to: "/vendas/leads", label: "Vendas — Leads", icon: Users },
+                              { to: "/vendas/pipeline", label: "Vendas — Pipeline", icon: Kanban },
+                              { to: "/vendas/agenda", label: "Vendas — Agenda", icon: CalendarDays },
+                            ]
+                          : []),
+                        ...(isAdmin && adminModuloAtivo
+                          ? [
+                              { to: "/admin", label: "Administrativo — Dashboard", icon: Building2 },
+                              { to: "/admin/imoveis", label: "Administrativo — Imóveis", icon: Building2 },
+                              { to: "/admin/contratos", label: "Administrativo — Contratos", icon: Building2 },
+                              { to: "/admin/pagamentos", label: "Administrativo — Pagamentos", icon: Building2 },
+                              { to: "/admin/inadimplentes", label: "Administrativo — Inadimplentes", icon: Building2 },
+                            ]
+                          : []),
                         ...(isAdmin ? ADMIN_NAV : []),
+                        { to: "/notificacoes", label: "Notificações", icon: BellRing },
+                        { to: "/configuracoes", label: "Configurações", icon: Settings },
                       ].map((item) => {
                         const Icon = item.icon;
                         return (
                           <li key={item.to}>
                             <Link to={item.to}
+                              activeOptions={item.to === "/vendas" || item.to === "/admin" ? { exact: true } : undefined}
                               className="flex items-center gap-3 px-3 py-3 rounded-md text-sm hover:bg-sidebar-accent [&.active]:bg-sidebar-accent [&.active]:text-gold"
                               activeProps={{ className: "active" }}>
                               <Icon className="h-5 w-5" />
