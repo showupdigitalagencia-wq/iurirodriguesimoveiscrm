@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      cobrancas: {
+        Row: {
+          canal: string
+          contrato_id: string
+          created_at: string
+          id: string
+          mensagem: string | null
+          pagamento_id: string | null
+          realizada_por: string | null
+        }
+        Insert: {
+          canal?: string
+          contrato_id: string
+          created_at?: string
+          id?: string
+          mensagem?: string | null
+          pagamento_id?: string | null
+          realizada_por?: string | null
+        }
+        Update: {
+          canal?: string
+          contrato_id?: string
+          created_at?: string
+          id?: string
+          mensagem?: string | null
+          pagamento_id?: string | null
+          realizada_por?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cobrancas_contrato_id_fkey"
+            columns: ["contrato_id"]
+            isOneToOne: false
+            referencedRelation: "contratos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cobrancas_pagamento_id_fkey"
+            columns: ["pagamento_id"]
+            isOneToOne: false
+            referencedRelation: "pagamentos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       configuracoes: {
         Row: {
           chave: string
@@ -447,6 +492,62 @@ export type Database = {
             columns: ["lead_id"]
             isOneToOne: false
             referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pagamentos: {
+        Row: {
+          contrato_id: string
+          created_at: string
+          created_by: string | null
+          data_pagamento: string | null
+          id: string
+          juros: number | null
+          mes_referencia: string
+          multa: number | null
+          observacoes: string | null
+          status: string
+          updated_at: string
+          valor_pago: number | null
+          valor_previsto: number
+        }
+        Insert: {
+          contrato_id: string
+          created_at?: string
+          created_by?: string | null
+          data_pagamento?: string | null
+          id?: string
+          juros?: number | null
+          mes_referencia: string
+          multa?: number | null
+          observacoes?: string | null
+          status?: string
+          updated_at?: string
+          valor_pago?: number | null
+          valor_previsto?: number
+        }
+        Update: {
+          contrato_id?: string
+          created_at?: string
+          created_by?: string | null
+          data_pagamento?: string | null
+          id?: string
+          juros?: number | null
+          mes_referencia?: string
+          multa?: number | null
+          observacoes?: string | null
+          status?: string
+          updated_at?: string
+          valor_pago?: number | null
+          valor_previsto?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pagamentos_contrato_id_fkey"
+            columns: ["contrato_id"]
+            isOneToOne: false
+            referencedRelation: "contratos"
             referencedColumns: ["id"]
           },
         ]
