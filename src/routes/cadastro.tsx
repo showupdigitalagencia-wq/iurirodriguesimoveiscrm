@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { Loader2, Upload } from "lucide-react";
 
-export const Route = createFileRoute("/ingresso")({
+export const Route = createFileRoute("/cadastro")({
   ssr: false,
   head: () => ({
     meta: [

@@ -65,7 +65,7 @@ function CandidatosPage() {
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
           <h2 className="text-lg md:text-xl font-bold">Candidatos a Corretor</h2>
-          <p className="text-xs md:text-sm text-muted-foreground">Documentação recebida via /ingresso</p>
+          <p className="text-xs md:text-sm text-muted-foreground">Documentação recebida via /cadastro</p>
         </div>
         <Tabs value={filter} onValueChange={(v) => setFilter(v as never)}>
           <TabsList>
