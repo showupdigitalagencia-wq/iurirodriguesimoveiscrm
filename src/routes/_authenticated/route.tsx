@@ -2,7 +2,7 @@ import { createFileRoute, Outlet, redirect, Link, useRouter, useRouterState } fr
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useMemo, useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
-import { LayoutDashboard, Kanban, Users, BarChart3, Settings, LogOut, BadgeCheck, UserCog, BellRing, Clock, CalendarDays, MoreHorizontal, Briefcase, Users2, Building2 } from "lucide-react";
+import { LayoutDashboard, Kanban, Users, BarChart3, Settings, LogOut, BadgeCheck, UserCog, BellRing, Clock, CalendarDays, MoreHorizontal, Briefcase, Users2, Building2, Megaphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { toast } from "sonner";
@@ -80,6 +80,7 @@ function AuthLayout() {
   const [vendasAcessoIndividual, setVendasAcessoIndividual] = useState(false);
   const [adminModuloAtivo, setAdminModuloAtivo] = useState(false);
   const [canCandidatos, setCanCandidatos] = useState(false);
+  const [isExec, setIsExec] = useState(false);
 
   const navItems = useMemo(() => {
     const corretorPodeVer = isCorretorVendas && (vendasAtivo || vendasAcessoIndividual);
@@ -112,8 +113,9 @@ function AuthLayout() {
     const base: Array<{ to: string; label: string; icon: typeof LayoutDashboard }> = [...NAV];
     if (isAdmin && vendasAtivo) base.push({ to: "/vendas", label: "Vendas", icon: Briefcase });
     if (isAdmin && adminModuloAtivo) base.push({ to: "/admin", label: "Administração", icon: Building2 });
+    if (isAdmin || isExec) base.push({ to: "/executivos/landing-page", label: "Landing Page", icon: Megaphone });
     return isAdmin ? [...base, ...ADMIN_NAV, ...CONFIG_NAV] : [...base, ...CONFIG_NAV];
-  }, [isAdmin, isCorretorVendas, isAdministrativo, vendasAtivo, vendasAcessoIndividual, adminModuloAtivo]);
+  }, [isAdmin, isCorretorVendas, isAdministrativo, vendasAtivo, vendasAcessoIndividual, adminModuloAtivo, isExec]);
 
   useEffect(() => {
     let active = true;
@@ -140,6 +142,7 @@ function AuthLayout() {
       supabase.from("profiles").select("vendas_acesso").eq("id", userId).maybeSingle()
         .then(({ data }) => { if (active) setVendasAcessoIndividual((data as { vendas_acesso?: boolean } | null)?.vendas_acesso === true); });
       supabase.rpc("can_view_candidatos").then(({ data }) => { if (active) setCanCandidatos(data === true); });
+      supabase.rpc("current_user_is_executivo").then(({ data }) => { if (active) setIsExec(data === true); });
     });
 
     const channel = supabase
@@ -313,7 +316,7 @@ function AuthLayout() {
                               ...(canCandidatos ? [{ to: "/admin/candidatos", label: "Administrativo — Candidatos", icon: Building2 }] : []),
                             ]
                           : []),
-                        ...(isAdmin ? [{ to: "/executivos/landing-page", label: "Executivos — Landing Page", icon: Users2 }] : []),
+                        ...((isAdmin || isExec) ? [{ to: "/executivos/landing-page", label: "Landing Page", icon: Megaphone }] : []),
                         ...(isAdmin ? ADMIN_NAV : []),
                         { to: "/notificacoes", label: "Notificações", icon: BellRing },
                         { to: "/configuracoes", label: "Configurações", icon: Settings },
