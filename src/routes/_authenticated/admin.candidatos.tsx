@@ -239,12 +239,34 @@ function CandidatoCard({ candidato: c, expanded, onToggle, onChanged }: { candid
                 <Link2 className="h-4 w-4" /> Ver card no pipeline
               </Link>
             )}
-            <div className="ml-auto">
+            <div className="ml-auto flex flex-wrap items-center gap-2">
               {c.status !== "arquivado" && (
                 <Button onClick={handleSalvarDrive} disabled={saving} className="bg-gold text-black hover:bg-gold/90">
                   {saving ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Salvando...</> : <><FolderUp className="h-4 w-4 mr-2" /> Salvar no Google Drive</>}
                 </Button>
               )}
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" size="sm" disabled={deleting}>
+                    {deleting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Trash2 className="h-4 w-4 mr-2" />}
+                    Excluir
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Excluir candidato</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Tem certeza que deseja excluir este candidato e seus documentos? Essa ação não pode ser desfeita.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleExcluir} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      Excluir
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </div>
         </div>
