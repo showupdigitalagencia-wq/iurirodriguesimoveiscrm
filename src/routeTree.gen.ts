@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as IngressoRouteImport } from './routes/ingresso'
 import { Route as FormularioRouteImport } from './routes/formulario'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
@@ -46,6 +47,11 @@ import { Route as AuthenticatedAdminInadimplentesRouteImport } from './routes/_a
 import { Route as AuthenticatedAdminImoveisRouteImport } from './routes/_authenticated/admin.imoveis'
 import { Route as AuthenticatedAdminContratosRouteImport } from './routes/_authenticated/admin.contratos'
 
+const IngressoRoute = IngressoRouteImport.update({
+  id: '/ingresso',
+  path: '/ingresso',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FormularioRoute = FormularioRouteImport.update({
   id: '/formulario',
   path: '/formulario',
@@ -247,6 +253,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/formulario': typeof FormularioRoute
+  '/ingresso': typeof IngressoRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/agenda': typeof AuthenticatedAgendaRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -284,6 +291,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/formulario': typeof FormularioRoute
+  '/ingresso': typeof IngressoRoute
   '/agenda': typeof AuthenticatedAgendaRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
@@ -321,6 +329,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/formulario': typeof FormularioRoute
+  '/ingresso': typeof IngressoRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/agenda': typeof AuthenticatedAgendaRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -360,6 +369,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/formulario'
+    | '/ingresso'
     | '/admin'
     | '/agenda'
     | '/configuracoes'
@@ -397,6 +407,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/formulario'
+    | '/ingresso'
     | '/agenda'
     | '/configuracoes'
     | '/corretores'
@@ -433,6 +444,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/formulario'
+    | '/ingresso'
     | '/_authenticated/admin'
     | '/_authenticated/agenda'
     | '/_authenticated/configuracoes'
@@ -472,6 +484,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   FormularioRoute: typeof FormularioRoute
+  IngressoRoute: typeof IngressoRoute
   ApiPublicCronLauraResumoDiarioRoute: typeof ApiPublicCronLauraResumoDiarioRoute
   ApiPublicCronReuniaoLembretesRoute: typeof ApiPublicCronReuniaoLembretesRoute
   ApiPublicCronReunioesInstitucionaisRoute: typeof ApiPublicCronReunioesInstitucionaisRoute
@@ -484,6 +497,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/ingresso': {
+      id: '/ingresso'
+      path: '/ingresso'
+      fullPath: '/ingresso'
+      preLoaderRoute: typeof IngressoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/formulario': {
       id: '/formulario'
       path: '/formulario'
@@ -840,6 +860,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   FormularioRoute: FormularioRoute,
+  IngressoRoute: IngressoRoute,
   ApiPublicCronLauraResumoDiarioRoute: ApiPublicCronLauraResumoDiarioRoute,
   ApiPublicCronReuniaoLembretesRoute: ApiPublicCronReuniaoLembretesRoute,
   ApiPublicCronReunioesInstitucionaisRoute:
