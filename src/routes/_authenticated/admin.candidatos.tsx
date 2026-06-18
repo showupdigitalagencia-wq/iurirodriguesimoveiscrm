@@ -2,13 +2,14 @@ import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useEffect, useState, useCallback } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { listCandidatos, getCandidatoDocUrls, salvarCandidatoNoDrive, type CandidatoRow } from "@/lib/candidatos.functions";
+import { listCandidatos, getCandidatoDocUrls, salvarCandidatoNoDrive, excluirCandidato, type CandidatoRow } from "@/lib/candidatos.functions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Loader2, ExternalLink, FolderUp, FileText, Link2, ChevronDown, ChevronRight, CheckCircle2, XCircle } from "lucide-react";
+import { Loader2, ExternalLink, FolderUp, FileText, Link2, ChevronDown, ChevronRight, CheckCircle2, XCircle, Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/candidatos")({
   head: () => ({ meta: [{ title: "Candidatos — Sistema NEXUS" }, { name: "robots", content: "noindex" }] }),
@@ -109,9 +110,11 @@ function CandidatosPage() {
 function CandidatoCard({ candidato: c, expanded, onToggle, onChanged }: { candidato: CandidatoRow; expanded: boolean; onToggle: () => void; onChanged: () => void }) {
   const getUrls = useServerFn(getCandidatoDocUrls);
   const salvarDrive = useServerFn(salvarCandidatoNoDrive);
+  const excluir = useServerFn(excluirCandidato);
   const [urls, setUrls] = useState<DocUrls | null>(null);
   const [loadingDocs, setLoadingDocs] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!expanded || urls) return;
@@ -132,6 +135,19 @@ function CandidatoCard({ candidato: c, expanded, onToggle, onChanged }: { candid
       toast.error(e instanceof Error ? e.message : "Erro ao salvar no Drive");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleExcluir() {
+    setDeleting(true);
+    try {
+      await excluir({ data: { candidatoId: c.id } });
+      toast.success("Candidato e documentos excluídos.");
+      onChanged();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao excluir");
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -223,12 +239,34 @@ function CandidatoCard({ candidato: c, expanded, onToggle, onChanged }: { candid
                 <Link2 className="h-4 w-4" /> Ver card no pipeline
               </Link>
             )}
-            <div className="ml-auto">
+            <div className="ml-auto flex flex-wrap items-center gap-2">
               {c.status !== "arquivado" && (
                 <Button onClick={handleSalvarDrive} disabled={saving} className="bg-gold text-black hover:bg-gold/90">
                   {saving ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Salvando...</> : <><FolderUp className="h-4 w-4 mr-2" /> Salvar no Google Drive</>}
                 </Button>
               )}
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" size="sm" disabled={deleting}>
+                    {deleting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Trash2 className="h-4 w-4 mr-2" />}
+                    Excluir
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Excluir candidato</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Tem certeza que deseja excluir este candidato e seus documentos? Essa ação não pode ser desfeita.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleExcluir} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      Excluir
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </div>
         </div>
