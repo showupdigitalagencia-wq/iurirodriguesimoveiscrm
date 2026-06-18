@@ -118,6 +118,18 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<Partial<ImovelInsert>>({});
 
+  const { data: corretores = [] } = useQuery({
+    queryKey: ["corretores_fechamento"],
+    queryFn: async () => {
+      const { data: roles } = await supabase.from("user_roles").select("user_id, role").in("role", ["corretor", "corretor_vendas"]);
+      const ids = Array.from(new Set((roles ?? []).map((r) => r.user_id)));
+      if (!ids.length) return [] as Array<{ id: string; nome: string; responsavel_id: string | null }>;
+      const { data: profs } = await supabase.from("profiles").select("id, nome, responsavel_id").in("id", ids).order("nome");
+      return (profs ?? []) as Array<{ id: string; nome: string; responsavel_id: string | null }>;
+    },
+    enabled: open,
+  });
+
   useEffect(() => {
     if (!open) return;
     setForm(imovel ? { ...imovel } : {
@@ -128,6 +140,15 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
 
   function set<K extends keyof ImovelInsert>(k: K, v: ImovelInsert[K]) {
     setForm((f) => ({ ...f, [k]: v }));
+  }
+
+  function setCorretor(corretorId: string) {
+    const c = corretores.find((x) => x.id === corretorId);
+    setForm((f) => ({
+      ...f,
+      corretor_fechamento_id: corretorId || null,
+      executivo_fechamento_id: c?.responsavel_id ?? null,
+    } as Partial<ImovelInsert>));
   }
 
   async function save() {
