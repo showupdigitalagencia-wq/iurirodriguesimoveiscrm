@@ -148,7 +148,7 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
       ...f,
       corretor_fechamento_id: corretorId || null,
       executivo_fechamento_id: c?.responsavel_id ?? null,
-    } as Partial<ImovelInsert>));
+    } as unknown as Partial<ImovelInsert>));
   }
 
   async function save() {
