@@ -316,7 +316,7 @@ function AuthLayout() {
                               ...(canCandidatos ? [{ to: "/admin/candidatos", label: "Administrativo — Candidatos", icon: Building2 }] : []),
                             ]
                           : []),
-                        ...(isAdmin ? [{ to: "/executivos/landing-page", label: "Executivos — Landing Page", icon: Users2 }] : []),
+                        ...((isAdmin || isExec) ? [{ to: "/executivos/landing-page", label: "Landing Page", icon: Megaphone }] : []),
                         ...(isAdmin ? ADMIN_NAV : []),
                         { to: "/notificacoes", label: "Notificações", icon: BellRing },
                         { to: "/configuracoes", label: "Configurações", icon: Settings },
