@@ -49,10 +49,52 @@ const BENEFICIOS = [
   { e: "🏆", t: "Portfólio completo", d: "Imóveis em diversas regiões e perfis para todos os clientes." },
 ];
 
-function youtubeEmbed(url: string): string | null {
+function youtubeId(url: string): string | null {
   if (!url) return null;
   const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/);
-  return m ? `https://www.youtube.com/embed/${m[1]}` : null;
+  return m ? m[1] : null;
+}
+
+// YouTube IFrame API global
+declare global {
+  interface Window {
+    YT?: {
+      Player: new (
+        el: HTMLElement | string,
+        opts: {
+          videoId: string;
+          playerVars?: Record<string, string | number>;
+          events?: {
+            onStateChange?: (e: { data: number }) => void;
+            onReady?: () => void;
+          };
+        },
+      ) => unknown;
+      PlayerState: { ENDED: number };
+    };
+    onYouTubeIframeAPIReady?: () => void;
+  }
+}
+
+let ytApiPromise: Promise<void> | null = null;
+function loadYouTubeApi(): Promise<void> {
+  if (typeof window === "undefined") return Promise.resolve();
+  if (window.YT?.Player) return Promise.resolve();
+  if (ytApiPromise) return ytApiPromise;
+  ytApiPromise = new Promise<void>((resolve) => {
+    const prev = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => {
+      prev?.();
+      resolve();
+    };
+    if (!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
+      const s = document.createElement("script");
+      s.src = "https://www.youtube.com/iframe_api";
+      s.async = true;
+      document.head.appendChild(s);
+    }
+  });
+  return ytApiPromise;
 }
 
 async function fileToB64(file: File): Promise<{ nome: string; mimeType: string; base64: string }> {
@@ -66,16 +108,62 @@ async function fileToB64(file: File): Promise<{ nome: string; mimeType: string; 
 function IngressoPage() {
   const submit = useServerFn(submeterCandidato);
   const getVsl = useServerFn(getVslUrl);
-  const [vsl, setVsl] = useState<string | null>(null);
+  const [videoId, setVideoId] = useState<string | null>(null);
+  const [allowSkip, setAllowSkip] = useState(false);
+  const [unlocked, setUnlocked] = useState(false);
+  const [vslLoaded, setVslLoaded] = useState(false);
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [form, setForm] = useState({ nome: "", cpf: "", telefone: "", email: "", creci: "", regiao: "" });
   const [files, setFiles] = useState<{ rg?: File; cpf?: File; creci?: File; comprovante?: File }>({});
   const formRef = useRef<HTMLFormElement>(null);
+  const playerHostRef = useRef<HTMLDivElement>(null);
+  const unlockedRef = useRef(false);
+  unlockedRef.current = unlocked;
 
   useEffect(() => {
-    getVsl({}).then((r) => setVsl(youtubeEmbed(r.url))).catch(() => null);
+    getVsl({})
+      .then((r) => {
+        setVideoId(youtubeId(r.url));
+        setAllowSkip(!!r.allowSkip);
+      })
+      .catch(() => null)
+      .finally(() => setVslLoaded(true));
   }, [getVsl]);
+
+  // If no video is configured, do not block the page
+  useEffect(() => {
+    if (vslLoaded && !videoId) setUnlocked(true);
+  }, [vslLoaded, videoId]);
+
+  // YouTube IFrame API — detect ENDED
+  useEffect(() => {
+    if (!videoId || !playerHostRef.current) return;
+    let destroyed = false;
+    let player: { destroy?: () => void } | null = null;
+    loadYouTubeApi().then(() => {
+      if (destroyed || !window.YT?.Player || !playerHostRef.current) return;
+      player = new window.YT.Player(playerHostRef.current, {
+        videoId,
+        playerVars: { playsinline: 1, rel: 0, modestbranding: 1 },
+        events: {
+          onStateChange: (e) => {
+            if (e.data === window.YT?.PlayerState.ENDED && !unlockedRef.current) {
+              setUnlocked(true);
+            }
+          },
+        },
+      }) as { destroy?: () => void };
+    });
+    return () => {
+      destroyed = true;
+      try {
+        player?.destroy?.();
+      } catch {
+        /* ignore */
+      }
+    };
+  }, [videoId]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -134,37 +222,54 @@ function IngressoPage() {
             </h1>
             <p className="text-white/70 max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
               Você está a um passo de fazer parte do maior e mais completo ecossistema imobiliário do <span style={{ whiteSpace: "nowrap" }}>Rio de Janeiro</span>.
-              Envie sua documentação abaixo para iniciar.
+              Assista o vídeo abaixo até o final para liberar a próxima etapa.
             </p>
           </div>
 
-          {vsl && (
+          {videoId && (
             <div
               className="aspect-video w-full max-w-3xl mx-auto rounded-2xl overflow-hidden"
               style={{ border: `1px solid ${GOLD}66`, boxShadow: `0 0 60px -10px ${GOLD}55` }}
             >
-              <iframe
-                src={vsl}
-                title="Apresentação Sistema Nexus"
-                className="w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
+              <div ref={playerHostRef} className="w-full h-full" />
             </div>
           )}
 
-          <button
-            onClick={() => formRef.current?.scrollIntoView({ behavior: "smooth" })}
-            className="inline-flex items-center gap-2 px-8 py-4 rounded-md font-semibold text-base transition-transform hover:scale-105"
-            style={{ background: GOLD, color: "#0a0a0a", boxShadow: `0 10px 40px -10px ${GOLD}80` }}
-          >
-            Quero fazer parte →
-          </button>
+          {videoId && !unlocked && allowSkip && (
+            <button
+              type="button"
+              onClick={() => setUnlocked(true)}
+              className="text-xs uppercase tracking-[0.25em] text-white/40 hover:text-white/80 underline-offset-4 hover:underline transition-colors"
+            >
+              Pular vídeo
+            </button>
+          )}
+
+          {videoId && !unlocked && (
+            <p className="text-sm text-white/40">Assista o vídeo até o fim para continuar.</p>
+          )}
+
+          {unlocked && (
+            <div className="space-y-4 animate-in fade-in duration-700">
+              <div className="text-sm md:text-base" style={{ color: GOLD }}>
+                ✅ Agora você já pode continuar
+              </div>
+              <button
+                onClick={() => formRef.current?.scrollIntoView({ behavior: "smooth" })}
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-md font-semibold text-base transition-transform hover:scale-105"
+                style={{ background: GOLD, color: "#0a0a0a", boxShadow: `0 10px 40px -10px ${GOLD}80` }}
+              >
+                Quero fazer parte →
+              </button>
+            </div>
+          )}
         </div>
+
       </section>
 
+      {unlocked && (<>
       {/* BENEFÍCIOS */}
-      <section className="px-6 py-20" style={{ background: "#0a0a0a" }}>
+      <section className="px-6 py-20 animate-in fade-in duration-700" style={{ background: "#0a0a0a" }}>
         <div className="max-w-6xl mx-auto space-y-12">
           <div className="text-center space-y-3">
             <div className="text-xs uppercase tracking-[0.35em]" style={{ color: GOLD }}>Por que Nexus</div>
@@ -304,6 +409,9 @@ function IngressoPage() {
           </form>
         </div>
       </section>
+      </>)}
+
+
 
       <footer className="px-6 py-8 text-center text-white/40 text-xs" style={{ background: "#0a0a0a", borderTop: "1px solid #1a1a1a" }}>
         © Iuri Rodrigues Imóveis — Ecossistema Nexus
