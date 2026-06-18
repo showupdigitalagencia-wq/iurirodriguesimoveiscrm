@@ -90,6 +90,7 @@ function AuthLayout() {
       if (adminModuloAtivo) {
         items.push(
           { to: "/admin", label: "Administração", icon: Building2 },
+          { to: "/executivos/landing-page", label: "Landing Page", icon: Megaphone },
           { to: "/notificacoes", label: "Notificações", icon: BellRing },
           { to: "/configuracoes", label: "Configurações", icon: Settings },
         );
