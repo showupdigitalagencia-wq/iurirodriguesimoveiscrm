@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Building2, FileText, AlertTriangle, CheckCircle2, TrendingUp, TrendingDown, DollarSign } from "lucide-react";
+import { Building2, FileText, AlertTriangle, CheckCircle2, TrendingUp, TrendingDown } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   component: AdminDashboard,
@@ -76,6 +76,23 @@ function AdminDashboard() {
       return (data ?? []) as Pagamento[];
     },
   });
+  const { data: responsaveis = [] } = useQuery({
+    queryKey: ["admin_responsaveis_dash"],
+    queryFn: async () => {
+      const { data } = await supabase.from("responsaveis").select("id, nome");
+      return (data ?? []) as Array<{ id: string; nome: string }>;
+    },
+  });
+  const { data: corretoresProfiles = [] } = useQuery({
+    queryKey: ["admin_corretores_dash"],
+    queryFn: async () => {
+      const { data: roles } = await supabase.from("user_roles").select("user_id, role").in("role", ["corretor", "corretor_vendas"]);
+      const ids = Array.from(new Set((roles ?? []).map((r) => r.user_id)));
+      if (!ids.length) return [];
+      const { data: profs } = await supabase.from("profiles").select("id, nome, responsavel_id").in("id", ids);
+      return (profs ?? []) as Array<{ id: string; nome: string; responsavel_id: string | null }>;
+    },
+  });
 
   const totalImoveis = imoveis.length;
   const disponiveis = imoveis.filter((i) => i.status === "disponivel").length;
@@ -119,6 +136,68 @@ function AdminDashboard() {
   const valorVendasPrev = vendidosPrev.reduce((s, i) => s + Number(i.valor_venda || 0), 0);
   const deltaVendidos = vendidosPer.length - vendidosPrev.length;
   const deltaValor = valorVendasPer - valorVendasPrev;
+
+  // Imóveis alugados/locados no período (por data_locacao)
+  const locadosPer = imoveis.filter((i) => i.status === "locado" && inRange(i.data_locacao, startDate, endDate));
+  const valorLocacoesPer = locadosPer.reduce((s, i) => s + Number(i.valor_aluguel || 0), 0);
+
+  // Imóveis captados no período (por created_at)
+  const captadosPer = imoveis.filter((i) => inRange(i.created_at, startDate, endDate));
+
+  // Agregação por executivo e por corretor (vendidos + locados + captados no período)
+  const corretorMap = new Map(corretoresProfiles.map((c) => [c.id, c]));
+  const respMap = new Map(responsaveis.map((r) => [r.id, r.nome]));
+
+  type Agg = { vendidos: number; valorVendas: number; locados: number; valorLocacoes: number; captados: number };
+  function makeAgg(): Agg { return { vendidos: 0, valorVendas: 0, locados: 0, valorLocacoes: 0, captados: 0 }; }
+
+  const porExec = new Map<string, Agg>();
+  const porCorretor = new Map<string, Agg>();
+
+  function bumpExec(execId: string | null | undefined, key: keyof Agg, value: number) {
+    if (!execId) return;
+    const a = porExec.get(execId) ?? makeAgg();
+    (a as any)[key] = (a as any)[key] + value;
+    porExec.set(execId, a);
+  }
+  function bumpCorretor(cid: string | null | undefined, key: keyof Agg, value: number) {
+    if (!cid) return;
+    const a = porCorretor.get(cid) ?? makeAgg();
+    (a as any)[key] = (a as any)[key] + value;
+    porCorretor.set(cid, a);
+  }
+
+  for (const i of vendidosPer) {
+    bumpExec(i.executivo_fechamento_id, "vendidos", 1);
+    bumpExec(i.executivo_fechamento_id, "valorVendas", Number(i.valor_venda || 0));
+    bumpCorretor(i.corretor_fechamento_id, "vendidos", 1);
+    bumpCorretor(i.corretor_fechamento_id, "valorVendas", Number(i.valor_venda || 0));
+  }
+  for (const i of locadosPer) {
+    bumpExec(i.executivo_fechamento_id, "locados", 1);
+    bumpExec(i.executivo_fechamento_id, "valorLocacoes", Number(i.valor_aluguel || 0));
+    bumpCorretor(i.corretor_fechamento_id, "locados", 1);
+    bumpCorretor(i.corretor_fechamento_id, "valorLocacoes", Number(i.valor_aluguel || 0));
+  }
+  for (const i of captadosPer) {
+    bumpExec(i.executivo_fechamento_id, "captados", 1);
+    bumpCorretor(i.corretor_fechamento_id, "captados", 1);
+  }
+
+  const equipeRows = responsaveis
+    .map((r) => ({ id: r.id, nome: r.nome, ...(porExec.get(r.id) ?? makeAgg()) }))
+    .sort((a, b) => (b.vendidos + b.locados) - (a.vendidos + a.locados) || (b.valorVendas + b.valorLocacoes) - (a.valorVendas + a.valorLocacoes));
+
+  const corretorRows = corretoresProfiles
+    .map((c) => ({
+      id: c.id,
+      nome: c.nome,
+      equipe: c.responsavel_id ? (respMap.get(c.responsavel_id) ?? "—") : "—",
+      ...(porCorretor.get(c.id) ?? makeAgg()),
+    }))
+    .sort((a, b) => (b.vendidos + b.locados) - (a.vendidos + a.locados));
+
+  const [tab, setTab] = useState<"equipe" | "corretor">("equipe");
 
   const cards = [
     { label: "Imóveis", value: totalImoveis, icon: Building2 },
@@ -229,39 +308,123 @@ function AdminDashboard() {
         </Card>
       </div>
 
-      {/* Vendidos no período */}
+      {/* Resumo de fechamentos e captação no período */}
       <div className="grid md:grid-cols-3 gap-3">
         <Card>
           <CardContent className="p-4">
             <div className="text-xs text-muted-foreground flex items-center gap-1">
-              <Building2 className="h-3 w-3" /> Imóveis vendidos (período)
+              <Building2 className="h-3 w-3" /> Vendidos (período)
             </div>
             <div className="text-xl font-semibold">{vendidosPer.length}</div>
+            <div className="text-xs text-muted-foreground mt-1">{formatBRL(valorVendasPer)}</div>
             <div className={`text-xs mt-1 ${deltaVendidos >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
-              {deltaVendidos >= 0 ? "+" : ""}{deltaVendidos} vs período anterior ({vendidosPrev.length})
+              {deltaVendidos >= 0 ? "+" : ""}{deltaVendidos} vs período anterior · {deltaValor >= 0 ? "+" : ""}{formatBRL(deltaValor)}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="text-xs text-muted-foreground flex items-center gap-1">
-              <DollarSign className="h-3 w-3" /> Valor total em vendas
+              <Building2 className="h-3 w-3" /> Alugados (período)
             </div>
-            <div className="text-xl font-semibold">{formatBRL(valorVendasPer)}</div>
-            <div className={`text-xs mt-1 ${deltaValor >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
-              {deltaValor >= 0 ? "+" : ""}{formatBRL(deltaValor)} vs período anterior
-            </div>
+            <div className="text-xl font-semibold">{locadosPer.length}</div>
+            <div className="text-xs text-muted-foreground mt-1">{formatBRL(valorLocacoesPer)}</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="text-xs text-muted-foreground flex items-center gap-1">
-              <FileText className="h-3 w-3" /> Novos contratos (período)
+              <Building2 className="h-3 w-3" /> Imóveis captados (período)
             </div>
-            <div className="text-xl font-semibold">{novosContratos.length}</div>
+            <div className="text-xl font-semibold">{captadosPer.length}</div>
+            <div className="text-xs text-muted-foreground mt-1">Cadastrados no período</div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Desempenho por equipe / corretor */}
+      <Card>
+        <CardHeader className="pb-2 flex flex-row items-center justify-between">
+          <CardTitle className="text-base">Desempenho no período</CardTitle>
+          <div className="flex gap-1">
+            <button
+              onClick={() => setTab("equipe")}
+              className={`text-xs px-3 py-1 rounded-md border ${tab === "equipe" ? "bg-gold/10 text-gold border-gold/40" : "text-muted-foreground"}`}
+            >Ver por equipe</button>
+            <button
+              onClick={() => setTab("corretor")}
+              className={`text-xs px-3 py-1 rounded-md border ${tab === "corretor" ? "bg-gold/10 text-gold border-gold/40" : "text-muted-foreground"}`}
+            >Ver por corretor</button>
+          </div>
+        </CardHeader>
+        <CardContent className="overflow-x-auto">
+          {tab === "equipe" ? (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-xs text-muted-foreground border-b">
+                  <th className="text-left py-2">Equipe / Executivo</th>
+                  <th className="text-right">Vendidos</th>
+                  <th className="text-right">Valor vendas</th>
+                  <th className="text-right">Alugados</th>
+                  <th className="text-right">Valor locações</th>
+                  <th className="text-right">Captados</th>
+                </tr>
+              </thead>
+              <tbody>
+                {equipeRows.map((r) => (
+                  <tr key={r.id} className="border-b">
+                    <td className="py-2">{r.nome}</td>
+                    <td className="text-right">{r.vendidos}</td>
+                    <td className="text-right">{formatBRL(r.valorVendas)}</td>
+                    <td className="text-right">{r.locados}</td>
+                    <td className="text-right">{formatBRL(r.valorLocacoes)}</td>
+                    <td className="text-right">{r.captados}</td>
+                  </tr>
+                ))}
+                {equipeRows.length === 0 && (
+                  <tr><td colSpan={6} className="text-center py-4 text-muted-foreground">Sem dados no período.</td></tr>
+                )}
+              </tbody>
+            </table>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-xs text-muted-foreground border-b">
+                  <th className="text-left py-2">Corretor</th>
+                  <th className="text-left">Equipe</th>
+                  <th className="text-right">Vendidos</th>
+                  <th className="text-right">Alugados</th>
+                  <th className="text-right">Captados</th>
+                </tr>
+              </thead>
+              <tbody>
+                {corretorRows.map((r) => (
+                  <tr key={r.id} className="border-b">
+                    <td className="py-2">{r.nome}</td>
+                    <td>{r.equipe}</td>
+                    <td className="text-right">{r.vendidos}</td>
+                    <td className="text-right">{r.locados}</td>
+                    <td className="text-right">{r.captados}</td>
+                  </tr>
+                ))}
+                {corretorRows.length === 0 && (
+                  <tr><td colSpan={5} className="text-center py-4 text-muted-foreground">Sem dados no período.</td></tr>
+                )}
+              </tbody>
+            </table>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="p-4">
+          <div className="text-xs text-muted-foreground flex items-center gap-1">
+            <FileText className="h-3 w-3" /> Novos contratos (período)
+          </div>
+          <div className="text-xl font-semibold">{novosContratos.length}</div>
+        </CardContent>
+      </Card>
+
 
       <Card>
         <CardHeader className="pb-2"><CardTitle className="text-base">Previsto vs Recebido no período</CardTitle></CardHeader>

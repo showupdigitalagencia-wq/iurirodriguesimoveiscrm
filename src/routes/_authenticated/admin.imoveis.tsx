@@ -118,6 +118,18 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<Partial<ImovelInsert>>({});
 
+  const { data: corretores = [] } = useQuery({
+    queryKey: ["corretores_fechamento"],
+    queryFn: async () => {
+      const { data: roles } = await supabase.from("user_roles").select("user_id, role").in("role", ["corretor", "corretor_vendas"]);
+      const ids = Array.from(new Set((roles ?? []).map((r) => r.user_id)));
+      if (!ids.length) return [] as Array<{ id: string; nome: string; responsavel_id: string | null }>;
+      const { data: profs } = await supabase.from("profiles").select("id, nome, responsavel_id").in("id", ids).order("nome");
+      return (profs ?? []) as Array<{ id: string; nome: string; responsavel_id: string | null }>;
+    },
+    enabled: open,
+  });
+
   useEffect(() => {
     if (!open) return;
     setForm(imovel ? { ...imovel } : {
@@ -128,6 +140,15 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
 
   function set<K extends keyof ImovelInsert>(k: K, v: ImovelInsert[K]) {
     setForm((f) => ({ ...f, [k]: v }));
+  }
+
+  function setCorretor(corretorId: string) {
+    const c = corretores.find((x) => x.id === corretorId);
+    setForm((f) => ({
+      ...f,
+      corretor_fechamento_id: corretorId || null,
+      executivo_fechamento_id: c?.responsavel_id ?? null,
+    } as unknown as Partial<ImovelInsert>));
   }
 
   async function save() {
@@ -187,6 +208,29 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
               </div>
             </>
           )}
+          {form.status === "locado" && (
+            <div>
+              <Label>Data da locação</Label>
+              <Input type="date" value={(form as any).data_locacao ?? ""} onChange={(e) => set("data_locacao" as any, e.target.value || null as any)} />
+            </div>
+          )}
+          {(form.status === "vendido" || form.status === "locado") && (
+            <>
+              <div>
+                <Label>Corretor responsável pelo fechamento</Label>
+                <Select value={(form as any).corretor_fechamento_id ?? ""} onValueChange={setCorretor}>
+                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectContent>
+                    {corretores.map((c) => <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Executivo / equipe</Label>
+                <ExecutivoLabel id={(form as any).executivo_fechamento_id ?? null} />
+              </div>
+            </>
+          )}
           <div className="md:col-span-2"><Label>Rua *</Label><Input value={form.rua ?? ""} onChange={(e) => set("rua", e.target.value)} /></div>
           <div><Label>Número</Label><Input value={form.numero ?? ""} onChange={(e) => set("numero", e.target.value)} /></div>
           <div><Label>Complemento</Label><Input value={form.complemento ?? ""} onChange={(e) => set("complemento", e.target.value)} /></div>
@@ -242,4 +286,17 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
       </DialogContent>
     </Dialog>
   );
+}
+
+function ExecutivoLabel({ id }: { id: string | null }) {
+  const { data } = useQuery({
+    queryKey: ["responsavel", id],
+    queryFn: async () => {
+      if (!id) return null;
+      const { data } = await supabase.from("responsaveis").select("nome").eq("id", id).maybeSingle();
+      return data?.nome ?? null;
+    },
+    enabled: !!id,
+  });
+  return <Input readOnly value={id ? (data ?? "Carregando...") : "—"} placeholder="Preenchido automaticamente" />;
 }

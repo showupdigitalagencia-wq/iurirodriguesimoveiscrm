@@ -379,10 +379,13 @@ export type Database = {
           cidade: string | null
           complemento: string | null
           condominio: number | null
+          corretor_fechamento_id: string | null
           created_at: string
           created_by: string | null
+          data_locacao: string | null
           data_venda: string | null
           drive_folder_id: string | null
+          executivo_fechamento_id: string | null
           fotos: string[] | null
           garantia: string | null
           id: string
@@ -410,10 +413,13 @@ export type Database = {
           cidade?: string | null
           complemento?: string | null
           condominio?: number | null
+          corretor_fechamento_id?: string | null
           created_at?: string
           created_by?: string | null
+          data_locacao?: string | null
           data_venda?: string | null
           drive_folder_id?: string | null
+          executivo_fechamento_id?: string | null
           fotos?: string[] | null
           garantia?: string | null
           id?: string
@@ -441,10 +447,13 @@ export type Database = {
           cidade?: string | null
           complemento?: string | null
           condominio?: number | null
+          corretor_fechamento_id?: string | null
           created_at?: string
           created_by?: string | null
+          data_locacao?: string | null
           data_venda?: string | null
           drive_folder_id?: string | null
+          executivo_fechamento_id?: string | null
           fotos?: string[] | null
           garantia?: string | null
           id?: string
@@ -464,7 +473,22 @@ export type Database = {
           valor_aluguel?: number
           valor_venda?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "imoveis_corretor_fechamento_id_fkey"
+            columns: ["corretor_fechamento_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "imoveis_executivo_fechamento_id_fkey"
+            columns: ["executivo_fechamento_id"]
+            isOneToOne: false
+            referencedRelation: "responsaveis"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       lead_historico: {
         Row: {
