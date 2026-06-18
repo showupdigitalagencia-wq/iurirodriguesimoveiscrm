@@ -12,6 +12,7 @@ import { CANAIS, REGIOES, type LeadCanal, type LeadRegiao } from "@/lib/lead-hel
 import { Trash2, Copy } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { startGoogleOAuth, getGoogleStatus, disconnectGoogle } from "@/lib/google.functions";
+import { getVslUrl, setVslUrl } from "@/lib/candidatos.functions";
 
 type Resp = { id: string; canal: string; nome: string; whatsapp: string };
 type Mapping = {
@@ -89,6 +90,7 @@ function ConfigPage() {
         <TabsContent value="admin" className="mt-6 space-y-6">
           <SistemaCorretoresToggle />
           <ModuloAdministrativoToggle />
+          <VslUrlSection />
           <SophiaToggle chave="sophia_executivos_acesso" titulo="Liberar Laura para Executivos" descricao="Quando ativado, executivos podem usar a assistente Laura." />
           <SophiaToggle chave="sophia_corretores_acesso" titulo="Liberar Laura para Corretores" descricao="Quando ativado, corretores podem usar a assistente Laura." />
         </TabsContent>
@@ -591,5 +593,52 @@ function GoogleConnectSection() {
         </Button>
       )}
     </section>
+  );
+}
+
+function VslUrlSection() {
+  const fnGet = useServerFn(getVslUrl);
+  const fnSet = useServerFn(setVslUrl);
+  const [url, setUrl] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    fnGet({}).then((r) => setUrl(r.url ?? "")).finally(() => setLoading(false));
+  }, [fnGet]);
+
+  async function save() {
+    setSaving(true);
+    try {
+      await fnSet({ data: { url } });
+      toast.success("Link VSL salvo");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao salvar");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="rounded-lg border p-5 space-y-3">
+      <div>
+        <h3 className="font-semibold">Link do vídeo VSL (Landing Page /ingresso)</h3>
+        <p className="text-sm text-muted-foreground mt-1">
+          Cole o link do YouTube. Aparece em destaque na LP pública de captação.
+        </p>
+      </div>
+      <div className="flex gap-2 flex-wrap">
+        <Input
+          placeholder="https://www.youtube.com/watch?v=..."
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          disabled={loading}
+          className="flex-1 min-w-[240px]"
+        />
+        <Button onClick={save} disabled={saving || loading} variant="gold">
+          {saving ? "Salvando..." : "Salvar"}
+        </Button>
+      </div>
+    </div>
   );
 }

@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as IngressoRouteImport } from './routes/ingresso'
 import { Route as FormularioRouteImport } from './routes/formulario'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
@@ -40,12 +41,19 @@ import { Route as AuthenticatedVendasPipelineRouteImport } from './routes/_authe
 import { Route as AuthenticatedVendasLeadsRouteImport } from './routes/_authenticated/vendas.leads'
 import { Route as AuthenticatedVendasAgendaRouteImport } from './routes/_authenticated/vendas.agenda'
 import { Route as AuthenticatedLeadsLeadIdRouteImport } from './routes/_authenticated/leads.$leadId'
+import { Route as AuthenticatedExecutivosLandingPageRouteImport } from './routes/_authenticated/executivos.landing-page'
 import { Route as AuthenticatedExecutivosIdRouteImport } from './routes/_authenticated/executivos.$id'
 import { Route as AuthenticatedAdminPagamentosRouteImport } from './routes/_authenticated/admin.pagamentos'
 import { Route as AuthenticatedAdminInadimplentesRouteImport } from './routes/_authenticated/admin.inadimplentes'
 import { Route as AuthenticatedAdminImoveisRouteImport } from './routes/_authenticated/admin.imoveis'
 import { Route as AuthenticatedAdminContratosRouteImport } from './routes/_authenticated/admin.contratos'
+import { Route as AuthenticatedAdminCandidatosRouteImport } from './routes/_authenticated/admin.candidatos'
 
+const IngressoRoute = IngressoRouteImport.update({
+  id: '/ingresso',
+  path: '/ingresso',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FormularioRoute = FormularioRouteImport.update({
   id: '/formulario',
   path: '/formulario',
@@ -212,6 +220,12 @@ const AuthenticatedLeadsLeadIdRoute =
     path: '/$leadId',
     getParentRoute: () => AuthenticatedLeadsRoute,
   } as any)
+const AuthenticatedExecutivosLandingPageRoute =
+  AuthenticatedExecutivosLandingPageRouteImport.update({
+    id: '/landing-page',
+    path: '/landing-page',
+    getParentRoute: () => AuthenticatedExecutivosRoute,
+  } as any)
 const AuthenticatedExecutivosIdRoute =
   AuthenticatedExecutivosIdRouteImport.update({
     id: '/$id',
@@ -242,11 +256,18 @@ const AuthenticatedAdminContratosRoute =
     path: '/contratos',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminCandidatosRoute =
+  AuthenticatedAdminCandidatosRouteImport.update({
+    id: '/candidatos',
+    path: '/candidatos',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/formulario': typeof FormularioRoute
+  '/ingresso': typeof IngressoRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/agenda': typeof AuthenticatedAgendaRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -260,11 +281,13 @@ export interface FileRoutesByFullPath {
   '/tempo-acesso': typeof AuthenticatedTempoAcessoRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/vendas': typeof AuthenticatedVendasRouteWithChildren
+  '/admin/candidatos': typeof AuthenticatedAdminCandidatosRoute
   '/admin/contratos': typeof AuthenticatedAdminContratosRoute
   '/admin/imoveis': typeof AuthenticatedAdminImoveisRoute
   '/admin/inadimplentes': typeof AuthenticatedAdminInadimplentesRoute
   '/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
   '/executivos/$id': typeof AuthenticatedExecutivosIdRoute
+  '/executivos/landing-page': typeof AuthenticatedExecutivosLandingPageRoute
   '/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
   '/vendas/agenda': typeof AuthenticatedVendasAgendaRoute
   '/vendas/leads': typeof AuthenticatedVendasLeadsRoute
@@ -284,6 +307,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/formulario': typeof FormularioRoute
+  '/ingresso': typeof IngressoRoute
   '/agenda': typeof AuthenticatedAgendaRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
@@ -295,11 +319,13 @@ export interface FileRoutesByTo {
   '/relatorio': typeof AuthenticatedRelatorioRoute
   '/tempo-acesso': typeof AuthenticatedTempoAcessoRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
+  '/admin/candidatos': typeof AuthenticatedAdminCandidatosRoute
   '/admin/contratos': typeof AuthenticatedAdminContratosRoute
   '/admin/imoveis': typeof AuthenticatedAdminImoveisRoute
   '/admin/inadimplentes': typeof AuthenticatedAdminInadimplentesRoute
   '/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
   '/executivos/$id': typeof AuthenticatedExecutivosIdRoute
+  '/executivos/landing-page': typeof AuthenticatedExecutivosLandingPageRoute
   '/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
   '/vendas/agenda': typeof AuthenticatedVendasAgendaRoute
   '/vendas/leads': typeof AuthenticatedVendasLeadsRoute
@@ -321,6 +347,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/formulario': typeof FormularioRoute
+  '/ingresso': typeof IngressoRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/agenda': typeof AuthenticatedAgendaRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -334,11 +361,13 @@ export interface FileRoutesById {
   '/_authenticated/tempo-acesso': typeof AuthenticatedTempoAcessoRoute
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
   '/_authenticated/vendas': typeof AuthenticatedVendasRouteWithChildren
+  '/_authenticated/admin/candidatos': typeof AuthenticatedAdminCandidatosRoute
   '/_authenticated/admin/contratos': typeof AuthenticatedAdminContratosRoute
   '/_authenticated/admin/imoveis': typeof AuthenticatedAdminImoveisRoute
   '/_authenticated/admin/inadimplentes': typeof AuthenticatedAdminInadimplentesRoute
   '/_authenticated/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
   '/_authenticated/executivos/$id': typeof AuthenticatedExecutivosIdRoute
+  '/_authenticated/executivos/landing-page': typeof AuthenticatedExecutivosLandingPageRoute
   '/_authenticated/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
   '/_authenticated/vendas/agenda': typeof AuthenticatedVendasAgendaRoute
   '/_authenticated/vendas/leads': typeof AuthenticatedVendasLeadsRoute
@@ -360,6 +389,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/formulario'
+    | '/ingresso'
     | '/admin'
     | '/agenda'
     | '/configuracoes'
@@ -373,11 +403,13 @@ export interface FileRouteTypes {
     | '/tempo-acesso'
     | '/usuarios'
     | '/vendas'
+    | '/admin/candidatos'
     | '/admin/contratos'
     | '/admin/imoveis'
     | '/admin/inadimplentes'
     | '/admin/pagamentos'
     | '/executivos/$id'
+    | '/executivos/landing-page'
     | '/leads/$leadId'
     | '/vendas/agenda'
     | '/vendas/leads'
@@ -397,6 +429,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/formulario'
+    | '/ingresso'
     | '/agenda'
     | '/configuracoes'
     | '/corretores'
@@ -408,11 +441,13 @@ export interface FileRouteTypes {
     | '/relatorio'
     | '/tempo-acesso'
     | '/usuarios'
+    | '/admin/candidatos'
     | '/admin/contratos'
     | '/admin/imoveis'
     | '/admin/inadimplentes'
     | '/admin/pagamentos'
     | '/executivos/$id'
+    | '/executivos/landing-page'
     | '/leads/$leadId'
     | '/vendas/agenda'
     | '/vendas/leads'
@@ -433,6 +468,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/formulario'
+    | '/ingresso'
     | '/_authenticated/admin'
     | '/_authenticated/agenda'
     | '/_authenticated/configuracoes'
@@ -446,11 +482,13 @@ export interface FileRouteTypes {
     | '/_authenticated/tempo-acesso'
     | '/_authenticated/usuarios'
     | '/_authenticated/vendas'
+    | '/_authenticated/admin/candidatos'
     | '/_authenticated/admin/contratos'
     | '/_authenticated/admin/imoveis'
     | '/_authenticated/admin/inadimplentes'
     | '/_authenticated/admin/pagamentos'
     | '/_authenticated/executivos/$id'
+    | '/_authenticated/executivos/landing-page'
     | '/_authenticated/leads/$leadId'
     | '/_authenticated/vendas/agenda'
     | '/_authenticated/vendas/leads'
@@ -472,6 +510,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   FormularioRoute: typeof FormularioRoute
+  IngressoRoute: typeof IngressoRoute
   ApiPublicCronLauraResumoDiarioRoute: typeof ApiPublicCronLauraResumoDiarioRoute
   ApiPublicCronReuniaoLembretesRoute: typeof ApiPublicCronReuniaoLembretesRoute
   ApiPublicCronReunioesInstitucionaisRoute: typeof ApiPublicCronReunioesInstitucionaisRoute
@@ -484,6 +523,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/ingresso': {
+      id: '/ingresso'
+      path: '/ingresso'
+      fullPath: '/ingresso'
+      preLoaderRoute: typeof IngressoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/formulario': {
       id: '/formulario'
       path: '/formulario'
@@ -701,6 +747,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLeadsLeadIdRouteImport
       parentRoute: typeof AuthenticatedLeadsRoute
     }
+    '/_authenticated/executivos/landing-page': {
+      id: '/_authenticated/executivos/landing-page'
+      path: '/landing-page'
+      fullPath: '/executivos/landing-page'
+      preLoaderRoute: typeof AuthenticatedExecutivosLandingPageRouteImport
+      parentRoute: typeof AuthenticatedExecutivosRoute
+    }
     '/_authenticated/executivos/$id': {
       id: '/_authenticated/executivos/$id'
       path: '/$id'
@@ -736,10 +789,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminContratosRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/candidatos': {
+      id: '/_authenticated/admin/candidatos'
+      path: '/candidatos'
+      fullPath: '/admin/candidatos'
+      preLoaderRoute: typeof AuthenticatedAdminCandidatosRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
   }
 }
 
 interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminCandidatosRoute: typeof AuthenticatedAdminCandidatosRoute
   AuthenticatedAdminContratosRoute: typeof AuthenticatedAdminContratosRoute
   AuthenticatedAdminImoveisRoute: typeof AuthenticatedAdminImoveisRoute
   AuthenticatedAdminInadimplentesRoute: typeof AuthenticatedAdminInadimplentesRoute
@@ -748,6 +809,7 @@ interface AuthenticatedAdminRouteChildren {
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminCandidatosRoute: AuthenticatedAdminCandidatosRoute,
   AuthenticatedAdminContratosRoute: AuthenticatedAdminContratosRoute,
   AuthenticatedAdminImoveisRoute: AuthenticatedAdminImoveisRoute,
   AuthenticatedAdminInadimplentesRoute: AuthenticatedAdminInadimplentesRoute,
@@ -760,11 +822,14 @@ const AuthenticatedAdminRouteWithChildren =
 
 interface AuthenticatedExecutivosRouteChildren {
   AuthenticatedExecutivosIdRoute: typeof AuthenticatedExecutivosIdRoute
+  AuthenticatedExecutivosLandingPageRoute: typeof AuthenticatedExecutivosLandingPageRoute
 }
 
 const AuthenticatedExecutivosRouteChildren: AuthenticatedExecutivosRouteChildren =
   {
     AuthenticatedExecutivosIdRoute: AuthenticatedExecutivosIdRoute,
+    AuthenticatedExecutivosLandingPageRoute:
+      AuthenticatedExecutivosLandingPageRoute,
   }
 
 const AuthenticatedExecutivosRouteWithChildren =
@@ -840,6 +905,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   FormularioRoute: FormularioRoute,
+  IngressoRoute: IngressoRoute,
   ApiPublicCronLauraResumoDiarioRoute: ApiPublicCronLauraResumoDiarioRoute,
   ApiPublicCronReuniaoLembretesRoute: ApiPublicCronReuniaoLembretesRoute,
   ApiPublicCronReunioesInstitucionaisRoute:
