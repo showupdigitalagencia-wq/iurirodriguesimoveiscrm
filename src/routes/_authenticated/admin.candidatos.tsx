@@ -110,9 +110,11 @@ function CandidatosPage() {
 function CandidatoCard({ candidato: c, expanded, onToggle, onChanged }: { candidato: CandidatoRow; expanded: boolean; onToggle: () => void; onChanged: () => void }) {
   const getUrls = useServerFn(getCandidatoDocUrls);
   const salvarDrive = useServerFn(salvarCandidatoNoDrive);
+  const excluir = useServerFn(excluirCandidato);
   const [urls, setUrls] = useState<DocUrls | null>(null);
   const [loadingDocs, setLoadingDocs] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!expanded || urls) return;
@@ -133,6 +135,19 @@ function CandidatoCard({ candidato: c, expanded, onToggle, onChanged }: { candid
       toast.error(e instanceof Error ? e.message : "Erro ao salvar no Drive");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleExcluir() {
+    setDeleting(true);
+    try {
+      await excluir({ data: { candidatoId: c.id } });
+      toast.success("Candidato e documentos excluídos.");
+      onChanged();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao excluir");
+    } finally {
+      setDeleting(false);
     }
   }
 
