@@ -290,12 +290,9 @@ export const submeterCandidato = createServerFn({ method: "POST" })
 // ============================================================
 // 2. ADMIN — LISTAR CANDIDATOS
 // ============================================================
-async function assertAdminOrAdministrativo(supabase: any, userId: string) {
-  const [{ data: isAdmin }, { data: isAdm }] = await Promise.all([
-    supabase.rpc("has_role", { _user_id: userId, _role: "admin" }),
-    supabase.rpc("is_administrativo", { _user_id: userId }),
-  ]);
-  if (!isAdmin && !isAdm) throw new Error("Forbidden");
+async function assertCanViewCandidatos(supabase: any, userId: string) {
+  const { data, error } = await supabase.rpc("can_view_candidatos", { _user_id: userId });
+  if (error || data !== true) throw new Error("Forbidden");
 }
 
 export const listCandidatos = createServerFn({ method: "POST" })
