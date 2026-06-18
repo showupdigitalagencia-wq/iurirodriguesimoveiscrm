@@ -243,49 +243,39 @@ export const submeterCandidato = createServerFn({ method: "POST" })
       .maybeSingle();
     if (candErr || !cand) throw new Error(candErr?.message || "Falha ao registrar candidato");
 
-    // 6) Push notification
+    // 6) Push notification — destinatários FIXOS: Wederson, Iuri, Larissa
     try {
       const { sendOneSignalPush } = await import("@/lib/onesignal.server");
 
-      // Destinatários restritos: Admins (Iuri/Wederson) + Administrativo "Larissa"
-      const { data: adminRows } = await supabaseAdmin
-        .from("user_roles")
-        .select("user_id")
-        .eq("role", "admin");
-      const userIds = new Set<string>(((adminRows ?? []) as { user_id: string }[]).map((r) => r.user_id));
+      const NOMES_ALVO = ["wederson", "iuri", "larissa"];
+      const { data: profsAll } = await supabaseAdmin
+        .from("profiles")
+        .select("id, nome, onesignal_external_id");
+      const matched = ((profsAll ?? []) as { id: string; nome: string | null; onesignal_external_id: string | null }[])
+        .filter((p) => NOMES_ALVO.some((n) => (p.nome ?? "").toLowerCase().includes(n)));
 
-      const { data: admstRows } = await supabaseAdmin
-        .from("user_roles")
-        .select("user_id")
-        .eq("role", "administrativo");
-      const admstIds = ((admstRows ?? []) as { user_id: string }[]).map((r) => r.user_id);
-      if (admstIds.length) {
-        const { data: admstProfs } = await supabaseAdmin
-          .from("profiles")
-          .select("id, nome")
-          .in("id", admstIds);
-        ((admstProfs ?? []) as { id: string; nome: string | null }[]).forEach((p) => {
-          if ((p.nome ?? "").toLowerCase().includes("larissa")) userIds.add(p.id);
+      const externalIds = matched
+        .map((p) => p.onesignal_external_id)
+        .filter((x): x is string => !!x);
+      const semExternalId = matched.filter((p) => !p.onesignal_external_id).map((p) => p.nome);
+
+      console.info("[submeterCandidato] push destinatários", {
+        encontrados: matched.map((p) => p.nome),
+        externalIds,
+        semExternalId,
+      });
+
+      if (externalIds.length) {
+        const result = await sendOneSignalPush({
+          externalIds,
+          title: "📄 Novo candidato enviou documentação!",
+          message: `Nome: ${data.nome} | Região: ${REGIOES_LABEL[data.regiao]}`,
+          url: "/administrativo/candidatos",
+          data: { candidato_id: (cand as { id: string }).id, lead_id: leadId },
         });
-      }
-
-      if (userIds.size > 0) {
-        const { data: profs } = await supabaseAdmin
-          .from("profiles")
-          .select("onesignal_external_id")
-          .in("id", Array.from(userIds));
-        const externalIds = ((profs ?? []) as { onesignal_external_id: string | null }[])
-          .map((p) => p.onesignal_external_id)
-          .filter((x): x is string => !!x);
-        if (externalIds.length) {
-          await sendOneSignalPush({
-            externalIds,
-            title: "📄 Novo candidato enviou documentação!",
-            message: `Nome: ${data.nome} | Região: ${REGIOES_LABEL[data.regiao]}`,
-            url: "/admin/candidatos",
-            data: { candidato_id: (cand as { id: string }).id, lead_id: leadId },
-          });
-        }
+        console.info("[submeterCandidato] push result", { ok: result.ok, error: result.error });
+      } else {
+        console.warn("[submeterCandidato] sem destinatários com onesignal_external_id", { semExternalId });
       }
     } catch (err) {
       console.error("[submeterCandidato] push failed", err);
