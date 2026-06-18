@@ -123,7 +123,7 @@ function IngressoPage() {
       {/* HERO */}
       <section className="px-6 pt-12 pb-16 md:pt-20 md:pb-24" style={{ background: "#0a0a0a" }}>
         <div className="max-w-4xl mx-auto text-center space-y-8">
-          <img src={LOGO_URL} alt="Iuri Rodrigues Imóveis" className="h-20 md:h-24 mx-auto object-contain" />
+          <img src={LOGO_URL} alt="Iuri Rodrigues Imóveis" className="h-40 md:h-56 lg:h-64 mx-auto object-contain" />
           <div className="space-y-4">
             <div className="text-xs md:text-sm uppercase tracking-[0.35em]" style={{ color: GOLD }}>
               Bem-vindo à primeira etapa
@@ -133,25 +133,13 @@ function IngressoPage() {
             </h1>
             <p className="text-white/70 max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
               Você está a um passo de fazer parte do maior e mais completo ecossistema imobiliário do Rio de Janeiro.
-              Complete sua documentação abaixo para iniciar.
+              Envie sua documentação abaixo para iniciar.
             </p>
           </div>
-          <button
-            onClick={() => formRef.current?.scrollIntoView({ behavior: "smooth" })}
-            className="inline-flex items-center gap-2 px-8 py-4 rounded-md font-semibold text-base transition-transform hover:scale-105"
-            style={{ background: GOLD, color: "#0a0a0a", boxShadow: `0 10px 40px -10px ${GOLD}80` }}
-          >
-            Quero fazer parte →
-          </button>
-        </div>
-      </section>
 
-      {/* VÍDEO */}
-      {vsl && (
-        <section className="px-6 py-16" style={{ background: "#111111" }}>
-          <div className="max-w-4xl mx-auto">
+          {vsl && (
             <div
-              className="aspect-video w-full rounded-2xl overflow-hidden"
+              className="aspect-video w-full max-w-3xl mx-auto rounded-2xl overflow-hidden"
               style={{ border: `1px solid ${GOLD}66`, boxShadow: `0 0 60px -10px ${GOLD}55` }}
             >
               <iframe
@@ -162,9 +150,17 @@ function IngressoPage() {
                 allowFullScreen
               />
             </div>
-          </div>
-        </section>
-      )}
+          )}
+
+          <button
+            onClick={() => formRef.current?.scrollIntoView({ behavior: "smooth" })}
+            className="inline-flex items-center gap-2 px-8 py-4 rounded-md font-semibold text-base transition-transform hover:scale-105"
+            style={{ background: GOLD, color: "#0a0a0a", boxShadow: `0 10px 40px -10px ${GOLD}80` }}
+          >
+            Quero fazer parte →
+          </button>
+        </div>
+      </section>
 
       {/* BENEFÍCIOS */}
       <section className="px-6 py-20" style={{ background: "#0a0a0a" }}>
@@ -215,7 +211,7 @@ function IngressoPage() {
           <div className="text-center mb-10 space-y-3">
             <div className="text-xs uppercase tracking-[0.35em]" style={{ color: GOLD }}>Documentação</div>
             <h2 className="text-3xl md:text-4xl" style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}>
-              Finalize seu <span style={{ color: GOLD }}>ingresso</span>
+              Finalize seu <span style={{ color: GOLD }}>cadastro</span>
             </h2>
           </div>
 
