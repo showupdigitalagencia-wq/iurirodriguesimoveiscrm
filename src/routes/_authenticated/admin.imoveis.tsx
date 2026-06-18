@@ -15,6 +15,8 @@ import { Plus, Pencil, Trash2 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import { DocumentosManager } from "@/components/admin/DocumentosManager";
 import { FotosManager, FotosThumbs } from "@/components/admin/FotosManager";
+import { ImoveisImportExport } from "@/components/admin/ImoveisImportExport";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 type Imovel = Database["public"]["Tables"]["imoveis"]["Row"];
 type ImovelInsert = Database["public"]["Tables"]["imoveis"]["Insert"];
@@ -57,6 +59,7 @@ function ImoveisPage() {
   const [editing, setEditing] = useState<Imovel | null>(null);
   const [open, setOpen] = useState(false);
   const [finalidadeFiltro, setFinalidadeFiltro] = useState<"todos" | "locacao" | "venda" | "ambos">("todos");
+  const [tab, setTab] = useState<"todos" | "alugados" | "vendidos" | "proprietarios">("todos");
 
   const { data: imoveis = [], isLoading } = useQuery({
     queryKey: ["imoveis"],
@@ -67,11 +70,28 @@ function ImoveisPage() {
     },
   });
 
-  const filtered = imoveis.filter((i) => {
+  const byFinalidade = imoveis.filter((i) => {
     if (finalidadeFiltro === "todos") return true;
     const fin = ((i as unknown as { finalidade?: string }).finalidade) ?? "locacao";
     return fin === finalidadeFiltro;
   });
+
+  const filtered = byFinalidade.filter((i) => {
+    if (tab === "alugados") return i.status === "locado";
+    if (tab === "vendidos") return i.status === "vendido";
+    return true;
+  });
+
+  // Aggregate proprietários
+  const proprietarios = Array.from(
+    byFinalidade.reduce((m, i) => {
+      const key = (i.proprietario_nome ?? "—").trim();
+      const cur = m.get(key) ?? { nome: key, documento: i.proprietario_documento, telefone: i.proprietario_telefone, email: i.proprietario_email, imoveis: [] as Imovel[] };
+      cur.imoveis.push(i);
+      m.set(key, cur);
+      return m;
+    }, new Map<string, { nome: string; documento: string | null; telefone: string | null; email: string | null; imoveis: Imovel[] }>()).values()
+  ).sort((a, b) => a.nome.localeCompare(b.nome));
 
   function openNew() { setEditing(null); setOpen(true); }
   function openEdit(i: Imovel) { setEditing(i); setOpen(true); }
@@ -84,11 +104,60 @@ function ImoveisPage() {
     qc.invalidateQueries({ queryKey: ["imoveis"] });
   }
 
+  const renderCards = (list: Imovel[]) => (
+    list.length === 0 ? (
+      <Card><CardContent className="p-8 text-center text-muted-foreground">Nenhum imóvel encontrado.</CardContent></Card>
+    ) : (
+      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+        {list.map((i) => {
+          const fin = ((i as unknown as { finalidade?: string }).finalidade) ?? "locacao";
+          const valorVenda = (i as unknown as { valor_venda?: number | null }).valor_venda ?? null;
+          return (
+          <Card key={i.id} className="cursor-pointer hover:border-gold/50 transition" onClick={() => openEdit(i)}>
+            <CardContent className="p-4 space-y-2">
+              <div className="flex justify-between items-start gap-2">
+                <div>
+                  <div className="font-semibold capitalize">{i.tipo}</div>
+                  <div className="text-[11px] font-mono text-muted-foreground">{(i as unknown as { codigo?: string }).codigo ?? "—"}</div>
+                </div>
+                <Badge className={STATUS_COLOR[i.status]}>{STATUS_LABEL[i.status] ?? i.status}</Badge>
+              </div>
+              {i.fotos && i.fotos.length > 0 && <FotosThumbs fotos={i.fotos} />}
+              <div className="text-xs text-muted-foreground">Finalidade: {FINALIDADE_LABEL[fin] ?? fin}</div>
+              <div className="text-sm text-muted-foreground">
+                {i.rua}{i.numero ? `, ${i.numero}` : ""}{i.bairro ? ` — ${i.bairro}` : ""}{i.cidade ? ` / ${i.cidade}` : ""}
+              </div>
+              <div className="text-xs text-muted-foreground">Proprietário: {i.proprietario_nome}</div>
+              <div className="flex justify-between items-center pt-2 border-t">
+                <div className="flex flex-col">
+                  {(fin === "locacao" || fin === "ambos") && (
+                    <span className="font-bold text-gold text-sm">Aluguel: {formatBRL(i.valor_aluguel)}</span>
+                  )}
+                  {(fin === "venda" || fin === "ambos") && valorVenda != null && (
+                    <span className="font-bold text-gold text-sm">Venda: {formatBRL(valorVenda)}</span>
+                  )}
+                </div>
+                <div className="flex gap-1">
+                  <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); openEdit(i); }}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); remove(i.id); }}>
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        );})}
+      </div>
+    )
+  );
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center gap-3 flex-wrap">
         <div className="text-sm text-muted-foreground">{filtered.length} imóve{filtered.length === 1 ? "l" : "is"}</div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Label className="text-xs text-muted-foreground">Finalidade:</Label>
           <Select value={finalidadeFiltro} onValueChange={(v) => setFinalidadeFiltro(v as never)}>
             <SelectTrigger className="h-9 w-[180px]"><SelectValue /></SelectTrigger>
@@ -99,58 +168,62 @@ function ImoveisPage() {
               <SelectItem value="ambos">Locação e Venda</SelectItem>
             </SelectContent>
           </Select>
+          <ImoveisImportExport
+            imoveis={byFinalidade as unknown as Record<string, unknown>[]}
+            onImported={() => qc.invalidateQueries({ queryKey: ["imoveis"] })}
+          />
           <Button onClick={openNew}><Plus className="h-4 w-4 mr-1" /> Novo Imóvel</Button>
         </div>
       </div>
 
-      {isLoading ? (
-        <p className="text-muted-foreground">Carregando...</p>
-      ) : filtered.length === 0 ? (
-        <Card><CardContent className="p-8 text-center text-muted-foreground">Nenhum imóvel encontrado.</CardContent></Card>
-      ) : (
-        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((i) => {
-            const fin = ((i as unknown as { finalidade?: string }).finalidade) ?? "locacao";
-            const valorVenda = (i as unknown as { valor_venda?: number | null }).valor_venda ?? null;
-            return (
-            <Card key={i.id} className="cursor-pointer hover:border-gold/50 transition" onClick={() => openEdit(i)}>
-              <CardContent className="p-4 space-y-2">
-                <div className="flex justify-between items-start gap-2">
-                  <div>
-                    <div className="font-semibold capitalize">{i.tipo}</div>
-                    <div className="text-[11px] font-mono text-muted-foreground">{(i as unknown as { codigo?: string }).codigo ?? "—"}</div>
-                  </div>
-                  <Badge className={STATUS_COLOR[i.status]}>{STATUS_LABEL[i.status] ?? i.status}</Badge>
-                </div>
-                {i.fotos && i.fotos.length > 0 && <FotosThumbs fotos={i.fotos} />}
-                <div className="text-xs text-muted-foreground">Finalidade: {FINALIDADE_LABEL[fin] ?? fin}</div>
-                <div className="text-sm text-muted-foreground">
-                  {i.rua}{i.numero ? `, ${i.numero}` : ""}{i.bairro ? ` — ${i.bairro}` : ""}{i.cidade ? ` / ${i.cidade}` : ""}
-                </div>
-                <div className="text-xs text-muted-foreground">Proprietário: {i.proprietario_nome}</div>
-                <div className="flex justify-between items-center pt-2 border-t">
-                  <div className="flex flex-col">
-                    {(fin === "locacao" || fin === "ambos") && (
-                      <span className="font-bold text-gold text-sm">Aluguel: {formatBRL(i.valor_aluguel)}</span>
-                    )}
-                    {(fin === "venda" || fin === "ambos") && valorVenda != null && (
-                      <span className="font-bold text-gold text-sm">Venda: {formatBRL(valorVenda)}</span>
-                    )}
-                  </div>
-                  <div className="flex gap-1">
-                    <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); openEdit(i); }}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); remove(i.id); }}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          );})}
-        </div>
-      )}
+      <Tabs value={tab} onValueChange={(v) => setTab(v as never)}>
+        <TabsList>
+          <TabsTrigger value="todos">Todos</TabsTrigger>
+          <TabsTrigger value="alugados">Alugados</TabsTrigger>
+          <TabsTrigger value="vendidos">Vendidos</TabsTrigger>
+          <TabsTrigger value="proprietarios">Proprietários</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="todos" className="mt-4">
+          {isLoading ? <p className="text-muted-foreground">Carregando...</p> : renderCards(filtered)}
+        </TabsContent>
+        <TabsContent value="alugados" className="mt-4">
+          {isLoading ? <p className="text-muted-foreground">Carregando...</p> : renderCards(filtered)}
+        </TabsContent>
+        <TabsContent value="vendidos" className="mt-4">
+          {isLoading ? <p className="text-muted-foreground">Carregando...</p> : renderCards(filtered)}
+        </TabsContent>
+        <TabsContent value="proprietarios" className="mt-4">
+          {proprietarios.length === 0 ? (
+            <Card><CardContent className="p-8 text-center text-muted-foreground">Nenhum proprietário.</CardContent></Card>
+          ) : (
+            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+              {proprietarios.map((p) => (
+                <Card key={p.nome}>
+                  <CardContent className="p-4 space-y-1">
+                    <div className="font-semibold">{p.nome}</div>
+                    {p.documento && <div className="text-xs text-muted-foreground">Doc: {p.documento}</div>}
+                    {p.telefone && <div className="text-xs text-muted-foreground">Tel: {p.telefone}</div>}
+                    {p.email && <div className="text-xs text-muted-foreground">Email: {p.email}</div>}
+                    <div className="pt-2 border-t mt-2">
+                      <div className="text-xs text-muted-foreground mb-1">{p.imoveis.length} imóve{p.imoveis.length === 1 ? "l" : "is"}</div>
+                      <div className="space-y-1">
+                        {p.imoveis.map((i) => (
+                          <button key={i.id} onClick={() => openEdit(i)} className="block text-left w-full text-xs hover:text-gold">
+                            <span className="font-mono">{(i as unknown as { codigo?: string }).codigo ?? "—"}</span>
+                            {" — "}{i.rua}{i.numero ? `, ${i.numero}` : ""}
+                            {" "}<Badge variant="outline" className="ml-1 text-[10px]">{STATUS_LABEL[i.status] ?? i.status}</Badge>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
 
       <ImovelDialog open={open} onOpenChange={setOpen} imovel={editing} onSaved={() => qc.invalidateQueries({ queryKey: ["imoveis"] })} />
     </div>
