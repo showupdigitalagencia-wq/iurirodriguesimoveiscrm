@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import { DocumentosManager } from "@/components/admin/DocumentosManager";
+import { FotosManager, FotosThumbs } from "@/components/admin/FotosManager";
 
 type Imovel = Database["public"]["Tables"]["imoveis"]["Row"];
 type ImovelInsert = Database["public"]["Tables"]["imoveis"]["Insert"];
@@ -115,9 +116,13 @@ function ImoveisPage() {
             <Card key={i.id} className="cursor-pointer hover:border-gold/50 transition" onClick={() => openEdit(i)}>
               <CardContent className="p-4 space-y-2">
                 <div className="flex justify-between items-start gap-2">
-                  <div className="font-semibold capitalize">{i.tipo}</div>
+                  <div>
+                    <div className="font-semibold capitalize">{i.tipo}</div>
+                    <div className="text-[11px] font-mono text-muted-foreground">{(i as unknown as { codigo?: string }).codigo ?? "—"}</div>
+                  </div>
                   <Badge className={STATUS_COLOR[i.status]}>{STATUS_LABEL[i.status] ?? i.status}</Badge>
                 </div>
+                {i.fotos && i.fotos.length > 0 && <FotosThumbs fotos={i.fotos} />}
                 <div className="text-xs text-muted-foreground">Finalidade: {FINALIDADE_LABEL[fin] ?? fin}</div>
                 <div className="text-sm text-muted-foreground">
                   {i.rua}{i.numero ? `, ${i.numero}` : ""}{i.bairro ? ` — ${i.bairro}` : ""}{i.cidade ? ` / ${i.cidade}` : ""}
@@ -219,7 +224,26 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
   return (
     <Dialog open={open} onOpenChange={(v) => { onOpenChange(v); if (!v) setForm({}); }}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader><DialogTitle>{imovel ? "Editar Imóvel" : "Novo Imóvel"}</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            {imovel ? "Editar Imóvel" : "Novo Imóvel"}
+            {imovel && (form as { codigo?: string }).codigo && (
+              <span className="text-xs font-mono px-2 py-0.5 rounded bg-muted text-muted-foreground">
+                {(form as { codigo?: string }).codigo}
+              </span>
+            )}
+          </DialogTitle>
+        </DialogHeader>
+        {imovel && (
+          <div className="grid gap-1 max-w-xs">
+            <Label>Código do Imóvel</Label>
+            <Input
+              value={(form as { codigo?: string }).codigo ?? ""}
+              onChange={(e) => set("codigo" as never, e.target.value as never)}
+              placeholder="IM-0001"
+            />
+          </div>
+        )}
         <div className="grid gap-4 md:grid-cols-2">
           <div>
             <Label>Tipo *</Label>
@@ -323,12 +347,13 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
               </SelectContent>
             </Select>
           </div>
-          <div className="md:col-span-2">
-            <Label>Fotos (URLs separadas por vírgula)</Label>
-            <Input
-              value={(form.fotos ?? []).join(", ")}
-              onChange={(e) => set("fotos", e.target.value.split(",").map((s) => s.trim()).filter(Boolean))}
-              placeholder="https://..."
+          <div className="md:col-span-2 border-t pt-3 mt-2">
+            <Label className="text-sm font-semibold">Fotos do Imóvel</Label>
+            <p className="text-xs text-muted-foreground mb-2">Adicione, remova e reordene as fotos. Aparecem no card e no detalhe.</p>
+            <FotosManager
+              fotos={form.fotos ?? []}
+              onChange={(next) => set("fotos", next)}
+              imovelId={imovel?.id}
             />
           </div>
           <div className="md:col-span-2"><Label>Observações</Label><Textarea value={form.observacoes ?? ""} onChange={(e) => set("observacoes", e.target.value)} /></div>
