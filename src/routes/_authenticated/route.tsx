@@ -80,6 +80,7 @@ function AuthLayout() {
   const [vendasAcessoIndividual, setVendasAcessoIndividual] = useState(false);
   const [adminModuloAtivo, setAdminModuloAtivo] = useState(false);
   const [canCandidatos, setCanCandidatos] = useState(false);
+  const [isExec, setIsExec] = useState(false);
 
   const navItems = useMemo(() => {
     const corretorPodeVer = isCorretorVendas && (vendasAtivo || vendasAcessoIndividual);
