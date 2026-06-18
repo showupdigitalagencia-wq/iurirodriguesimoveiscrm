@@ -463,7 +463,7 @@ export const salvarCandidatoNoDrive = createServerFn({ method: "POST" })
         drive_file_id: result.id,
         drive_web_view_link: result.webViewLink,
         uploaded_by: context.userId,
-      });
+      } as never);
       return result;
     }
 
@@ -481,7 +481,7 @@ export const salvarCandidatoNoDrive = createServerFn({ method: "POST" })
         status: "arquivado",
         arquivado_em: new Date().toISOString(),
         arquivado_por: context.userId,
-      })
+      } as never)
       .eq("id", c.id);
 
     return { ok: true, driveFolderId: candFolder };
