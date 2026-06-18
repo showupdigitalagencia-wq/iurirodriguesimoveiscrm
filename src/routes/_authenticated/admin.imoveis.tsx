@@ -408,6 +408,14 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
           <div><Label>Telefone</Label><Input value={form.proprietario_telefone ?? ""} onChange={(e) => set("proprietario_telefone", e.target.value)} /></div>
           <div><Label>Email</Label><Input type="email" value={form.proprietario_email ?? ""} onChange={(e) => set("proprietario_email", e.target.value)} /></div>
 
+          <div className="md:col-span-2 border-t pt-3 mt-2"><h3 className="font-semibold text-sm">Locatário (quem está alugando)</h3></div>
+          <div><Label>Nome</Label><Input value={(form as any).locatario_nome ?? ""} onChange={(e) => set("locatario_nome" as any, e.target.value as any)} /></div>
+          <div><Label>CPF/CNPJ</Label><Input value={(form as any).locatario_documento ?? ""} onChange={(e) => set("locatario_documento" as any, e.target.value as any)} /></div>
+          <div><Label>Telefone</Label><Input value={(form as any).locatario_telefone ?? ""} onChange={(e) => set("locatario_telefone" as any, e.target.value as any)} /></div>
+          <div><Label>Email</Label><Input type="email" value={(form as any).locatario_email ?? ""} onChange={(e) => set("locatario_email" as any, e.target.value as any)} /></div>
+
+
+
           <div className="md:col-span-2 border-t pt-3 mt-2"><h3 className="font-semibold text-sm">Valores e características</h3></div>
           {showAluguel && (
             <div><Label>Valor do Aluguel (R$)</Label><Input type="number" step="0.01" value={form.valor_aluguel ?? 0} onChange={(e) => set("valor_aluguel", Number(e.target.value))} /></div>
