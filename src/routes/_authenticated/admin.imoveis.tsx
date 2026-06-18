@@ -517,13 +517,13 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
 
           <div className="md:col-span-2 border-t pt-3 mt-2"><h3 className="font-semibold text-sm">Valores e características</h3></div>
           {showAluguel && (
-            <div><Label>Valor do Aluguel (R$)</Label><Input type="number" step="0.01" value={form.valor_aluguel ?? 0} onChange={(e) => set("valor_aluguel", Number(e.target.value))} /></div>
+            <div><Label>Valor do Aluguel (R$)</Label><CurrencyInput value={form.valor_aluguel ?? null} onChange={(v) => set("valor_aluguel", (v ?? 0) as never)} /></div>
           )}
           {showVenda && (
-            <div><Label>Valor de Venda (R$)</Label><Input type="number" step="0.01" value={(form as any).valor_venda ?? ""} onChange={(e) => set("valor_venda" as any, (e.target.value ? Number(e.target.value) : null) as any)} /></div>
+            <div><Label>Valor de Venda (R$)</Label><CurrencyInput value={(form as any).valor_venda ?? null} onChange={(v) => set("valor_venda" as any, v as never)} /></div>
           )}
-          <div><Label>IPTU mensal (R$)</Label><Input type="number" step="0.01" value={form.iptu ?? 0} onChange={(e) => set("iptu", Number(e.target.value))} /></div>
-          <div><Label>Condomínio (R$)</Label><Input type="number" step="0.01" value={form.condominio ?? 0} onChange={(e) => set("condominio", Number(e.target.value))} /></div>
+          <div><Label>IPTU mensal (R$)</Label><CurrencyInput value={form.iptu ?? null} onChange={(v) => set("iptu", (v ?? 0) as never)} /></div>
+          <div><Label>Condomínio (R$)</Label><CurrencyInput value={form.condominio ?? null} onChange={(v) => set("condominio", (v ?? 0) as never)} /></div>
           <div><Label>Área (m²)</Label><Input type="number" step="0.01" value={form.area_m2 ?? ""} onChange={(e) => set("area_m2", e.target.value ? Number(e.target.value) : null)} /></div>
           <div><Label>Quartos</Label><Input type="number" value={form.quartos ?? 0} onChange={(e) => set("quartos", Number(e.target.value))} /></div>
           <div><Label>Banheiros</Label><Input type="number" value={form.banheiros ?? 0} onChange={(e) => set("banheiros", Number(e.target.value))} /></div>
