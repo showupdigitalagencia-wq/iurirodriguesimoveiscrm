@@ -30,7 +30,7 @@ function LPPage() {
   const fetchCandidatos = useServerFn(listInstitucionalCandidatos);
 
   useEffect(() => {
-    setUrl("https://iurirodriguesimoveiscrm.lovable.app/ingresso");
+    setUrl("https://iurirodriguesimoveiscrm.lovable.app/cadastro");
     let active = true;
     let channel: ReturnType<typeof supabase.channel> | null = null;
 
@@ -164,7 +164,7 @@ function LPPage() {
         <CardHeader><CardTitle className="text-base flex items-center gap-2"><MessageCircle className="h-4 w-4" /> Pré-visualização</CardTitle></CardHeader>
         <CardContent>
           <div className="rounded-lg overflow-hidden border bg-black" style={{ height: 720 }}>
-            <iframe src="/ingresso" title="Preview LP" className="w-full h-full" />
+            <iframe src="/cadastro" title="Preview LP" className="w-full h-full" />
           </div>
         </CardContent>
       </Card>

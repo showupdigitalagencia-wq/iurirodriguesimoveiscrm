@@ -645,7 +645,7 @@ function VslUrlSection() {
   return (
     <div className="rounded-lg border p-5 space-y-4">
       <div>
-        <h3 className="font-semibold">Link do vídeo VSL (Landing Page /ingresso)</h3>
+        <h3 className="font-semibold">Link do vídeo VSL (Landing Page /cadastro)</h3>
         <p className="text-sm text-muted-foreground mt-1">
           Cole o link do YouTube. Aparece em destaque na LP pública de captação.
         </p>

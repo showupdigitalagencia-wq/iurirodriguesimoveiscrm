@@ -41,7 +41,7 @@ const CANAL_POR_REGIAO: Partial<Record<(typeof REGIOES)[number], "robson" | "fab
 };
 
 // ============================================================
-// 1. SUBMISSÃO PÚBLICA (sem login) — /ingresso
+// 1. SUBMISSÃO PÚBLICA (sem login) — /cadastro
 // ============================================================
 export const submeterCandidato = createServerFn({ method: "POST" })
   .inputValidator(
