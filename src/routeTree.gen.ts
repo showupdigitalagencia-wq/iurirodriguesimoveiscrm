@@ -9,8 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IngressoRouteImport } from './routes/ingresso'
 import { Route as FormularioRouteImport } from './routes/formulario'
+import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -50,14 +50,14 @@ import { Route as AuthenticatedAdminImoveisRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminContratosRouteImport } from './routes/_authenticated/admin.contratos'
 import { Route as AuthenticatedAdminCandidatosRouteImport } from './routes/_authenticated/admin.candidatos'
 
-const IngressoRoute = IngressoRouteImport.update({
-  id: '/ingresso',
-  path: '/ingresso',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const FormularioRoute = FormularioRouteImport.update({
   id: '/formulario',
   path: '/formulario',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CadastroRoute = CadastroRouteImport.update({
+  id: '/cadastro',
+  path: '/cadastro',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -273,8 +273,8 @@ const AuthenticatedAdminCandidatosRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/cadastro': typeof CadastroRoute
   '/formulario': typeof FormularioRoute
-  '/ingresso': typeof IngressoRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/agenda': typeof AuthenticatedAgendaRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -314,8 +314,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/cadastro': typeof CadastroRoute
   '/formulario': typeof FormularioRoute
-  '/ingresso': typeof IngressoRoute
   '/agenda': typeof AuthenticatedAgendaRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
@@ -354,8 +354,8 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/cadastro': typeof CadastroRoute
   '/formulario': typeof FormularioRoute
-  '/ingresso': typeof IngressoRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/agenda': typeof AuthenticatedAgendaRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -397,8 +397,8 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/cadastro'
     | '/formulario'
-    | '/ingresso'
     | '/admin'
     | '/agenda'
     | '/configuracoes'
@@ -438,8 +438,8 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/cadastro'
     | '/formulario'
-    | '/ingresso'
     | '/agenda'
     | '/configuracoes'
     | '/corretores'
@@ -477,8 +477,8 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/cadastro'
     | '/formulario'
-    | '/ingresso'
     | '/_authenticated/admin'
     | '/_authenticated/agenda'
     | '/_authenticated/configuracoes'
@@ -520,8 +520,8 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  CadastroRoute: typeof CadastroRoute
   FormularioRoute: typeof FormularioRoute
-  IngressoRoute: typeof IngressoRoute
   ApiPublicCronLauraResumoDiarioRoute: typeof ApiPublicCronLauraResumoDiarioRoute
   ApiPublicCronReuniaoLembretesRoute: typeof ApiPublicCronReuniaoLembretesRoute
   ApiPublicCronReunioesInstitucionaisRoute: typeof ApiPublicCronReunioesInstitucionaisRoute
@@ -534,18 +534,18 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/ingresso': {
-      id: '/ingresso'
-      path: '/ingresso'
-      fullPath: '/ingresso'
-      preLoaderRoute: typeof IngressoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/formulario': {
       id: '/formulario'
       path: '/formulario'
       fullPath: '/formulario'
       preLoaderRoute: typeof FormularioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cadastro': {
+      id: '/cadastro'
+      path: '/cadastro'
+      fullPath: '/cadastro'
+      preLoaderRoute: typeof CadastroRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -924,8 +924,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  CadastroRoute: CadastroRoute,
   FormularioRoute: FormularioRoute,
-  IngressoRoute: IngressoRoute,
   ApiPublicCronLauraResumoDiarioRoute: ApiPublicCronLauraResumoDiarioRoute,
   ApiPublicCronReuniaoLembretesRoute: ApiPublicCronReuniaoLembretesRoute,
   ApiPublicCronReunioesInstitucionaisRoute:
