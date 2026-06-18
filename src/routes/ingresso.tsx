@@ -124,7 +124,7 @@ function IngressoPage() {
       {/* HERO */}
       <section className="px-6 pt-12 pb-16 md:pt-20 md:pb-24" style={{ background: "#0a0a0a" }}>
         <div className="max-w-4xl mx-auto text-center space-y-8">
-          <img src={LOGO_URL} alt="Iuri Rodrigues Imóveis" className="w-full max-w-[180px] md:max-w-[220px] lg:max-w-[260px] mx-auto object-contain" />
+          <img src={LOGO_URL} alt="Iuri Rodrigues Imóveis" className="w-full max-w-[180px] md:max-w-[220px] lg:max-w-[260px] mx-auto object-contain" style={{ background: "transparent", mixBlendMode: "screen" }} />
           <div className="space-y-4">
             <div className="text-xs md:text-sm uppercase tracking-[0.35em]" style={{ color: GOLD }}>
               Bem-vindo à primeira etapa
@@ -172,15 +172,15 @@ function IngressoPage() {
               Tudo que você precisa para <span style={{ color: GOLD }}>crescer</span>
             </h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {BENEFICIOS.map((b) => (
               <div
                 key={b.t}
-                className="rounded-xl p-6 transition-all hover:-translate-y-1"
+                className="rounded-xl p-6 h-auto self-start transition-all hover:-translate-y-1"
                 style={{ background: "#1a1a1a", border: `1px solid ${GOLD}26` }}
               >
-                <div className="text-4xl mb-3">{b.e}</div>
-                <div className="text-lg font-semibold mb-2" style={{ color: GOLD }}>{b.t}</div>
+                <div className="text-4xl mb-2 leading-none">{b.e}</div>
+                <div className="text-lg font-semibold mb-2 leading-snug" style={{ color: GOLD }}>{b.t}</div>
                 <div className="text-sm text-white/65 leading-relaxed">{b.d}</div>
               </div>
             ))}
