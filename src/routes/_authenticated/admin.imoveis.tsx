@@ -291,12 +291,30 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
 
   useEffect(() => {
     if (!open) return;
-    setForm(imovel ? { ...imovel } : {
-      tipo: "apartamento", status: "disponivel_locacao", finalidade: "locacao" as never,
-      valor_aluguel: 0, iptu: 0, condominio: 0,
-      quartos: 0, banheiros: 0, vagas: 0, rua: "", proprietario_nome: "",
-    });
+    if (imovel) {
+      setForm({ ...imovel });
+      return;
+    }
+    // Preview do próximo código sequencial (IM-XXXX). Pode ser editado antes de salvar.
+    (async () => {
+      const { data } = await supabase
+        .from("imoveis")
+        .select("codigo")
+        .like("codigo", "IM-%")
+        .order("codigo", { ascending: false })
+        .limit(1);
+      const last = (data?.[0]?.codigo ?? "IM-0000") as string;
+      const n = parseInt(last.replace(/^IM-/, ""), 10) || 0;
+      const next = `IM-${String(n + 1).padStart(4, "0")}`;
+      setForm({
+        tipo: "apartamento", status: "disponivel_locacao", finalidade: "locacao" as never,
+        valor_aluguel: 0, iptu: 0, condominio: 0,
+        quartos: 0, banheiros: 0, vagas: 0, rua: "", proprietario_nome: "",
+        codigo: next as never,
+      });
+    })();
   }, [open, imovel]);
+
 
   const finalidade = ((form as { finalidade?: string }).finalidade) ?? "locacao";
   const showAluguel = finalidade === "locacao" || finalidade === "ambos";
