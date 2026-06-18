@@ -19,13 +19,15 @@ function LPPage() {
 
   useEffect(() => {
     if (typeof window !== "undefined") setUrl(`${window.location.origin}/ingresso`);
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then(async ({ data }) => {
       const uid = data.user?.id;
       if (!uid) { setAuthorized(false); return; }
-      supabase.from("user_roles").select("role").eq("user_id", uid).then(({ data: roles }) => {
-        const ok = (roles ?? []).some((r) => r.role === "admin" || r.role === "executivo");
-        setAuthorized(ok);
-      });
+      const [{ data: roles }, { data: isExec }] = await Promise.all([
+        supabase.from("user_roles").select("role").eq("user_id", uid),
+        supabase.rpc("current_user_is_executivo"),
+      ]);
+      const isAdmin = (roles ?? []).some((r) => r.role === "admin");
+      setAuthorized(isAdmin || isExec === true);
     });
   }, []);
 

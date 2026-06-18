@@ -41,6 +41,7 @@ import { Route as AuthenticatedVendasPipelineRouteImport } from './routes/_authe
 import { Route as AuthenticatedVendasLeadsRouteImport } from './routes/_authenticated/vendas.leads'
 import { Route as AuthenticatedVendasAgendaRouteImport } from './routes/_authenticated/vendas.agenda'
 import { Route as AuthenticatedLeadsLeadIdRouteImport } from './routes/_authenticated/leads.$leadId'
+import { Route as AuthenticatedExecutivosLandingPageRouteImport } from './routes/_authenticated/executivos.landing-page'
 import { Route as AuthenticatedExecutivosIdRouteImport } from './routes/_authenticated/executivos.$id'
 import { Route as AuthenticatedAdminPagamentosRouteImport } from './routes/_authenticated/admin.pagamentos'
 import { Route as AuthenticatedAdminInadimplentesRouteImport } from './routes/_authenticated/admin.inadimplentes'
@@ -219,6 +220,12 @@ const AuthenticatedLeadsLeadIdRoute =
     path: '/$leadId',
     getParentRoute: () => AuthenticatedLeadsRoute,
   } as any)
+const AuthenticatedExecutivosLandingPageRoute =
+  AuthenticatedExecutivosLandingPageRouteImport.update({
+    id: '/landing-page',
+    path: '/landing-page',
+    getParentRoute: () => AuthenticatedExecutivosRoute,
+  } as any)
 const AuthenticatedExecutivosIdRoute =
   AuthenticatedExecutivosIdRouteImport.update({
     id: '/$id',
@@ -280,6 +287,7 @@ export interface FileRoutesByFullPath {
   '/admin/inadimplentes': typeof AuthenticatedAdminInadimplentesRoute
   '/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
   '/executivos/$id': typeof AuthenticatedExecutivosIdRoute
+  '/executivos/landing-page': typeof AuthenticatedExecutivosLandingPageRoute
   '/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
   '/vendas/agenda': typeof AuthenticatedVendasAgendaRoute
   '/vendas/leads': typeof AuthenticatedVendasLeadsRoute
@@ -317,6 +325,7 @@ export interface FileRoutesByTo {
   '/admin/inadimplentes': typeof AuthenticatedAdminInadimplentesRoute
   '/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
   '/executivos/$id': typeof AuthenticatedExecutivosIdRoute
+  '/executivos/landing-page': typeof AuthenticatedExecutivosLandingPageRoute
   '/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
   '/vendas/agenda': typeof AuthenticatedVendasAgendaRoute
   '/vendas/leads': typeof AuthenticatedVendasLeadsRoute
@@ -358,6 +367,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/inadimplentes': typeof AuthenticatedAdminInadimplentesRoute
   '/_authenticated/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
   '/_authenticated/executivos/$id': typeof AuthenticatedExecutivosIdRoute
+  '/_authenticated/executivos/landing-page': typeof AuthenticatedExecutivosLandingPageRoute
   '/_authenticated/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
   '/_authenticated/vendas/agenda': typeof AuthenticatedVendasAgendaRoute
   '/_authenticated/vendas/leads': typeof AuthenticatedVendasLeadsRoute
@@ -399,6 +409,7 @@ export interface FileRouteTypes {
     | '/admin/inadimplentes'
     | '/admin/pagamentos'
     | '/executivos/$id'
+    | '/executivos/landing-page'
     | '/leads/$leadId'
     | '/vendas/agenda'
     | '/vendas/leads'
@@ -436,6 +447,7 @@ export interface FileRouteTypes {
     | '/admin/inadimplentes'
     | '/admin/pagamentos'
     | '/executivos/$id'
+    | '/executivos/landing-page'
     | '/leads/$leadId'
     | '/vendas/agenda'
     | '/vendas/leads'
@@ -476,6 +488,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/inadimplentes'
     | '/_authenticated/admin/pagamentos'
     | '/_authenticated/executivos/$id'
+    | '/_authenticated/executivos/landing-page'
     | '/_authenticated/leads/$leadId'
     | '/_authenticated/vendas/agenda'
     | '/_authenticated/vendas/leads'
@@ -734,6 +747,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLeadsLeadIdRouteImport
       parentRoute: typeof AuthenticatedLeadsRoute
     }
+    '/_authenticated/executivos/landing-page': {
+      id: '/_authenticated/executivos/landing-page'
+      path: '/landing-page'
+      fullPath: '/executivos/landing-page'
+      preLoaderRoute: typeof AuthenticatedExecutivosLandingPageRouteImport
+      parentRoute: typeof AuthenticatedExecutivosRoute
+    }
     '/_authenticated/executivos/$id': {
       id: '/_authenticated/executivos/$id'
       path: '/$id'
@@ -802,11 +822,14 @@ const AuthenticatedAdminRouteWithChildren =
 
 interface AuthenticatedExecutivosRouteChildren {
   AuthenticatedExecutivosIdRoute: typeof AuthenticatedExecutivosIdRoute
+  AuthenticatedExecutivosLandingPageRoute: typeof AuthenticatedExecutivosLandingPageRoute
 }
 
 const AuthenticatedExecutivosRouteChildren: AuthenticatedExecutivosRouteChildren =
   {
     AuthenticatedExecutivosIdRoute: AuthenticatedExecutivosIdRoute,
+    AuthenticatedExecutivosLandingPageRoute:
+      AuthenticatedExecutivosLandingPageRoute,
   }
 
 const AuthenticatedExecutivosRouteWithChildren =
