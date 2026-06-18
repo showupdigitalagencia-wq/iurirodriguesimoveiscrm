@@ -386,6 +386,7 @@ export type Database = {
           data_venda: string | null
           drive_folder_id: string | null
           executivo_fechamento_id: string | null
+          finalidade: string
           fotos: string[] | null
           garantia: string | null
           id: string
@@ -402,7 +403,7 @@ export type Database = {
           tipo: string
           updated_at: string
           vagas: number | null
-          valor_aluguel: number
+          valor_aluguel: number | null
           valor_venda: number | null
         }
         Insert: {
@@ -420,6 +421,7 @@ export type Database = {
           data_venda?: string | null
           drive_folder_id?: string | null
           executivo_fechamento_id?: string | null
+          finalidade?: string
           fotos?: string[] | null
           garantia?: string | null
           id?: string
@@ -436,7 +438,7 @@ export type Database = {
           tipo: string
           updated_at?: string
           vagas?: number | null
-          valor_aluguel?: number
+          valor_aluguel?: number | null
           valor_venda?: number | null
         }
         Update: {
@@ -454,6 +456,7 @@ export type Database = {
           data_venda?: string | null
           drive_folder_id?: string | null
           executivo_fechamento_id?: string | null
+          finalidade?: string
           fotos?: string[] | null
           garantia?: string | null
           id?: string
@@ -470,7 +473,7 @@ export type Database = {
           tipo?: string
           updated_at?: string
           vagas?: number | null
-          valor_aluguel?: number
+          valor_aluguel?: number | null
           valor_venda?: number | null
         }
         Relationships: [
