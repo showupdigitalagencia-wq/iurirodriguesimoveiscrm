@@ -233,25 +233,35 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
             </Select>
           </div>
           <div>
-            <Label>Status</Label>
-            <Select value={form.status ?? "disponivel"} onValueChange={(v) => set("status", v)}>
+            <Label>Finalidade *</Label>
+            <Select
+              value={finalidade}
+              onValueChange={(v) => set("finalidade" as never, v as never)}
+            >
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                {Object.entries(STATUS_LABEL).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
+                <SelectItem value="locacao">Locação</SelectItem>
+                <SelectItem value="venda">Venda</SelectItem>
+                <SelectItem value="ambos">Locação e Venda</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Status</Label>
+            <Select value={form.status ?? "disponivel_locacao"} onValueChange={(v) => set("status", v)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {Object.entries(STATUS_LABEL)
+                  .filter(([k]) => k !== "disponivel" || form.status === "disponivel")
+                  .map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
           {form.status === "vendido" && (
-            <>
-              <div>
-                <Label>Data da venda</Label>
-                <Input type="date" value={(form as any).data_venda ?? ""} onChange={(e) => set("data_venda" as any, e.target.value || null as any)} />
-              </div>
-              <div>
-                <Label>Valor da venda (R$)</Label>
-                <Input type="number" step="0.01" value={(form as any).valor_venda ?? ""} onChange={(e) => set("valor_venda" as any, (e.target.value ? Number(e.target.value) : null) as any)} />
-              </div>
-            </>
+            <div>
+              <Label>Data da venda</Label>
+              <Input type="date" value={(form as any).data_venda ?? ""} onChange={(e) => set("data_venda" as any, e.target.value || null as any)} />
+            </div>
           )}
           {form.status === "locado" && (
             <div>
