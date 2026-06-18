@@ -75,23 +75,33 @@ function CandidatosPage() {
         </Tabs>
       </div>
 
-      {loading ? (
-        <div className="flex items-center gap-2 text-muted-foreground p-6"><Loader2 className="h-4 w-4 animate-spin" /> Carregando...</div>
-      ) : rows.length === 0 ? (
-        <Card><CardContent className="p-8 text-center text-muted-foreground">Nenhum candidato encontrado.</CardContent></Card>
-      ) : (
-        <div className="grid gap-3">
-          {rows.map((c) => (
-            <CandidatoCard
-              key={c.id}
-              candidato={c}
-              expanded={expanded.has(c.id)}
-              onToggle={() => toggle(c.id)}
-              onChanged={reload}
-            />
-          ))}
+      <section className="space-y-3" aria-label="Documentos recebidos">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h3 className="text-base font-semibold">Documentos recebidos</h3>
+            <p className="text-xs text-muted-foreground">Cada candidato aparece com RG, CPF, CRECI e comprovante identificados por tipo.</p>
+          </div>
+          {!loading && rows.length > 0 && <Badge variant="secondary">{rows.length} lead{rows.length > 1 ? "s" : ""}</Badge>}
         </div>
-      )}
+
+        {loading ? (
+          <div className="flex items-center gap-2 text-muted-foreground p-6"><Loader2 className="h-4 w-4 animate-spin" /> Carregando...</div>
+        ) : rows.length === 0 ? (
+          <Card><CardContent className="p-8 text-center text-muted-foreground">Nenhum candidato encontrado.</CardContent></Card>
+        ) : (
+          <div className="grid gap-3">
+            {rows.map((c) => (
+              <CandidatoCard
+                key={c.id}
+                candidato={c}
+                expanded={expanded.has(c.id)}
+                onToggle={() => toggle(c.id)}
+                onChanged={reload}
+              />
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }
@@ -154,18 +164,18 @@ function CandidatoCard({ candidato: c, expanded, onToggle, onChanged }: { candid
 
       {expanded && (
         <div className="border-t bg-muted/10 p-4 space-y-4">
-          <div className="grid gap-1 text-sm sm:grid-cols-2">
+          <div className="grid gap-2 rounded-md border bg-background/60 p-3 text-sm sm:grid-cols-2">
+            <div><span className="text-muted-foreground">Candidato:</span> {c.nome}</div>
+            <div><span className="text-muted-foreground">Enviado em:</span> {new Date(c.created_at).toLocaleDateString("pt-BR")}</div>
             <div><span className="text-muted-foreground">CPF:</span> {c.cpf}</div>
             <div><span className="text-muted-foreground">WhatsApp:</span> {c.telefone}</div>
             {c.email && <div className="sm:col-span-2"><span className="text-muted-foreground">E-mail:</span> {c.email}</div>}
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="text-sm font-semibold">Documentos recebidos</div>
-              {urls && (
-                <span className="text-xs text-muted-foreground">{recebidos} de {slots.length}</span>
-              )}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="text-sm font-semibold">Documentos anexados</div>
+              {urls && <Badge variant="outline">{recebidos} de {slots.length} recebidos</Badge>}
             </div>
 
             {loadingDocs && !urls ? (
@@ -178,20 +188,27 @@ function CandidatoCard({ candidato: c, expanded, onToggle, onChanged }: { candid
                   const u = urls?.[slot] ?? null;
                   const recebido = !!u;
                   return (
-                    <div key={slot} className={`flex items-center justify-between rounded-md border p-3 text-sm ${recebido ? "border-emerald-500/40 bg-emerald-500/5" : "border-dashed border-destructive/40 bg-destructive/5"}`}>
-                      <div className="flex items-center gap-2 min-w-0">
-                        {recebido
-                          ? <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-                          : <XCircle className="h-4 w-4 text-destructive shrink-0" />}
-                        <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
-                        <span className="font-medium">{DOC_LABEL[slot]}</span>
+                    <div key={slot} className={`flex items-center gap-3 rounded-md border p-3 text-sm ${recebido ? "border-emerald-500/40 bg-emerald-500/5" : "border-dashed border-destructive/40 bg-destructive/5"}`}>
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border bg-background">
+                        <FileText className="h-5 w-5 text-muted-foreground" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 font-medium">
+                          {DOC_LABEL[slot]}
+                          {recebido
+                            ? <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                            : <XCircle className="h-4 w-4 text-destructive shrink-0" />}
+                        </div>
+                        <div className="text-xs text-muted-foreground">{recebido ? "Documento recebido" : "Documento faltando"}</div>
                       </div>
                       {recebido ? (
-                        <a href={u!} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-gold hover:underline">
-                          Abrir <ExternalLink className="h-3 w-3" />
-                        </a>
+                        <Button asChild size="sm" variant="outline">
+                          <a href={u!} target="_blank" rel="noreferrer">
+                            Abrir <ExternalLink className="h-3 w-3" />
+                          </a>
+                        </Button>
                       ) : (
-                        <span className="text-xs text-muted-foreground">faltando</span>
+                        <Badge variant="secondary">Faltando</Badge>
                       )}
                     </div>
                   );
