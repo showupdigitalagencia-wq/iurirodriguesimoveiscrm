@@ -319,6 +319,7 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
   const finalidade = ((form as { finalidade?: string }).finalidade) ?? "locacao";
   const showAluguel = finalidade === "locacao" || finalidade === "ambos";
   const showVenda = finalidade === "venda" || finalidade === "ambos";
+  const showLocatario = showAluguel;
 
   function set<K extends keyof ImovelInsert>(k: K, v: ImovelInsert[K]) {
     setForm((f) => ({ ...f, [k]: v }));
