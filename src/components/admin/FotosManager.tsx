@@ -1,8 +1,9 @@
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Upload, X, ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
+import { Upload, X, ArrowLeft, ArrowRight, Loader2, Link as LinkIcon } from "lucide-react";
 
 const BUCKET = "imoveis-fotos";
 
@@ -56,6 +57,7 @@ export function FotosManager({
   imovelId?: string;
 }) {
   const [uploading, setUploading] = useState(false);
+  const [urlInput, setUrlInput] = useState("");
   const urls = useFotosUrls(fotos);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -79,6 +81,18 @@ export function FotosManager({
     if (fileRef.current) fileRef.current.value = "";
   }
 
+  function addUrl() {
+    const raw = urlInput.trim();
+    if (!raw) return;
+    if (!isUrl(raw)) {
+      toast.error("URL inválida. Deve começar com http:// ou https://");
+      return;
+    }
+    onChange([...fotos, raw]);
+    setUrlInput("");
+    toast.success("URL adicionada");
+  }
+
   async function remove(idx: number) {
     const target = fotos[idx];
     const next = fotos.filter((_, i) => i !== idx);
@@ -98,7 +112,7 @@ export function FotosManager({
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <input
           ref={fileRef}
           type="file"
@@ -117,6 +131,20 @@ export function FotosManager({
           {uploading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Upload className="h-4 w-4 mr-1" />}
           {uploading ? "Enviando..." : "Adicionar fotos"}
         </Button>
+        <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+          <Input
+            type="url"
+            placeholder="https://..."
+            value={urlInput}
+            onChange={(e) => setUrlInput(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addUrl(); } }}
+            className="h-9 text-sm"
+          />
+          <Button type="button" variant="secondary" size="sm" onClick={addUrl}>
+            <LinkIcon className="h-4 w-4 mr-1" />
+            Adicionar URL
+          </Button>
+        </div>
         <span className="text-xs text-muted-foreground">{fotos.length} foto(s)</span>
       </div>
       {fotos.length > 0 && (
