@@ -37,6 +37,10 @@ function spLabel(dt: Date): string {
   return `${dows} ${dd}/${mm}/${yyyy} ${hh}:${mi}`;
 }
 
+// Iuri é o anfitrião padrão das reuniões institucionais (Diretor Geral).
+// Fallback: qualquer outro Admin com Google conectado, para não quebrar a geração.
+const IURI_USER_ID = "5766e18d-f5bd-44d2-b46e-f6d0926180ea";
+
 async function findAdminWithGoogle(): Promise<string | null> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: admins } = await supabaseAdmin
@@ -45,7 +49,10 @@ async function findAdminWithGoogle(): Promise<string | null> {
   if (!ids.length) return null;
   const { data: toks } = await supabaseAdmin
     .from("google_tokens" as never).select("user_id").in("user_id", ids);
-  return ((toks ?? []) as { user_id: string }[])[0]?.user_id ?? null;
+  const connected = new Set(((toks ?? []) as { user_id: string }[]).map((t) => t.user_id));
+  if (connected.has(IURI_USER_ID)) return IURI_USER_ID;
+  // Fallback: primeiro outro Admin com Google conectado
+  return ids.find((id) => connected.has(id)) ?? null;
 }
 
 export const Route = createFileRoute("/api/public/cron-reunioes-institucionais")({
