@@ -546,32 +546,47 @@ export const createReuniao = createServerFn({ method: "POST" })
           return `${header}\n\n👤 Corretor: ${corretorNome}\n📅 Data: ${dataBR}\n🕐 Hora: ${horaBR}\n📍 Link Google Meet: ${link}\n\nQualquer dúvida entre em contato!\nIuri Rodrigues Imóveis 🏢`;
         };
 
-        const userIds = Array.from(new Set([
-          context.userId,
+        const otherUserIds = Array.from(new Set([
           ...((profilesRows ?? []) as { id: string; responsavel_id: string }[]).map((p) => p.id),
           ...allUserIds,
-        ]));
+        ])).filter((uid) => uid !== context.userId);
+
         let primaryMeetLink: string | null = null;
         let primaryEventId: string | null = null;
         let primaryUserId: string | null = null;
         const eventRefs: { user_id: string; event_id: string }[] = [];
-        for (const uid of userIds) {
-          const isPrimary = !primaryMeetLink;
+
+        // 1) Criador SEMPRE é o organizador/anfitrião. Cria o evento na conta dele primeiro,
+        //    com os leads como convidados.
+        const creatorEv = await createCalendarEventWithMeet({
+          userId: context.userId,
+          summary,
+          description: buildDescription(null),
+          startISO: data.data_inicio,
+          durationMin: data.duracao_min,
+          attendeesEmails: invitedEmails,
+        });
+        if (creatorEv?.eventId) eventRefs.push({ user_id: context.userId, event_id: creatorEv.eventId });
+        if (creatorEv?.meetLink) {
+          primaryMeetLink = creatorEv.meetLink;
+          primaryEventId = creatorEv.eventId;
+          primaryUserId = context.userId;
+        }
+
+        // 2) Outros participantes (executivos/corretores) só recebem cópia do evento na agenda deles,
+        //    sem virar organizadores — e SEM reenviar convite aos leads.
+        for (const uid of otherUserIds) {
           const ev = await createCalendarEventWithMeet({
             userId: uid,
             summary,
-            description: buildDescription(null),
+            description: buildDescription(primaryMeetLink),
             startISO: data.data_inicio,
             durationMin: data.duracao_min,
-            attendeesEmails: isPrimary ? invitedEmails : [],
+            attendeesEmails: [],
           });
           if (ev?.eventId) eventRefs.push({ user_id: uid, event_id: ev.eventId });
-          if (ev?.meetLink && !primaryMeetLink) {
-            primaryMeetLink = ev.meetLink;
-            primaryEventId = ev.eventId;
-            primaryUserId = uid;
-          }
         }
+
         if (primaryMeetLink) {
           finalLocal = primaryMeetLink;
           if (primaryEventId && primaryUserId) {
