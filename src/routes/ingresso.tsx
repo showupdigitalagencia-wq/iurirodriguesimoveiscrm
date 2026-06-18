@@ -267,8 +267,9 @@ function IngressoPage() {
 
       </section>
 
+      {unlocked && (<>
       {/* BENEFÍCIOS */}
-      <section className="px-6 py-20" style={{ background: "#0a0a0a" }}>
+      <section className="px-6 py-20 animate-in fade-in duration-700" style={{ background: "#0a0a0a" }}>
         <div className="max-w-6xl mx-auto space-y-12">
           <div className="text-center space-y-3">
             <div className="text-xs uppercase tracking-[0.35em]" style={{ color: GOLD }}>Por que Nexus</div>
