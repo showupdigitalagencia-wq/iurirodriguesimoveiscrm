@@ -211,7 +211,7 @@ function IngressoPage() {
           <div className="text-center mb-10 space-y-3">
             <div className="text-xs uppercase tracking-[0.35em]" style={{ color: GOLD }}>Documentação</div>
             <h2 className="text-3xl md:text-4xl" style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}>
-              Finalize seu <span style={{ color: GOLD }}>ingresso</span>
+              Finalize seu <span style={{ color: GOLD }}>cadastro</span>
             </h2>
           </div>
 
