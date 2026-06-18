@@ -133,7 +133,7 @@ function IngressoPage() {
               do <span style={{ color: GOLD }}>Sistema Nexus</span>
             </h1>
             <p className="text-white/70 max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
-              Você está a um passo de fazer parte do maior e mais completo ecossistema imobiliário do Rio de Janeiro.
+              Você está a um passo de fazer parte do maior e mais completo ecossistema imobiliário do <span style={{ whiteSpace: "nowrap" }}>Rio de Janeiro</span>.
               Envie sua documentação abaixo para iniciar.
             </p>
           </div>
@@ -168,8 +168,8 @@ function IngressoPage() {
         <div className="max-w-6xl mx-auto space-y-12">
           <div className="text-center space-y-3">
             <div className="text-xs uppercase tracking-[0.35em]" style={{ color: GOLD }}>Por que Nexus</div>
-            <h2 className="text-3xl md:text-5xl" style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}>
-              Tudo que você precisa para <span style={{ color: GOLD }}>crescer</span>
+            <h2 className="text-2xl sm:text-3xl md:text-5xl leading-tight" style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}>
+              Tudo que você precisa para{" "}<span style={{ color: GOLD }}>crescer</span>
             </h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
