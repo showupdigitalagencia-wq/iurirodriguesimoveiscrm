@@ -59,7 +59,8 @@ function ImoveisPage() {
   const [editing, setEditing] = useState<Imovel | null>(null);
   const [open, setOpen] = useState(false);
   const [finalidadeFiltro, setFinalidadeFiltro] = useState<"todos" | "locacao" | "venda" | "ambos">("todos");
-  const [tab, setTab] = useState<"todos" | "alugados" | "vendidos" | "proprietarios">("todos");
+  const [tab, setTab] = useState<"todos" | "alugados" | "venda" | "vendidos" | "proprietarios">("todos");
+  const [busca, setBusca] = useState("");
 
   const { data: imoveis = [], isLoading } = useQuery({
     queryKey: ["imoveis"],
@@ -76,15 +77,26 @@ function ImoveisPage() {
     return fin === finalidadeFiltro;
   });
 
-  const filtered = byFinalidade.filter((i) => {
+  const byBusca = byFinalidade.filter((i) => {
+    const q = busca.trim().toLowerCase();
+    if (!q) return true;
+    const loc = (i as unknown as { locatario_nome?: string | null }).locatario_nome ?? "";
+    return (i.proprietario_nome ?? "").toLowerCase().includes(q) || loc.toLowerCase().includes(q);
+  });
+
+  const filtered = byBusca.filter((i) => {
     if (tab === "alugados") return i.status === "locado";
     if (tab === "vendidos") return i.status === "vendido";
+    if (tab === "venda") {
+      const fin = ((i as unknown as { finalidade?: string }).finalidade) ?? "locacao";
+      return (fin === "venda" || fin === "ambos") && i.status !== "vendido" && i.status !== "locado";
+    }
     return true;
   });
 
   // Aggregate proprietários
   const proprietarios = Array.from(
-    byFinalidade.reduce((m, i) => {
+    byBusca.reduce((m, i) => {
       const key = (i.proprietario_nome ?? "—").trim();
       const cur = m.get(key) ?? { nome: key, documento: i.proprietario_documento, telefone: i.proprietario_telefone, email: i.proprietario_email, imoveis: [] as Imovel[] };
       cur.imoveis.push(i);
@@ -134,6 +146,17 @@ function ImoveisPage() {
               {(i as unknown as { dia_vencimento?: number | null }).dia_vencimento != null && (
                 <div className="text-xs text-muted-foreground">Vencimento: dia {(i as unknown as { dia_vencimento?: number | null }).dia_vencimento}</div>
               )}
+              {(i as unknown as { vitrine_url?: string | null }).vitrine_url && (
+                <a
+                  href={(i as unknown as { vitrine_url?: string | null }).vitrine_url ?? "#"}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="text-xs text-gold hover:underline inline-block"
+                >
+                  🔗 Ver na vitrine
+                </a>
+              )}
 
 
               <div className="flex justify-between items-center pt-2 border-t">
@@ -166,6 +189,12 @@ function ImoveisPage() {
       <div className="flex justify-between items-center gap-3 flex-wrap">
         <div className="text-sm text-muted-foreground">{filtered.length} imóve{filtered.length === 1 ? "l" : "is"}</div>
         <div className="flex items-center gap-2 flex-wrap">
+          <Input
+            placeholder="Buscar por locatário ou proprietário..."
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            className="h-9 w-[260px]"
+          />
           <Label className="text-xs text-muted-foreground">Finalidade:</Label>
           <Select value={finalidadeFiltro} onValueChange={(v) => setFinalidadeFiltro(v as never)}>
             <SelectTrigger className="h-9 w-[180px]"><SelectValue /></SelectTrigger>
@@ -177,7 +206,7 @@ function ImoveisPage() {
             </SelectContent>
           </Select>
           <ImoveisImportExport
-            imoveis={byFinalidade as unknown as Record<string, unknown>[]}
+            imoveis={filtered as unknown as Record<string, unknown>[]}
             onImported={() => qc.invalidateQueries({ queryKey: ["imoveis"] })}
           />
           <Button onClick={openNew}><Plus className="h-4 w-4 mr-1" /> Novo Imóvel</Button>
@@ -188,6 +217,7 @@ function ImoveisPage() {
         <TabsList>
           <TabsTrigger value="todos">Todos</TabsTrigger>
           <TabsTrigger value="alugados">Alugados</TabsTrigger>
+          <TabsTrigger value="venda">À Venda</TabsTrigger>
           <TabsTrigger value="vendidos">Vendidos</TabsTrigger>
           <TabsTrigger value="proprietarios">Proprietários</TabsTrigger>
         </TabsList>
@@ -196,6 +226,9 @@ function ImoveisPage() {
           {isLoading ? <p className="text-muted-foreground">Carregando...</p> : renderCards(filtered)}
         </TabsContent>
         <TabsContent value="alugados" className="mt-4">
+          {isLoading ? <p className="text-muted-foreground">Carregando...</p> : renderCards(filtered)}
+        </TabsContent>
+        <TabsContent value="venda" className="mt-4">
           {isLoading ? <p className="text-muted-foreground">Carregando...</p> : renderCards(filtered)}
         </TabsContent>
         <TabsContent value="vendidos" className="mt-4">
@@ -444,6 +477,16 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
                 <SelectItem value="seguro">Seguro</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          <div className="md:col-span-2 border-t pt-3 mt-2">
+            <Label className="text-sm font-semibold">Link da Vitrine (Bom Corretor)</Label>
+            <p className="text-xs text-muted-foreground mb-2">Cole o link público do imóvel no Bom Corretor (ou outro portal).</p>
+            <Input
+              type="url"
+              placeholder="https://bomcorretor.com.br/imovel/..."
+              value={(form as any).vitrine_url ?? ""}
+              onChange={(e) => set("vitrine_url" as any, (e.target.value || null) as any)}
+            />
           </div>
           <div className="md:col-span-2 border-t pt-3 mt-2">
             <Label className="text-sm font-semibold">Fotos do Imóvel</Label>

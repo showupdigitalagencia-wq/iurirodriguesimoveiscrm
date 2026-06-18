@@ -1,0 +1,1 @@
+ALTER TABLE public.imoveis ADD COLUMN IF NOT EXISTS vitrine_url text;

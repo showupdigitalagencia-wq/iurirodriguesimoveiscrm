@@ -411,6 +411,7 @@ export type Database = {
           vagas: number | null
           valor_aluguel: number | null
           valor_venda: number | null
+          vitrine_url: string | null
         }
         Insert: {
           area_m2?: number | null
@@ -452,6 +453,7 @@ export type Database = {
           vagas?: number | null
           valor_aluguel?: number | null
           valor_venda?: number | null
+          vitrine_url?: string | null
         }
         Update: {
           area_m2?: number | null
@@ -493,6 +495,7 @@ export type Database = {
           vagas?: number | null
           valor_aluguel?: number | null
           valor_venda?: number | null
+          vitrine_url?: string | null
         }
         Relationships: [
           {
