@@ -14,6 +14,87 @@ export type Database = {
   }
   public: {
     Tables: {
+      candidatos: {
+        Row: {
+          arquivado_em: string | null
+          arquivado_por: string | null
+          comprovante_path: string | null
+          cpf: string
+          cpf_path: string | null
+          created_at: string
+          creci: string | null
+          creci_path: string | null
+          drive_folder_id: string | null
+          email: string | null
+          id: string
+          lead_id: string | null
+          nome: string
+          regiao: Database["public"]["Enums"]["lead_regiao"]
+          responsavel_id: string | null
+          rg_path: string | null
+          status: Database["public"]["Enums"]["candidato_status"]
+          telefone: string
+          updated_at: string
+        }
+        Insert: {
+          arquivado_em?: string | null
+          arquivado_por?: string | null
+          comprovante_path?: string | null
+          cpf: string
+          cpf_path?: string | null
+          created_at?: string
+          creci?: string | null
+          creci_path?: string | null
+          drive_folder_id?: string | null
+          email?: string | null
+          id?: string
+          lead_id?: string | null
+          nome: string
+          regiao: Database["public"]["Enums"]["lead_regiao"]
+          responsavel_id?: string | null
+          rg_path?: string | null
+          status?: Database["public"]["Enums"]["candidato_status"]
+          telefone: string
+          updated_at?: string
+        }
+        Update: {
+          arquivado_em?: string | null
+          arquivado_por?: string | null
+          comprovante_path?: string | null
+          cpf?: string
+          cpf_path?: string | null
+          created_at?: string
+          creci?: string | null
+          creci_path?: string | null
+          drive_folder_id?: string | null
+          email?: string | null
+          id?: string
+          lead_id?: string | null
+          nome?: string
+          regiao?: Database["public"]["Enums"]["lead_regiao"]
+          responsavel_id?: string | null
+          rg_path?: string | null
+          status?: Database["public"]["Enums"]["candidato_status"]
+          telefone?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidatos_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "candidatos_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "responsaveis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cobrancas: {
         Row: {
           canal: string
@@ -668,6 +749,32 @@ export type Database = {
           },
         ]
       }
+      regiao_responsavel: {
+        Row: {
+          regiao: Database["public"]["Enums"]["lead_regiao"]
+          responsavel_id: string
+          updated_at: string
+        }
+        Insert: {
+          regiao: Database["public"]["Enums"]["lead_regiao"]
+          responsavel_id: string
+          updated_at?: string
+        }
+        Update: {
+          regiao?: Database["public"]["Enums"]["lead_regiao"]
+          responsavel_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "regiao_responsavel_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "responsaveis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       responsaveis: {
         Row: {
           ativo: boolean
@@ -1030,6 +1137,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "corretor" | "corretor_vendas" | "administrativo"
+      candidato_status: "pendente_revisao" | "arquivado"
       lead_canal: "denise" | "fabiola" | "renata" | "robson" | "teste_nego"
       lead_etapa:
         | "novos_leads"
@@ -1194,6 +1302,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "corretor", "corretor_vendas", "administrativo"],
+      candidato_status: ["pendente_revisao", "arquivado"],
       lead_canal: ["denise", "fabiola", "renata", "robson", "teste_nego"],
       lead_etapa: [
         "novos_leads",
