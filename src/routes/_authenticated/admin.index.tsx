@@ -308,39 +308,123 @@ function AdminDashboard() {
         </Card>
       </div>
 
-      {/* Vendidos no período */}
+      {/* Resumo de fechamentos e captação no período */}
       <div className="grid md:grid-cols-3 gap-3">
         <Card>
           <CardContent className="p-4">
             <div className="text-xs text-muted-foreground flex items-center gap-1">
-              <Building2 className="h-3 w-3" /> Imóveis vendidos (período)
+              <Building2 className="h-3 w-3" /> Vendidos (período)
             </div>
             <div className="text-xl font-semibold">{vendidosPer.length}</div>
+            <div className="text-xs text-muted-foreground mt-1">{formatBRL(valorVendasPer)}</div>
             <div className={`text-xs mt-1 ${deltaVendidos >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
-              {deltaVendidos >= 0 ? "+" : ""}{deltaVendidos} vs período anterior ({vendidosPrev.length})
+              {deltaVendidos >= 0 ? "+" : ""}{deltaVendidos} vs período anterior · {deltaValor >= 0 ? "+" : ""}{formatBRL(deltaValor)}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="text-xs text-muted-foreground flex items-center gap-1">
-              <DollarSign className="h-3 w-3" /> Valor total em vendas
+              <Building2 className="h-3 w-3" /> Alugados (período)
             </div>
-            <div className="text-xl font-semibold">{formatBRL(valorVendasPer)}</div>
-            <div className={`text-xs mt-1 ${deltaValor >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
-              {deltaValor >= 0 ? "+" : ""}{formatBRL(deltaValor)} vs período anterior
-            </div>
+            <div className="text-xl font-semibold">{locadosPer.length}</div>
+            <div className="text-xs text-muted-foreground mt-1">{formatBRL(valorLocacoesPer)}</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="text-xs text-muted-foreground flex items-center gap-1">
-              <FileText className="h-3 w-3" /> Novos contratos (período)
+              <Building2 className="h-3 w-3" /> Imóveis captados (período)
             </div>
-            <div className="text-xl font-semibold">{novosContratos.length}</div>
+            <div className="text-xl font-semibold">{captadosPer.length}</div>
+            <div className="text-xs text-muted-foreground mt-1">Cadastrados no período</div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Desempenho por equipe / corretor */}
+      <Card>
+        <CardHeader className="pb-2 flex flex-row items-center justify-between">
+          <CardTitle className="text-base">Desempenho no período</CardTitle>
+          <div className="flex gap-1">
+            <button
+              onClick={() => setTab("equipe")}
+              className={`text-xs px-3 py-1 rounded-md border ${tab === "equipe" ? "bg-gold/10 text-gold border-gold/40" : "text-muted-foreground"}`}
+            >Ver por equipe</button>
+            <button
+              onClick={() => setTab("corretor")}
+              className={`text-xs px-3 py-1 rounded-md border ${tab === "corretor" ? "bg-gold/10 text-gold border-gold/40" : "text-muted-foreground"}`}
+            >Ver por corretor</button>
+          </div>
+        </CardHeader>
+        <CardContent className="overflow-x-auto">
+          {tab === "equipe" ? (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-xs text-muted-foreground border-b">
+                  <th className="text-left py-2">Equipe / Executivo</th>
+                  <th className="text-right">Vendidos</th>
+                  <th className="text-right">Valor vendas</th>
+                  <th className="text-right">Alugados</th>
+                  <th className="text-right">Valor locações</th>
+                  <th className="text-right">Captados</th>
+                </tr>
+              </thead>
+              <tbody>
+                {equipeRows.map((r) => (
+                  <tr key={r.id} className="border-b">
+                    <td className="py-2">{r.nome}</td>
+                    <td className="text-right">{r.vendidos}</td>
+                    <td className="text-right">{formatBRL(r.valorVendas)}</td>
+                    <td className="text-right">{r.locados}</td>
+                    <td className="text-right">{formatBRL(r.valorLocacoes)}</td>
+                    <td className="text-right">{r.captados}</td>
+                  </tr>
+                ))}
+                {equipeRows.length === 0 && (
+                  <tr><td colSpan={6} className="text-center py-4 text-muted-foreground">Sem dados no período.</td></tr>
+                )}
+              </tbody>
+            </table>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-xs text-muted-foreground border-b">
+                  <th className="text-left py-2">Corretor</th>
+                  <th className="text-left">Equipe</th>
+                  <th className="text-right">Vendidos</th>
+                  <th className="text-right">Alugados</th>
+                  <th className="text-right">Captados</th>
+                </tr>
+              </thead>
+              <tbody>
+                {corretorRows.map((r) => (
+                  <tr key={r.id} className="border-b">
+                    <td className="py-2">{r.nome}</td>
+                    <td>{r.equipe}</td>
+                    <td className="text-right">{r.vendidos}</td>
+                    <td className="text-right">{r.locados}</td>
+                    <td className="text-right">{r.captados}</td>
+                  </tr>
+                ))}
+                {corretorRows.length === 0 && (
+                  <tr><td colSpan={5} className="text-center py-4 text-muted-foreground">Sem dados no período.</td></tr>
+                )}
+              </tbody>
+            </table>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="p-4">
+          <div className="text-xs text-muted-foreground flex items-center gap-1">
+            <FileText className="h-3 w-3" /> Novos contratos (período)
+          </div>
+          <div className="text-xl font-semibold">{novosContratos.length}</div>
+        </CardContent>
+      </Card>
+
 
       <Card>
         <CardHeader className="pb-2"><CardTitle className="text-base">Previsto vs Recebido no período</CardTitle></CardHeader>
