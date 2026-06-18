@@ -256,11 +256,18 @@ export const submeterCandidato = createServerFn({ method: "POST" })
 
       const { data: admstRows } = await supabaseAdmin
         .from("user_roles")
-        .select("user_id, profiles!inner(nome)")
+        .select("user_id")
         .eq("role", "administrativo");
-      ((admstRows ?? []) as { user_id: string; profiles: { nome: string | null } | null }[]).forEach((r) => {
-        if ((r.profiles?.nome ?? "").toLowerCase().includes("larissa")) userIds.add(r.user_id);
-      });
+      const admstIds = ((admstRows ?? []) as { user_id: string }[]).map((r) => r.user_id);
+      if (admstIds.length) {
+        const { data: admstProfs } = await supabaseAdmin
+          .from("profiles")
+          .select("id, nome")
+          .in("id", admstIds);
+        ((admstProfs ?? []) as { id: string; nome: string | null }[]).forEach((p) => {
+          if ((p.nome ?? "").toLowerCase().includes("larissa")) userIds.add(p.id);
+        });
+      }
 
       if (userIds.size > 0) {
         const { data: profs } = await supabaseAdmin
