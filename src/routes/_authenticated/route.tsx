@@ -310,7 +310,7 @@ function AuthLayout() {
                               { to: "/admin/contratos", label: "Administrativo — Contratos", icon: Building2 },
                               { to: "/admin/pagamentos", label: "Administrativo — Pagamentos", icon: Building2 },
                               { to: "/admin/inadimplentes", label: "Administrativo — Inadimplentes", icon: Building2 },
-                              { to: "/admin/candidatos", label: "Administrativo — Candidatos", icon: Building2 },
+                              ...(canCandidatos ? [{ to: "/admin/candidatos", label: "Administrativo — Candidatos", icon: Building2 }] : []),
                             ]
                           : []),
                         ...(isAdmin ? [{ to: "/executivos/landing-page", label: "Executivos — Landing Page", icon: Users2 }] : []),
