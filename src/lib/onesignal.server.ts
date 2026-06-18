@@ -44,6 +44,7 @@ export async function sendOneSignalPush(args: SendArgs): Promise<{ ok: boolean; 
   if (ids.length && segments.length === 0) {
     body.include_aliases = { external_id: ids };
     body.include_external_user_ids = ids;
+    body.target_channel = "push";
   }
   if (segments.length) body.included_segments = segments;
 
