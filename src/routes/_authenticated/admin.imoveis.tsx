@@ -281,18 +281,26 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
     }
     setSaving(true);
     const { data: ud } = await supabase.auth.getUser();
-    const payload = { ...form, created_by: imovel?.created_by ?? ud.user?.id } as ImovelInsert;
+    // Strip server-managed fields that should not be sent on insert/update
+    const { id: _id, created_at: _ca, updated_at: _ua, ...clean } = form as Record<string, unknown>;
+    void _id; void _ca; void _ua;
+    const payload = { ...clean, created_by: imovel?.created_by ?? ud.user?.id } as ImovelInsert;
     const q = imovel
       ? supabase.from("imoveis").update(payload).eq("id", imovel.id)
       : supabase.from("imoveis").insert(payload);
     const { error } = await q;
     setSaving(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      console.error("[imoveis save]", error, payload);
+      toast.error(error.message || "Erro ao salvar imóvel");
+      return;
+    }
     toast.success(imovel ? "Imóvel atualizado" : "Imóvel cadastrado");
     onOpenChange(false);
     setForm({});
     onSaved();
   }
+
 
   return (
     <Dialog open={open} onOpenChange={(v) => { onOpenChange(v); if (!v) setForm({}); }}>
