@@ -313,8 +313,30 @@ export const listCandidatos = createServerFn({ method: "POST" })
     if (data.status && data.status !== "todos") q = q.eq("status", data.status);
     const { data: rows, error } = await q;
     if (error) throw new Error(error.message);
-    return { candidatos: (rows ?? []) as Array<Record<string, unknown>> };
+    return { candidatos: (rows ?? []) as unknown as CandidatoRow[] };
   });
+
+export type CandidatoRow = {
+  id: string;
+  nome: string;
+  cpf: string;
+  telefone: string;
+  email: string | null;
+  creci: string | null;
+  regiao: string;
+  rg_path: string | null;
+  cpf_path: string | null;
+  creci_path: string | null;
+  comprovante_path: string | null;
+  status: "pendente_revisao" | "arquivado";
+  lead_id: string | null;
+  responsavel_id: string | null;
+  drive_folder_id: string | null;
+  arquivado_em: string | null;
+  arquivado_por: string | null;
+  created_at: string;
+  updated_at: string;
+};
 
 // ============================================================
 // 3. SIGNED URLS pros documentos do candidato
