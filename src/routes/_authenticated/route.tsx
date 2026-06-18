@@ -69,7 +69,7 @@ const CONFIG_NAV = [
 // Rotas permitidas para corretor_vendas (puro)
 const CORRETOR_ALLOWED_PREFIXES = ["/vendas", "/notificacoes"];
 // Rotas permitidas para administrativo (puro)
-const ADMINISTRATIVO_ALLOWED_PREFIXES = ["/admin", "/notificacoes", "/configuracoes"];
+const ADMINISTRATIVO_ALLOWED_PREFIXES = ["/admin", "/executivos/landing-page", "/notificacoes", "/configuracoes"];
 
 function AuthLayout() {
   const router = useRouter();
