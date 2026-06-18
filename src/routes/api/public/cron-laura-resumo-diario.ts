@@ -127,7 +127,7 @@ export const Route = createFileRoute("/api/public/cron-laura-resumo-diario")({
 
           const title = `☀️ Bom dia, ${opts.nomeLider.split(/\s+/)[0]}!`;
           const message = linhas.length ? linhas.join(" • ") : "Tudo tranquilo hoje. Bom trabalho!";
-          const url = "https://iurirodriguesimoveiscrm.lovable.app/?laura=1";
+          const url = "https://sistemanexus.app/?laura=1";
 
           const res = await sendOneSignalPush({
             externalIds: [opts.externalId],

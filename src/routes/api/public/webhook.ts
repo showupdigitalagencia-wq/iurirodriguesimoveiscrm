@@ -181,7 +181,7 @@ export const Route = createFileRoute("/api/public/webhook")({
           const regiaoLabel = regiao.replace(/_/g, " ");
           const title = "Novo Lead chegou!";
           const message = `Nome: ${nome} | Tel: ${telefone} | Região: ${regiaoLabel}`;
-          const url = `https://iurirodriguesimoveiscrm.lovable.app/leads/${lead.id}`;
+          const url = `https://sistemanexus.app/leads/${lead.id}`;
           const data = { lead_id: lead.id, regiao, canal, is_corretor: isCaptacaoCorretor };
 
           // Responsável do form/canal recebe individualmente

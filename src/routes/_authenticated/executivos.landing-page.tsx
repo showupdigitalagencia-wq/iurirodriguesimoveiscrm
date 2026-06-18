@@ -30,7 +30,7 @@ function LPPage() {
   const fetchCandidatos = useServerFn(listInstitucionalCandidatos);
 
   useEffect(() => {
-    setUrl("https://iurirodriguesimoveiscrm.lovable.app/cadastro");
+    setUrl("https://sistemanexus.app/cadastro");
     let active = true;
     let channel: ReturnType<typeof supabase.channel> | null = null;
 

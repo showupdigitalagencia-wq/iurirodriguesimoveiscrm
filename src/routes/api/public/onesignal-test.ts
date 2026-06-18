@@ -87,7 +87,7 @@ export const Route = createFileRoute("/api/public/onesignal-test")({
           included_segments: ["Subscribed Users"],
           headings: { en: title },
           contents: { en: message },
-          url: "https://iurirodriguesimoveiscrm.lovable.app/leads",
+          url: "https://sistemanexus.app/leads",
         };
 
         const result = await callOneSignal(url, {
