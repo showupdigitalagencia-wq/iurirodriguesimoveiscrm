@@ -116,9 +116,13 @@ function ImoveisPage() {
             <Card key={i.id} className="cursor-pointer hover:border-gold/50 transition" onClick={() => openEdit(i)}>
               <CardContent className="p-4 space-y-2">
                 <div className="flex justify-between items-start gap-2">
-                  <div className="font-semibold capitalize">{i.tipo}</div>
+                  <div>
+                    <div className="font-semibold capitalize">{i.tipo}</div>
+                    <div className="text-[11px] font-mono text-muted-foreground">{(i as unknown as { codigo?: string }).codigo ?? "—"}</div>
+                  </div>
                   <Badge className={STATUS_COLOR[i.status]}>{STATUS_LABEL[i.status] ?? i.status}</Badge>
                 </div>
+                {i.fotos && i.fotos.length > 0 && <FotosThumbs fotos={i.fotos} />}
                 <div className="text-xs text-muted-foreground">Finalidade: {FINALIDADE_LABEL[fin] ?? fin}</div>
                 <div className="text-sm text-muted-foreground">
                   {i.rua}{i.numero ? `, ${i.numero}` : ""}{i.bairro ? ` — ${i.bairro}` : ""}{i.cidade ? ` / ${i.cidade}` : ""}
