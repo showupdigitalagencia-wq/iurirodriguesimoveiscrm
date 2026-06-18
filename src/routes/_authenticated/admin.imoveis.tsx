@@ -131,6 +131,9 @@ function ImoveisPage() {
                 {i.rua}{i.numero ? `, ${i.numero}` : ""}{i.bairro ? ` — ${i.bairro}` : ""}{i.cidade ? ` / ${i.cidade}` : ""}
               </div>
               <div className="text-xs text-muted-foreground">Proprietário: {i.proprietario_nome}</div>
+              {(i as unknown as { dia_vencimento?: number | null }).dia_vencimento != null && (
+                <div className="text-xs text-muted-foreground">Vencimento: dia {(i as unknown as { dia_vencimento?: number | null }).dia_vencimento}</div>
+              )}
 
 
               <div className="flex justify-between items-center pt-2 border-t">
