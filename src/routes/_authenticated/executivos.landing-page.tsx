@@ -36,9 +36,23 @@ function LPPage() {
 
   useEffect(() => {
     setUrl("https://iurirodriguesimoveiscrm.lovable.app/ingresso");
+    let active = true;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+
+    const refresh = async () => {
+      try {
+        const res = await fetchCandidatos();
+        if (active) setReuniao(res.reuniao);
+      } catch (err) {
+        if (active) toast.error(err instanceof Error ? err.message : "Erro ao carregar reunião");
+      } finally {
+        if (active) setLoadingMeet(false);
+      }
+    };
+
     supabase.auth.getUser().then(async ({ data }) => {
       const uid = data.user?.id;
-      if (!uid) { setAuthorized(false); return; }
+      if (!uid) { if (active) setAuthorized(false); return; }
       const [{ data: roles }, { data: isExec }] = await Promise.all([
         supabase.from("user_roles").select("role").eq("user_id", uid),
         supabase.rpc("current_user_is_executivo"),
@@ -46,17 +60,25 @@ function LPPage() {
       const isAdmin = (roles ?? []).some((r) => r.role === "admin");
       const isAdministrativo = (roles ?? []).some((r) => r.role === "administrativo");
       const ok = isAdmin || isAdministrativo || isExec === true;
+      if (!active) return;
       setAuthorized(ok);
-      if (ok) {
-        try {
-          const res = await fetchCandidatos();
-          setReuniao(res.reuniao);
-        } catch (err) {
-          toast.error(err instanceof Error ? err.message : "Erro ao carregar reunião");
-        } finally { setLoadingMeet(false); }
-      }
+      if (!ok) return;
+
+      await refresh();
+
+      channel = supabase
+        .channel("lp-institucional")
+        .on("postgres_changes", { event: "*", schema: "public", table: "reuniao_participantes" }, () => { refresh(); })
+        .on("postgres_changes", { event: "*", schema: "public", table: "reunioes" }, () => { refresh(); })
+        .subscribe();
     });
+
+    return () => {
+      active = false;
+      if (channel) supabase.removeChannel(channel);
+    };
   }, [fetchCandidatos]);
+
 
   if (authorized === null) return <div className="p-8 flex items-center gap-2 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Carregando...</div>;
   if (!authorized) return <div className="p-8 text-muted-foreground">Acesso negado.</div>;
