@@ -409,6 +409,9 @@ function IngressoPage() {
           </form>
         </div>
       </section>
+      </>)}
+
+
 
       <footer className="px-6 py-8 text-center text-white/40 text-xs" style={{ background: "#0a0a0a", borderTop: "1px solid #1a1a1a" }}>
         © Iuri Rodrigues Imóveis — Ecossistema Nexus
