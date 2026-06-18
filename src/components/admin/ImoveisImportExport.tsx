@@ -49,11 +49,56 @@ function toRows(imoveis: Row[]) {
 }
 
 // Build flexible label→key map (lowercased + accent stripped)
-const norm = (s: string) => s.toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+const norm = (s: unknown) => String(s ?? "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ").trim();
 const LABEL_TO_KEY = new Map<string, string>();
 for (const c of COLUMNS) {
   LABEL_TO_KEY.set(norm(c.label), c.key);
   LABEL_TO_KEY.set(norm(c.key), c.key);
+}
+// Aliases — common variants found in planilhas reais
+const ALIASES: Record<string, string> = {
+  "proprietario": "proprietario_nome",
+  "nome do proprietario": "proprietario_nome",
+  "dono": "proprietario_nome",
+  "imovel": "rua",
+  "endereco": "rua",
+  "endereco completo": "rua",
+  "logradouro": "rua",
+  "telefone proprietario": "proprietario_telefone",
+  "celular": "proprietario_telefone",
+  "whatsapp": "proprietario_telefone",
+  "email proprietario": "proprietario_email",
+  "cpf": "proprietario_documento",
+  "cnpj": "proprietario_documento",
+  "cpf/cnpj": "proprietario_documento",
+  "documento": "proprietario_documento",
+  "aluguel": "valor_aluguel",
+  "valor aluguel": "valor_aluguel",
+  "valor do aluguel": "valor_aluguel",
+  "valor": "valor_aluguel",
+  "valor venda": "valor_venda",
+  "valor do imovel": "valor_venda",
+  "valor de venda": "valor_venda",
+  "area": "area_m2",
+  "metragem": "area_m2",
+  "quarto": "quartos",
+  "dormitorios": "quartos",
+  "banheiro": "banheiros",
+  "vaga": "vagas",
+  "garagem": "vagas",
+  "obs": "observacoes",
+  "observacao": "observacoes",
+};
+for (const [k, v] of Object.entries(ALIASES)) LABEL_TO_KEY.set(norm(k), v);
+
+// Find header row: first row (within first 20) containing >=2 known labels.
+function findHeaderRow(matrix: unknown[][]): { headerIdx: number; headers: string[] } | null {
+  for (let r = 0; r < Math.min(matrix.length, 20); r++) {
+    const row = matrix[r] ?? [];
+    const known = row.filter((c) => c != null && LABEL_TO_KEY.has(norm(c))).length;
+    if (known >= 2) return { headerIdx: r, headers: row.map((c) => String(c ?? "")) };
+  }
+  return null;
 }
 
 export function ImoveisImportExport({ imoveis, onImported }: { imoveis: Row[]; onImported: () => void }) {
