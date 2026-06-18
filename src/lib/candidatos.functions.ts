@@ -238,7 +238,7 @@ export const submeterCandidato = createServerFn({ method: "POST" })
         lead_id: leadId,
         responsavel_id: responsavelId,
         status: "pendente_revisao",
-      })
+      } as never)
       .select("id")
       .maybeSingle();
     if (candErr || !cand) throw new Error(candErr?.message || "Falha ao registrar candidato");
