@@ -590,16 +590,26 @@ export const createReuniao = createServerFn({ method: "POST" })
 
 
 
-    // Move leads para reuniao_agendada
+    // Move leads para reuniao_agendada — APENAS quando ainda estão nas etapas iniciais.
+    // Nunca reverter leads/corretores já avançados (fechado, documentos_enviados, em_negociacao, etc).
     if (data.lead_ids.length) {
-      await supabaseAdmin.from("leads").update({ etapa: "reuniao_agendada" }).in("id", data.lead_ids);
-      const historicoRows = data.lead_ids.map((lid) => ({
-        lead_id: lid,
-        user_id: context.userId,
-        acao: "mudou_etapa",
-        detalhe: { etapa: "reuniao_agendada", motivo: "reuniao_agendada", reuniao_id: reuniaoId } as never,
-      }));
-      await supabaseAdmin.from("lead_historico").insert(historicoRows);
+      const ETAPAS_INICIAIS = ["novos_leads", "em_atendimento"] as const;
+      const { data: movedRows } = await supabaseAdmin
+        .from("leads")
+        .update({ etapa: "reuniao_agendada" })
+        .in("id", data.lead_ids)
+        .in("etapa", ETAPAS_INICIAIS as unknown as string[])
+        .select("id");
+      const movedIds = ((movedRows ?? []) as { id: string }[]).map((r) => r.id);
+      if (movedIds.length) {
+        const historicoRows = movedIds.map((lid) => ({
+          lead_id: lid,
+          user_id: context.userId,
+          acao: "mudou_etapa",
+          detalhe: { etapa: "reuniao_agendada", motivo: "reuniao_agendada", reuniao_id: reuniaoId } as never,
+        }));
+        await supabaseAdmin.from("lead_historico").insert(historicoRows);
+      }
     }
 
     // Notificação push apenas para corretores adicionados explicitamente
