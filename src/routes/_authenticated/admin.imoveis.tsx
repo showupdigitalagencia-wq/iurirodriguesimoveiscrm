@@ -128,6 +128,10 @@ function ImoveisPage() {
                 {i.rua}{i.numero ? `, ${i.numero}` : ""}{i.bairro ? ` — ${i.bairro}` : ""}{i.cidade ? ` / ${i.cidade}` : ""}
               </div>
               <div className="text-xs text-muted-foreground">Proprietário: {i.proprietario_nome}</div>
+              {(i as unknown as { locatario_nome?: string | null }).locatario_nome && (
+                <div className="text-xs text-muted-foreground">Locatário: {(i as unknown as { locatario_nome?: string | null }).locatario_nome}</div>
+              )}
+
               <div className="flex justify-between items-center pt-2 border-t">
                 <div className="flex flex-col">
                   {(fin === "locacao" || fin === "ambos") && (
@@ -281,18 +285,26 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
     }
     setSaving(true);
     const { data: ud } = await supabase.auth.getUser();
-    const payload = { ...form, created_by: imovel?.created_by ?? ud.user?.id } as ImovelInsert;
+    // Strip server-managed fields that should not be sent on insert/update
+    const { id: _id, created_at: _ca, updated_at: _ua, ...clean } = form as Record<string, unknown>;
+    void _id; void _ca; void _ua;
+    const payload = { ...clean, created_by: imovel?.created_by ?? ud.user?.id } as ImovelInsert;
     const q = imovel
       ? supabase.from("imoveis").update(payload).eq("id", imovel.id)
       : supabase.from("imoveis").insert(payload);
     const { error } = await q;
     setSaving(false);
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      console.error("[imoveis save]", error, payload);
+      toast.error(error.message || "Erro ao salvar imóvel");
+      return;
+    }
     toast.success(imovel ? "Imóvel atualizado" : "Imóvel cadastrado");
     onOpenChange(false);
     setForm({});
     onSaved();
   }
+
 
   return (
     <Dialog open={open} onOpenChange={(v) => { onOpenChange(v); if (!v) setForm({}); }}>
@@ -395,6 +407,14 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
           <div><Label>CPF/CNPJ</Label><Input value={form.proprietario_documento ?? ""} onChange={(e) => set("proprietario_documento", e.target.value)} /></div>
           <div><Label>Telefone</Label><Input value={form.proprietario_telefone ?? ""} onChange={(e) => set("proprietario_telefone", e.target.value)} /></div>
           <div><Label>Email</Label><Input type="email" value={form.proprietario_email ?? ""} onChange={(e) => set("proprietario_email", e.target.value)} /></div>
+
+          <div className="md:col-span-2 border-t pt-3 mt-2"><h3 className="font-semibold text-sm">Locatário (quem está alugando)</h3></div>
+          <div><Label>Nome</Label><Input value={(form as any).locatario_nome ?? ""} onChange={(e) => set("locatario_nome" as any, e.target.value as any)} /></div>
+          <div><Label>CPF/CNPJ</Label><Input value={(form as any).locatario_documento ?? ""} onChange={(e) => set("locatario_documento" as any, e.target.value as any)} /></div>
+          <div><Label>Telefone</Label><Input value={(form as any).locatario_telefone ?? ""} onChange={(e) => set("locatario_telefone" as any, e.target.value as any)} /></div>
+          <div><Label>Email</Label><Input type="email" value={(form as any).locatario_email ?? ""} onChange={(e) => set("locatario_email" as any, e.target.value as any)} /></div>
+
+
 
           <div className="md:col-span-2 border-t pt-3 mt-2"><h3 className="font-semibold text-sm">Valores e características</h3></div>
           {showAluguel && (
