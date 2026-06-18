@@ -593,7 +593,7 @@ export const createReuniao = createServerFn({ method: "POST" })
     // Move leads para reuniao_agendada — APENAS quando ainda estão nas etapas iniciais.
     // Nunca reverter leads/corretores já avançados (fechado, documentos_enviados, em_negociacao, etc).
     if (data.lead_ids.length) {
-      const ETAPAS_INICIAIS = ["novos_leads", "em_atendimento"] as const;
+      
       const { data: movedRows } = await supabaseAdmin
         .from("leads")
         .update({ etapa: "reuniao_agendada" })
