@@ -247,20 +247,20 @@ export const submeterCandidato = createServerFn({ method: "POST" })
     try {
       const { sendOneSignalPush } = await import("@/lib/onesignal.server");
 
-      // Coleta IDs de destinatários: Admins + Administrativo + executivo da região
-      const { data: adminRoles } = await supabaseAdmin
+      // Destinatários restritos: Admins (Iuri/Wederson) + Administrativo "Larissa"
+      const { data: adminRows } = await supabaseAdmin
         .from("user_roles")
         .select("user_id")
-        .in("role", ["admin", "administrativo"]);
-      const userIds = new Set<string>(((adminRoles ?? []) as { user_id: string }[]).map((r) => r.user_id));
+        .eq("role", "admin");
+      const userIds = new Set<string>(((adminRows ?? []) as { user_id: string }[]).map((r) => r.user_id));
 
-      if (responsavelId) {
-        const { data: execProfs } = await supabaseAdmin
-          .from("profiles")
-          .select("id")
-          .eq("responsavel_id", responsavelId);
-        ((execProfs ?? []) as { id: string }[]).forEach((p) => userIds.add(p.id));
-      }
+      const { data: admstRows } = await supabaseAdmin
+        .from("user_roles")
+        .select("user_id, profiles!inner(nome)")
+        .eq("role", "administrativo");
+      ((admstRows ?? []) as { user_id: string; profiles: { nome: string | null } | null }[]).forEach((r) => {
+        if ((r.profiles?.nome ?? "").toLowerCase().includes("larissa")) userIds.add(r.user_id);
+      });
 
       if (userIds.size > 0) {
         const { data: profs } = await supabaseAdmin
