@@ -139,6 +139,7 @@ function AuthLayout() {
         .then(({ data }) => { if (active) setAdminModuloAtivo(data?.valor === true); });
       supabase.from("profiles").select("vendas_acesso").eq("id", userId).maybeSingle()
         .then(({ data }) => { if (active) setVendasAcessoIndividual((data as { vendas_acesso?: boolean } | null)?.vendas_acesso === true); });
+      supabase.rpc("can_view_candidatos").then(({ data }) => { if (active) setCanCandidatos(data === true); });
     });
 
     const channel = supabase
