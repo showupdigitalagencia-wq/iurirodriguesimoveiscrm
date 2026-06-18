@@ -287,3 +287,16 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
     </Dialog>
   );
 }
+
+function ExecutivoLabel({ id }: { id: string | null }) {
+  const { data } = useQuery({
+    queryKey: ["responsavel", id],
+    queryFn: async () => {
+      if (!id) return null;
+      const { data } = await supabase.from("responsaveis").select("nome").eq("id", id).maybeSingle();
+      return data?.nome ?? null;
+    },
+    enabled: !!id,
+  });
+  return <Input readOnly value={id ? (data ?? "Carregando...") : "—"} placeholder="Preenchido automaticamente" />;
+}
