@@ -374,9 +374,9 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
             )}
           </DialogTitle>
         </DialogHeader>
-        {imovel && (
+        {(
           <div className="grid gap-1 max-w-xs">
-            <Label>Código do Imóvel</Label>
+            <Label>Código do Imóvel {imovel ? "" : "(gerado automaticamente — pode editar)"}</Label>
             <Input
               value={(form as { codigo?: string }).codigo ?? ""}
               onChange={(e) => set("codigo" as never, e.target.value as never)}
@@ -384,6 +384,7 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
             />
           </div>
         )}
+
         <div className="grid gap-4 md:grid-cols-2">
           <div>
             <Label>Tipo *</Label>
