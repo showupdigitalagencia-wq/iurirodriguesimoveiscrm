@@ -39,9 +39,21 @@ function LPPage() {
   const waHref = `https://wa.me/?text=${encodeURIComponent(msg)}`;
 
   async function copy() {
-    try { await navigator.clipboard.writeText(url); toast.success("Link copiado!"); }
-    catch { toast.error("Não foi possível copiar"); }
+    if (!url) return;
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        const ta = document.createElement("textarea");
+        ta.value = url; document.body.appendChild(ta); ta.select();
+        document.execCommand("copy"); document.body.removeChild(ta);
+      }
+      toast.success("Link copiado!");
+    } catch { toast.error("Não foi possível copiar"); }
   }
+
+  function openLink() { if (url) window.open(url, "_blank", "noopener,noreferrer"); }
+  function openWhatsApp() { window.open(waHref, "_blank", "noopener,noreferrer"); }
 
   return (
     <div className="p-4 md:p-8 space-y-6 max-w-5xl mx-auto">
@@ -55,16 +67,12 @@ function LPPage() {
         <CardContent className="space-y-3">
           <div className="flex gap-2 flex-wrap">
             <Input readOnly value={url} className="font-mono text-sm flex-1 min-w-[240px]" />
-            <Button onClick={copy} variant="outline"><Copy className="h-4 w-4 mr-2" /> Copiar</Button>
-            <a href={url} target="_blank" rel="noreferrer">
-              <Button variant="outline"><ExternalLink className="h-4 w-4 mr-2" /> Abrir</Button>
-            </a>
+            <Button type="button" onClick={copy} variant="outline"><Copy className="h-4 w-4 mr-2" /> Copiar</Button>
+            <Button type="button" onClick={openLink} variant="outline"><ExternalLink className="h-4 w-4 mr-2" /> Abrir</Button>
           </div>
-          <a href={waHref} target="_blank" rel="noreferrer" className="inline-block">
-            <Button className="bg-[#25D366] hover:bg-[#1ebd5b] text-white">
-              <MessageCircle className="h-4 w-4 mr-2" /> Enviar por WhatsApp
-            </Button>
-          </a>
+          <Button type="button" onClick={openWhatsApp} className="bg-[#25D366] hover:bg-[#1ebd5b] text-white">
+            <MessageCircle className="h-4 w-4 mr-2" /> Enviar por WhatsApp
+          </Button>
         </CardContent>
       </Card>
 
