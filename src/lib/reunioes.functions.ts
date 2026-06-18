@@ -598,7 +598,7 @@ export const createReuniao = createServerFn({ method: "POST" })
         .from("leads")
         .update({ etapa: "reuniao_agendada" })
         .in("id", data.lead_ids)
-        .in("etapa", ETAPAS_INICIAIS as unknown as string[])
+        .in("etapa", ["novos_leads", "em_atendimento"])
         .select("id");
       const movedIds = ((movedRows ?? []) as { id: string }[]).map((r) => r.id);
       if (movedIds.length) {
