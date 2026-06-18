@@ -137,6 +137,68 @@ function AdminDashboard() {
   const deltaVendidos = vendidosPer.length - vendidosPrev.length;
   const deltaValor = valorVendasPer - valorVendasPrev;
 
+  // Imóveis alugados/locados no período (por data_locacao)
+  const locadosPer = imoveis.filter((i) => i.status === "locado" && inRange(i.data_locacao, startDate, endDate));
+  const valorLocacoesPer = locadosPer.reduce((s, i) => s + Number(i.valor_aluguel || 0), 0);
+
+  // Imóveis captados no período (por created_at)
+  const captadosPer = imoveis.filter((i) => inRange(i.created_at, startDate, endDate));
+
+  // Agregação por executivo e por corretor (vendidos + locados + captados no período)
+  const corretorMap = new Map(corretoresProfiles.map((c) => [c.id, c]));
+  const respMap = new Map(responsaveis.map((r) => [r.id, r.nome]));
+
+  type Agg = { vendidos: number; valorVendas: number; locados: number; valorLocacoes: number; captados: number };
+  function makeAgg(): Agg { return { vendidos: 0, valorVendas: 0, locados: 0, valorLocacoes: 0, captados: 0 }; }
+
+  const porExec = new Map<string, Agg>();
+  const porCorretor = new Map<string, Agg>();
+
+  function bumpExec(execId: string | null | undefined, key: keyof Agg, value: number) {
+    if (!execId) return;
+    const a = porExec.get(execId) ?? makeAgg();
+    (a as any)[key] = (a as any)[key] + value;
+    porExec.set(execId, a);
+  }
+  function bumpCorretor(cid: string | null | undefined, key: keyof Agg, value: number) {
+    if (!cid) return;
+    const a = porCorretor.get(cid) ?? makeAgg();
+    (a as any)[key] = (a as any)[key] + value;
+    porCorretor.set(cid, a);
+  }
+
+  for (const i of vendidosPer) {
+    bumpExec(i.executivo_fechamento_id, "vendidos", 1);
+    bumpExec(i.executivo_fechamento_id, "valorVendas", Number(i.valor_venda || 0));
+    bumpCorretor(i.corretor_fechamento_id, "vendidos", 1);
+    bumpCorretor(i.corretor_fechamento_id, "valorVendas", Number(i.valor_venda || 0));
+  }
+  for (const i of locadosPer) {
+    bumpExec(i.executivo_fechamento_id, "locados", 1);
+    bumpExec(i.executivo_fechamento_id, "valorLocacoes", Number(i.valor_aluguel || 0));
+    bumpCorretor(i.corretor_fechamento_id, "locados", 1);
+    bumpCorretor(i.corretor_fechamento_id, "valorLocacoes", Number(i.valor_aluguel || 0));
+  }
+  for (const i of captadosPer) {
+    bumpExec(i.executivo_fechamento_id, "captados", 1);
+    bumpCorretor(i.corretor_fechamento_id, "captados", 1);
+  }
+
+  const equipeRows = responsaveis
+    .map((r) => ({ id: r.id, nome: r.nome, ...(porExec.get(r.id) ?? makeAgg()) }))
+    .sort((a, b) => (b.vendidos + b.locados) - (a.vendidos + a.locados) || (b.valorVendas + b.valorLocacoes) - (a.valorVendas + a.valorLocacoes));
+
+  const corretorRows = corretoresProfiles
+    .map((c) => ({
+      id: c.id,
+      nome: c.nome,
+      equipe: c.responsavel_id ? (respMap.get(c.responsavel_id) ?? "—") : "—",
+      ...(porCorretor.get(c.id) ?? makeAgg()),
+    }))
+    .sort((a, b) => (b.vendidos + b.locados) - (a.vendidos + a.locados));
+
+  const [tab, setTab] = useState<"equipe" | "corretor">("equipe");
+
   const cards = [
     { label: "Imóveis", value: totalImoveis, icon: Building2 },
     { label: "Disponíveis", value: disponiveis, icon: CheckCircle2 },
