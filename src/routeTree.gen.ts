@@ -46,6 +46,7 @@ import { Route as AuthenticatedAdminPagamentosRouteImport } from './routes/_auth
 import { Route as AuthenticatedAdminInadimplentesRouteImport } from './routes/_authenticated/admin.inadimplentes'
 import { Route as AuthenticatedAdminImoveisRouteImport } from './routes/_authenticated/admin.imoveis'
 import { Route as AuthenticatedAdminContratosRouteImport } from './routes/_authenticated/admin.contratos'
+import { Route as AuthenticatedAdminCandidatosRouteImport } from './routes/_authenticated/admin.candidatos'
 
 const IngressoRoute = IngressoRouteImport.update({
   id: '/ingresso',
@@ -248,6 +249,12 @@ const AuthenticatedAdminContratosRoute =
     path: '/contratos',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminCandidatosRoute =
+  AuthenticatedAdminCandidatosRouteImport.update({
+    id: '/candidatos',
+    path: '/candidatos',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -267,6 +274,7 @@ export interface FileRoutesByFullPath {
   '/tempo-acesso': typeof AuthenticatedTempoAcessoRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/vendas': typeof AuthenticatedVendasRouteWithChildren
+  '/admin/candidatos': typeof AuthenticatedAdminCandidatosRoute
   '/admin/contratos': typeof AuthenticatedAdminContratosRoute
   '/admin/imoveis': typeof AuthenticatedAdminImoveisRoute
   '/admin/inadimplentes': typeof AuthenticatedAdminInadimplentesRoute
@@ -303,6 +311,7 @@ export interface FileRoutesByTo {
   '/relatorio': typeof AuthenticatedRelatorioRoute
   '/tempo-acesso': typeof AuthenticatedTempoAcessoRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
+  '/admin/candidatos': typeof AuthenticatedAdminCandidatosRoute
   '/admin/contratos': typeof AuthenticatedAdminContratosRoute
   '/admin/imoveis': typeof AuthenticatedAdminImoveisRoute
   '/admin/inadimplentes': typeof AuthenticatedAdminInadimplentesRoute
@@ -343,6 +352,7 @@ export interface FileRoutesById {
   '/_authenticated/tempo-acesso': typeof AuthenticatedTempoAcessoRoute
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
   '/_authenticated/vendas': typeof AuthenticatedVendasRouteWithChildren
+  '/_authenticated/admin/candidatos': typeof AuthenticatedAdminCandidatosRoute
   '/_authenticated/admin/contratos': typeof AuthenticatedAdminContratosRoute
   '/_authenticated/admin/imoveis': typeof AuthenticatedAdminImoveisRoute
   '/_authenticated/admin/inadimplentes': typeof AuthenticatedAdminInadimplentesRoute
@@ -383,6 +393,7 @@ export interface FileRouteTypes {
     | '/tempo-acesso'
     | '/usuarios'
     | '/vendas'
+    | '/admin/candidatos'
     | '/admin/contratos'
     | '/admin/imoveis'
     | '/admin/inadimplentes'
@@ -419,6 +430,7 @@ export interface FileRouteTypes {
     | '/relatorio'
     | '/tempo-acesso'
     | '/usuarios'
+    | '/admin/candidatos'
     | '/admin/contratos'
     | '/admin/imoveis'
     | '/admin/inadimplentes'
@@ -458,6 +470,7 @@ export interface FileRouteTypes {
     | '/_authenticated/tempo-acesso'
     | '/_authenticated/usuarios'
     | '/_authenticated/vendas'
+    | '/_authenticated/admin/candidatos'
     | '/_authenticated/admin/contratos'
     | '/_authenticated/admin/imoveis'
     | '/_authenticated/admin/inadimplentes'
@@ -756,10 +769,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminContratosRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/candidatos': {
+      id: '/_authenticated/admin/candidatos'
+      path: '/candidatos'
+      fullPath: '/admin/candidatos'
+      preLoaderRoute: typeof AuthenticatedAdminCandidatosRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
   }
 }
 
 interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminCandidatosRoute: typeof AuthenticatedAdminCandidatosRoute
   AuthenticatedAdminContratosRoute: typeof AuthenticatedAdminContratosRoute
   AuthenticatedAdminImoveisRoute: typeof AuthenticatedAdminImoveisRoute
   AuthenticatedAdminInadimplentesRoute: typeof AuthenticatedAdminInadimplentesRoute
@@ -768,6 +789,7 @@ interface AuthenticatedAdminRouteChildren {
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminCandidatosRoute: AuthenticatedAdminCandidatosRoute,
   AuthenticatedAdminContratosRoute: AuthenticatedAdminContratosRoute,
   AuthenticatedAdminImoveisRoute: AuthenticatedAdminImoveisRoute,
   AuthenticatedAdminInadimplentesRoute: AuthenticatedAdminInadimplentesRoute,
