@@ -12,7 +12,7 @@ import { CANAIS, REGIOES, type LeadCanal, type LeadRegiao } from "@/lib/lead-hel
 import { Trash2, Copy } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { startGoogleOAuth, getGoogleStatus, disconnectGoogle } from "@/lib/google.functions";
-import { getVslUrl, setVslUrl } from "@/lib/candidatos.functions";
+import { getVslUrl, setVslUrl, setVslAllowSkip } from "@/lib/candidatos.functions";
 
 type Resp = { id: string; canal: string; nome: string; whatsapp: string };
 type Mapping = {
