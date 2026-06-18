@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { submeterCandidato, getVslUrl } from "@/lib/candidatos.functions";
+import logoAsset from "@/assets/logo_iuri_rodrigues_v2.png.asset.json";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,7 +24,7 @@ export const Route = createFileRoute("/ingresso")({
 });
 
 const GOLD = "#D4AF37";
-const LOGO_URL = "https://www.iurirodriguesimoveis.com.br/upload/app/logo-site160805.PNG";
+const LOGO_URL = logoAsset.url;
 
 const REGIOES = [
   { v: "barra_da_tijuca", l: "Barra da Tijuca" },
@@ -123,7 +124,7 @@ function IngressoPage() {
       {/* HERO */}
       <section className="px-6 pt-12 pb-16 md:pt-20 md:pb-24" style={{ background: "#0a0a0a" }}>
         <div className="max-w-4xl mx-auto text-center space-y-8">
-          <img src={LOGO_URL} alt="Iuri Rodrigues Imóveis" className="h-40 md:h-56 lg:h-64 mx-auto object-contain" />
+          <img src={LOGO_URL} alt="Iuri Rodrigues Imóveis" className="w-full max-w-md md:max-w-xl lg:max-w-2xl mx-auto object-contain" />
           <div className="space-y-4">
             <div className="text-xs md:text-sm uppercase tracking-[0.35em]" style={{ color: GOLD }}>
               Bem-vindo à primeira etapa
