@@ -117,7 +117,7 @@ export const atribuirLead = createServerFn({ method: "POST" })
       const { data: corretorProf } = await supabaseAdmin
         .from("profiles").select("nome").eq("id", data.corretor_id).maybeSingle();
       const lead = updated as { nome: string; telefone: string; regiao: string };
-      const url = "https://iurirodriguesimoveiscrm.lovable.app/vendas/leads";
+      const url = "https://sistemanexus.app/vendas/leads";
       const appId = process.env.ONESIGNAL_APP_ID;
       const restKey = process.env.ONESIGNAL_REST_API_KEY;
       console.info("[atribuirLead] push start", { hasAppId: !!appId, hasRestKey: !!restKey, lead_id: data.lead_id, corretor_id: data.corretor_id });
@@ -217,7 +217,7 @@ export const recusarLead = createServerFn({ method: "POST" })
             externalId: execProf.onesignal_external_id,
             title: "↩️ Lead recusado",
             message: `${prof?.nome ?? "Corretor"} recusou um lead${data.motivo ? `: ${data.motivo}` : ""}`,
-            url: "https://iurirodriguesimoveiscrm.lovable.app/vendas/leads",
+            url: "https://sistemanexus.app/vendas/leads",
             data: { lead_id: data.lead_id },
           });
         }

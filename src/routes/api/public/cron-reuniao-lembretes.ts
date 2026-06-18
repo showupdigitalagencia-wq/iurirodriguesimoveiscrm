@@ -90,7 +90,7 @@ export const Route = createFileRoute("/api/public/cron-reuniao-lembretes")({
               title = "🔔 Reunião em 15 minutos!";
               message = `${tipoLabel} às ${hora}`;
             }
-            const url = `https://iurirodriguesimoveiscrm.lovable.app/agenda?open=${rRaw.id}`;
+            const url = `https://sistemanexus.app/agenda?open=${rRaw.id}`;
 
             const res = externalIds.length
               ? await sendOneSignalPush({ externalIds, title, message, url, data: { reuniao_id: rRaw.id, lembrete: w.tipo } })

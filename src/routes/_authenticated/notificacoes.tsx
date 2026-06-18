@@ -131,7 +131,7 @@ function NotificacoesPage() {
             <AlertCircle className="h-4 w-4 mt-0.5" />
             <div>
               Notificações só funcionam no app publicado.
-              Abra <strong>iurirodriguesimoveiscrmcombr.lovable.app</strong> no seu celular para ativar.
+              Abra <strong>sistemanexus.app</strong> no seu celular para ativar.
             </div>
           </div>
         )}
