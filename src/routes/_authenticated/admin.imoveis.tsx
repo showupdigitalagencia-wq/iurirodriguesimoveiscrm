@@ -146,6 +146,17 @@ function ImoveisPage() {
               {(i as unknown as { dia_vencimento?: number | null }).dia_vencimento != null && (
                 <div className="text-xs text-muted-foreground">Vencimento: dia {(i as unknown as { dia_vencimento?: number | null }).dia_vencimento}</div>
               )}
+              {(i as unknown as { vitrine_url?: string | null }).vitrine_url && (
+                <a
+                  href={(i as unknown as { vitrine_url?: string | null }).vitrine_url ?? "#"}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="text-xs text-gold hover:underline inline-block"
+                >
+                  🔗 Ver na vitrine
+                </a>
+              )}
 
 
               <div className="flex justify-between items-center pt-2 border-t">
