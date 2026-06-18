@@ -347,12 +347,13 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
               </SelectContent>
             </Select>
           </div>
-          <div className="md:col-span-2">
-            <Label>Fotos (URLs separadas por vírgula)</Label>
-            <Input
-              value={(form.fotos ?? []).join(", ")}
-              onChange={(e) => set("fotos", e.target.value.split(",").map((s) => s.trim()).filter(Boolean))}
-              placeholder="https://..."
+          <div className="md:col-span-2 border-t pt-3 mt-2">
+            <Label className="text-sm font-semibold">Fotos do Imóvel</Label>
+            <p className="text-xs text-muted-foreground mb-2">Adicione, remova e reordene as fotos. Aparecem no card e no detalhe.</p>
+            <FotosManager
+              fotos={form.fotos ?? []}
+              onChange={(next) => set("fotos", next)}
+              imovelId={imovel?.id}
             />
           </div>
           <div className="md:col-span-2"><Label>Observações</Label><Textarea value={form.observacoes ?? ""} onChange={(e) => set("observacoes", e.target.value)} /></div>
