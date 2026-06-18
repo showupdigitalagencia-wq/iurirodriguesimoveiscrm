@@ -301,7 +301,7 @@ export const listCandidatos = createServerFn({ method: "POST" })
     z.object({ status: z.enum(["pendente_revisao", "arquivado", "todos"]).optional() }).parse(input),
   )
   .handler(async ({ data, context }) => {
-    await assertAdminOrAdministrativo(context.supabase, context.userId);
+    await assertCanViewCandidatos(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     let q = supabaseAdmin
       .from("candidatos" as never)
@@ -344,7 +344,7 @@ export const getCandidatoDocUrls = createServerFn({ method: "POST" })
     z.object({ candidatoId: z.string().uuid() }).parse(input),
   )
   .handler(async ({ data, context }) => {
-    await assertAdminOrAdministrativo(context.supabase, context.userId);
+    await assertCanViewCandidatos(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: cand, error } = await supabaseAdmin
       .from("candidatos" as never)
@@ -382,7 +382,7 @@ export const salvarCandidatoNoDrive = createServerFn({ method: "POST" })
     z.object({ candidatoId: z.string().uuid() }).parse(input),
   )
   .handler(async ({ data, context }) => {
-    await assertAdminOrAdministrativo(context.supabase, context.userId);
+    await assertCanViewCandidatos(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data: cand, error } = await supabaseAdmin
