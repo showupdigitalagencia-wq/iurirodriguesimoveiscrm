@@ -468,6 +468,16 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
             </Select>
           </div>
           <div className="md:col-span-2 border-t pt-3 mt-2">
+            <Label className="text-sm font-semibold">Link da Vitrine (Bom Corretor)</Label>
+            <p className="text-xs text-muted-foreground mb-2">Cole o link público do imóvel no Bom Corretor (ou outro portal).</p>
+            <Input
+              type="url"
+              placeholder="https://bomcorretor.com.br/imovel/..."
+              value={(form as any).vitrine_url ?? ""}
+              onChange={(e) => set("vitrine_url" as any, (e.target.value || null) as any)}
+            />
+          </div>
+          <div className="md:col-span-2 border-t pt-3 mt-2">
             <Label className="text-sm font-semibold">Fotos do Imóvel</Label>
             <p className="text-xs text-muted-foreground mb-2">Adicione, remova e reordene as fotos. Aparecem no card e no detalhe.</p>
             <FotosManager
