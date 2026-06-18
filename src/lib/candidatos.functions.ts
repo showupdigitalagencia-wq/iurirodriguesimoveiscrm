@@ -173,6 +173,7 @@ export const submeterCandidato = createServerFn({ method: "POST" })
       if (updErr || !upd) throw new Error(updErr?.message || "Falha ao atualizar lead");
       leadId = upd.id;
     } else {
+      const canal = CANAL_POR_REGIAO[data.regiao] ?? "robson";
       const { data: ins, error: insErr } = await supabaseAdmin
         .from("leads")
         .insert({
@@ -181,7 +182,7 @@ export const submeterCandidato = createServerFn({ method: "POST" })
           email: data.email || null,
           creci: data.creci || null,
           regiao: data.regiao,
-          canal: "indicacao",
+          canal,
           etapa: "documentos_enviados",
           is_corretor: true,
           responsavel_id: responsavelId,
