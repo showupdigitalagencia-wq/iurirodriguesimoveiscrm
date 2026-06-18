@@ -15,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { Loader2, MessageCircle, Users, FileText, MapPin, Plus, Pencil, Power, Trash2 } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/executivos")({
+export const Route = createFileRoute("/_authenticated/executivos/")({
   head: () => ({ meta: [{ title: "Executivos — Sistema NEXUS" }, { name: "robots", content: "noindex" }] }),
   component: ExecutivosPage,
 });
