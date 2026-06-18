@@ -77,9 +77,20 @@ function ImoveisPage() {
     return fin === finalidadeFiltro;
   });
 
-  const filtered = byFinalidade.filter((i) => {
+  const byBusca = byFinalidade.filter((i) => {
+    const q = busca.trim().toLowerCase();
+    if (!q) return true;
+    const loc = (i as unknown as { locatario_nome?: string | null }).locatario_nome ?? "";
+    return (i.proprietario_nome ?? "").toLowerCase().includes(q) || loc.toLowerCase().includes(q);
+  });
+
+  const filtered = byBusca.filter((i) => {
     if (tab === "alugados") return i.status === "locado";
     if (tab === "vendidos") return i.status === "vendido";
+    if (tab === "venda") {
+      const fin = ((i as unknown as { finalidade?: string }).finalidade) ?? "locacao";
+      return (fin === "venda" || fin === "ambos") && i.status !== "vendido" && i.status !== "locado";
+    }
     return true;
   });
 
