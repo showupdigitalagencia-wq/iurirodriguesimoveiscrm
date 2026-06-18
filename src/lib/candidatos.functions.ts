@@ -526,3 +526,109 @@ export const setVslUrl = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+export type InstitucionalCandidato = {
+  lead_id: string;
+  nome: string;
+  telefone: string;
+  executivo: string | null;
+};
+
+export type InstitucionalReuniaoInfo = {
+  id: string;
+  titulo: string;
+  data_inicio: string;
+  is_today: boolean;
+  candidatos: InstitucionalCandidato[];
+} | null;
+
+export const listInstitucionalCandidatos = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<{ reuniao: InstitucionalReuniaoInfo }> => {
+    // Authorize: admin, administrativo, or executivo
+    const [{ data: isAdmin }, { data: roleRow }, { data: isExec }] = await Promise.all([
+      context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" }),
+      context.supabase.from("user_roles").select("role").eq("user_id", context.userId).maybeSingle(),
+      context.supabase.rpc("current_user_is_executivo"),
+    ]);
+    const isAdministrativo = (roleRow?.role as string | undefined) === "administrativo";
+    if (!isAdmin && !isAdministrativo && isExec !== true) throw new Error("Forbidden");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const now = new Date();
+    const startToday = new Date(now); startToday.setHours(0, 0, 0, 0);
+    const endToday = new Date(now); endToday.setHours(23, 59, 59, 999);
+
+    // Today's institucional, else most recent past
+    const { data: hoje } = await supabaseAdmin
+      .from("reunioes")
+      .select("id, titulo, data_inicio")
+      .eq("tipo", "institucional")
+      .gte("data_inicio", startToday.toISOString())
+      .lte("data_inicio", endToday.toISOString())
+      .order("data_inicio", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    let reuniao = hoje as { id: string; titulo: string; data_inicio: string } | null;
+    let isToday = !!reuniao;
+
+    if (!reuniao) {
+      const { data: passada } = await supabaseAdmin
+        .from("reunioes")
+        .select("id, titulo, data_inicio")
+        .eq("tipo", "institucional")
+        .lte("data_inicio", endToday.toISOString())
+        .order("data_inicio", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      reuniao = passada as { id: string; titulo: string; data_inicio: string } | null;
+      isToday = false;
+    }
+
+    if (!reuniao) return { reuniao: null };
+
+    const { data: parts } = await supabaseAdmin
+      .from("reuniao_participantes")
+      .select("lead_id")
+      .eq("reuniao_id", reuniao.id)
+      .not("lead_id", "is", null);
+
+    const leadIds = ((parts ?? []) as { lead_id: string | null }[])
+      .map((p) => p.lead_id).filter((x): x is string => !!x);
+
+    let candidatos: InstitucionalCandidato[] = [];
+    if (leadIds.length) {
+      const { data: leads } = await supabaseAdmin
+        .from("leads")
+        .select("id, nome, telefone, responsavel_id")
+        .in("id", leadIds);
+      const respIds = Array.from(new Set(((leads ?? []) as { responsavel_id: string | null }[])
+        .map((l) => l.responsavel_id).filter((x): x is string => !!x)));
+      let respMap = new Map<string, string>();
+      if (respIds.length) {
+        const { data: resps } = await supabaseAdmin
+          .from("responsaveis").select("id, nome").in("id", respIds);
+        respMap = new Map(((resps ?? []) as { id: string; nome: string }[]).map((r) => [r.id, r.nome]));
+      }
+      candidatos = ((leads ?? []) as { id: string; nome: string; telefone: string; responsavel_id: string | null }[])
+        .map((l) => ({
+          lead_id: l.id,
+          nome: l.nome,
+          telefone: l.telefone,
+          executivo: l.responsavel_id ? respMap.get(l.responsavel_id) ?? null : null,
+        }))
+        .sort((a, b) => a.nome.localeCompare(b.nome));
+    }
+
+    return {
+      reuniao: {
+        id: reuniao.id,
+        titulo: reuniao.titulo,
+        data_inicio: reuniao.data_inicio,
+        is_today: isToday,
+        candidatos,
+      },
+    };
+  });
