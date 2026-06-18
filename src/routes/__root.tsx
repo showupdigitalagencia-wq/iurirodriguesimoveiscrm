@@ -130,6 +130,15 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.location.hostname === "iurirodriguesimoveiscrm.lovable.app") {
+      window.location.replace(
+        `https://sistemanexus.app${window.location.pathname}${window.location.search}${window.location.hash}`,
+      );
+    }
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <SplashScreen />
