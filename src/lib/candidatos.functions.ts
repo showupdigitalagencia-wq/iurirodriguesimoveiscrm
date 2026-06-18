@@ -515,6 +515,6 @@ export const setVslUrl = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await supabaseAdmin
       .from("configuracoes")
-      .upsert({ chave: "vsl_youtube_url", valor: data.url as unknown as object });
+      .upsert({ chave: "vsl_youtube_url", valor: data.url });
     return { ok: true };
   });
