@@ -15,6 +15,8 @@ import { Plus, Pencil, Trash2 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import { DocumentosManager } from "@/components/admin/DocumentosManager";
 import { FotosManager, FotosThumbs } from "@/components/admin/FotosManager";
+import { ImoveisImportExport } from "@/components/admin/ImoveisImportExport";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 type Imovel = Database["public"]["Tables"]["imoveis"]["Row"];
 type ImovelInsert = Database["public"]["Tables"]["imoveis"]["Insert"];
