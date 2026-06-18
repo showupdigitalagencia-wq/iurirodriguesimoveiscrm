@@ -482,6 +482,49 @@ export const salvarCandidatoNoDrive = createServerFn({ method: "POST" })
   });
 
 // ============================================================
+// 4b. EXCLUIR CANDIDATO (remove row + arquivos do Storage; mantém lead)
+// ============================================================
+export const excluirCandidato = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { candidatoId: string }) =>
+    z.object({ candidatoId: z.string().uuid() }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await assertCanViewCandidatos(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: cand, error } = await supabaseAdmin
+      .from("candidatos" as never)
+      .select("id, rg_path, cpf_path, creci_path, comprovante_path")
+      .eq("id", data.candidatoId)
+      .maybeSingle();
+    if (error || !cand) throw new Error("Candidato não encontrado");
+    const c = cand as {
+      id: string;
+      rg_path: string | null;
+      cpf_path: string | null;
+      creci_path: string | null;
+      comprovante_path: string | null;
+    };
+
+    const paths = [c.rg_path, c.cpf_path, c.creci_path, c.comprovante_path].filter(
+      (p): p is string => !!p,
+    );
+    if (paths.length) {
+      const { error: sErr } = await supabaseAdmin.storage.from("candidatos-docs").remove(paths);
+      if (sErr) console.warn("[excluirCandidato] storage remove falhou", sErr.message);
+    }
+
+    const { error: dErr } = await supabaseAdmin
+      .from("candidatos" as never)
+      .delete()
+      .eq("id", c.id);
+    if (dErr) throw new Error(dErr.message);
+
+    return { ok: true };
+  });
+
+// ============================================================
 // 5. CONFIG VSL URL (público para leitura na LP, admin para escrita)
 // ============================================================
 export const getVslUrl = createServerFn({ method: "GET" }).handler(async () => {
