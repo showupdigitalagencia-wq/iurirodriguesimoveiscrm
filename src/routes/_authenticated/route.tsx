@@ -113,8 +113,9 @@ function AuthLayout() {
     const base: Array<{ to: string; label: string; icon: typeof LayoutDashboard }> = [...NAV];
     if (isAdmin && vendasAtivo) base.push({ to: "/vendas", label: "Vendas", icon: Briefcase });
     if (isAdmin && adminModuloAtivo) base.push({ to: "/admin", label: "Administração", icon: Building2 });
+    if (isAdmin || isExec) base.push({ to: "/executivos/landing-page", label: "Landing Page", icon: Megaphone });
     return isAdmin ? [...base, ...ADMIN_NAV, ...CONFIG_NAV] : [...base, ...CONFIG_NAV];
-  }, [isAdmin, isCorretorVendas, isAdministrativo, vendasAtivo, vendasAcessoIndividual, adminModuloAtivo]);
+  }, [isAdmin, isCorretorVendas, isAdministrativo, vendasAtivo, vendasAcessoIndividual, adminModuloAtivo, isExec]);
 
   useEffect(() => {
     let active = true;
