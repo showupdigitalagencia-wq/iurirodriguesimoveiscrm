@@ -599,12 +599,20 @@ function GoogleConnectSection() {
 function VslUrlSection() {
   const fnGet = useServerFn(getVslUrl);
   const fnSet = useServerFn(setVslUrl);
+  const fnSetSkip = useServerFn(setVslAllowSkip);
   const [url, setUrl] = useState("");
+  const [allowSkip, setAllowSkip] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingSkip, setSavingSkip] = useState(false);
 
   useEffect(() => {
-    fnGet({}).then((r) => setUrl(r.url ?? "")).finally(() => setLoading(false));
+    fnGet({})
+      .then((r) => {
+        setUrl(r.url ?? "");
+        setAllowSkip(!!r.allowSkip);
+      })
+      .finally(() => setLoading(false));
   }, [fnGet]);
 
   async function save() {
@@ -619,8 +627,23 @@ function VslUrlSection() {
     }
   }
 
+  async function toggleSkip(next: boolean) {
+    setSavingSkip(true);
+    const prev = allowSkip;
+    setAllowSkip(next);
+    try {
+      await fnSetSkip({ data: { allowSkip: next } });
+      toast.success(next ? "Pular vídeo liberado" : "Pular vídeo desativado");
+    } catch (e) {
+      setAllowSkip(prev);
+      toast.error(e instanceof Error ? e.message : "Erro ao salvar");
+    } finally {
+      setSavingSkip(false);
+    }
+  }
+
   return (
-    <div className="rounded-lg border p-5 space-y-3">
+    <div className="rounded-lg border p-5 space-y-4">
       <div>
         <h3 className="font-semibold">Link do vídeo VSL (Landing Page /ingresso)</h3>
         <p className="text-sm text-muted-foreground mt-1">
@@ -638,6 +661,15 @@ function VslUrlSection() {
         <Button onClick={save} disabled={saving || loading} variant="gold">
           {saving ? "Salvando..." : "Salvar"}
         </Button>
+      </div>
+      <div className="flex items-start justify-between gap-4 pt-2 border-t">
+        <div>
+          <Label className="font-medium">Permitir pular o vídeo</Label>
+          <p className="text-sm text-muted-foreground mt-1">
+            Quando ativado, exibe um botão discreto "Pular vídeo" para liberar o restante da página sem precisar assistir até o fim.
+          </p>
+        </div>
+        <Switch checked={allowSkip} onCheckedChange={toggleSkip} disabled={loading || savingSkip} />
       </div>
     </div>
   );
