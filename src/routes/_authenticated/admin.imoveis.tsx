@@ -55,6 +55,7 @@ function ImoveisPage() {
   const qc = useQueryClient();
   const [editing, setEditing] = useState<Imovel | null>(null);
   const [open, setOpen] = useState(false);
+  const [finalidadeFiltro, setFinalidadeFiltro] = useState<"todos" | "locacao" | "venda" | "ambos">("todos");
 
   const { data: imoveis = [], isLoading } = useQuery({
     queryKey: ["imoveis"],
@@ -63,6 +64,12 @@ function ImoveisPage() {
       if (error) throw error;
       return data as Imovel[];
     },
+  });
+
+  const filtered = imoveis.filter((i) => {
+    if (finalidadeFiltro === "todos") return true;
+    const fin = ((i as unknown as { finalidade?: string }).finalidade) ?? "locacao";
+    return fin === finalidadeFiltro;
   });
 
   function openNew() { setEditing(null); setOpen(true); }
@@ -78,30 +85,53 @@ function ImoveisPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <div className="text-sm text-muted-foreground">{imoveis.length} imóve{imoveis.length === 1 ? "l" : "is"}</div>
-        <Button onClick={openNew}><Plus className="h-4 w-4 mr-1" /> Novo Imóvel</Button>
+      <div className="flex justify-between items-center gap-3 flex-wrap">
+        <div className="text-sm text-muted-foreground">{filtered.length} imóve{filtered.length === 1 ? "l" : "is"}</div>
+        <div className="flex items-center gap-2">
+          <Label className="text-xs text-muted-foreground">Finalidade:</Label>
+          <Select value={finalidadeFiltro} onValueChange={(v) => setFinalidadeFiltro(v as never)}>
+            <SelectTrigger className="h-9 w-[180px]"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todas</SelectItem>
+              <SelectItem value="locacao">Locação</SelectItem>
+              <SelectItem value="venda">Venda</SelectItem>
+              <SelectItem value="ambos">Locação e Venda</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button onClick={openNew}><Plus className="h-4 w-4 mr-1" /> Novo Imóvel</Button>
+        </div>
       </div>
 
       {isLoading ? (
         <p className="text-muted-foreground">Carregando...</p>
-      ) : imoveis.length === 0 ? (
-        <Card><CardContent className="p-8 text-center text-muted-foreground">Nenhum imóvel cadastrado.</CardContent></Card>
+      ) : filtered.length === 0 ? (
+        <Card><CardContent className="p-8 text-center text-muted-foreground">Nenhum imóvel encontrado.</CardContent></Card>
       ) : (
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-          {imoveis.map((i) => (
+          {filtered.map((i) => {
+            const fin = ((i as unknown as { finalidade?: string }).finalidade) ?? "locacao";
+            const valorVenda = (i as unknown as { valor_venda?: number | null }).valor_venda ?? null;
+            return (
             <Card key={i.id} className="cursor-pointer hover:border-gold/50 transition" onClick={() => openEdit(i)}>
               <CardContent className="p-4 space-y-2">
-                <div className="flex justify-between items-start">
+                <div className="flex justify-between items-start gap-2">
                   <div className="font-semibold capitalize">{i.tipo}</div>
-                  <Badge className={STATUS_COLOR[i.status]}>{STATUS_LABEL[i.status]}</Badge>
+                  <Badge className={STATUS_COLOR[i.status]}>{STATUS_LABEL[i.status] ?? i.status}</Badge>
                 </div>
+                <div className="text-xs text-muted-foreground">Finalidade: {FINALIDADE_LABEL[fin] ?? fin}</div>
                 <div className="text-sm text-muted-foreground">
                   {i.rua}{i.numero ? `, ${i.numero}` : ""}{i.bairro ? ` — ${i.bairro}` : ""}{i.cidade ? ` / ${i.cidade}` : ""}
                 </div>
                 <div className="text-xs text-muted-foreground">Proprietário: {i.proprietario_nome}</div>
                 <div className="flex justify-between items-center pt-2 border-t">
-                  <span className="font-bold text-gold">{formatBRL(i.valor_aluguel)}</span>
+                  <div className="flex flex-col">
+                    {(fin === "locacao" || fin === "ambos") && (
+                      <span className="font-bold text-gold text-sm">Aluguel: {formatBRL(i.valor_aluguel)}</span>
+                    )}
+                    {(fin === "venda" || fin === "ambos") && valorVenda != null && (
+                      <span className="font-bold text-gold text-sm">Venda: {formatBRL(valorVenda)}</span>
+                    )}
+                  </div>
                   <div className="flex gap-1">
                     <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); openEdit(i); }}>
                       <Pencil className="h-4 w-4" />
@@ -113,7 +143,7 @@ function ImoveisPage() {
                 </div>
               </CardContent>
             </Card>
-          ))}
+          );})}
         </div>
       )}
 
