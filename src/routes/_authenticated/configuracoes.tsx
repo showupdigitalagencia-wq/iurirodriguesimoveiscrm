@@ -89,6 +89,7 @@ function ConfigPage() {
         <TabsContent value="admin" className="mt-6 space-y-6">
           <SistemaCorretoresToggle />
           <ModuloAdministrativoToggle />
+          <VslUrlSection />
           <SophiaToggle chave="sophia_executivos_acesso" titulo="Liberar Laura para Executivos" descricao="Quando ativado, executivos podem usar a assistente Laura." />
           <SophiaToggle chave="sophia_corretores_acesso" titulo="Liberar Laura para Corretores" descricao="Quando ativado, corretores podem usar a assistente Laura." />
         </TabsContent>
