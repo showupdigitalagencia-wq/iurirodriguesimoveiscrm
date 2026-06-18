@@ -173,10 +173,15 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
   useEffect(() => {
     if (!open) return;
     setForm(imovel ? { ...imovel } : {
-      tipo: "apartamento", status: "disponivel", valor_aluguel: 0, iptu: 0, condominio: 0,
+      tipo: "apartamento", status: "disponivel_locacao", finalidade: "locacao" as never,
+      valor_aluguel: 0, iptu: 0, condominio: 0,
       quartos: 0, banheiros: 0, vagas: 0, rua: "", proprietario_nome: "",
     });
   }, [open, imovel]);
+
+  const finalidade = ((form as { finalidade?: string }).finalidade) ?? "locacao";
+  const showAluguel = finalidade === "locacao" || finalidade === "ambos";
+  const showVenda = finalidade === "venda" || finalidade === "ambos";
 
   function set<K extends keyof ImovelInsert>(k: K, v: ImovelInsert[K]) {
     setForm((f) => ({ ...f, [k]: v }));
