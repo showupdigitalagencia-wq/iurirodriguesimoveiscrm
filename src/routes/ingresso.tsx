@@ -193,7 +193,7 @@ function IngressoPage() {
         <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
           {[
             { n: "40+", l: "Corretores ativos" },
-            { n: "4", l: "Regiões atendidas" },
+            { n: "+4", l: "Regiões atendidas" },
             { n: "100%", l: "Digital e automatizado" },
           ].map((s) => (
             <div key={s.l} className="space-y-2">
