@@ -59,7 +59,8 @@ function ImoveisPage() {
   const [editing, setEditing] = useState<Imovel | null>(null);
   const [open, setOpen] = useState(false);
   const [finalidadeFiltro, setFinalidadeFiltro] = useState<"todos" | "locacao" | "venda" | "ambos">("todos");
-  const [tab, setTab] = useState<"todos" | "alugados" | "vendidos" | "proprietarios">("todos");
+  const [tab, setTab] = useState<"todos" | "alugados" | "venda" | "vendidos" | "proprietarios">("todos");
+  const [busca, setBusca] = useState("");
 
   const { data: imoveis = [], isLoading } = useQuery({
     queryKey: ["imoveis"],
