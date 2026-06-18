@@ -131,6 +131,9 @@ function ImoveisPage() {
                 {i.rua}{i.numero ? `, ${i.numero}` : ""}{i.bairro ? ` — ${i.bairro}` : ""}{i.cidade ? ` / ${i.cidade}` : ""}
               </div>
               <div className="text-xs text-muted-foreground">Proprietário: {i.proprietario_nome}</div>
+              {(i as unknown as { dia_vencimento?: number | null }).dia_vencimento != null && (
+                <div className="text-xs text-muted-foreground">Vencimento: dia {(i as unknown as { dia_vencimento?: number | null }).dia_vencimento}</div>
+              )}
 
 
               <div className="flex justify-between items-center pt-2 border-t">
@@ -414,6 +417,7 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
           <div><Label>CPF/CNPJ</Label><Input value={(form as any).locatario_documento ?? ""} onChange={(e) => set("locatario_documento" as any, e.target.value as any)} /></div>
           <div><Label>Telefone</Label><Input value={(form as any).locatario_telefone ?? ""} onChange={(e) => set("locatario_telefone" as any, e.target.value as any)} /></div>
           <div><Label>Email</Label><Input type="email" value={(form as any).locatario_email ?? ""} onChange={(e) => set("locatario_email" as any, e.target.value as any)} /></div>
+          <div><Label>Dia do Vencimento do Aluguel</Label><Input type="number" min={1} max={31} value={(form as any).dia_vencimento ?? ""} onChange={(e) => set("dia_vencimento" as any, (e.target.value ? Number(e.target.value) : null) as any)} /></div>
 
 
 

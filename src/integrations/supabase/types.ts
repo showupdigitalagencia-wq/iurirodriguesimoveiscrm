@@ -385,6 +385,7 @@ export type Database = {
           created_by: string | null
           data_locacao: string | null
           data_venda: string | null
+          dia_vencimento: number | null
           drive_folder_id: string | null
           executivo_fechamento_id: string | null
           finalidade: string
@@ -425,6 +426,7 @@ export type Database = {
           created_by?: string | null
           data_locacao?: string | null
           data_venda?: string | null
+          dia_vencimento?: number | null
           drive_folder_id?: string | null
           executivo_fechamento_id?: string | null
           finalidade?: string
@@ -465,6 +467,7 @@ export type Database = {
           created_by?: string | null
           data_locacao?: string | null
           data_venda?: string | null
+          dia_vencimento?: number | null
           drive_folder_id?: string | null
           executivo_fechamento_id?: string | null
           finalidade?: string
