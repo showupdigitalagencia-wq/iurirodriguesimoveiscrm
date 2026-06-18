@@ -224,7 +224,26 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
   return (
     <Dialog open={open} onOpenChange={(v) => { onOpenChange(v); if (!v) setForm({}); }}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader><DialogTitle>{imovel ? "Editar Imóvel" : "Novo Imóvel"}</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            {imovel ? "Editar Imóvel" : "Novo Imóvel"}
+            {imovel && (form as { codigo?: string }).codigo && (
+              <span className="text-xs font-mono px-2 py-0.5 rounded bg-muted text-muted-foreground">
+                {(form as { codigo?: string }).codigo}
+              </span>
+            )}
+          </DialogTitle>
+        </DialogHeader>
+        {imovel && (
+          <div className="grid gap-1 max-w-xs">
+            <Label>Código do Imóvel</Label>
+            <Input
+              value={(form as { codigo?: string }).codigo ?? ""}
+              onChange={(e) => set("codigo" as never, e.target.value as never)}
+              placeholder="IM-0001"
+            />
+          </div>
+        )}
         <div className="grid gap-4 md:grid-cols-2">
           <div>
             <Label>Tipo *</Label>
