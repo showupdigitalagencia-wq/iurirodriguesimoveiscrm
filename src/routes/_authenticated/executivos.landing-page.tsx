@@ -35,7 +35,7 @@ function LPPage() {
   const fetchCandidatos = useServerFn(listInstitucionalCandidatos);
 
   useEffect(() => {
-    if (typeof window !== "undefined") setUrl(`${window.location.origin}/ingresso`);
+    setUrl("https://iurirodriguesimoveiscrm.lovable.app/ingresso");
     supabase.auth.getUser().then(async ({ data }) => {
       const uid = data.user?.id;
       if (!uid) { setAuthorized(false); return; }
