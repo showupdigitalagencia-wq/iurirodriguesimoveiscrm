@@ -23,18 +23,28 @@ export const Route = createFileRoute("/_authenticated/admin/imoveis")({
 });
 
 const STATUS_LABEL: Record<string, string> = {
-  disponivel: "Disponível",
+  disponivel: "Disponível", // legado
+  disponivel_locacao: "Disponível p/ Locação",
+  disponivel_venda: "Disponível p/ Venda",
   locado: "Locado",
+  vendido: "Vendido",
   manutencao: "Em manutenção",
   rescindido: "Rescindido",
-  vendido: "Vendido",
 };
 const STATUS_COLOR: Record<string, string> = {
   disponivel: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
+  disponivel_locacao: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
+  disponivel_venda: "bg-teal-500/10 text-teal-700 dark:text-teal-400",
   locado: "bg-blue-500/10 text-blue-700 dark:text-blue-400",
+  vendido: "bg-violet-500/10 text-violet-700 dark:text-violet-400",
   manutencao: "bg-amber-500/10 text-amber-700 dark:text-amber-400",
   rescindido: "bg-rose-500/10 text-rose-700 dark:text-rose-400",
-  vendido: "bg-violet-500/10 text-violet-700 dark:text-violet-400",
+};
+
+const FINALIDADE_LABEL: Record<string, string> = {
+  locacao: "Locação",
+  venda: "Venda",
+  ambos: "Locação e Venda",
 };
 
 function formatBRL(v: number | null | undefined) {
