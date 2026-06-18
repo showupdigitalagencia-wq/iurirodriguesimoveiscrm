@@ -58,6 +58,7 @@
   --color-sidebar-ring: var(--sidebar-ring);
 
   --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-display: "Playfair Display", Georgia, serif;
 }
 
 :root {
