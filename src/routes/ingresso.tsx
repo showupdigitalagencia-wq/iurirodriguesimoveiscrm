@@ -49,10 +49,52 @@ const BENEFICIOS = [
   { e: "🏆", t: "Portfólio completo", d: "Imóveis em diversas regiões e perfis para todos os clientes." },
 ];
 
-function youtubeEmbed(url: string): string | null {
+function youtubeId(url: string): string | null {
   if (!url) return null;
   const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/);
-  return m ? `https://www.youtube.com/embed/${m[1]}` : null;
+  return m ? m[1] : null;
+}
+
+// YouTube IFrame API global
+declare global {
+  interface Window {
+    YT?: {
+      Player: new (
+        el: HTMLElement | string,
+        opts: {
+          videoId: string;
+          playerVars?: Record<string, string | number>;
+          events?: {
+            onStateChange?: (e: { data: number }) => void;
+            onReady?: () => void;
+          };
+        },
+      ) => unknown;
+      PlayerState: { ENDED: number };
+    };
+    onYouTubeIframeAPIReady?: () => void;
+  }
+}
+
+let ytApiPromise: Promise<void> | null = null;
+function loadYouTubeApi(): Promise<void> {
+  if (typeof window === "undefined") return Promise.resolve();
+  if (window.YT?.Player) return Promise.resolve();
+  if (ytApiPromise) return ytApiPromise;
+  ytApiPromise = new Promise<void>((resolve) => {
+    const prev = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => {
+      prev?.();
+      resolve();
+    };
+    if (!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
+      const s = document.createElement("script");
+      s.src = "https://www.youtube.com/iframe_api";
+      s.async = true;
+      document.head.appendChild(s);
+    }
+  });
+  return ytApiPromise;
 }
 
 async function fileToB64(file: File): Promise<{ nome: string; mimeType: string; base64: string }> {
