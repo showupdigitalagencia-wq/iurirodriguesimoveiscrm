@@ -21,11 +21,6 @@ function buildMsg(nome: string, url: string) {
   return `Olá ${first}! 😊 Foi um prazer ter você\nna nossa reunião institucional!\n\nPara finalizar sua entrada no Ecossistema\nNexus, acesse o link abaixo e envie sua\ndocumentação:\n\n${url}\n\nQualquer dúvida, estamos à disposição!\nIuri Rodrigues Imóveis 🏢`;
 }
 
-function formatDate(iso: string) {
-  try {
-    return new Date(iso).toLocaleString("pt-BR", { dateStyle: "long", timeStyle: "short" });
-  } catch { return iso; }
-}
 
 function LPPage() {
   const [authorized, setAuthorized] = useState<boolean | null>(null);
