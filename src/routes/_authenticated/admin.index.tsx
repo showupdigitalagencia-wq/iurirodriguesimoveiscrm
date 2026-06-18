@@ -76,6 +76,23 @@ function AdminDashboard() {
       return (data ?? []) as Pagamento[];
     },
   });
+  const { data: responsaveis = [] } = useQuery({
+    queryKey: ["admin_responsaveis_dash"],
+    queryFn: async () => {
+      const { data } = await supabase.from("responsaveis").select("id, nome");
+      return (data ?? []) as Array<{ id: string; nome: string }>;
+    },
+  });
+  const { data: corretoresProfiles = [] } = useQuery({
+    queryKey: ["admin_corretores_dash"],
+    queryFn: async () => {
+      const { data: roles } = await supabase.from("user_roles").select("user_id, role").in("role", ["corretor", "corretor_vendas"]);
+      const ids = Array.from(new Set((roles ?? []).map((r) => r.user_id)));
+      if (!ids.length) return [];
+      const { data: profs } = await supabase.from("profiles").select("id, nome, responsavel_id").in("id", ids);
+      return (profs ?? []) as Array<{ id: string; nome: string; responsavel_id: string | null }>;
+    },
+  });
 
   const totalImoveis = imoveis.length;
   const disponiveis = imoveis.filter((i) => i.status === "disponivel").length;
