@@ -999,6 +999,7 @@ export type Database = {
           created_at: string
           duration_seconds: number | null
           id: string
+          last_heartbeat_at: string | null
           login_at: string
           logout_at: string | null
           user_id: string
@@ -1007,6 +1008,7 @@ export type Database = {
           created_at?: string
           duration_seconds?: number | null
           id?: string
+          last_heartbeat_at?: string | null
           login_at?: string
           logout_at?: string | null
           user_id: string
@@ -1015,6 +1017,7 @@ export type Database = {
           created_at?: string
           duration_seconds?: number | null
           id?: string
+          last_heartbeat_at?: string | null
           login_at?: string
           logout_at?: string | null
           user_id?: string

@@ -19,9 +19,15 @@ type SessionRow = {
   login_at: string;
   logout_at: string | null;
   duration_seconds: number | null;
+  last_heartbeat_at?: string | null;
 };
 
 type Profile = { id: string; nome: string | null };
+
+// Sessões antigas (pré-correção do bug) podem ter tempos absurdos; capamos para análise.
+const MAX_REASONABLE_SECONDS = 8 * 3600; // 8h
+// Se sem heartbeat há mais que esse tempo, consideramos sessão encerrada naquele ponto.
+const STALE_THRESHOLD_MS = 3 * 60_000; // 3 min
 
 function formatDuration(seconds: number): string {
   if (!seconds || seconds < 0) return "0s";
@@ -32,11 +38,25 @@ function formatDuration(seconds: number): string {
 }
 
 function effectiveDuration(s: SessionRow, now: number): number {
-  if (s.duration_seconds != null) return s.duration_seconds;
-  if (s.logout_at) {
-    return Math.max(0, Math.floor((new Date(s.logout_at).getTime() - new Date(s.login_at).getTime()) / 1000));
+  const loginMs = new Date(s.login_at).getTime();
+  // Prioridade: usar o último heartbeat conhecido (reflete uso real, ignora background)
+  if (s.last_heartbeat_at) {
+    const hbMs = new Date(s.last_heartbeat_at).getTime();
+    // Se sessão está "ativa" mas heartbeat está velho, congela no último heartbeat
+    if (!s.logout_at && now - hbMs > STALE_THRESHOLD_MS) {
+      return Math.min(MAX_REASONABLE_SECONDS, Math.max(0, Math.floor((hbMs - loginMs) / 1000)));
+    }
+    if (s.logout_at) {
+      return Math.min(MAX_REASONABLE_SECONDS, Math.max(0, Math.floor((hbMs - loginMs) / 1000)));
+    }
+    return Math.min(MAX_REASONABLE_SECONDS, Math.max(0, Math.floor((now - loginMs) / 1000)));
   }
-  return Math.max(0, Math.floor((now - new Date(s.login_at).getTime()) / 1000));
+  // Fallback (sessões antigas sem heartbeat): cap para evitar contaminação dos totais
+  if (s.duration_seconds != null) return Math.min(MAX_REASONABLE_SECONDS, s.duration_seconds);
+  if (s.logout_at) {
+    return Math.min(MAX_REASONABLE_SECONDS, Math.max(0, Math.floor((new Date(s.logout_at).getTime() - loginMs) / 1000)));
+  }
+  return Math.min(MAX_REASONABLE_SECONDS, Math.max(0, Math.floor((now - loginMs) / 1000)));
 }
 
 function startOfDay(d: Date) { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; }
