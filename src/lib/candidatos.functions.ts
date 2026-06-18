@@ -31,6 +31,15 @@ const REGIOES_LABEL: Record<(typeof REGIOES)[number], string> = {
   mesquita: "Mesquita",
 };
 
+// Mapa região → canal (executivo) usado no enum lead_canal
+const CANAL_POR_REGIAO: Partial<Record<(typeof REGIOES)[number], "robson" | "fabiola" | "renata" | "denise">> = {
+  barra_da_tijuca: "robson",
+  recreio: "fabiola",
+  belford_roxo: "renata",
+  nilopolis: "denise",
+  mesquita: "denise",
+};
+
 // ============================================================
 // 1. SUBMISSÃO PÚBLICA (sem login) — /ingresso
 // ============================================================
