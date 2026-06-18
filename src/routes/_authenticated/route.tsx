@@ -69,7 +69,7 @@ const CONFIG_NAV = [
 // Rotas permitidas para corretor_vendas (puro)
 const CORRETOR_ALLOWED_PREFIXES = ["/vendas", "/notificacoes"];
 // Rotas permitidas para administrativo (puro)
-const ADMINISTRATIVO_ALLOWED_PREFIXES = ["/admin", "/notificacoes", "/configuracoes"];
+const ADMINISTRATIVO_ALLOWED_PREFIXES = ["/admin", "/executivos/landing-page", "/notificacoes", "/configuracoes"];
 
 function AuthLayout() {
   const router = useRouter();
@@ -90,6 +90,7 @@ function AuthLayout() {
       if (adminModuloAtivo) {
         items.push(
           { to: "/admin", label: "Administração", icon: Building2 },
+          { to: "/executivos/landing-page", label: "Landing Page", icon: Megaphone },
           { to: "/notificacoes", label: "Notificações", icon: BellRing },
           { to: "/configuracoes", label: "Configurações", icon: Settings },
         );
@@ -316,7 +317,7 @@ function AuthLayout() {
                               ...(canCandidatos ? [{ to: "/admin/candidatos", label: "Administrativo — Candidatos", icon: Building2 }] : []),
                             ]
                           : []),
-                        ...((isAdmin || isExec) ? [{ to: "/executivos/landing-page", label: "Landing Page", icon: Megaphone }] : []),
+                        ...((isAdmin || isExec || isAdministrativo) ? [{ to: "/executivos/landing-page", label: "Landing Page", icon: Megaphone }] : []),
                         ...(isAdmin ? ADMIN_NAV : []),
                         { to: "/notificacoes", label: "Notificações", icon: BellRing },
                         { to: "/configuracoes", label: "Configurações", icon: Settings },

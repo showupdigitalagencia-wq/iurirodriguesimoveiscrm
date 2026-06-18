@@ -27,7 +27,8 @@ function LPPage() {
         supabase.rpc("current_user_is_executivo"),
       ]);
       const isAdmin = (roles ?? []).some((r) => r.role === "admin");
-      setAuthorized(isAdmin || isExec === true);
+      const isAdministrativo = (roles ?? []).some((r) => r.role === "administrativo");
+      setAuthorized(isAdmin || isAdministrativo || isExec === true);
     });
   }, []);
 
