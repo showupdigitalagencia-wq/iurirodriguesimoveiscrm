@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Building2, FileText, AlertTriangle, CheckCircle2, TrendingUp, TrendingDown, DollarSign } from "lucide-react";
+import { Building2, FileText, AlertTriangle, CheckCircle2, TrendingUp, TrendingDown } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   component: AdminDashboard,
