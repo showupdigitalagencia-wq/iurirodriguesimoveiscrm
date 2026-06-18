@@ -517,8 +517,12 @@ export const setVslUrl = createServerFn({ method: "POST" })
     });
     if (!isAdmin) throw new Error("Forbidden");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    await supabaseAdmin
+    const { error } = await supabaseAdmin
       .from("configuracoes")
-      .upsert({ chave: "vsl_youtube_url", valor: data.url });
+      .upsert(
+        { chave: "vsl_youtube_url", valor: data.url as never, updated_at: new Date().toISOString() },
+        { onConflict: "chave" },
+      );
+    if (error) throw new Error(error.message);
     return { ok: true };
   });
