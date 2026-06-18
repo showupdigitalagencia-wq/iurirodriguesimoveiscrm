@@ -377,6 +377,7 @@ export type Database = {
           banheiros: number | null
           cep: string | null
           cidade: string | null
+          codigo: string | null
           complemento: string | null
           condominio: number | null
           corretor_fechamento_id: string | null
@@ -412,6 +413,7 @@ export type Database = {
           banheiros?: number | null
           cep?: string | null
           cidade?: string | null
+          codigo?: string | null
           complemento?: string | null
           condominio?: number | null
           corretor_fechamento_id?: string | null
@@ -447,6 +449,7 @@ export type Database = {
           banheiros?: number | null
           cep?: string | null
           cidade?: string | null
+          codigo?: string | null
           complemento?: string | null
           condominio?: number | null
           corretor_fechamento_id?: string | null
