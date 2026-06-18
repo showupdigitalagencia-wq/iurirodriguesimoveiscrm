@@ -128,6 +128,10 @@ function ImoveisPage() {
                 {i.rua}{i.numero ? `, ${i.numero}` : ""}{i.bairro ? ` — ${i.bairro}` : ""}{i.cidade ? ` / ${i.cidade}` : ""}
               </div>
               <div className="text-xs text-muted-foreground">Proprietário: {i.proprietario_nome}</div>
+              {(i as unknown as { locatario_nome?: string | null }).locatario_nome && (
+                <div className="text-xs text-muted-foreground">Locatário: {(i as unknown as { locatario_nome?: string | null }).locatario_nome}</div>
+              )}
+
               <div className="flex justify-between items-center pt-2 border-t">
                 <div className="flex flex-col">
                   {(fin === "locacao" || fin === "ambos") && (
