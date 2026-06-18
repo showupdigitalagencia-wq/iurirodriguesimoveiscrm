@@ -556,9 +556,18 @@ export const listInstitucionalCandidatos = createServerFn({ method: "GET" })
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const now = new Date();
-    const startToday = new Date(now); startToday.setHours(0, 0, 0, 0);
-    const endToday = new Date(now); endToday.setHours(23, 59, 59, 999);
+    // "Hoje" no fuso America/Sao_Paulo (UTC-3, sem DST).
+    // Pegamos o Y-M-D em SP e convertemos os limites do dia de volta para UTC.
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "America/Sao_Paulo",
+      year: "numeric", month: "2-digit", day: "2-digit",
+    }).formatToParts(new Date());
+    const y = parts.find((p) => p.type === "year")!.value;
+    const m = parts.find((p) => p.type === "month")!.value;
+    const d = parts.find((p) => p.type === "day")!.value;
+    // 00:00 e 23:59:59.999 em SP == 03:00 e 02:59:59.999 (dia seguinte) em UTC
+    const startToday = new Date(`${y}-${m}-${d}T00:00:00-03:00`);
+    const endToday = new Date(`${y}-${m}-${d}T23:59:59.999-03:00`);
 
     // Today's institucional, else most recent past
     const { data: hoje } = await supabaseAdmin
