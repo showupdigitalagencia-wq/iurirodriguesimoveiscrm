@@ -208,6 +208,40 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
               </div>
             </>
           )}
+          {form.status === "locado" && (
+            <div>
+              <Label>Data da locação</Label>
+              <Input type="date" value={(form as any).data_locacao ?? ""} onChange={(e) => set("data_locacao" as any, e.target.value || null as any)} />
+            </div>
+          )}
+          {(form.status === "vendido" || form.status === "locado") && (
+            <>
+              <div>
+                <Label>Corretor responsável pelo fechamento</Label>
+                <Select value={(form as any).corretor_fechamento_id ?? ""} onValueChange={setCorretor}>
+                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectContent>
+                    {corretores.map((c) => <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Executivo / equipe</Label>
+                <Input
+                  readOnly
+                  value={
+                    (() => {
+                      const c = corretores.find((x) => x.id === (form as any).corretor_fechamento_id);
+                      if (!c?.responsavel_id) return "—";
+                      return (form as any).__exec_nome ?? "";
+                    })()
+                  }
+                  placeholder="Preenchido automaticamente"
+                />
+                <ExecutivoLabel id={(form as any).executivo_fechamento_id ?? null} />
+              </div>
+            </>
+          )}
           <div className="md:col-span-2"><Label>Rua *</Label><Input value={form.rua ?? ""} onChange={(e) => set("rua", e.target.value)} /></div>
           <div><Label>Número</Label><Input value={form.numero ?? ""} onChange={(e) => set("numero", e.target.value)} /></div>
           <div><Label>Complemento</Label><Input value={form.complemento ?? ""} onChange={(e) => set("complemento", e.target.value)} /></div>
