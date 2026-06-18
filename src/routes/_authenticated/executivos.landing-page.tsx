@@ -129,21 +129,17 @@ function LPPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between gap-2 flex-wrap">
-            <CardTitle className="text-base flex items-center gap-2"><CalendarClock className="h-4 w-4" /> Candidatos da reunião institucional</CardTitle>
-            {reuniao && (
-              <Badge variant={reuniao.is_today ? "default" : "secondary"}>
-                {reuniao.is_today ? "Hoje" : `Última: ${formatDate(reuniao.data_inicio)}`}
-              </Badge>
-            )}
+            <CardTitle className="text-base flex items-center gap-2"><CalendarClock className="h-4 w-4" /> Candidatos da reunião institucional de hoje</CardTitle>
+            {reuniao && <Badge>Hoje</Badge>}
           </div>
         </CardHeader>
         <CardContent>
           {loadingMeet ? (
             <div className="flex items-center gap-2 text-muted-foreground text-sm"><Loader2 className="h-4 w-4 animate-spin" /> Carregando...</div>
           ) : !reuniao ? (
-            <p className="text-sm text-muted-foreground">Nenhuma reunião institucional encontrada.</p>
+            <p className="text-sm text-muted-foreground">Nenhuma reunião institucional hoje.</p>
           ) : reuniao.candidatos.length === 0 ? (
-            <p className="text-sm text-muted-foreground">A reunião "{reuniao.titulo}" não possui candidatos como participantes.</p>
+            <p className="text-sm text-muted-foreground">A reunião "{reuniao.titulo}" ainda não possui candidatos. Novos participantes aparecerão aqui automaticamente.</p>
           ) : (
             <ul className="divide-y">
               {reuniao.candidatos.map((c) => (
