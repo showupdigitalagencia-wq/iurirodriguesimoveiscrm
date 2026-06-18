@@ -21,6 +21,7 @@ import { Route as AuthenticatedRelatorioRouteImport } from './routes/_authentica
 import { Route as AuthenticatedPipelineRouteImport } from './routes/_authenticated/pipeline'
 import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
 import { Route as AuthenticatedLeadsRouteImport } from './routes/_authenticated/leads'
+import { Route as AuthenticatedExecutivosRouteImport } from './routes/_authenticated/executivos'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCorretoresRouteImport } from './routes/_authenticated/corretores'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
@@ -110,6 +111,11 @@ const AuthenticatedLeadsRoute = AuthenticatedLeadsRouteImport.update({
   path: '/leads',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedExecutivosRoute = AuthenticatedExecutivosRouteImport.update({
+  id: '/executivos',
+  path: '/executivos',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -144,9 +150,9 @@ const AuthenticatedVendasIndexRoute =
   } as any)
 const AuthenticatedExecutivosIndexRoute =
   AuthenticatedExecutivosIndexRouteImport.update({
-    id: '/executivos/',
-    path: '/executivos/',
-    getParentRoute: () => AuthenticatedRouteRoute,
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedExecutivosRoute,
   } as any)
 const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   id: '/',
@@ -223,15 +229,15 @@ const AuthenticatedLeadsLeadIdRoute =
   } as any)
 const AuthenticatedExecutivosLandingPageRoute =
   AuthenticatedExecutivosLandingPageRouteImport.update({
-    id: '/executivos/landing-page',
-    path: '/executivos/landing-page',
-    getParentRoute: () => AuthenticatedRouteRoute,
+    id: '/landing-page',
+    path: '/landing-page',
+    getParentRoute: () => AuthenticatedExecutivosRoute,
   } as any)
 const AuthenticatedExecutivosIdRoute =
   AuthenticatedExecutivosIdRouteImport.update({
-    id: '/executivos/$id',
-    path: '/executivos/$id',
-    getParentRoute: () => AuthenticatedRouteRoute,
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedExecutivosRoute,
   } as any)
 const AuthenticatedAdminPagamentosRoute =
   AuthenticatedAdminPagamentosRouteImport.update({
@@ -274,6 +280,7 @@ export interface FileRoutesByFullPath {
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/executivos': typeof AuthenticatedExecutivosRouteWithChildren
   '/leads': typeof AuthenticatedLeadsRouteWithChildren
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/pipeline': typeof AuthenticatedPipelineRoute
@@ -354,6 +361,7 @@ export interface FileRoutesById {
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/_authenticated/corretores': typeof AuthenticatedCorretoresRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/executivos': typeof AuthenticatedExecutivosRouteWithChildren
   '/_authenticated/leads': typeof AuthenticatedLeadsRouteWithChildren
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/_authenticated/pipeline': typeof AuthenticatedPipelineRoute
@@ -396,6 +404,7 @@ export interface FileRouteTypes {
     | '/configuracoes'
     | '/corretores'
     | '/dashboard'
+    | '/executivos'
     | '/leads'
     | '/notificacoes'
     | '/pipeline'
@@ -475,6 +484,7 @@ export interface FileRouteTypes {
     | '/_authenticated/configuracoes'
     | '/_authenticated/corretores'
     | '/_authenticated/dashboard'
+    | '/_authenticated/executivos'
     | '/_authenticated/leads'
     | '/_authenticated/notificacoes'
     | '/_authenticated/pipeline'
@@ -608,6 +618,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLeadsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/executivos': {
+      id: '/_authenticated/executivos'
+      path: '/executivos'
+      fullPath: '/executivos'
+      preLoaderRoute: typeof AuthenticatedExecutivosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -652,10 +669,10 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/executivos/': {
       id: '/_authenticated/executivos/'
-      path: '/executivos'
+      path: '/'
       fullPath: '/executivos/'
       preLoaderRoute: typeof AuthenticatedExecutivosIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedExecutivosRoute
     }
     '/_authenticated/admin/': {
       id: '/_authenticated/admin/'
@@ -750,17 +767,17 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/executivos/landing-page': {
       id: '/_authenticated/executivos/landing-page'
-      path: '/executivos/landing-page'
+      path: '/landing-page'
       fullPath: '/executivos/landing-page'
       preLoaderRoute: typeof AuthenticatedExecutivosLandingPageRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedExecutivosRoute
     }
     '/_authenticated/executivos/$id': {
       id: '/_authenticated/executivos/$id'
-      path: '/executivos/$id'
+      path: '/$id'
       fullPath: '/executivos/$id'
       preLoaderRoute: typeof AuthenticatedExecutivosIdRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedExecutivosRoute
     }
     '/_authenticated/admin/pagamentos': {
       id: '/_authenticated/admin/pagamentos'
@@ -821,6 +838,25 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
 const AuthenticatedAdminRouteWithChildren =
   AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
+interface AuthenticatedExecutivosRouteChildren {
+  AuthenticatedExecutivosIdRoute: typeof AuthenticatedExecutivosIdRoute
+  AuthenticatedExecutivosLandingPageRoute: typeof AuthenticatedExecutivosLandingPageRoute
+  AuthenticatedExecutivosIndexRoute: typeof AuthenticatedExecutivosIndexRoute
+}
+
+const AuthenticatedExecutivosRouteChildren: AuthenticatedExecutivosRouteChildren =
+  {
+    AuthenticatedExecutivosIdRoute: AuthenticatedExecutivosIdRoute,
+    AuthenticatedExecutivosLandingPageRoute:
+      AuthenticatedExecutivosLandingPageRoute,
+    AuthenticatedExecutivosIndexRoute: AuthenticatedExecutivosIndexRoute,
+  }
+
+const AuthenticatedExecutivosRouteWithChildren =
+  AuthenticatedExecutivosRoute._addFileChildren(
+    AuthenticatedExecutivosRouteChildren,
+  )
+
 interface AuthenticatedLeadsRouteChildren {
   AuthenticatedLeadsLeadIdRoute: typeof AuthenticatedLeadsLeadIdRoute
 }
@@ -855,6 +891,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
   AuthenticatedCorretoresRoute: typeof AuthenticatedCorretoresRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedExecutivosRoute: typeof AuthenticatedExecutivosRouteWithChildren
   AuthenticatedLeadsRoute: typeof AuthenticatedLeadsRouteWithChildren
   AuthenticatedNotificacoesRoute: typeof AuthenticatedNotificacoesRoute
   AuthenticatedPipelineRoute: typeof AuthenticatedPipelineRoute
@@ -862,9 +899,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTempoAcessoRoute: typeof AuthenticatedTempoAcessoRoute
   AuthenticatedUsuariosRoute: typeof AuthenticatedUsuariosRoute
   AuthenticatedVendasRoute: typeof AuthenticatedVendasRouteWithChildren
-  AuthenticatedExecutivosIdRoute: typeof AuthenticatedExecutivosIdRoute
-  AuthenticatedExecutivosLandingPageRoute: typeof AuthenticatedExecutivosLandingPageRoute
-  AuthenticatedExecutivosIndexRoute: typeof AuthenticatedExecutivosIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -873,6 +907,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
   AuthenticatedCorretoresRoute: AuthenticatedCorretoresRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedExecutivosRoute: AuthenticatedExecutivosRouteWithChildren,
   AuthenticatedLeadsRoute: AuthenticatedLeadsRouteWithChildren,
   AuthenticatedNotificacoesRoute: AuthenticatedNotificacoesRoute,
   AuthenticatedPipelineRoute: AuthenticatedPipelineRoute,
@@ -880,10 +915,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTempoAcessoRoute: AuthenticatedTempoAcessoRoute,
   AuthenticatedUsuariosRoute: AuthenticatedUsuariosRoute,
   AuthenticatedVendasRoute: AuthenticatedVendasRouteWithChildren,
-  AuthenticatedExecutivosIdRoute: AuthenticatedExecutivosIdRoute,
-  AuthenticatedExecutivosLandingPageRoute:
-    AuthenticatedExecutivosLandingPageRoute,
-  AuthenticatedExecutivosIndexRoute: AuthenticatedExecutivosIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
