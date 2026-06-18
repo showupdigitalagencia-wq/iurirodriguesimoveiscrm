@@ -21,6 +21,43 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 type Imovel = Database["public"]["Tables"]["imoveis"]["Row"];
 type ImovelInsert = Database["public"]["Tables"]["imoveis"]["Insert"];
 
+/** Campo de moeda BRL: usuário digita números; formata como R$ 1.500,00 */
+function CurrencyInput({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value: number | null | undefined;
+  onChange: (v: number | null) => void;
+  placeholder?: string;
+}) {
+  const format = (n: number) =>
+    n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const display = value == null || Number.isNaN(value) ? "" : format(Number(value));
+  return (
+    <div className="relative">
+      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+        R$
+      </span>
+      <Input
+        type="text"
+        inputMode="decimal"
+        className="pl-10"
+        placeholder={placeholder ?? "0,00"}
+        value={display}
+        onChange={(e) => {
+          const digits = e.target.value.replace(/\D/g, "");
+          if (!digits) {
+            onChange(null);
+            return;
+          }
+          onChange(Number(digits) / 100);
+        }}
+      />
+    </div>
+  );
+}
+
 export const Route = createFileRoute("/_authenticated/admin/imoveis")({
   component: ImoveisPage,
 });
