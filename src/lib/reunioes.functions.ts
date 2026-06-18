@@ -446,6 +446,22 @@ export const createReuniao = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
+    // BUG 2 fix: se for criar com Google Meet, o criador precisa ter a própria conta Google conectada.
+    // Assim ele vira o anfitrião da reunião (e não o Admin como fallback).
+    if (data.usar_meet) {
+      const { data: tok } = await supabaseAdmin
+        .from("google_tokens" as never)
+        .select("user_id")
+        .eq("user_id", context.userId)
+        .maybeSingle();
+      if (!tok) {
+        throw new Error(
+          "Para criar reuniões com Google Meet, conecte sua conta Google em Configurações → Minha Conta antes. Assim você será o anfitrião da sua própria reunião.",
+        );
+      }
+    }
+
+
     const { data: inserted, error } = await supabaseAdmin
       .from("reunioes" as never)
       .insert({
