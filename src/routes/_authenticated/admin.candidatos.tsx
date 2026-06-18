@@ -1,6 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useEffect, useState, useCallback } from "react";
 import { useServerFn } from "@tanstack/react-start";
+import { supabase } from "@/integrations/supabase/client";
 import { listCandidatos, getCandidatoDocUrls, salvarCandidatoNoDrive, type CandidatoRow } from "@/lib/candidatos.functions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +13,10 @@ import { Loader2, ExternalLink, FolderUp, FileText, Link2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/candidatos")({
   head: () => ({ meta: [{ title: "Candidatos — Sistema NEXUS" }, { name: "robots", content: "noindex" }] }),
+  beforeLoad: async () => {
+    const { data } = await supabase.rpc("can_view_candidatos");
+    if (data !== true) throw redirect({ to: "/admin" });
+  },
   component: CandidatosPage,
 });
 

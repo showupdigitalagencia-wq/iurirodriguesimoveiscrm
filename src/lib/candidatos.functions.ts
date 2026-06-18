@@ -247,19 +247,26 @@ export const submeterCandidato = createServerFn({ method: "POST" })
     try {
       const { sendOneSignalPush } = await import("@/lib/onesignal.server");
 
-      // Coleta IDs de destinatários: Admins + Administrativo + executivo da região
-      const { data: adminRoles } = await supabaseAdmin
+      // Destinatários restritos: Admins (Iuri/Wederson) + Administrativo "Larissa"
+      const { data: adminRows } = await supabaseAdmin
         .from("user_roles")
         .select("user_id")
-        .in("role", ["admin", "administrativo"]);
-      const userIds = new Set<string>(((adminRoles ?? []) as { user_id: string }[]).map((r) => r.user_id));
+        .eq("role", "admin");
+      const userIds = new Set<string>(((adminRows ?? []) as { user_id: string }[]).map((r) => r.user_id));
 
-      if (responsavelId) {
-        const { data: execProfs } = await supabaseAdmin
+      const { data: admstRows } = await supabaseAdmin
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "administrativo");
+      const admstIds = ((admstRows ?? []) as { user_id: string }[]).map((r) => r.user_id);
+      if (admstIds.length) {
+        const { data: admstProfs } = await supabaseAdmin
           .from("profiles")
-          .select("id")
-          .eq("responsavel_id", responsavelId);
-        ((execProfs ?? []) as { id: string }[]).forEach((p) => userIds.add(p.id));
+          .select("id, nome")
+          .in("id", admstIds);
+        ((admstProfs ?? []) as { id: string; nome: string | null }[]).forEach((p) => {
+          if ((p.nome ?? "").toLowerCase().includes("larissa")) userIds.add(p.id);
+        });
       }
 
       if (userIds.size > 0) {
@@ -290,12 +297,9 @@ export const submeterCandidato = createServerFn({ method: "POST" })
 // ============================================================
 // 2. ADMIN — LISTAR CANDIDATOS
 // ============================================================
-async function assertAdminOrAdministrativo(supabase: any, userId: string) {
-  const [{ data: isAdmin }, { data: isAdm }] = await Promise.all([
-    supabase.rpc("has_role", { _user_id: userId, _role: "admin" }),
-    supabase.rpc("is_administrativo", { _user_id: userId }),
-  ]);
-  if (!isAdmin && !isAdm) throw new Error("Forbidden");
+async function assertCanViewCandidatos(supabase: any, userId: string) {
+  const { data, error } = await supabase.rpc("can_view_candidatos", { _user_id: userId });
+  if (error || data !== true) throw new Error("Forbidden");
 }
 
 export const listCandidatos = createServerFn({ method: "POST" })
@@ -304,7 +308,7 @@ export const listCandidatos = createServerFn({ method: "POST" })
     z.object({ status: z.enum(["pendente_revisao", "arquivado", "todos"]).optional() }).parse(input),
   )
   .handler(async ({ data, context }) => {
-    await assertAdminOrAdministrativo(context.supabase, context.userId);
+    await assertCanViewCandidatos(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     let q = supabaseAdmin
       .from("candidatos" as never)
@@ -347,7 +351,7 @@ export const getCandidatoDocUrls = createServerFn({ method: "POST" })
     z.object({ candidatoId: z.string().uuid() }).parse(input),
   )
   .handler(async ({ data, context }) => {
-    await assertAdminOrAdministrativo(context.supabase, context.userId);
+    await assertCanViewCandidatos(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: cand, error } = await supabaseAdmin
       .from("candidatos" as never)
@@ -385,7 +389,7 @@ export const salvarCandidatoNoDrive = createServerFn({ method: "POST" })
     z.object({ candidatoId: z.string().uuid() }).parse(input),
   )
   .handler(async ({ data, context }) => {
-    await assertAdminOrAdministrativo(context.supabase, context.userId);
+    await assertCanViewCandidatos(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data: cand, error } = await supabaseAdmin

@@ -79,6 +79,7 @@ function AuthLayout() {
   const [vendasAtivo, setVendasAtivo] = useState(false);
   const [vendasAcessoIndividual, setVendasAcessoIndividual] = useState(false);
   const [adminModuloAtivo, setAdminModuloAtivo] = useState(false);
+  const [canCandidatos, setCanCandidatos] = useState(false);
 
   const navItems = useMemo(() => {
     const corretorPodeVer = isCorretorVendas && (vendasAtivo || vendasAcessoIndividual);
@@ -138,6 +139,7 @@ function AuthLayout() {
         .then(({ data }) => { if (active) setAdminModuloAtivo(data?.valor === true); });
       supabase.from("profiles").select("vendas_acesso").eq("id", userId).maybeSingle()
         .then(({ data }) => { if (active) setVendasAcessoIndividual((data as { vendas_acesso?: boolean } | null)?.vendas_acesso === true); });
+      supabase.rpc("can_view_candidatos").then(({ data }) => { if (active) setCanCandidatos(data === true); });
     });
 
     const channel = supabase
@@ -308,7 +310,7 @@ function AuthLayout() {
                               { to: "/admin/contratos", label: "Administrativo — Contratos", icon: Building2 },
                               { to: "/admin/pagamentos", label: "Administrativo — Pagamentos", icon: Building2 },
                               { to: "/admin/inadimplentes", label: "Administrativo — Inadimplentes", icon: Building2 },
-                              { to: "/admin/candidatos", label: "Administrativo — Candidatos", icon: Building2 },
+                              ...(canCandidatos ? [{ to: "/admin/candidatos", label: "Administrativo — Candidatos", icon: Building2 }] : []),
                             ]
                           : []),
                         ...(isAdmin ? [{ to: "/executivos/landing-page", label: "Executivos — Landing Page", icon: Users2 }] : []),

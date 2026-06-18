@@ -1,4 +1,5 @@
 import { createFileRoute, Outlet, Link, redirect } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { LayoutDashboard, Building2, FileText, DollarSign, AlertOctagon, UserPlus } from "lucide-react";
 
@@ -22,16 +23,24 @@ export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminLayout,
 });
 
-const TABS = [
+const BASE_TABS = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/imoveis", label: "Imóveis", icon: Building2, exact: false },
   { to: "/admin/contratos", label: "Contratos", icon: FileText, exact: false },
   { to: "/admin/pagamentos", label: "Pagamentos", icon: DollarSign, exact: false },
   { to: "/admin/inadimplentes", label: "Inadimplentes", icon: AlertOctagon, exact: false },
-  { to: "/admin/candidatos", label: "Candidatos", icon: UserPlus, exact: false },
 ] as const;
 
 function AdminLayout() {
+  const [canCandidatos, setCanCandidatos] = useState(false);
+  useEffect(() => {
+    supabase.rpc("can_view_candidatos").then(({ data }) => setCanCandidatos(data === true));
+  }, []);
+
+  const tabs = canCandidatos
+    ? [...BASE_TABS, { to: "/admin/candidatos" as const, label: "Candidatos", icon: UserPlus, exact: false }]
+    : BASE_TABS;
+
   return (
     <div className="p-3 md:p-6 space-y-4 pb-24 md:pb-6">
       <div>
@@ -39,7 +48,7 @@ function AdminLayout() {
         <p className="text-xs md:text-sm text-muted-foreground">Imóveis, contratos e gestão de locação</p>
       </div>
       <nav className="flex gap-1 border-b overflow-x-auto">
-        {TABS.map((t) => {
+        {tabs.map((t) => {
           const Icon = t.icon;
           return (
             <Link
