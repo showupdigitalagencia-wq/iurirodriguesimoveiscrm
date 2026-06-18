@@ -571,23 +571,11 @@ export const listInstitucionalCandidatos = createServerFn({ method: "GET" })
       .limit(1)
       .maybeSingle();
 
-    let reuniao = hoje as { id: string; titulo: string; data_inicio: string } | null;
-    let isToday = !!reuniao;
-
-    if (!reuniao) {
-      const { data: passada } = await supabaseAdmin
-        .from("reunioes")
-        .select("id, titulo, data_inicio")
-        .eq("tipo", "institucional")
-        .lte("data_inicio", endToday.toISOString())
-        .order("data_inicio", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      reuniao = passada as { id: string; titulo: string; data_inicio: string } | null;
-      isToday = false;
-    }
+    const reuniao = hoje as { id: string; titulo: string; data_inicio: string } | null;
+    const isToday = !!reuniao;
 
     if (!reuniao) return { reuniao: null };
+
 
     const { data: parts } = await supabaseAdmin
       .from("reuniao_participantes")
