@@ -531,11 +531,20 @@ export const getVslUrl = createServerFn({ method: "GET" }).handler(async () => {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data } = await supabaseAdmin
     .from("configuracoes")
-    .select("valor")
-    .eq("chave", "vsl_youtube_url")
-    .maybeSingle();
-  const v = data?.valor as string | { url?: string } | null;
-  return { url: typeof v === "string" ? v : (v?.url ?? "") };
+    .select("chave, valor")
+    .in("chave", ["vsl_youtube_url", "vsl_allow_skip"]);
+  let url = "";
+  let allowSkip = false;
+  for (const row of data ?? []) {
+    if (row.chave === "vsl_youtube_url") {
+      const v = row.valor as string | { url?: string } | null;
+      url = typeof v === "string" ? v : (v?.url ?? "");
+    } else if (row.chave === "vsl_allow_skip") {
+      const v = row.valor as boolean | string | { value?: boolean } | null;
+      allowSkip = v === true || v === "true" || (typeof v === "object" && v?.value === true);
+    }
+  }
+  return { url, allowSkip };
 });
 
 export const setVslUrl = createServerFn({ method: "POST" })
@@ -554,6 +563,28 @@ export const setVslUrl = createServerFn({ method: "POST" })
       .from("configuracoes")
       .upsert(
         { chave: "vsl_youtube_url", valor: data.url as never, updated_at: new Date().toISOString() },
+        { onConflict: "chave" },
+      );
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const setVslAllowSkip = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { allowSkip: boolean }) =>
+    z.object({ allowSkip: z.boolean() }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: isAdmin } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    if (!isAdmin) throw new Error("Forbidden");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("configuracoes")
+      .upsert(
+        { chave: "vsl_allow_skip", valor: data.allowSkip as never, updated_at: new Date().toISOString() },
         { onConflict: "chave" },
       );
     if (error) throw new Error(error.message);
