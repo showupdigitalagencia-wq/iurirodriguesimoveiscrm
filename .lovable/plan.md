@@ -1,95 +1,89 @@
-## Sistema de Agenda e Reuniões
+## Escopo
 
-Vou implementar um módulo completo de agenda integrado ao CRM, sem dependência do Google Calendar.
+Email fica fora. Tudo o resto da feature de captação de corretores, ponta a ponta.
 
-### 1. Banco de dados (migração)
+## 1. Banco (1 migration)
 
-**Tabela `reunioes`:**
-- `id`, `titulo`, `descricao`, `data_inicio` (timestamptz), `duracao_min` (int, default 60)
-- `local` (text — endereço ou link)
-- `tipo` (enum: `individual` | `institucional`)
-- `status` (enum: `agendada` | `realizada` | `cancelada`)
-- `resultado` (text, preenchido após realizar)
-- `criado_por` (uuid → auth.users)
-- `created_at`, `updated_at`
+- `candidatos` (tabela nova):
+  - dados pessoais: nome, cpf, telefone, email, creci, regiao (enum `lead_regiao`)
+  - links dos 4 docs no Storage: `rg_path`, `cpf_path`, `creci_path`, `comprovante_path`
+  - `status`: `pendente_revisao` | `arquivado`
+  - `lead_id` (FK opcional pra `leads`), `responsavel_id` (executivo da região)
+  - `drive_folder_id`, `arquivado_em`, `arquivado_por`
+  - RLS: leitura/escrita apenas Admin + Administrativo
+- `configuracoes`: adicionar chave `vsl_youtube_url` (texto)
+- `regiao_responsavel` (tabela de mapa): `regiao` (enum) → `responsavel_id`. Seed inicial:
+  - `barra_da_tijuca` → Robson
+  - `recreio` → Fabíola
+  - `belford_roxo` → Renata
+  - `nilopolis` → Denise
+  - `mesquita` → Denise
+  - (demais regiões caem em Admin/Iuri como fallback)
+- Storage bucket privado `candidatos-docs` + políticas (insert público anônimo restrito ao path do próprio candidato; leitura Admin/Administrativo)
 
-**Tabela `reuniao_participantes`:**
-- `id`, `reuniao_id`, `lead_id` (nullable), `responsavel_id` (nullable)
-- Um registro por participante (lead OU corretor)
+## 2. Landing page pública `/ingresso`
 
-**Tabela `reuniao_lembretes`:**
-- `id`, `reuniao_id`, `tipo` (`1d` | `1h` | `15min`), `enviado_em` (nullable)
-- Usada para evitar duplicar disparo via cron
+Rota top-level, sem login, SSR. Visual preto/dourado.
+Seções: logo → headline "Bem-vindo à primeira etapa do Sistema Nexus" → vídeo VSL (iframe YouTube, URL vinda de `configuracoes.vsl_youtube_url`) → benefícios → estatísticas → formulário.
 
-**RLS:** todos autenticados podem ler/criar/editar reuniões (todos os corretores veem tudo, conforme requisito). GRANTs para `authenticated` e `service_role`.
+Formulário: nome, CPF, WhatsApp, email, CRECI, região (select), upload de 4 arquivos (RG, CPF, CRECI, comprovante).
 
-### 2. Server functions (`src/lib/reunioes.functions.ts`)
-- `listReunioes({ from, to })` — busca por intervalo
-- `getReuniao(id)` — detalhes + participantes
-- `createReuniao(input)` — cria, vincula participantes, move leads → `reuniao_agendada`, dispara push para todos
-- `updateReuniaoStatus(id, status, resultado?)` — atualiza status
+## 3. Server function pública `submeterCandidato`
 
-### 3. UI
+- valida com Zod
+- upload dos 4 arquivos para `candidatos-docs` via `supabaseAdmin` (rota pública, sem sessão)
+- procura lead em `leads` por telefone OU CPF (canal corretor)
+- se achar: atualiza dados, move `etapa = documentos_enviados`, mantém `responsavel_id` existente
+- se não achar: cria lead com `responsavel_id = regiao_responsavel[regiao]`, `etapa = documentos_enviados`, `canal = indicacao`, `is_corretor = true`
+- cria row em `candidatos` linkada ao lead
+- dispara push OneSignal pra: Larissa (Administrativo), Iuri e Wederson (Admin), + executivo da região
+  - título: "📄 Novo candidato enviou documentação!"
+  - mensagem: "Nome: {nome} | Região: {regiao}"
 
-**`src/routes/_authenticated/agenda.tsx`** — nova rota:
-- Toggle de visão: Dia / Semana / Mês
-- Grid responsiva; eventos coloridos (azul `individual`, dourado `institucional`)
-- Clique abre `ReuniaoDetailDialog`
-- Botão "Nova Reunião"
+## 4. Tela `/administrativo/candidatos`
 
-**`src/components/reuniao-form-dialog.tsx`** — formulário compartilhado:
-- Data/hora, local, tipo (radio), descrição
-- Multi-select de leads e de corretores (responsáveis)
-- Validação Zod
+Rota `_authenticated/admin.candidatos.tsx`, visível Admin + Administrativo.
+- lista: nome, data envio, região, status (badge)
+- filtros: status (Pendente / Arquivado / Todos)
+- ao clicar → drawer com:
+  - dados completos
+  - 4 documentos com botões Visualizar / Baixar (signed URL do Storage)
+  - link pro lead vinculado no pipeline de captação
+  - botão **"Salvar no Google Drive"**
 
-**`src/components/reuniao-detail-dialog.tsx`** — detalhes + ações de status + campo resultado
+## 5. Botão "Salvar no Drive"
 
-**Integração no `lead-detail-sheet.tsx`:**
-- Novo botão "Agendar Reunião" abrindo o form com o lead pré-selecionado
+Server function autenticada (`requireSupabaseAuth`):
+- usa o token Google do **usuário logado** (Larissa, quando ela clica) — reaproveita `drive.server.ts`
+- cria pasta `Captação Corretores / {nome do candidato}`
+- baixa os 4 arquivos do Storage e faz upload pro Drive
+- salva `drive_folder_id` no candidato
+- marca `status = arquivado`, `arquivado_em = now()`, `arquivado_por = uid`
+- registra docs em `documentos` (mesma tabela do módulo Admin)
 
-**Menu (`_authenticated/route.tsx`):**
-- Adicionar item `{ to: "/agenda", label: "Agenda", icon: CalendarDays }` no `NAV`
+## 6. Config admin (campo VSL)
 
-### 4. Notificações push
+Em `/configuracoes`, seção Admin: input "Link do vídeo VSL (YouTube)" que grava em `configuracoes.vsl_youtube_url`. Server function `setVslUrl` (apenas Admin).
 
-**Ao criar reunião** (dentro de `createReuniao`):
-- Buscar `onesignal_external_id` de todos `responsaveis` + admins
-- Enviar via `sendOneSignalPush()` com fallback para segmento `All`
-- Mensagem: `Nova reunião agendada por {nome} | {data} às {hora} | {tipo}`
-- URL deep link: `/agenda?open={reuniao_id}`
+## 7. Sub-aba "Landing Page" (Executivos + Admin)
 
-**Lembretes automáticos:**
-- Nova rota `src/routes/api/public/cron-reuniao-lembretes.ts`
-- Para cada reunião `agendada` futura, calcula janelas `1d`, `1h`, `15min` (±5min de tolerância)
-- Marca em `reuniao_lembretes` para não duplicar
-- Cron pg_cron rodando a cada 5 minutos
+Rota `_authenticated/executivos.landing-page.tsx` (ou aba dentro de `/executivos`):
+- preview embed da LP via `<iframe src="/ingresso">`
+- link público em destaque: `https://iurirodriguesimoveiscrm.lovable.app/ingresso`
+- botão "Copiar link"
+- botão "Enviar via WhatsApp" → abre `wa.me/?text=...` com mensagem pronta
 
-### 5. Pipeline automático
-- No `createReuniao`: para cada `lead_id` participante, `UPDATE leads SET etapa = 'reuniao_agendada'` + log em `lead_historico`
-- No `updateReuniaoStatus('realizada')`: retorna sugestão; UI mostra toast com botão "Mover lead para Em Negociação"
+## Fora do escopo agora
 
-### 6. Mobile
-- Layout do calendário: scroll horizontal em mês/semana; lista vertical em dia (default no mobile via `useIsMobile`)
-- Botões com `min-h-11` para toque
-- Bottom-sheet variant do `Dialog` em telas pequenas
+- Email para Larissa (adiar até resolver DNS)
+- Edição da página de Configurações de mapa região→responsável via UI (vai por seed; se quiser editar depois, fazemos uma telinha)
 
-### Arquivos
+## Ordem de execução
 
-**Criados:**
-- migração SQL (`reunioes`, `reuniao_participantes`, `reuniao_lembretes` + enums + RLS + grants)
-- `src/lib/reunioes.functions.ts`
-- `src/routes/_authenticated/agenda.tsx`
-- `src/components/reuniao-form-dialog.tsx`
-- `src/components/reuniao-detail-dialog.tsx`
-- `src/components/agenda-calendar.tsx` (grade dia/semana/mês)
-- `src/routes/api/public/cron-reuniao-lembretes.ts`
+1. Migration (DB + bucket + seed)
+2. Aguarda aprovação da migration
+3. Server functions + LP + Candidatos + Drive + Config + Sub-aba (tudo em paralelo no mesmo turno)
 
-**Editados:**
-- `src/routes/_authenticated/route.tsx` (menu)
-- `src/components/lead-detail-sheet.tsx` (botão Agendar)
-- pg_cron job (via insert tool) chamando o endpoint de lembretes a cada 5min
+## Pergunta
 
-### Confirmações antes de prosseguir
-1. **Lembretes via push:** OK usar o mesmo fluxo OneSignal (individual + fallback `All`) já existente?
-2. **Visibilidade:** confirmado que **todos** os corretores veem **todas** as reuniões (sem filtro por responsável)?
-3. **Lead na reunião:** ao agendar, mover automaticamente TODOS os leads participantes para `reuniao_agendada` — inclusive se já estiverem em etapa posterior (ex: `em_negociacao`)? Ou só mover se estiver em etapa anterior?
+Posso seguir? Só preciso confirmar: **regiões não mapeadas (jacarepaguá, zona sul, zona norte, zona oeste, centro, outras) caem no Iuri (Admin)** ou prefere round-robin entre os 4 executivos cadastrados?
