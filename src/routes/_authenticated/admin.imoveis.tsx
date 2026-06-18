@@ -96,7 +96,7 @@ function ImoveisPage() {
 
   // Aggregate proprietários
   const proprietarios = Array.from(
-    byFinalidade.reduce((m, i) => {
+    byBusca.reduce((m, i) => {
       const key = (i.proprietario_nome ?? "—").trim();
       const cur = m.get(key) ?? { nome: key, documento: i.proprietario_documento, telefone: i.proprietario_telefone, email: i.proprietario_email, imoveis: [] as Imovel[] };
       cur.imoveis.push(i);
