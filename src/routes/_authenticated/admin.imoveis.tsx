@@ -227,17 +227,6 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
               </div>
               <div>
                 <Label>Executivo / equipe</Label>
-                <Input
-                  readOnly
-                  value={
-                    (() => {
-                      const c = corretores.find((x) => x.id === (form as any).corretor_fechamento_id);
-                      if (!c?.responsavel_id) return "—";
-                      return (form as any).__exec_nome ?? "";
-                    })()
-                  }
-                  placeholder="Preenchido automaticamente"
-                />
                 <ExecutivoLabel id={(form as any).executivo_fechamento_id ?? null} />
               </div>
             </>
