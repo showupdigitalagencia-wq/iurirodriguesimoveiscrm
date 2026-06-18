@@ -117,7 +117,10 @@ function ImoveisPage() {
             <CardContent className="p-4 space-y-2">
               <div className="flex justify-between items-start gap-2">
                 <div>
-                  <div className="font-semibold capitalize">{i.tipo}</div>
+                  <div className="font-semibold">
+                    {(i as unknown as { locatario_nome?: string | null }).locatario_nome || <span className="capitalize">{i.tipo}</span>}
+                  </div>
+                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground capitalize">{i.tipo}</div>
                   <div className="text-[11px] font-mono text-muted-foreground">{(i as unknown as { codigo?: string }).codigo ?? "—"}</div>
                 </div>
                 <Badge className={STATUS_COLOR[i.status]}>{STATUS_LABEL[i.status] ?? i.status}</Badge>
@@ -128,9 +131,7 @@ function ImoveisPage() {
                 {i.rua}{i.numero ? `, ${i.numero}` : ""}{i.bairro ? ` — ${i.bairro}` : ""}{i.cidade ? ` / ${i.cidade}` : ""}
               </div>
               <div className="text-xs text-muted-foreground">Proprietário: {i.proprietario_nome}</div>
-              {(i as unknown as { locatario_nome?: string | null }).locatario_nome && (
-                <div className="text-xs text-muted-foreground">Locatário: {(i as unknown as { locatario_nome?: string | null }).locatario_nome}</div>
-              )}
+
 
               <div className="flex justify-between items-center pt-2 border-t">
                 <div className="flex flex-col">
