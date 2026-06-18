@@ -124,7 +124,7 @@ function IngressoPage() {
       {/* HERO */}
       <section className="px-6 pt-12 pb-16 md:pt-20 md:pb-24" style={{ background: "#0a0a0a" }}>
         <div className="max-w-4xl mx-auto text-center space-y-8">
-          <img src={LOGO_URL} alt="Iuri Rodrigues Imóveis" className="w-full max-w-[180px] md:max-w-[220px] lg:max-w-[260px] mx-auto object-contain" />
+          <img src={LOGO_URL} alt="Iuri Rodrigues Imóveis" className="w-full max-w-[180px] md:max-w-[220px] lg:max-w-[260px] mx-auto object-contain" style={{ background: "transparent", mixBlendMode: "screen" }} />
           <div className="space-y-4">
             <div className="text-xs md:text-sm uppercase tracking-[0.35em]" style={{ color: GOLD }}>
               Bem-vindo à primeira etapa
