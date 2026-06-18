@@ -142,6 +142,7 @@ function AuthLayout() {
       supabase.from("profiles").select("vendas_acesso").eq("id", userId).maybeSingle()
         .then(({ data }) => { if (active) setVendasAcessoIndividual((data as { vendas_acesso?: boolean } | null)?.vendas_acesso === true); });
       supabase.rpc("can_view_candidatos").then(({ data }) => { if (active) setCanCandidatos(data === true); });
+      supabase.rpc("current_user_is_executivo").then(({ data }) => { if (active) setIsExec(data === true); });
     });
 
     const channel = supabase
