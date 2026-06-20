@@ -71,7 +71,7 @@ const CORRETOR_ALLOWED_PREFIXES = ["/vendas", "/notificacoes"];
 // Rotas permitidas para administrativo (puro)
 const ADMINISTRATIVO_ALLOWED_PREFIXES = ["/admin", "/executivos/landing-page", "/notificacoes", "/configuracoes"];
 // Rotas permitidas para correspondente_bancaria (puro)
-const CORRESPONDENTE_ALLOWED_PREFIXES = ["/financiamento", "/notificacoes", "/configuracoes"];
+const CORRESPONDENTE_ALLOWED_PREFIXES = ["/correspondente", "/notificacoes", "/configuracoes"];
 
 
 function AuthLayout() {
@@ -91,7 +91,7 @@ function AuthLayout() {
     // Correspondente bancária pura: só Financiamento
     if (isCorrespondente && !isAdmin && !isCorretorVendas && !isAdministrativo) {
       return [
-        { to: "/financiamento", label: "Financiamento", icon: Banknote },
+        { to: "/correspondente", label: "Financiamento", icon: Banknote },
         { to: "/notificacoes", label: "Notificações", icon: BellRing },
         { to: "/configuracoes", label: "Configurações", icon: Settings },
       ];
@@ -127,7 +127,7 @@ function AuthLayout() {
     if (isAdmin && vendasAtivo) base.push({ to: "/vendas", label: "Vendas", icon: Briefcase });
     if (isAdmin && adminModuloAtivo) base.push({ to: "/admin", label: "Administração", icon: Building2 });
     if (isAdmin || isExec) base.push({ to: "/executivos/landing-page", label: "Landing Page", icon: Megaphone });
-    if (isAdmin) base.push({ to: "/financiamento", label: "Financiamento", icon: Banknote });
+    if (isAdmin) base.push({ to: "/correspondente", label: "Financiamento", icon: Banknote });
     return isAdmin ? [...base, ...ADMIN_NAV, ...CONFIG_NAV] : [...base, ...CONFIG_NAV];
   }, [isAdmin, isCorretorVendas, isAdministrativo, isCorrespondente, vendasAtivo, vendasAcessoIndividual, adminModuloAtivo, isExec]);
 
@@ -183,7 +183,7 @@ function AuthLayout() {
   useEffect(() => {
     if (isCorrespondente && !isAdmin && !isCorretorVendas && !isAdministrativo) {
       const allowed = CORRESPONDENTE_ALLOWED_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"));
-      if (!allowed) router.navigate({ to: "/financiamento" });
+      if (!allowed) router.navigate({ to: "/correspondente" });
     } else if (isCorretorVendas && !isAdmin) {
       const allowed = CORRETOR_ALLOWED_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"));
       if (!allowed) router.navigate({ to: "/vendas" });
