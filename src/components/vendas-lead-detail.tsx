@@ -149,9 +149,10 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 flex-wrap">
             {lead.nome}
             <span className={`text-xs px-2 py-0.5 rounded border ${info.color}`}>{info.emoji} {info.nome}</span>
+            {finStatus?.status && <FinanciamentoBadge status={finStatus.status} />}
           </DialogTitle>
         </DialogHeader>
 
@@ -237,6 +238,7 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
               <Button variant="outline" size="sm" className="gap-1" onClick={openWhatsApp}><MessageCircle className="h-3.5 w-3.5" />WhatsApp</Button>
               <AgendarVisitaInline lead={lead} onDone={() => { invalidate(); refetch(); }} />
               <ReuniaoOnlineInline lead={lead} onDone={() => { invalidate(); refetch(); }} />
+              {lead.tipo === "compra" && <EnviarFinanciamentoInline lead={lead} />}
               <Button variant="outline" size="sm" className="gap-1" onClick={() => setEditing(true)}><Pencil className="h-3.5 w-3.5" />Editar</Button>
               {isAdmin && <Button variant="destructive" size="sm" className="gap-1" onClick={deleteLead}><Trash2 className="h-3.5 w-3.5" />Excluir</Button>}
             </>
