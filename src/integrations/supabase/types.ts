@@ -337,6 +337,89 @@ export type Database = {
           },
         ]
       }
+      financiamentos: {
+        Row: {
+          comp_renda_path: string | null
+          comp_residencia_path: string | null
+          cpf: string
+          cpf_path: string | null
+          created_at: string
+          criado_por: string | null
+          email: string | null
+          estado_civil: string | null
+          extrato_path: string | null
+          id: string
+          imovel_endereco: string | null
+          imovel_valor: number | null
+          lead_id: string | null
+          nome: string
+          observacao: string | null
+          profissao: string | null
+          renda_mensal: number | null
+          rg_path: string | null
+          status: Database["public"]["Enums"]["financiamento_status"]
+          telefone: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          comp_renda_path?: string | null
+          comp_residencia_path?: string | null
+          cpf: string
+          cpf_path?: string | null
+          created_at?: string
+          criado_por?: string | null
+          email?: string | null
+          estado_civil?: string | null
+          extrato_path?: string | null
+          id?: string
+          imovel_endereco?: string | null
+          imovel_valor?: number | null
+          lead_id?: string | null
+          nome: string
+          observacao?: string | null
+          profissao?: string | null
+          renda_mensal?: number | null
+          rg_path?: string | null
+          status?: Database["public"]["Enums"]["financiamento_status"]
+          telefone: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          comp_renda_path?: string | null
+          comp_residencia_path?: string | null
+          cpf?: string
+          cpf_path?: string | null
+          created_at?: string
+          criado_por?: string | null
+          email?: string | null
+          estado_civil?: string | null
+          extrato_path?: string | null
+          id?: string
+          imovel_endereco?: string | null
+          imovel_valor?: number | null
+          lead_id?: string | null
+          nome?: string
+          observacao?: string | null
+          profissao?: string | null
+          renda_mensal?: number | null
+          rg_path?: string | null
+          status?: Database["public"]["Enums"]["financiamento_status"]
+          telefone?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financiamentos_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "vendas_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       google_tokens: {
         Row: {
           access_token: string
@@ -1186,10 +1269,20 @@ export type Database = {
         Returns: boolean
       }
       is_administrativo: { Args: { _user_id?: string }; Returns: boolean }
+      is_correspondente_bancaria: {
+        Args: { _user_id?: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      app_role: "admin" | "corretor" | "corretor_vendas" | "administrativo"
+      app_role:
+        | "admin"
+        | "corretor"
+        | "corretor_vendas"
+        | "administrativo"
+        | "correspondente_bancaria"
       candidato_status: "pendente_revisao" | "arquivado"
+      financiamento_status: "pendente" | "em_analise" | "aprovado" | "recusado"
       lead_canal: "denise" | "fabiola" | "renata" | "robson" | "teste_nego"
       lead_etapa:
         | "novos_leads"
@@ -1353,8 +1446,15 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "corretor", "corretor_vendas", "administrativo"],
+      app_role: [
+        "admin",
+        "corretor",
+        "corretor_vendas",
+        "administrativo",
+        "correspondente_bancaria",
+      ],
       candidato_status: ["pendente_revisao", "arquivado"],
+      financiamento_status: ["pendente", "em_analise", "aprovado", "recusado"],
       lead_canal: ["denise", "fabiola", "renata", "robson", "teste_nego"],
       lead_etapa: [
         "novos_leads",
