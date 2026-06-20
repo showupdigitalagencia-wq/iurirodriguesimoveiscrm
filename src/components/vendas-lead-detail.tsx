@@ -57,6 +57,13 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
     },
   });
 
+  const getFinStatus = useServerFn(getFinanciamentoStatusByLead);
+  const { data: finStatus } = useQuery({
+    queryKey: ["lead_financiamento_status", leadId],
+    enabled: !!leadId && open,
+    queryFn: () => getFinStatus({ data: { leadId: leadId! } }),
+  });
+
   useEffect(() => {
     if (lead && !editing) setForm(lead);
   }, [lead, editing]);
