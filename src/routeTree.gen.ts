@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as FormularioRouteImport } from './routes/formulario'
+import { Route as FinanciamentoRouteImport } from './routes/financiamento'
 import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
@@ -24,6 +25,7 @@ import { Route as AuthenticatedLeadsRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedExecutivosRouteImport } from './routes/_authenticated/executivos'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCorretoresRouteImport } from './routes/_authenticated/corretores'
+import { Route as AuthenticatedCorrespondenteRouteImport } from './routes/_authenticated/correspondente'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as AuthenticatedAgendaRouteImport } from './routes/_authenticated/agenda'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
@@ -53,6 +55,11 @@ import { Route as AuthenticatedAdminCandidatosRouteImport } from './routes/_auth
 const FormularioRoute = FormularioRouteImport.update({
   id: '/formulario',
   path: '/formulario',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FinanciamentoRoute = FinanciamentoRouteImport.update({
+  id: '/financiamento',
+  path: '/financiamento',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CadastroRoute = CadastroRouteImport.update({
@@ -126,6 +133,12 @@ const AuthenticatedCorretoresRoute = AuthenticatedCorretoresRouteImport.update({
   path: '/corretores',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCorrespondenteRoute =
+  AuthenticatedCorrespondenteRouteImport.update({
+    id: '/correspondente',
+    path: '/correspondente',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedConfiguracoesRoute =
   AuthenticatedConfiguracoesRouteImport.update({
     id: '/configuracoes',
@@ -274,10 +287,12 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/cadastro': typeof CadastroRoute
+  '/financiamento': typeof FinanciamentoRoute
   '/formulario': typeof FormularioRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/agenda': typeof AuthenticatedAgendaRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
+  '/correspondente': typeof AuthenticatedCorrespondenteRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/executivos': typeof AuthenticatedExecutivosRouteWithChildren
@@ -315,9 +330,11 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/cadastro': typeof CadastroRoute
+  '/financiamento': typeof FinanciamentoRoute
   '/formulario': typeof FormularioRoute
   '/agenda': typeof AuthenticatedAgendaRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
+  '/correspondente': typeof AuthenticatedCorrespondenteRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/leads': typeof AuthenticatedLeadsRouteWithChildren
@@ -355,10 +372,12 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/cadastro': typeof CadastroRoute
+  '/financiamento': typeof FinanciamentoRoute
   '/formulario': typeof FormularioRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/agenda': typeof AuthenticatedAgendaRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
+  '/_authenticated/correspondente': typeof AuthenticatedCorrespondenteRoute
   '/_authenticated/corretores': typeof AuthenticatedCorretoresRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/executivos': typeof AuthenticatedExecutivosRouteWithChildren
@@ -398,10 +417,12 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/cadastro'
+    | '/financiamento'
     | '/formulario'
     | '/admin'
     | '/agenda'
     | '/configuracoes'
+    | '/correspondente'
     | '/corretores'
     | '/dashboard'
     | '/executivos'
@@ -439,9 +460,11 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/cadastro'
+    | '/financiamento'
     | '/formulario'
     | '/agenda'
     | '/configuracoes'
+    | '/correspondente'
     | '/corretores'
     | '/dashboard'
     | '/leads'
@@ -478,10 +501,12 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/cadastro'
+    | '/financiamento'
     | '/formulario'
     | '/_authenticated/admin'
     | '/_authenticated/agenda'
     | '/_authenticated/configuracoes'
+    | '/_authenticated/correspondente'
     | '/_authenticated/corretores'
     | '/_authenticated/dashboard'
     | '/_authenticated/executivos'
@@ -521,6 +546,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   CadastroRoute: typeof CadastroRoute
+  FinanciamentoRoute: typeof FinanciamentoRoute
   FormularioRoute: typeof FormularioRoute
   ApiPublicCronLauraResumoDiarioRoute: typeof ApiPublicCronLauraResumoDiarioRoute
   ApiPublicCronReuniaoLembretesRoute: typeof ApiPublicCronReuniaoLembretesRoute
@@ -539,6 +565,13 @@ declare module '@tanstack/react-router' {
       path: '/formulario'
       fullPath: '/formulario'
       preLoaderRoute: typeof FormularioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/financiamento': {
+      id: '/financiamento'
+      path: '/financiamento'
+      fullPath: '/financiamento'
+      preLoaderRoute: typeof FinanciamentoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cadastro': {
@@ -637,6 +670,13 @@ declare module '@tanstack/react-router' {
       path: '/corretores'
       fullPath: '/corretores'
       preLoaderRoute: typeof AuthenticatedCorretoresRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/correspondente': {
+      id: '/_authenticated/correspondente'
+      path: '/correspondente'
+      fullPath: '/correspondente'
+      preLoaderRoute: typeof AuthenticatedCorrespondenteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/configuracoes': {
@@ -889,6 +929,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedAgendaRoute: typeof AuthenticatedAgendaRoute
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
+  AuthenticatedCorrespondenteRoute: typeof AuthenticatedCorrespondenteRoute
   AuthenticatedCorretoresRoute: typeof AuthenticatedCorretoresRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedExecutivosRoute: typeof AuthenticatedExecutivosRouteWithChildren
@@ -905,6 +946,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedAgendaRoute: AuthenticatedAgendaRoute,
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
+  AuthenticatedCorrespondenteRoute: AuthenticatedCorrespondenteRoute,
   AuthenticatedCorretoresRoute: AuthenticatedCorretoresRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedExecutivosRoute: AuthenticatedExecutivosRouteWithChildren,
@@ -925,6 +967,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   CadastroRoute: CadastroRoute,
+  FinanciamentoRoute: FinanciamentoRoute,
   FormularioRoute: FormularioRoute,
   ApiPublicCronLauraResumoDiarioRoute: ApiPublicCronLauraResumoDiarioRoute,
   ApiPublicCronReuniaoLembretesRoute: ApiPublicCronReuniaoLembretesRoute,

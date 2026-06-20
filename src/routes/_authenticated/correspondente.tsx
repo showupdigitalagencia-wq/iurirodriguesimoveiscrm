@@ -21,7 +21,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { FileText, ExternalLink, CheckCircle2, XCircle, Clock, Loader2 } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/financiamento")({
+export const Route = createFileRoute("/_authenticated/correspondente")({
   component: FinanciamentoAdminPage,
 });
 
