@@ -336,3 +336,66 @@ function ReuniaoOnlineInline({ lead, onDone }: { lead: VendasLead; onDone: () =>
     </Dialog>
   );
 }
+
+const FIN_BADGE: Record<FinanciamentoStatus, { label: string; cls: string; emoji: string }> = {
+  pendente: { label: "Financ. Pendente", cls: "bg-yellow-500/15 text-yellow-300 border-yellow-500/30", emoji: "⏳" },
+  em_analise: { label: "Financ. Em Análise", cls: "bg-blue-500/15 text-blue-300 border-blue-500/30", emoji: "🔎" },
+  aprovado: { label: "Financ. Aprovado", cls: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30", emoji: "✅" },
+  recusado: { label: "Financ. Recusado", cls: "bg-rose-500/15 text-rose-300 border-rose-500/30", emoji: "❌" },
+};
+
+function FinanciamentoBadge({ status }: { status: FinanciamentoStatus }) {
+  const b = FIN_BADGE[status];
+  return <span className={`text-xs px-2 py-0.5 rounded border ${b.cls}`}>{b.emoji} {b.label}</span>;
+}
+
+function EnviarFinanciamentoInline({ lead }: { lead: VendasLead }) {
+  const [open, setOpen] = useState(false);
+  const url = `https://sistemanexus.app/financiamento?lead=${lead.id}`;
+  const mensagem = `Olá ${lead.nome}! 👋\n\nPra dar sequência no seu financiamento, preencha o formulário e envie a documentação por este link:\n\n${url}\n\nQualquer dúvida estou à disposição. Iuri Rodrigues Imóveis 🏢`;
+
+  function copyLink() {
+    navigator.clipboard.writeText(url).then(
+      () => toast.success("Link copiado"),
+      () => toast.error("Não foi possível copiar"),
+    );
+  }
+
+  function openWa() {
+    const tel = (lead.telefone ?? "").replace(/\D/g, "");
+    if (!tel) { toast.error("Sem telefone"); return; }
+    const phone = tel.length <= 11 ? "55" + tel : tel;
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(mensagem)}`, "_blank");
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-1"><Banknote className="h-3.5 w-3.5" />Enviar para Financiamento</Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader><DialogTitle>Financiamento — {lead.nome}</DialogTitle></DialogHeader>
+        <div className="space-y-3 py-2 text-sm">
+          <p className="text-muted-foreground">
+            Compartilhe o link abaixo com o cliente. Ele vai abrir uma página personalizada para enviar a documentação para análise da nossa correspondente bancária.
+          </p>
+          <div>
+            <Label className="text-xs">Link personalizado</Label>
+            <div className="flex gap-2 mt-1">
+              <Input readOnly value={url} className="font-mono text-xs" />
+              <Button type="button" variant="outline" size="sm" onClick={copyLink} className="gap-1 shrink-0">
+                <Copy className="h-3.5 w-3.5" /> Copiar
+              </Button>
+            </div>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>Fechar</Button>
+          <Button variant="gold" onClick={openWa} className="gap-1">
+            <MessageCircle className="h-3.5 w-3.5" /> Enviar por WhatsApp
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
