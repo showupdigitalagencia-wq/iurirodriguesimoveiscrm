@@ -92,41 +92,11 @@ export const Route = createFileRoute("/api/public/cron-laura-resumo-diario")({
           const equipeSet = new Set(opts.equipeIds);
           const leadsEquipe = leads.filter((l) => l.corretor_id && equipeSet.has(l.corretor_id));
           const ativos = leadsEquipe.filter((l) => l.etapa !== "fechado" && l.etapa !== "perdido");
-          const parados = leadsEquipe.filter(
-            (l) => ["novo", "contato", "qualificado"].includes(l.etapa) && l.updated_at < h48,
-          );
           const fechadosOntem = opts.equipeIds.reduce((acc, id) => acc + (fechadosOntemPorUser.get(id) ?? 0), 0);
-          const inativos: string[] = [];
-          const contatosZero: string[] = [];
-          opts.equipeIds.forEach((id) => {
-            const p = profilesById.get(id);
-            if (!p || !p.ativo) return;
-            if (!ativos72h.has(id)) inativos.push(p.nome);
-            const c = contatosOntemPorUser.get(id) ?? 0;
-            if (c === 0 && (fechadosOntemPorUser.get(id) ?? 0) === 0) contatosZero.push(p.nome);
-          });
 
-          // melhor performer ontem
-          let topNome: string | null = null;
-          let topQtd = 0;
-          opts.equipeIds.forEach((id) => {
-            const q = (fechadosOntemPorUser.get(id) ?? 0) + (contatosOntemPorUser.get(id) ?? 0);
-            if (q > topQtd) {
-              topQtd = q;
-              topNome = profilesById.get(id)?.nome ?? null;
-            }
-          });
-
-          const linhas: string[] = [];
-          linhas.push(`📊 ${ativos.length} leads ativos`);
-          if (fechadosOntem) linhas.push(`✅ ${fechadosOntem} fechado(s) ontem`);
-          if (parados.length) linhas.push(`⚠️ ${parados.length} parado(s) +48h`);
-          if (inativos.length) linhas.push(`💤 Sem atividade 72h: ${inativos.slice(0, 3).join(", ")}${inativos.length > 3 ? ` +${inativos.length - 3}` : ""}`);
-          if (reunioesHoje.length) linhas.push(`📅 ${reunioesHoje.length} reunião(ões) hoje`);
-          if (topNome && topQtd > 0) linhas.push(`🏆 Destaque ontem: ${topNome}`);
-
-          const title = `☀️ Bom dia, ${opts.nomeLider.split(/\s+/)[0]}!`;
-          const message = linhas.length ? linhas.join(" • ") : "Tudo tranquilo hoje. Bom trabalho!";
+          const primeiroNome = (opts.nomeLider || "").trim().split(/\s+/)[0] || "líder";
+          const title = `Bom dia, ${primeiroNome}!`;
+          const message = `${ativos.length} leads ativos • ${fechadosOntem} fechados ontem`;
           const url = "https://sistemanexus.app/?laura=1";
 
           const res = await sendOneSignalPush({
@@ -136,7 +106,7 @@ export const Route = createFileRoute("/api/public/cron-laura-resumo-diario")({
             url,
             data: { tipo: "laura_resumo_diario", escopo: opts.escopo },
           });
-          results.push({ lider: opts.nomeLider, escopo: opts.escopo, alertas: linhas.length, ok: res.ok, error: res.error });
+          results.push({ lider: opts.nomeLider, escopo: opts.escopo, ativos: ativos.length, fechadosOntem, ok: res.ok, error: res.error });
         }
 
         // Admin: equipe = TODOS corretores ativos
