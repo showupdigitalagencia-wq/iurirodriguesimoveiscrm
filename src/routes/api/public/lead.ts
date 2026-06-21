@@ -83,7 +83,8 @@ export const Route = createFileRoute("/api/public/lead")({
         return new Response(JSON.stringify({ ok: true, id: lead.id }), {
           status: 201, headers: { "Content-Type": "application/json" },
         });
-      },
+      }, { fonteOverride: "site" }),
+
     },
   },
 });
