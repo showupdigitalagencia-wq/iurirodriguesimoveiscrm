@@ -544,16 +544,30 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
               </TabsContent>
 
               <TabsContent value="historico" className="mt-4 space-y-2">
-                {historico.map((h) => (
-                  <div key={h.id} className="flex gap-3 text-sm border-l-2 border-gold/40 pl-3 py-1">
-                    <div className="flex-1">
-                      <div className="font-medium capitalize">{h.acao.replace(/_/g, " ")}</div>
-                      <div className="text-[11px] text-muted-foreground">
-                        {format(new Date(h.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                {historico.map((h) => {
+                  const det = h.detalhe as { motivo?: string; nota?: string; etapa?: string } | null;
+                  const isDescred = h.acao === "descredenciado";
+                  return (
+                    <div
+                      key={h.id}
+                      className={`flex gap-3 text-sm border-l-2 pl-3 py-1 ${isDescred ? "border-red-500" : "border-gold/40"}`}
+                    >
+                      <div className="flex-1">
+                        <div className={`font-medium capitalize ${isDescred ? "text-red-700 dark:text-red-300" : ""}`}>
+                          {h.acao.replace(/_/g, " ")}
+                        </div>
+                        {isDescred && det?.motivo && (
+                          <p className="text-sm text-muted-foreground whitespace-pre-wrap mt-0.5">
+                            Motivo: {det.motivo}
+                          </p>
+                        )}
+                        <div className="text-[11px] text-muted-foreground">
+                          {format(new Date(h.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
                 {historico.length === 0 && (
                   <p className="text-sm text-muted-foreground text-center py-4">Sem histórico.</p>
                 )}
