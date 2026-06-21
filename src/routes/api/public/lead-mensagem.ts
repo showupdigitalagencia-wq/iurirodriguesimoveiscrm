@@ -104,7 +104,8 @@ export const Route = createFileRoute("/api/public/lead-mensagem")({
         return new Response(JSON.stringify({ ok: true, id: novo.id, plantonista }), {
           status: 201, headers: { "Content-Type": "application/json" },
         });
-      },
+      }, { fonteFallback: "whatsapp_empresa" }),
+
     },
   },
 });
