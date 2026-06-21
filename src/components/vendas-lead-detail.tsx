@@ -231,6 +231,36 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
             </Select>
           </div>
 
+          {lead.etapa === "fechado" && (
+            <div className={`rounded-lg border p-3 ${lead.comissao != null ? "border-gold/40 bg-gold/5" : "border-amber-500/40 bg-amber-500/10"}`}>
+              {lead.comissao != null ? (
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <div className="text-[11px] text-muted-foreground">Comissão calculada</div>
+                    <div className="text-lg font-bold text-gold">{formatBRL(Number(lead.comissao))}</div>
+                    {lead.fechado_em && (
+                      <div className="text-[10px] text-muted-foreground">
+                        Fechado em {new Date(lead.fechado_em).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}
+                      </div>
+                    )}
+                  </div>
+                  <Button size="sm" variant="outline" onClick={() => setFecharOpen(true)}>Recalcular</Button>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5" />
+                    <div>
+                      <div className="text-sm font-semibold text-amber-700 dark:text-amber-300">Receita não calculada</div>
+                      <div className="text-xs text-muted-foreground">Vincule o imóvel para calcular a comissão (legado).</div>
+                    </div>
+                  </div>
+                  <Button size="sm" variant="gold" onClick={() => setFecharOpen(true)}>Preencher</Button>
+                </div>
+              )}
+            </div>
+          )}
+
           {visitasPendentes.length > 0 && (
             <div className="space-y-2">
               {visitasPendentes.map((v) => (
