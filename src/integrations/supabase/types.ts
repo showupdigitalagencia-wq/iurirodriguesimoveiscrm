@@ -233,6 +233,13 @@ export type Database = {
             referencedRelation: "imoveis"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "contratos_imovel_id_fkey"
+            columns: ["imovel_id"]
+            isOneToOne: false
+            referencedRelation: "imoveis_portfolio"
+            referencedColumns: ["id"]
+          },
         ]
       }
       corretor_disponibilidade: {
@@ -333,6 +340,13 @@ export type Database = {
             columns: ["imovel_id"]
             isOneToOne: false
             referencedRelation: "imoveis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documentos_imovel_id_fkey"
+            columns: ["imovel_id"]
+            isOneToOne: false
+            referencedRelation: "imoveis_portfolio"
             referencedColumns: ["id"]
           },
         ]
@@ -1315,7 +1329,87 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      imoveis_portfolio: {
+        Row: {
+          area_m2: number | null
+          bairro: string | null
+          banheiros: number | null
+          cep: string | null
+          cidade: string | null
+          codigo: string | null
+          complemento: string | null
+          condominio: number | null
+          created_at: string | null
+          finalidade: string | null
+          fotos: string[] | null
+          id: string | null
+          iptu: number | null
+          numero: string | null
+          observacoes: string | null
+          quartos: number | null
+          rua: string | null
+          status: string | null
+          tipo: string | null
+          updated_at: string | null
+          vagas: number | null
+          valor_aluguel: number | null
+          valor_venda: number | null
+          vitrine_url: string | null
+        }
+        Insert: {
+          area_m2?: number | null
+          bairro?: string | null
+          banheiros?: number | null
+          cep?: string | null
+          cidade?: string | null
+          codigo?: string | null
+          complemento?: string | null
+          condominio?: number | null
+          created_at?: string | null
+          finalidade?: string | null
+          fotos?: string[] | null
+          id?: string | null
+          iptu?: number | null
+          numero?: string | null
+          observacoes?: string | null
+          quartos?: number | null
+          rua?: string | null
+          status?: string | null
+          tipo?: string | null
+          updated_at?: string | null
+          vagas?: number | null
+          valor_aluguel?: number | null
+          valor_venda?: number | null
+          vitrine_url?: string | null
+        }
+        Update: {
+          area_m2?: number | null
+          bairro?: string | null
+          banheiros?: number | null
+          cep?: string | null
+          cidade?: string | null
+          codigo?: string | null
+          complemento?: string | null
+          condominio?: number | null
+          created_at?: string | null
+          finalidade?: string | null
+          fotos?: string[] | null
+          id?: string | null
+          iptu?: number | null
+          numero?: string | null
+          observacoes?: string | null
+          quartos?: number | null
+          rua?: string | null
+          status?: string | null
+          tipo?: string | null
+          updated_at?: string | null
+          vagas?: number | null
+          valor_aluguel?: number | null
+          valor_venda?: number | null
+          vitrine_url?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       add_lead_canal_value: { Args: { _value: string }; Returns: undefined }
