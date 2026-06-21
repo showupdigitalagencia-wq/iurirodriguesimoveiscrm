@@ -47,8 +47,8 @@ function Lead360Page() {
 
   const buscar = useMutation({
     mutationFn: async () => {
-      const t = telefone.trim() || null;
-      const c = cpf.trim() || null;
+      const t = telefone.trim() || undefined;
+      const c = cpf.trim() || undefined;
       if (!t && !c) throw new Error("Informe telefone ou CPF");
       const { data, error } = await supabase.rpc("buscar_lead_360", { _telefone: t, _cpf: c });
       if (error) throw error;
