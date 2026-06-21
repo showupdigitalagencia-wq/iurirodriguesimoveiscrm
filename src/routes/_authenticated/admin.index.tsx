@@ -117,6 +117,10 @@ function AdminDashboard() {
   const vendidosTotal = imoveis.filter((i) => i.status === "vendido").length;
   const emManutencao = imoveis.filter((i) => i.status === "manutencao" || i.status === "em_manutencao").length;
   const ativos = contratos.filter((c) => c.status === "ativo" || c.status === "vencendo").length;
+  const aluguelTotalAtivos = contratos
+    .filter((c) => c.status === "ativo" || c.status === "vencendo")
+    .reduce((s, c: any) => s + Number(c.valor_aluguel || 0), 0);
+  const receitaAdmMensal = aluguelTotalAtivos * 0.12;
   const hoje = new Date();
   const em90 = new Date(); em90.setDate(hoje.getDate() + 90);
   const vencendo = contratos.filter((c) => {
