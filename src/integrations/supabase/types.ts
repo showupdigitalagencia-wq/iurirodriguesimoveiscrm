@@ -1356,6 +1356,36 @@ export type Database = {
           },
         ]
       }
+      webhook_log: {
+        Row: {
+          criado_em: string
+          erro: string | null
+          fonte: string
+          id: string
+          payload_resumo: Json | null
+          status_code: number | null
+          sucesso: boolean
+        }
+        Insert: {
+          criado_em?: string
+          erro?: string | null
+          fonte: string
+          id?: string
+          payload_resumo?: Json | null
+          status_code?: number | null
+          sucesso?: boolean
+        }
+        Update: {
+          criado_em?: string
+          erro?: string | null
+          fonte?: string
+          id?: string
+          payload_resumo?: Json | null
+          status_code?: number | null
+          sucesso?: boolean
+        }
+        Relationships: []
+      }
     }
     Views: {
       imoveis_portfolio: {
@@ -1454,6 +1484,7 @@ export type Database = {
         Returns: Database["public"]["Enums"]["app_role"]
       }
       get_portfolio_stats: { Args: { _days?: number }; Returns: Json }
+      get_saude_sistema: { Args: never; Returns: Json }
       get_vendas_relatorio: {
         Args: { _from: string; _to: string }
         Returns: Json
