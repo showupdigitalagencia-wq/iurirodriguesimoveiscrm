@@ -322,6 +322,14 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
           )}
         </DialogFooter>
       </DialogContent>
+      <FecharLeadDialog
+        open={fecharOpen}
+        onOpenChange={setFecharOpen}
+        leadId={lead.id}
+        leadNome={lead.nome}
+        tipo={lead.tipo as VendasTipo}
+        onFechado={() => { invalidate(); refetch(); }}
+      />
     </Dialog>
   );
 }
