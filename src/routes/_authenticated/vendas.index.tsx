@@ -4,8 +4,9 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { VENDAS_ETAPAS, formatBRL, type VendasLead } from "@/lib/vendas-helpers";
-import { TrendingUp, Users, CheckCircle2, XCircle, CalendarClock } from "lucide-react";
+import { TrendingUp, Users, CheckCircle2, XCircle, CalendarClock, BellRing } from "lucide-react";
 import { getPlantonistaHoje, getMeusLeadsPlantao } from "@/lib/plantao.functions";
+
 
 export const Route = createFileRoute("/_authenticated/vendas/")({
   component: VendasDashboard,
