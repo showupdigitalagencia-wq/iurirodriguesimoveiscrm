@@ -76,6 +76,9 @@ const CORRESPONDENTE_ALLOWED_PREFIXES = ["/correspondente", "/notificacoes", "/c
 
 function AuthLayout() {
   const router = useRouter();
+  const [rolesLoaded, setRolesLoaded] = useState(false);
+  const [hasNoRole, setHasNoRole] = useState(false);
+  const [userEmail, setUserEmail] = useState<string>("");
   const [isAdmin, setIsAdmin] = useState(false);
   const [isCorretorVendas, setIsCorretorVendas] = useState(false);
   const [isAdministrativo, setIsAdministrativo] = useState(false);
