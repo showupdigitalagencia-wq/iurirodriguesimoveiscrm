@@ -375,10 +375,34 @@ export const importImovelFromUrl = createServerFn({ method: "POST" })
       tipo || finalidade || quartos != null || banheiros != null || valor_venda != null ||
       valor_aluguel != null || fotos.length > 0 || cidade || bairro;
 
+    // ---------- COORDENADAS (mapa embed ou geocode) ----------
+    const coordsHit = extractMapCoords(html);
+    let latitude: number | null = coordsHit.lat;
+    let longitude: number | null = coordsHit.lng;
+    let coords_source: "embed" | "geocode" | null =
+      latitude != null && longitude != null ? "embed" : null;
+    const mapQuery =
+      coordsHit.query ??
+      [bairro, cidade].filter(Boolean).join(", ") ??
+      null;
+    if (latitude == null && mapQuery) {
+      const g = await geocodeViaGoogle(mapQuery);
+      if (g) {
+        latitude = g.lat;
+        longitude = g.lng;
+        coords_source = "geocode";
+      }
+    }
+
     const warnings: string[] = [];
     if (!anyExtracted) warnings.push("Não consegui extrair dados automaticamente — preencha manualmente.");
     if (downloadFailures > 0) {
       warnings.push(`${downloadFailures} foto(s) não puderam ser baixadas e foram mantidas como link externo.`);
+    }
+    if (latitude == null && mapQuery) {
+      warnings.push(
+        "Mapa do anúncio não tem coordenadas embutidas e o geocoder do Google não está conectado — coordenadas ficaram em branco."
+      );
     }
 
     return {
@@ -409,6 +433,10 @@ export const importImovelFromUrl = createServerFn({ method: "POST" })
         area_m2,
         descricao: descricao || null,
         fotos,
+        latitude,
+        longitude,
+        coords_source,
+        map_query: mapQuery,
       },
     };
   });
