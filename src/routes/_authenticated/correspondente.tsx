@@ -270,21 +270,54 @@ function DetailDialog({ id, open, onClose, onChanged }: { id: string; open: bool
           </div>
         )}
 
-        <DialogFooter className="flex-wrap gap-2">
-          <Button variant="outline" size="sm" onClick={() => setStatus("em_analise")} disabled={!!saving} className="gap-1">
-            <Clock className="h-3.5 w-3.5" /> {saving === "em_analise" ? "..." : "Em Análise"}
+        <DialogFooter className="flex-wrap gap-2 sm:justify-between">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setConfirmDelete(true)}
+            disabled={!!saving || deleting}
+            className="gap-1 text-rose-500 border-rose-500/40 hover:bg-rose-500/10"
+          >
+            <Trash2 className="h-3.5 w-3.5" /> Excluir
           </Button>
-          <Button variant="outline" size="sm" onClick={() => setStatus("aprovado")} disabled={!!saving} className="gap-1 text-emerald-500 border-emerald-500/40 hover:bg-emerald-500/10">
-            <CheckCircle2 className="h-3.5 w-3.5" /> {saving === "aprovado" ? "..." : "Aprovar"}
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => setStatus("recusado")} disabled={!!saving} className="gap-1 text-rose-500 border-rose-500/40 hover:bg-rose-500/10">
-            <XCircle className="h-3.5 w-3.5" /> {saving === "recusado" ? "..." : "Recusar"}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" onClick={() => setStatus("em_analise")} disabled={!!saving} className="gap-1">
+              <Clock className="h-3.5 w-3.5" /> {saving === "em_analise" ? "..." : "Em Análise"}
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setStatus("aprovado")} disabled={!!saving} className="gap-1 text-emerald-500 border-emerald-500/40 hover:bg-emerald-500/10">
+              <CheckCircle2 className="h-3.5 w-3.5" /> {saving === "aprovado" ? "..." : "Aprovar"}
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setStatus("recusado")} disabled={!!saving} className="gap-1 text-rose-500 border-rose-500/40 hover:bg-rose-500/10">
+              <XCircle className="h-3.5 w-3.5" /> {saving === "recusado" ? "..." : "Recusar"}
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
+
+      <AlertDialog open={confirmDelete} onOpenChange={(o) => !deleting && setConfirmDelete(o)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir pedido de financiamento?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este pedido de financiamento e seus documentos? Essa ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); handleDelete(); }}
+              disabled={deleting}
+              className="bg-rose-500 hover:bg-rose-600 text-white"
+            >
+              {deleting ? "Excluindo…" : "Excluir"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }
+
 
 function Field({ label, value }: { label: string; value: string }) {
   return (
