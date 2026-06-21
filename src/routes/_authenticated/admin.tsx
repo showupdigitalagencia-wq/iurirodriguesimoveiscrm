@@ -56,13 +56,14 @@ function AdminLayout() {
           return (
             <Link
               key={t.to}
-              to={t.to}
+              to={t.to as "/admin"}
               activeOptions={{ exact: t.exact }}
               activeProps={{ className: "border-gold text-gold" }}
               className="inline-flex items-center gap-2 px-4 py-2.5 text-sm border-b-2 border-transparent text-muted-foreground hover:text-foreground min-h-[44px]"
             >
               <Icon className="h-4 w-4" /> {t.label}
             </Link>
+
           );
         })}
       </nav>
