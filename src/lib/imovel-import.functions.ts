@@ -25,8 +25,91 @@ export type ImovelImportResult = {
     area_m2?: number | null;
     descricao?: string | null;
     fotos: string[];
+    latitude?: number | null;
+    longitude?: number | null;
+    coords_source?: "embed" | "geocode" | null;
+    map_query?: string | null;
   };
 };
+
+/**
+ * Procura coordenadas no HTML — primeiro em iframes / scripts de Google Maps,
+ * depois em padrões comuns (LatLng(lat,lng), data-lat/data-lng, etc.).
+ * Retorna { lat, lng, query? } — query é o texto do parâmetro q= quando o embed
+ * usa endereço em vez de coordenadas, útil para geocodificar depois.
+ */
+function extractMapCoords(html: string): { lat: number | null; lng: number | null; query: string | null } {
+  // 1) iframe Google Maps — captura todos os src de maps
+  const iframeSrcs = Array.from(
+    html.matchAll(/<iframe[^>]+src=["']([^"']*(?:google\.com\/maps|maps\.google\.[a-z.]+)[^"']*)["']/gi)
+  ).map((m) => m[1]);
+
+  let query: string | null = null;
+  for (const src of iframeSrcs) {
+    // a) embed novo: !2d<lng>!3d<lat>
+    const m1 = src.match(/!2d(-?\d+\.\d+)!3d(-?\d+\.\d+)/);
+    if (m1) return { lng: Number(m1[1]), lat: Number(m1[2]), query: null };
+    // b) center=lat,lng / ll=lat,lng / @lat,lng
+    const m2 = src.match(/[?&](?:center|ll)=(-?\d+\.\d+),(-?\d+\.\d+)/);
+    if (m2) return { lat: Number(m2[1]), lng: Number(m2[2]), query: null };
+    const m3 = src.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+    if (m3) return { lat: Number(m3[1]), lng: Number(m3[2]), query: null };
+    // c) q=lat,lng
+    const mq = src.match(/[?&]q=([^&]+)/);
+    if (mq) {
+      const raw = decodeURIComponent(mq[1].replace(/\+/g, " "));
+      const mll = raw.match(/^\s*(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)\s*$/);
+      if (mll) return { lat: Number(mll[1]), lng: Number(mll[2]), query: null };
+      // texto (endereço) — guarda para geocodificar
+      if (!query) query = raw.trim();
+    }
+  }
+
+  // 2) padrões em scripts / data-attributes
+  const patterns: RegExp[] = [
+    /LatLng\(\s*(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)\s*\)/,
+    /data-lat=["'](-?\d+\.\d+)["'][^>]*data-(?:lng|lon|long)=["'](-?\d+\.\d+)["']/,
+    /"lat(?:itude)?"\s*:\s*(-?\d+\.\d+)\s*,\s*"lng|"longitude"\s*:\s*(-?\d+\.\d+)/,
+  ];
+  for (const re of patterns) {
+    const m = html.match(re);
+    if (m) return { lat: Number(m[1]), lng: Number(m[2]), query };
+  }
+
+  return { lat: null, lng: null, query };
+}
+
+/** Geocodifica endereço via Google Maps connector (se conectado). */
+async function geocodeViaGoogle(
+  address: string
+): Promise<{ lat: number; lng: number } | null> {
+  const lovableKey = process.env.LOVABLE_API_KEY;
+  const gmKey = process.env.GOOGLE_MAPS_API_KEY;
+  if (!lovableKey || !gmKey) return null;
+  try {
+    const url = `https://connector-gateway.lovable.dev/google_maps/maps/api/geocode/json?address=${encodeURIComponent(
+      address
+    )}`;
+    const r = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${lovableKey}`,
+        "X-Connection-Api-Key": gmKey,
+      },
+    });
+    if (!r.ok) return null;
+    const j = (await r.json()) as {
+      status?: string;
+      results?: Array<{ geometry?: { location?: { lat?: number; lng?: number } } }>;
+    };
+    const loc = j.results?.[0]?.geometry?.location;
+    if (loc && typeof loc.lat === "number" && typeof loc.lng === "number") {
+      return { lat: loc.lat, lng: loc.lng };
+    }
+  } catch (e) {
+    console.warn("[importImovel] geocode falhou", e);
+  }
+  return null;
+}
 
 function parseBRLToNumber(raw: string): number | null {
   // "1.500.000,00" or "464,81" → number
@@ -292,10 +375,34 @@ export const importImovelFromUrl = createServerFn({ method: "POST" })
       tipo || finalidade || quartos != null || banheiros != null || valor_venda != null ||
       valor_aluguel != null || fotos.length > 0 || cidade || bairro;
 
+    // ---------- COORDENADAS (mapa embed ou geocode) ----------
+    const coordsHit = extractMapCoords(html);
+    let latitude: number | null = coordsHit.lat;
+    let longitude: number | null = coordsHit.lng;
+    let coords_source: "embed" | "geocode" | null =
+      latitude != null && longitude != null ? "embed" : null;
+    const mapQuery =
+      coordsHit.query ??
+      [bairro, cidade].filter(Boolean).join(", ") ??
+      null;
+    if (latitude == null && mapQuery) {
+      const g = await geocodeViaGoogle(mapQuery);
+      if (g) {
+        latitude = g.lat;
+        longitude = g.lng;
+        coords_source = "geocode";
+      }
+    }
+
     const warnings: string[] = [];
     if (!anyExtracted) warnings.push("Não consegui extrair dados automaticamente — preencha manualmente.");
     if (downloadFailures > 0) {
       warnings.push(`${downloadFailures} foto(s) não puderam ser baixadas e foram mantidas como link externo.`);
+    }
+    if (latitude == null && mapQuery) {
+      warnings.push(
+        "Mapa do anúncio não tem coordenadas embutidas e o geocoder do Google não está conectado — coordenadas ficaram em branco."
+      );
     }
 
     return {
@@ -326,6 +433,10 @@ export const importImovelFromUrl = createServerFn({ method: "POST" })
         area_m2,
         descricao: descricao || null,
         fotos,
+        latitude,
+        longitude,
+        coords_source,
+        map_query: mapQuery,
       },
     };
   });

@@ -358,6 +358,8 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
           for (const u of d.fotos) if (!existing.has(u)) merged.push(u);
           next.fotos = merged;
         }
+        if (d.latitude != null) (next as any).latitude = d.latitude;
+        if (d.longitude != null) (next as any).longitude = d.longitude;
         return next;
       });
       toast.success(
