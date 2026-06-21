@@ -158,6 +158,31 @@ export const listMyVendasLeads = createServerFn({ method: "GET" })
     return { items: (data ?? []) as { id: string; nome: string; telefone: string; etapa: string }[] };
   });
 
+export type ImovelOption = {
+  id: string;
+  codigo: string | null;
+  rua: string;
+  numero: string | null;
+  complemento: string | null;
+  bairro: string | null;
+  cidade: string | null;
+  tipo: string;
+  finalidade: string;
+};
+
+export const listImoveisForVisita = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("imoveis")
+      .select("id, codigo, rua, numero, complemento, bairro, cidade, tipo, finalidade")
+      .order("codigo", { ascending: true });
+    if (error) throw new Error(error.message);
+    return { items: (data ?? []) as ImovelOption[] };
+  });
+
+
+
 export const createReuniaoOnlineVenda = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: {
