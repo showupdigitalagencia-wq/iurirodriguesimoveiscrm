@@ -910,6 +910,72 @@ export type Database = {
           },
         ]
       }
+      pesquisas_satisfacao: {
+        Row: {
+          comentario: string | null
+          corretor_id: string | null
+          created_at: string
+          enviada_em: string | null
+          erro_envio: string | null
+          expira_em: string | null
+          id: string
+          lead_id: string
+          nota: number | null
+          respondida_em: string | null
+          status: Database["public"]["Enums"]["satisfacao_status"]
+          telefone: string
+          tentativas: number
+          updated_at: string
+        }
+        Insert: {
+          comentario?: string | null
+          corretor_id?: string | null
+          created_at?: string
+          enviada_em?: string | null
+          erro_envio?: string | null
+          expira_em?: string | null
+          id?: string
+          lead_id: string
+          nota?: number | null
+          respondida_em?: string | null
+          status?: Database["public"]["Enums"]["satisfacao_status"]
+          telefone: string
+          tentativas?: number
+          updated_at?: string
+        }
+        Update: {
+          comentario?: string | null
+          corretor_id?: string | null
+          created_at?: string
+          enviada_em?: string | null
+          erro_envio?: string | null
+          expira_em?: string | null
+          id?: string
+          lead_id?: string
+          nota?: number | null
+          respondida_em?: string | null
+          status?: Database["public"]["Enums"]["satisfacao_status"]
+          telefone?: string
+          tentativas?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pesquisas_satisfacao_corretor_id_fkey"
+            columns: ["corretor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pesquisas_satisfacao_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "vendas_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       plantao_escala: {
         Row: {
           corretor_id: string
@@ -1588,6 +1654,7 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      expirar_pesquisas_satisfacao: { Args: never; Returns: number }
       get_funil_conversao: {
         Args: {
           _from: string
@@ -1600,6 +1667,10 @@ export type Database = {
       }
       get_leads_sem_resposta: { Args: never; Returns: Json }
       get_portfolio_stats: { Args: { _days?: number }; Returns: Json }
+      get_satisfacao_stats: {
+        Args: { _from: string; _to: string }
+        Returns: Json
+      }
       get_saude_sistema: { Args: never; Returns: Json }
       get_tempo_resposta_ranking: {
         Args: { _from: string; _scope?: string; _target?: string; _to: string }
@@ -1649,6 +1720,10 @@ export type Database = {
       normalize_cpf: { Args: { _cpf: string }; Returns: string }
       normalize_telefone: { Args: { _tel: string }; Returns: string }
       plantonista_do_dia: { Args: { _data: string }; Returns: string }
+      registrar_resposta_satisfacao: {
+        Args: { _mensagem: string; _telefone: string }
+        Returns: Json
+      }
     }
     Enums: {
       app_role:
@@ -1700,6 +1775,12 @@ export type Database = {
       reuniao_lembrete_tipo: "1d" | "1h" | "15min"
       reuniao_status: "agendada" | "realizada" | "cancelada"
       reuniao_tipo: "individual" | "institucional" | "alinhamento" | "mentoria"
+      satisfacao_status:
+        | "pendente"
+        | "enviada"
+        | "respondida"
+        | "sem_resposta_valida"
+        | "falha_envio"
       vendas_etapa:
         | "novo_lead"
         | "contato_realizado"
@@ -1891,6 +1972,13 @@ export const Constants = {
       reuniao_lembrete_tipo: ["1d", "1h", "15min"],
       reuniao_status: ["agendada", "realizada", "cancelada"],
       reuniao_tipo: ["individual", "institucional", "alinhamento", "mentoria"],
+      satisfacao_status: [
+        "pendente",
+        "enviada",
+        "respondida",
+        "sem_resposta_valida",
+        "falha_envio",
+      ],
       vendas_etapa: [
         "novo_lead",
         "contato_realizado",
