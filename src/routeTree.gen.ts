@@ -42,6 +42,7 @@ import { Route as ApiPublicGoogleOauthCallbackRouteImport } from './routes/api/p
 import { Route as ApiPublicCronUnattendedRouteImport } from './routes/api/public/cron-unattended'
 import { Route as ApiPublicCronReunioesInstitucionaisRouteImport } from './routes/api/public/cron-reunioes-institucionais'
 import { Route as ApiPublicCronReuniaoLembretesRouteImport } from './routes/api/public/cron-reuniao-lembretes'
+import { Route as ApiPublicCronPlantaoDiarioRouteImport } from './routes/api/public/cron-plantao-diario'
 import { Route as ApiPublicCronLauraResumoDiarioRouteImport } from './routes/api/public/cron-laura-resumo-diario'
 import { Route as AuthenticatedVendasPortfolioRouteImport } from './routes/_authenticated/vendas.portfolio'
 import { Route as AuthenticatedVendasPlantaoRouteImport } from './routes/_authenticated/vendas.plantao'
@@ -231,6 +232,12 @@ const ApiPublicCronReuniaoLembretesRoute =
     path: '/api/public/cron-reuniao-lembretes',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCronPlantaoDiarioRoute =
+  ApiPublicCronPlantaoDiarioRouteImport.update({
+    id: '/api/public/cron-plantao-diario',
+    path: '/api/public/cron-plantao-diario',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCronLauraResumoDiarioRoute =
   ApiPublicCronLauraResumoDiarioRouteImport.update({
     id: '/api/public/cron-laura-resumo-diario',
@@ -352,6 +359,7 @@ export interface FileRoutesByFullPath {
   '/vendas/plantao': typeof AuthenticatedVendasPlantaoRoute
   '/vendas/portfolio': typeof AuthenticatedVendasPortfolioRoute
   '/api/public/cron-laura-resumo-diario': typeof ApiPublicCronLauraResumoDiarioRoute
+  '/api/public/cron-plantao-diario': typeof ApiPublicCronPlantaoDiarioRoute
   '/api/public/cron-reuniao-lembretes': typeof ApiPublicCronReuniaoLembretesRoute
   '/api/public/cron-reunioes-institucionais': typeof ApiPublicCronReunioesInstitucionaisRoute
   '/api/public/cron-unattended': typeof ApiPublicCronUnattendedRoute
@@ -397,6 +405,7 @@ export interface FileRoutesByTo {
   '/vendas/plantao': typeof AuthenticatedVendasPlantaoRoute
   '/vendas/portfolio': typeof AuthenticatedVendasPortfolioRoute
   '/api/public/cron-laura-resumo-diario': typeof ApiPublicCronLauraResumoDiarioRoute
+  '/api/public/cron-plantao-diario': typeof ApiPublicCronPlantaoDiarioRoute
   '/api/public/cron-reuniao-lembretes': typeof ApiPublicCronReuniaoLembretesRoute
   '/api/public/cron-reunioes-institucionais': typeof ApiPublicCronReunioesInstitucionaisRoute
   '/api/public/cron-unattended': typeof ApiPublicCronUnattendedRoute
@@ -447,6 +456,7 @@ export interface FileRoutesById {
   '/_authenticated/vendas/plantao': typeof AuthenticatedVendasPlantaoRoute
   '/_authenticated/vendas/portfolio': typeof AuthenticatedVendasPortfolioRoute
   '/api/public/cron-laura-resumo-diario': typeof ApiPublicCronLauraResumoDiarioRoute
+  '/api/public/cron-plantao-diario': typeof ApiPublicCronPlantaoDiarioRoute
   '/api/public/cron-reuniao-lembretes': typeof ApiPublicCronReuniaoLembretesRoute
   '/api/public/cron-reunioes-institucionais': typeof ApiPublicCronReunioesInstitucionaisRoute
   '/api/public/cron-unattended': typeof ApiPublicCronUnattendedRoute
@@ -497,6 +507,7 @@ export interface FileRouteTypes {
     | '/vendas/plantao'
     | '/vendas/portfolio'
     | '/api/public/cron-laura-resumo-diario'
+    | '/api/public/cron-plantao-diario'
     | '/api/public/cron-reuniao-lembretes'
     | '/api/public/cron-reunioes-institucionais'
     | '/api/public/cron-unattended'
@@ -542,6 +553,7 @@ export interface FileRouteTypes {
     | '/vendas/plantao'
     | '/vendas/portfolio'
     | '/api/public/cron-laura-resumo-diario'
+    | '/api/public/cron-plantao-diario'
     | '/api/public/cron-reuniao-lembretes'
     | '/api/public/cron-reunioes-institucionais'
     | '/api/public/cron-unattended'
@@ -591,6 +603,7 @@ export interface FileRouteTypes {
     | '/_authenticated/vendas/plantao'
     | '/_authenticated/vendas/portfolio'
     | '/api/public/cron-laura-resumo-diario'
+    | '/api/public/cron-plantao-diario'
     | '/api/public/cron-reuniao-lembretes'
     | '/api/public/cron-reunioes-institucionais'
     | '/api/public/cron-unattended'
@@ -613,6 +626,7 @@ export interface RootRouteChildren {
   FormularioRoute: typeof FormularioRoute
   SejaCorretorRoute: typeof SejaCorretorRoute
   ApiPublicCronLauraResumoDiarioRoute: typeof ApiPublicCronLauraResumoDiarioRoute
+  ApiPublicCronPlantaoDiarioRoute: typeof ApiPublicCronPlantaoDiarioRoute
   ApiPublicCronReuniaoLembretesRoute: typeof ApiPublicCronReuniaoLembretesRoute
   ApiPublicCronReunioesInstitucionaisRoute: typeof ApiPublicCronReunioesInstitucionaisRoute
   ApiPublicCronUnattendedRoute: typeof ApiPublicCronUnattendedRoute
@@ -856,6 +870,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronReuniaoLembretesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron-plantao-diario': {
+      id: '/api/public/cron-plantao-diario'
+      path: '/api/public/cron-plantao-diario'
+      fullPath: '/api/public/cron-plantao-diario'
+      preLoaderRoute: typeof ApiPublicCronPlantaoDiarioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cron-laura-resumo-diario': {
       id: '/api/public/cron-laura-resumo-diario'
       path: '/api/public/cron-laura-resumo-diario'
@@ -1077,6 +1098,7 @@ const rootRouteChildren: RootRouteChildren = {
   FormularioRoute: FormularioRoute,
   SejaCorretorRoute: SejaCorretorRoute,
   ApiPublicCronLauraResumoDiarioRoute: ApiPublicCronLauraResumoDiarioRoute,
+  ApiPublicCronPlantaoDiarioRoute: ApiPublicCronPlantaoDiarioRoute,
   ApiPublicCronReuniaoLembretesRoute: ApiPublicCronReuniaoLembretesRoute,
   ApiPublicCronReunioesInstitucionaisRoute:
     ApiPublicCronReunioesInstitucionaisRoute,
