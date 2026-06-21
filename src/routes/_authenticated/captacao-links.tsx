@@ -106,7 +106,7 @@ function CaptacaoLinksPage() {
 
   if (denied) {
     return (
-      <div className="p-8 max-w-2xl">
+      <div className="p-4 md:p-8 max-w-2xl">
         <h1 className="text-2xl font-bold">Acesso restrito</h1>
         <p className="text-muted-foreground mt-2">
           Esta página é exclusiva para admin e executivos.
