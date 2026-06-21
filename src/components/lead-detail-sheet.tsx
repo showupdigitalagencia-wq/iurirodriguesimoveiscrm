@@ -311,7 +311,17 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
 
               <TabsContent value="info" className="space-y-4 mt-4">
                 <div className="flex justify-between items-center gap-2">
-                  <div>
+                  <div className="flex flex-wrap gap-2">
+                    {isAdmin && !editing && lead.etapa === "fechado" && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-red-700 border-red-300 hover:bg-red-50 dark:text-red-300 dark:border-red-800 dark:hover:bg-red-950/30"
+                        onClick={() => { setDescredMotivo(""); setDescredOpen(true); }}
+                      >
+                        <ShieldOff className="h-4 w-4" /> Descredenciar
+                      </Button>
+                    )}
                     {isAdmin && !editing && (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
