@@ -1,59 +1,88 @@
-## Objetivo
+# Sistema de Plantão de Vendas — Plano Completo
 
-Deixar todas as funções do Sistema NEXUS totalmente utilizáveis no celular, mantendo o desktop intacto. A navegação principal (sidebar + bottom bar + "Mais") já existe — o trabalho agora é adaptar cada **tela interna** (tabelas, kanban, formulários, modais e dashboards) para fluir bem em telas pequenas.
+## Regra de distribuição (decidida)
+- **Facebook + região fixa conhecida** (Barra, Recreio, Belford Roxo, Nilópolis, Mesquita) → vai para a responsável da região (lógica atual, intocada).
+- **Qualquer outra combinação** (ZAP Imóveis, OLX, Site, WhatsApp da empresa, Facebook sem região mapeada) → vai para o **plantonista do dia**.
+- Pool de plantão: todos com role `corretor_vendas` + Executivos. Admin/Executivo escala livremente.
+- Reincidência: toda nova mensagem de um lead reatribui ao plantonista do dia atual (plantão é por dia inteiro, sem troca no meio do dia).
 
-## Princípios aplicados em todas as telas
+## Mudanças no banco
 
-- Nenhuma tabela "estoura" lateralmente: viram cards empilhados no mobile (`md:hidden` cards / `hidden md:block` tabela).
-- Todo Dialog/Sheet vira tela cheia no mobile, com botões grandes (mín. 44px) e rolagem interna.
-- Cabeçalhos de página: título + ações usam `grid` no mobile e `flex` no desktop (sem botões cortados).
-- Kanban (Pipeline) ganha modo "swipe horizontal por etapa" no mobile com indicador de etapa.
-- Gráficos do dashboard/relatórios reduzem para 1 coluna e altura adequada no celular.
-- Formulários longos (Configurações, Imóveis, Reunião, Lead) usam abas/seções colapsáveis no mobile.
+### 1. Novos campos em `vendas_leads`
+- `origem` (enum: `zap_imoveis`, `olx`, `site`, `whatsapp_empresa`, `facebook`, `manual`, `outro`)
+- `origem_detalhe` (texto livre, opcional — ex.: id do anúncio)
+- `ultima_mensagem_em` (timestamp — usado para reincidência)
+- `plantao_dia` (data — registra de qual dia de plantão o lead veio, para auditoria)
 
-## Ondas de execução
+### 2. Nova tabela `plantao_escala`
+```text
+id, data (date, único), corretor_id (uuid), criado_por, created_at, updated_at
+```
+RLS: Admin/Executivo gerenciam; corretores leem (precisam ver a própria escala).
 
-Vou entregar em **3 ondas**, validando cada uma com Playwright em viewport 390x844 antes de seguir:
+### 3. Nova tabela `plantao_log`
+Auditoria de cada atribuição automática: `lead_id`, `corretor_id`, `motivo` (novo_lead, reincidencia, redirecionamento_demora), `origem`, `criado_em`.
 
-### Onda 1 — Operacional do dia a dia (mais usado no celular)
-- `pipeline.tsx` + `vendas.pipeline.tsx` — Kanban responsivo (swipe entre colunas)
-- `leads.tsx` + `vendas.leads.tsx` — Tabela → cards no mobile, filtros em sheet
-- `lead-detail-sheet.tsx` + `vendas-lead-detail.tsx` — Sheet fullscreen no mobile
-- `create-lead-dialog.tsx` — Dialog fullscreen com inputs maiores
-- `agenda.tsx` + `vendas.agenda.tsx` — Calendário/lista adaptada
-- `reuniao-form-dialog.tsx` + `reuniao-detail-dialog.tsx` — Fullscreen mobile
-- `notificacoes.tsx` — Lista já é vertical, ajustar paddings/headers
-- `correspondente.tsx` — Cards + Dialog fullscreen para upload de docs
+### 4. Funções SQL
+- `plantonista_do_dia(data date)` → retorna `corretor_id` da escala daquele dia, ou NULL.
+- `is_corretor_vendas_ou_executivo(uid)` → helper para o pool.
 
-### Onda 2 — Gestão e relatórios
-- `dashboard.tsx` + `vendas.index.tsx` — Cards stats 1 col, gráficos full width
-- `relatorio.tsx` — Gráficos empilhados, filtros em sheet
-- `corretores.tsx` — Tabela → cards no mobile
-- `executivos.index.tsx` + `executivos.$id.tsx` + `executivos.landing-page.tsx` — Layout fluido
-- `captacao-links.tsx` — Cards de link + preview adaptado
-- `sophia-chat.tsx` — Chat full-height no mobile
+## Mudanças no servidor
 
-### Onda 3 — Administrativo e configuração
-- `admin.index.tsx`, `admin.imoveis.tsx`, `admin.contratos.tsx`, `admin.pagamentos.tsx`, `admin.inadimplentes.tsx`, `admin.candidatos.tsx` — Tabelas → cards, forms adaptados
-- `configuracoes.tsx` — Seções colapsáveis/abas no mobile
-- `usuarios.tsx` — Tabela → cards, dialog criar usuário fullscreen
-- `tempo-acesso.tsx` — Lista/gráficos adaptados
+### 5. Webhook `/api/public/webhook` (já existente) — refatorado
+- Detecta `origem` a partir do payload (form_id, source, headers).
+- **Se `origem = facebook` E região está em {barra, recreio, belford_roxo, nilopolis, mesquita}** → mantém fluxo atual (grava em `leads`, push para responsável).
+- **Senão** → grava em `vendas_leads` com:
+  - `origem` correta
+  - `corretor_id = plantonista_do_dia(hoje)`
+  - `atribuicao_status = 'pendente'`
+  - `plantao_dia = hoje`
+- Push direcionado ao **plantonista** (via `external_id`), não mais broadcast "All".
+- Se não há plantonista escalado → notifica admins + log de erro.
 
-## Detalhes técnicos
+### 6. Novo webhook `/api/public/lead-mensagem` (reincidência)
+- Recebe `{ telefone, origem, mensagem }`.
+- Procura `vendas_leads` existente por telefone.
+- Se encontrado → atualiza `ultima_mensagem_em`; se o plantonista de hoje ≠ corretor atual do lead, reatribui ao plantonista de hoje (log do motivo `reincidencia`).
+- Se não encontrado → cria novo lead via mesma lógica do webhook.
 
-- Padrão de tabela responsiva: dentro de cada rota com tabela, adicionar bloco `<div className="md:hidden space-y-3">…cards…</div>` e envolver a `<Table>` em `<div className="hidden md:block">`. Sem refatorar lógica de dados — só apresentação.
-- Padrão de Dialog mobile: usar `className="max-w-[100vw] sm:max-w-lg h-[100dvh] sm:h-auto sm:max-h-[90vh] rounded-none sm:rounded-lg"` com `<DialogContent>` rolável.
-- Kanban swipe: usar scroll-snap horizontal (`snap-x snap-mandatory`) com cada coluna `w-[85vw] md:w-72 snap-center`, sem libs extras.
-- Não mexer em lógica de negócio, RLS, server functions, queries ou tipos.
-- Não criar componentes novos a menos que seja para evitar duplicação (ex: um `ResponsiveTable` helper se ficar repetitivo).
+### 7. Server functions novas (`src/lib/plantao.functions.ts`)
+- `getEscalaMes({ ano, mes })` — admin/exec listam.
+- `setPlantonista({ data, corretor_id })` — admin/exec escalam.
+- `removerPlantonista({ data })`.
+- `listCorretoresElegiveis()` — pool de corretor_vendas + executivos.
+- `getMeuPlantaoProximo()` — corretor vê seus próximos plantões.
 
-## Validação
+### 8. Correção do `atribuirLead` (vendas-distribuicao.functions.ts)
+- Substituir `included_segments: ["All"]` por push direcionado via `external_id` do corretor atribuído (+ opcional cópia para admins).
 
-Ao final de cada onda: rodar Playwright em 390x844, navegar pelas telas da onda logado como admin, tirar screenshots e conferir que nada está cortado/cortando texto/sem botão acessível.
+## Frontend
 
-## Fora de escopo
+### 9. Tela `/_authenticated/vendas/plantao` (dentro da aba Vendas)
+- Calendário mensal (grid 7×N).
+- Cada dia: dropdown com elegíveis + nome do plantonista escalado.
+- Admin/Executivo editam; corretores só veem.
+- Banner topo: "Plantonista de hoje: X".
 
-- Mudar visual/tema/cores (preto e dourado mantido).
-- Adicionar/remover funcionalidades.
-- Mexer em backend, migrations ou permissões.
-- PWA / instalação no celular (pode ser uma próxima etapa se você quiser).
+### 10. Item no menu Vendas
+- Adicionar "Plantão" em `vendas.tsx` (desktop e mobile), junto com Dashboard, Leads, Pipeline, Agenda.
+
+### 11. Indicadores em `vendas.index.tsx`
+- Card "Leads do meu plantão hoje": quantos recebi, quantos aceitei.
+
+## Métricas e auditoria
+- `plantao_log` alimenta relatório futuro de quantos leads cada corretor recebeu/aceitou/recusou por plantão.
+- (Relatórios visuais ficam para iteração seguinte — agora só persistimos os dados.)
+
+## Itens fora do escopo desta entrega
+- Redirecionamento por demora (>X min sem atendimento) — registro de campos prontos, lógica de cron fica para próxima.
+- Tela de relatórios de plantão — dados ficam prontos, UI vem depois.
+- Ativação manual de push pelos 3 corretores sem `onesignal_external_id` (Robson Terra, Denise, Pedro) — não é código, eles precisam abrir o app e aceitar notificação.
+
+## Ordem de execução
+1. Migration (campos + tabelas + funções SQL + RLS + grants).
+2. Server functions de plantão.
+3. Refatorar webhook + criar webhook de mensagem.
+4. Corrigir push do `atribuirLead`.
+5. Tela de gestão de plantão + item no menu.
+6. Card de plantão no dashboard de Vendas.

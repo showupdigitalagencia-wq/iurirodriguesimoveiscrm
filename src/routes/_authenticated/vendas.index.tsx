@@ -1,15 +1,22 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { VENDAS_ETAPAS, formatBRL, type VendasLead } from "@/lib/vendas-helpers";
-import { TrendingUp, Users, CheckCircle2, XCircle } from "lucide-react";
+import { TrendingUp, Users, CheckCircle2, XCircle, CalendarClock } from "lucide-react";
+import { getPlantonistaHoje, getMeusLeadsPlantao } from "@/lib/plantao.functions";
 
 export const Route = createFileRoute("/_authenticated/vendas/")({
   component: VendasDashboard,
 });
 
 function VendasDashboard() {
+  const getHoje = useServerFn(getPlantonistaHoje);
+  const getMeus = useServerFn(getMeusLeadsPlantao);
+  const hojeQ = useQuery({ queryKey: ["plantao-hoje-dash"], queryFn: () => getHoje(), refetchInterval: 60_000 });
+  const meusQ = useQuery({ queryKey: ["plantao-meus-leads"], queryFn: () => getMeus(), refetchInterval: 60_000 });
+
   const { data: leads = [] } = useQuery({
     queryKey: ["vendas_leads_dash"],
     queryFn: async () => {
@@ -44,6 +51,30 @@ function VendasDashboard() {
 
   return (
     <div className="space-y-6">
+      <Link to="/vendas/plantao" className="block">
+        <Card className="hover:bg-muted/30 transition-colors">
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="h-10 w-10 rounded-md bg-gold/10 flex items-center justify-center">
+              <CalendarClock className="h-5 w-5 text-gold" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-xs text-muted-foreground">Plantonista de hoje</div>
+              <div className="text-base font-semibold truncate">
+                {hojeQ.data?.corretor_nome ?? <span className="text-amber-600">Ninguém escalado</span>}
+              </div>
+            </div>
+            {meusQ.data && (
+              <div className="text-right text-xs text-muted-foreground">
+                <div>Meus leads hoje</div>
+                <div className="text-foreground font-semibold">
+                  {meusQ.data.aceitos} aceitos / {meusQ.data.total} total
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </Link>
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {cards.map((c) => {
           const Icon = c.icon;

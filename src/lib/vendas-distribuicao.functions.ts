@@ -112,56 +112,56 @@ export const atribuirLead = createServerFn({ method: "POST" })
       .single();
     if (error) throw new Error(error.message);
 
-    // Push: usando formato broadcast (included_segments: ["All"]) que já funciona no sistema
+    // Push DIRECIONADO ao corretor atribuído via external_id (não mais broadcast "All")
     try {
-      const { data: corretorProf } = await supabaseAdmin
-        .from("profiles").select("nome").eq("id", data.corretor_id).maybeSingle();
+      const [{ data: corretorProf }, { data: roles }] = await Promise.all([
+        supabaseAdmin.from("profiles").select("nome, onesignal_external_id").eq("id", data.corretor_id).maybeSingle(),
+        supabaseAdmin.from("user_roles").select("user_id").eq("role", "admin"),
+      ]);
       const lead = updated as { nome: string; telefone: string; regiao: string };
       const url = "https://sistemanexus.app/vendas/leads";
-      const appId = process.env.ONESIGNAL_APP_ID;
-      const restKey = process.env.ONESIGNAL_REST_API_KEY;
-      console.info("[atribuirLead] push start", { hasAppId: !!appId, hasRestKey: !!restKey, lead_id: data.lead_id, corretor_id: data.corretor_id });
+      const corretorExt = (corretorProf as { nome: string; onesignal_external_id: string | null } | null)?.onesignal_external_id ?? null;
+      const corretorNome = (corretorProf as { nome: string } | null)?.nome ?? "corretor";
 
-      if (!appId || !restKey) {
-        console.error("[atribuirLead] OneSignal env ausente");
+      // Admins (cópia silenciosa)
+      const adminIds = ((roles ?? []) as { user_id: string }[]).map((r) => r.user_id);
+      let adminExt: string[] = [];
+      if (adminIds.length) {
+        const { data: adminProfs } = await supabaseAdmin.from("profiles").select("onesignal_external_id").in("id", adminIds);
+        adminExt = ((adminProfs ?? []) as { onesignal_external_id: string | null }[])
+          .map((p) => p.onesignal_external_id)
+          .filter((x): x is string => !!x && x !== corretorExt);
+      }
+
+      const { sendOneSignalPush } = await import("@/lib/onesignal.server");
+
+      // Push principal: para o corretor atribuído
+      if (corretorExt) {
+        const r = await sendOneSignalPush({
+          externalId: corretorExt,
+          title: "🏠 Novo Lead Atribuído!",
+          message: `${lead.nome} · ${lead.telefone} · ${lead.regiao.replace(/_/g, " ")}`,
+          url, data: { lead_id: data.lead_id },
+        });
+        console.info("[atribuirLead] push corretor", { ok: r.ok, error: r.error });
       } else {
-        const corretorNome = corretorProf?.nome ?? "corretor";
-        const payloads = [
-          {
-            app_id: appId,
-            included_segments: ["All"],
-            headings: { en: "🏠 Novo Lead Atribuído!" },
-            contents: { en: `🏠 Novo Lead! Nome: ${lead.nome} | Tel: ${lead.telefone}` },
-            url,
-          },
-          {
-            app_id: appId,
-            included_segments: ["All"],
-            headings: { en: "✅ Lead Atribuído com Sucesso!" },
-            contents: { en: `✅ Lead ${lead.nome} atribuído para ${corretorNome}` },
-            url,
-          },
-        ];
-        const results = await Promise.all(payloads.map(async (body, i) => {
-          try {
-            const resp = await fetch("https://api.onesignal.com/notifications?c=push", {
-              method: "POST",
-              headers: { "Content-Type": "application/json", Authorization: `Key ${restKey}` },
-              body: JSON.stringify(body),
-            });
-            const text = await resp.text();
-            console.info(`[atribuirLead] push #${i} resp`, { status: resp.status, ok: resp.ok, body: text });
-            return { ok: resp.ok, status: resp.status, body: text };
-          } catch (err) {
-            console.error(`[atribuirLead] push #${i} fetch error`, err);
-            return { ok: false, error: String(err) };
-          }
-        }));
-        console.info("[atribuirLead] push results", results);
+        console.warn("[atribuirLead] corretor sem onesignal_external_id; push individual não enviado", { corretor_id: data.corretor_id });
+      }
+
+      // Cópia para admins
+      if (adminExt.length) {
+        const r = await sendOneSignalPush({
+          externalIds: adminExt,
+          title: "✅ Lead Atribuído",
+          message: `Lead ${lead.nome} atribuído para ${corretorNome}`,
+          url, data: { lead_id: data.lead_id },
+        });
+        console.info("[atribuirLead] push admins", { count: adminExt.length, ok: r.ok });
       }
     } catch (e) {
       console.warn("[atribuirLead] push falhou", e);
     }
+
 
     return { ok: true };
   });

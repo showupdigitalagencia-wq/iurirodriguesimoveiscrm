@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { normalizeOrigem, shouldUsePlantao } from "@/lib/plantao-shared";
+
 
 type Regiao = "barra_da_tijuca" | "recreio" | "belford_roxo" | "nilopolis" | "mesquita" | "jacarepagua" | "zona_sul" | "zona_norte" | "zona_oeste" | "centro" | "outras";
 
@@ -151,6 +153,87 @@ export const Route = createFileRoute("/api/public/webhook")({
             canal = MAPA[regiao];
           }
         }
+
+        // === Roteamento Plantão vs Região-fixa ===
+        // Captação de corretor sempre segue fluxo antigo (não é "lead de venda").
+        const origem = normalizeOrigem(origem_in);
+        const usePlantao = !isCaptacaoCorretor && shouldUsePlantao(origem, regiao);
+
+        if (usePlantao) {
+          // ----- Fluxo Plantão: grava em vendas_leads -----
+          const hoje = new Date().toISOString().slice(0, 10);
+          const { data: escala } = await supabaseAdmin
+            .from("plantao_escala" as never).select("corretor_id").eq("data", hoje).maybeSingle();
+          const plantonista = (escala as { corretor_id: string } | null)?.corretor_id ?? null;
+
+          const { data: vlead, error: vlErr } = await supabaseAdmin
+            .from("vendas_leads").insert({
+              nome,
+              telefone: telefone.replace(/\D/g, ""),
+              email: email ?? null,
+              regiao: regiao as never,
+              etapa: "novo" as never,
+              observacoes: observacoes ?? null,
+              origem,
+              origem_detalhe: form_id ?? null,
+              ultima_mensagem_em: new Date().toISOString(),
+              plantao_dia: hoje,
+              corretor_id: plantonista,
+              atribuicao_status: plantonista ? "pendente" : null,
+              atribuido_em: plantonista ? new Date().toISOString() : null,
+            } as never).select("id").single();
+          if (vlErr || !vlead) {
+            return new Response(JSON.stringify({ error: vlErr?.message ?? "Erro" }), {
+              status: 500, headers: { "Content-Type": "application/json" },
+            });
+          }
+          await supabaseAdmin.from("plantao_log" as never).insert({
+            lead_id: vlead.id, corretor_id: plantonista,
+            motivo: plantonista ? "novo_lead" : "sem_plantonista",
+            origem, detalhe: { telefone, regiao, form_id: form_id ?? null } as never,
+          } as never);
+
+          // Push direcionado ao plantonista (ou admins se sem escala)
+          try {
+            const { sendOneSignalPush } = await import("@/lib/onesignal.server");
+            if (plantonista) {
+              const { data: prof } = await supabaseAdmin
+                .from("profiles").select("onesignal_external_id").eq("id", plantonista).maybeSingle();
+              const ext = (prof as { onesignal_external_id: string | null } | null)?.onesignal_external_id;
+              if (ext) {
+                await sendOneSignalPush({
+                  externalId: ext,
+                  title: "🏠 Novo lead de plantão",
+                  message: `${nome} · ${telefone} · ${origem.replace(/_/g, " ")}`,
+                  url: "https://sistemanexus.app/vendas/leads",
+                  data: { lead_id: vlead.id, origem },
+                });
+              }
+            } else {
+              const { data: roles } = await supabaseAdmin.from("user_roles").select("user_id").eq("role", "admin");
+              const ids = ((roles ?? []) as { user_id: string }[]).map((r) => r.user_id);
+              if (ids.length) {
+                const { data: profs } = await supabaseAdmin.from("profiles").select("onesignal_external_id").in("id", ids);
+                const ext = ((profs ?? []) as { onesignal_external_id: string | null }[])
+                  .map((p) => p.onesignal_external_id).filter((x): x is string => !!x);
+                if (ext.length) {
+                  await sendOneSignalPush({
+                    externalIds: ext,
+                    title: "⚠️ Lead sem plantonista",
+                    message: `${nome} · ${telefone} · ${origem.replace(/_/g, " ")} — escale alguém no Plantão`,
+                    url: "https://sistemanexus.app/vendas/plantao",
+                    data: { lead_id: vlead.id },
+                  });
+                }
+              }
+            }
+          } catch (e) { console.warn("[webhook plantão] push falhou", e); }
+
+          return new Response(JSON.stringify({ ok: true, id: vlead.id, fluxo: "plantao", plantonista }), {
+            status: 201, headers: { "Content-Type": "application/json" },
+          });
+        }
+
 
         const { data: responsavel } = await supabaseAdmin
           .from("responsaveis").select("id, whatsapp, nome, onesignal_external_id").eq("canal", canal).maybeSingle();

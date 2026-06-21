@@ -36,12 +36,14 @@ import { Route as AuthenticatedExecutivosIndexRouteImport } from './routes/_auth
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as ApiPublicWebhookRouteImport } from './routes/api/public/webhook'
 import { Route as ApiPublicOnesignalTestRouteImport } from './routes/api/public/onesignal-test'
+import { Route as ApiPublicLeadMensagemRouteImport } from './routes/api/public/lead-mensagem'
 import { Route as ApiPublicLeadRouteImport } from './routes/api/public/lead'
 import { Route as ApiPublicGoogleOauthCallbackRouteImport } from './routes/api/public/google-oauth-callback'
 import { Route as ApiPublicCronUnattendedRouteImport } from './routes/api/public/cron-unattended'
 import { Route as ApiPublicCronReunioesInstitucionaisRouteImport } from './routes/api/public/cron-reunioes-institucionais'
 import { Route as ApiPublicCronReuniaoLembretesRouteImport } from './routes/api/public/cron-reuniao-lembretes'
 import { Route as ApiPublicCronLauraResumoDiarioRouteImport } from './routes/api/public/cron-laura-resumo-diario'
+import { Route as AuthenticatedVendasPlantaoRouteImport } from './routes/_authenticated/vendas.plantao'
 import { Route as AuthenticatedVendasPipelineRouteImport } from './routes/_authenticated/vendas.pipeline'
 import { Route as AuthenticatedVendasLeadsRouteImport } from './routes/_authenticated/vendas.leads'
 import { Route as AuthenticatedVendasAgendaRouteImport } from './routes/_authenticated/vendas.agenda'
@@ -195,6 +197,11 @@ const ApiPublicOnesignalTestRoute = ApiPublicOnesignalTestRouteImport.update({
   path: '/api/public/onesignal-test',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicLeadMensagemRoute = ApiPublicLeadMensagemRouteImport.update({
+  id: '/api/public/lead-mensagem',
+  path: '/api/public/lead-mensagem',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicLeadRoute = ApiPublicLeadRouteImport.update({
   id: '/api/public/lead',
   path: '/api/public/lead',
@@ -228,6 +235,12 @@ const ApiPublicCronLauraResumoDiarioRoute =
     id: '/api/public/cron-laura-resumo-diario',
     path: '/api/public/cron-laura-resumo-diario',
     getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthenticatedVendasPlantaoRoute =
+  AuthenticatedVendasPlantaoRouteImport.update({
+    id: '/plantao',
+    path: '/plantao',
+    getParentRoute: () => AuthenticatedVendasRoute,
   } as any)
 const AuthenticatedVendasPipelineRoute =
   AuthenticatedVendasPipelineRouteImport.update({
@@ -329,12 +342,14 @@ export interface FileRoutesByFullPath {
   '/vendas/agenda': typeof AuthenticatedVendasAgendaRoute
   '/vendas/leads': typeof AuthenticatedVendasLeadsRoute
   '/vendas/pipeline': typeof AuthenticatedVendasPipelineRoute
+  '/vendas/plantao': typeof AuthenticatedVendasPlantaoRoute
   '/api/public/cron-laura-resumo-diario': typeof ApiPublicCronLauraResumoDiarioRoute
   '/api/public/cron-reuniao-lembretes': typeof ApiPublicCronReuniaoLembretesRoute
   '/api/public/cron-reunioes-institucionais': typeof ApiPublicCronReunioesInstitucionaisRoute
   '/api/public/cron-unattended': typeof ApiPublicCronUnattendedRoute
   '/api/public/google-oauth-callback': typeof ApiPublicGoogleOauthCallbackRoute
   '/api/public/lead': typeof ApiPublicLeadRoute
+  '/api/public/lead-mensagem': typeof ApiPublicLeadMensagemRoute
   '/api/public/onesignal-test': typeof ApiPublicOnesignalTestRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -371,12 +386,14 @@ export interface FileRoutesByTo {
   '/vendas/agenda': typeof AuthenticatedVendasAgendaRoute
   '/vendas/leads': typeof AuthenticatedVendasLeadsRoute
   '/vendas/pipeline': typeof AuthenticatedVendasPipelineRoute
+  '/vendas/plantao': typeof AuthenticatedVendasPlantaoRoute
   '/api/public/cron-laura-resumo-diario': typeof ApiPublicCronLauraResumoDiarioRoute
   '/api/public/cron-reuniao-lembretes': typeof ApiPublicCronReuniaoLembretesRoute
   '/api/public/cron-reunioes-institucionais': typeof ApiPublicCronReunioesInstitucionaisRoute
   '/api/public/cron-unattended': typeof ApiPublicCronUnattendedRoute
   '/api/public/google-oauth-callback': typeof ApiPublicGoogleOauthCallbackRoute
   '/api/public/lead': typeof ApiPublicLeadRoute
+  '/api/public/lead-mensagem': typeof ApiPublicLeadMensagemRoute
   '/api/public/onesignal-test': typeof ApiPublicOnesignalTestRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
@@ -418,12 +435,14 @@ export interface FileRoutesById {
   '/_authenticated/vendas/agenda': typeof AuthenticatedVendasAgendaRoute
   '/_authenticated/vendas/leads': typeof AuthenticatedVendasLeadsRoute
   '/_authenticated/vendas/pipeline': typeof AuthenticatedVendasPipelineRoute
+  '/_authenticated/vendas/plantao': typeof AuthenticatedVendasPlantaoRoute
   '/api/public/cron-laura-resumo-diario': typeof ApiPublicCronLauraResumoDiarioRoute
   '/api/public/cron-reuniao-lembretes': typeof ApiPublicCronReuniaoLembretesRoute
   '/api/public/cron-reunioes-institucionais': typeof ApiPublicCronReunioesInstitucionaisRoute
   '/api/public/cron-unattended': typeof ApiPublicCronUnattendedRoute
   '/api/public/google-oauth-callback': typeof ApiPublicGoogleOauthCallbackRoute
   '/api/public/lead': typeof ApiPublicLeadRoute
+  '/api/public/lead-mensagem': typeof ApiPublicLeadMensagemRoute
   '/api/public/onesignal-test': typeof ApiPublicOnesignalTestRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -465,12 +484,14 @@ export interface FileRouteTypes {
     | '/vendas/agenda'
     | '/vendas/leads'
     | '/vendas/pipeline'
+    | '/vendas/plantao'
     | '/api/public/cron-laura-resumo-diario'
     | '/api/public/cron-reuniao-lembretes'
     | '/api/public/cron-reunioes-institucionais'
     | '/api/public/cron-unattended'
     | '/api/public/google-oauth-callback'
     | '/api/public/lead'
+    | '/api/public/lead-mensagem'
     | '/api/public/onesignal-test'
     | '/api/public/webhook'
     | '/admin/'
@@ -507,12 +528,14 @@ export interface FileRouteTypes {
     | '/vendas/agenda'
     | '/vendas/leads'
     | '/vendas/pipeline'
+    | '/vendas/plantao'
     | '/api/public/cron-laura-resumo-diario'
     | '/api/public/cron-reuniao-lembretes'
     | '/api/public/cron-reunioes-institucionais'
     | '/api/public/cron-unattended'
     | '/api/public/google-oauth-callback'
     | '/api/public/lead'
+    | '/api/public/lead-mensagem'
     | '/api/public/onesignal-test'
     | '/api/public/webhook'
     | '/admin'
@@ -553,12 +576,14 @@ export interface FileRouteTypes {
     | '/_authenticated/vendas/agenda'
     | '/_authenticated/vendas/leads'
     | '/_authenticated/vendas/pipeline'
+    | '/_authenticated/vendas/plantao'
     | '/api/public/cron-laura-resumo-diario'
     | '/api/public/cron-reuniao-lembretes'
     | '/api/public/cron-reunioes-institucionais'
     | '/api/public/cron-unattended'
     | '/api/public/google-oauth-callback'
     | '/api/public/lead'
+    | '/api/public/lead-mensagem'
     | '/api/public/onesignal-test'
     | '/api/public/webhook'
     | '/_authenticated/admin/'
@@ -580,6 +605,7 @@ export interface RootRouteChildren {
   ApiPublicCronUnattendedRoute: typeof ApiPublicCronUnattendedRoute
   ApiPublicGoogleOauthCallbackRoute: typeof ApiPublicGoogleOauthCallbackRoute
   ApiPublicLeadRoute: typeof ApiPublicLeadRoute
+  ApiPublicLeadMensagemRoute: typeof ApiPublicLeadMensagemRoute
   ApiPublicOnesignalTestRoute: typeof ApiPublicOnesignalTestRoute
   ApiPublicWebhookRoute: typeof ApiPublicWebhookRoute
 }
@@ -775,6 +801,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicOnesignalTestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/lead-mensagem': {
+      id: '/api/public/lead-mensagem'
+      path: '/api/public/lead-mensagem'
+      fullPath: '/api/public/lead-mensagem'
+      preLoaderRoute: typeof ApiPublicLeadMensagemRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/lead': {
       id: '/api/public/lead'
       path: '/api/public/lead'
@@ -816,6 +849,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/cron-laura-resumo-diario'
       preLoaderRoute: typeof ApiPublicCronLauraResumoDiarioRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/vendas/plantao': {
+      id: '/_authenticated/vendas/plantao'
+      path: '/plantao'
+      fullPath: '/vendas/plantao'
+      preLoaderRoute: typeof AuthenticatedVendasPlantaoRouteImport
+      parentRoute: typeof AuthenticatedVendasRoute
     }
     '/_authenticated/vendas/pipeline': {
       id: '/_authenticated/vendas/pipeline'
@@ -952,6 +992,7 @@ interface AuthenticatedVendasRouteChildren {
   AuthenticatedVendasAgendaRoute: typeof AuthenticatedVendasAgendaRoute
   AuthenticatedVendasLeadsRoute: typeof AuthenticatedVendasLeadsRoute
   AuthenticatedVendasPipelineRoute: typeof AuthenticatedVendasPipelineRoute
+  AuthenticatedVendasPlantaoRoute: typeof AuthenticatedVendasPlantaoRoute
   AuthenticatedVendasIndexRoute: typeof AuthenticatedVendasIndexRoute
 }
 
@@ -959,6 +1000,7 @@ const AuthenticatedVendasRouteChildren: AuthenticatedVendasRouteChildren = {
   AuthenticatedVendasAgendaRoute: AuthenticatedVendasAgendaRoute,
   AuthenticatedVendasLeadsRoute: AuthenticatedVendasLeadsRoute,
   AuthenticatedVendasPipelineRoute: AuthenticatedVendasPipelineRoute,
+  AuthenticatedVendasPlantaoRoute: AuthenticatedVendasPlantaoRoute,
   AuthenticatedVendasIndexRoute: AuthenticatedVendasIndexRoute,
 }
 
@@ -1019,19 +1061,10 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronUnattendedRoute: ApiPublicCronUnattendedRoute,
   ApiPublicGoogleOauthCallbackRoute: ApiPublicGoogleOauthCallbackRoute,
   ApiPublicLeadRoute: ApiPublicLeadRoute,
+  ApiPublicLeadMensagemRoute: ApiPublicLeadMensagemRoute,
   ApiPublicOnesignalTestRoute: ApiPublicOnesignalTestRoute,
   ApiPublicWebhookRoute: ApiPublicWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

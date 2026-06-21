@@ -839,6 +839,63 @@ export type Database = {
           },
         ]
       }
+      plantao_escala: {
+        Row: {
+          corretor_id: string
+          created_at: string
+          criado_por: string | null
+          data: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          corretor_id: string
+          created_at?: string
+          criado_por?: string | null
+          data: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          corretor_id?: string
+          created_at?: string
+          criado_por?: string | null
+          data?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      plantao_log: {
+        Row: {
+          corretor_id: string | null
+          criado_em: string
+          detalhe: Json | null
+          id: string
+          lead_id: string | null
+          motivo: Database["public"]["Enums"]["plantao_motivo"]
+          origem: Database["public"]["Enums"]["lead_origem"] | null
+        }
+        Insert: {
+          corretor_id?: string | null
+          criado_em?: string
+          detalhe?: Json | null
+          id?: string
+          lead_id?: string | null
+          motivo: Database["public"]["Enums"]["plantao_motivo"]
+          origem?: Database["public"]["Enums"]["lead_origem"] | null
+        }
+        Update: {
+          corretor_id?: string | null
+          criado_em?: string
+          detalhe?: Json | null
+          id?: string
+          lead_id?: string | null
+          motivo?: Database["public"]["Enums"]["plantao_motivo"]
+          origem?: Database["public"]["Enums"]["lead_origem"] | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           ativo: boolean
@@ -1145,10 +1202,14 @@ export type Database = {
           id: string
           nome: string
           observacoes: string | null
+          origem: Database["public"]["Enums"]["lead_origem"]
+          origem_detalhe: string | null
+          plantao_dia: string | null
           recusas: Json
           regiao: Database["public"]["Enums"]["lead_regiao"]
           telefone: string
           tipo: Database["public"]["Enums"]["vendas_tipo"]
+          ultima_mensagem_em: string | null
           updated_at: string
           valor: number | null
         }
@@ -1165,10 +1226,14 @@ export type Database = {
           id?: string
           nome: string
           observacoes?: string | null
+          origem?: Database["public"]["Enums"]["lead_origem"]
+          origem_detalhe?: string | null
+          plantao_dia?: string | null
           recusas?: Json
           regiao?: Database["public"]["Enums"]["lead_regiao"]
           telefone: string
           tipo?: Database["public"]["Enums"]["vendas_tipo"]
+          ultima_mensagem_em?: string | null
           updated_at?: string
           valor?: number | null
         }
@@ -1185,10 +1250,14 @@ export type Database = {
           id?: string
           nome?: string
           observacoes?: string | null
+          origem?: Database["public"]["Enums"]["lead_origem"]
+          origem_detalhe?: string | null
+          plantao_dia?: string | null
           recusas?: Json
           regiao?: Database["public"]["Enums"]["lead_regiao"]
           telefone?: string
           tipo?: Database["public"]["Enums"]["vendas_tipo"]
+          ultima_mensagem_em?: string | null
           updated_at?: string
           valor?: number | null
         }
@@ -1273,6 +1342,11 @@ export type Database = {
         Args: { _user_id?: string }
         Returns: boolean
       }
+      is_corretor_vendas_ou_executivo: {
+        Args: { _uid?: string }
+        Returns: boolean
+      }
+      plantonista_do_dia: { Args: { _data: string }; Returns: string }
     }
     Enums: {
       app_role:
@@ -1295,6 +1369,14 @@ export type Database = {
         | "follow_up"
         | "fechado"
         | "descartado"
+      lead_origem:
+        | "zap_imoveis"
+        | "olx"
+        | "site"
+        | "whatsapp_empresa"
+        | "facebook"
+        | "manual"
+        | "outro"
       lead_regiao:
         | "barra_da_tijuca"
         | "recreio"
@@ -1307,6 +1389,11 @@ export type Database = {
         | "belford_roxo"
         | "nilopolis"
         | "mesquita"
+      plantao_motivo:
+        | "novo_lead"
+        | "reincidencia"
+        | "redirecionamento_demora"
+        | "sem_plantonista"
       reuniao_lembrete_tipo: "1d" | "1h" | "15min"
       reuniao_status: "agendada" | "realizada" | "cancelada"
       reuniao_tipo: "individual" | "institucional" | "alinhamento" | "mentoria"
@@ -1469,6 +1556,15 @@ export const Constants = {
         "fechado",
         "descartado",
       ],
+      lead_origem: [
+        "zap_imoveis",
+        "olx",
+        "site",
+        "whatsapp_empresa",
+        "facebook",
+        "manual",
+        "outro",
+      ],
       lead_regiao: [
         "barra_da_tijuca",
         "recreio",
@@ -1481,6 +1577,12 @@ export const Constants = {
         "belford_roxo",
         "nilopolis",
         "mesquita",
+      ],
+      plantao_motivo: [
+        "novo_lead",
+        "reincidencia",
+        "redirecionamento_demora",
+        "sem_plantonista",
       ],
       reuniao_lembrete_tipo: ["1d", "1h", "15min"],
       reuniao_status: ["agendada", "realizada", "cancelada"],

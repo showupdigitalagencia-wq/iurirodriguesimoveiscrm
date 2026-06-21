@@ -2,7 +2,7 @@ import { createFileRoute, Outlet, redirect, Link, useRouter, useRouterState } fr
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useMemo, useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
-import { LayoutDashboard, Kanban, Users, BarChart3, Settings, LogOut, BadgeCheck, UserCog, BellRing, Clock, CalendarDays, MoreHorizontal, Briefcase, Users2, Building2, Megaphone, Banknote, Share2 } from "lucide-react";
+import { LayoutDashboard, Kanban, Users, BarChart3, Settings, LogOut, BadgeCheck, UserCog, BellRing, Clock, CalendarDays, MoreHorizontal, Briefcase, Users2, Building2, Megaphone, Banknote, Share2, CalendarClock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { toast } from "sonner";
@@ -41,13 +41,13 @@ const MOBILE_BOTTOM = [
   { to: "/corretores", label: "Corretores", icon: BadgeCheck },
 ] as const;
 
-// Bottom bar exclusiva do corretor de vendas (5 itens)
+// Bottom bar exclusiva do corretor de vendas (5 itens — Plantão entra, sino fica no topo)
 const CORRETOR_MOBILE_BOTTOM = [
   { to: "/vendas", label: "Dashboard", icon: LayoutDashboard },
   { to: "/vendas/leads", label: "Leads", icon: Users },
   { to: "/vendas/pipeline", label: "Pipeline", icon: Kanban },
   { to: "/vendas/agenda", label: "Agenda", icon: CalendarDays },
-  { to: "/notificacoes", label: "Notificações", icon: BellRing },
+  { to: "/vendas/plantao", label: "Plantão", icon: CalendarClock },
 ] as const;
 
 // Ícones do topo mobile (direita)
@@ -121,6 +121,7 @@ function AuthLayout() {
           { to: "/vendas/leads", label: "Leads", icon: Users },
           { to: "/vendas/pipeline", label: "Pipeline", icon: Kanban },
           { to: "/vendas/agenda", label: "Agenda", icon: CalendarDays },
+          { to: "/vendas/plantao", label: "Plantão", icon: CalendarClock },
           { to: "/notificacoes", label: "Notificações", icon: BellRing },
         );
       }
