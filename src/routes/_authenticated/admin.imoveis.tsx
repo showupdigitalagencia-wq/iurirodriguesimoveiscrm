@@ -457,7 +457,7 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
 
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { onOpenChange(v); if (!v) setForm({}); }}>
+    <Dialog open={open} onOpenChange={(v) => { onOpenChange(v); if (!v) { setForm({}); setImportUrl(""); } }}>
       <DialogContent className="sm:max-w-3xl sm:max-h-[90vh]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
