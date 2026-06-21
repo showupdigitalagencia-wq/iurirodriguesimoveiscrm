@@ -923,6 +923,7 @@ export type Database = {
           id: string
           nome: string
           onesignal_external_id: string | null
+          plantao_elegivel: boolean
           responsavel_id: string | null
           updated_at: string
           vendas_acesso: boolean
@@ -933,6 +934,7 @@ export type Database = {
           id: string
           nome?: string
           onesignal_external_id?: string | null
+          plantao_elegivel?: boolean
           responsavel_id?: string | null
           updated_at?: string
           vendas_acesso?: boolean
@@ -943,6 +945,7 @@ export type Database = {
           id?: string
           nome?: string
           onesignal_external_id?: string | null
+          plantao_elegivel?: boolean
           responsavel_id?: string | null
           updated_at?: string
           vendas_acesso?: boolean
