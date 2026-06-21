@@ -490,10 +490,12 @@ export type Database = {
           garantia: string | null
           id: string
           iptu: number | null
+          latitude: number | null
           locatario_documento: string | null
           locatario_email: string | null
           locatario_nome: string | null
           locatario_telefone: string | null
+          longitude: number | null
           numero: string | null
           observacoes: string | null
           proprietario_documento: string | null
@@ -532,10 +534,12 @@ export type Database = {
           garantia?: string | null
           id?: string
           iptu?: number | null
+          latitude?: number | null
           locatario_documento?: string | null
           locatario_email?: string | null
           locatario_nome?: string | null
           locatario_telefone?: string | null
+          longitude?: number | null
           numero?: string | null
           observacoes?: string | null
           proprietario_documento?: string | null
@@ -574,10 +578,12 @@ export type Database = {
           garantia?: string | null
           id?: string
           iptu?: number | null
+          latitude?: number | null
           locatario_documento?: string | null
           locatario_email?: string | null
           locatario_nome?: string | null
           locatario_telefone?: string | null
+          longitude?: number | null
           numero?: string | null
           observacoes?: string | null
           proprietario_documento?: string | null
