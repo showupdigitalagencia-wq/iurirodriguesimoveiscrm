@@ -504,11 +504,12 @@ const ACCENT: Record<string, string> = {
   rose: "from-rose-500/10 to-transparent border-rose-500/20 text-rose-500",
 };
 
-function KpiCard({ icon: Icon, label, value, d, accent }: {
+function KpiCard({ icon: Icon, label, value, d, accent, hint }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string; value: number | string;
   d: { txt: string; up: boolean | null } | null;
   accent: keyof typeof ACCENT;
+  hint?: string;
 }) {
   const cls = ACCENT[accent];
   return (
@@ -523,6 +524,7 @@ function KpiCard({ icon: Icon, label, value, d, accent }: {
       </div>
       <div className="text-2xl md:text-3xl font-bold leading-tight">{value}</div>
       <div className="text-[11px] text-muted-foreground mt-0.5">{label}</div>
+      {hint && <div className="text-[10px] text-muted-foreground mt-1 leading-tight">{hint}</div>}
     </div>
   );
 }
