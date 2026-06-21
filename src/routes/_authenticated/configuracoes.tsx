@@ -51,12 +51,12 @@ function ConfigPage() {
   }, []);
 
   if (isAdmin === null) {
-    return <div className="p-8 text-muted-foreground">Carregando...</div>;
+    return <div className="p-6 md:p-8 text-muted-foreground">Carregando...</div>;
   }
 
   if (!isAdmin) {
     return (
-      <div className="p-8 space-y-6 max-w-4xl">
+      <div className="p-4 md:p-8 space-y-6 max-w-4xl">
         <header>
           <h1 className="text-3xl font-bold tracking-tight">Configurações</h1>
           <p className="text-muted-foreground mt-1">Gerencie sua conta.</p>
@@ -68,7 +68,7 @@ function ConfigPage() {
   }
 
   return (
-    <div className="p-8 space-y-6 max-w-4xl">
+    <div className="p-4 md:p-8 space-y-6 max-w-4xl">
       <header>
         <h1 className="text-3xl font-bold tracking-tight">Configurações</h1>
         <p className="text-muted-foreground mt-1">Responsáveis, integrações e mapeamento de formulários.</p>

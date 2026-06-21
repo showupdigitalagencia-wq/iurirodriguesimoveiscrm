@@ -149,14 +149,14 @@ function UsuariosPage() {
   if (isAdmin === false) return <div className="p-8 text-muted-foreground">Acesso restrito a administradores.</div>;
 
   return (
-    <div className="p-6 md:p-8 max-w-6xl mx-auto space-y-6">
-      <header className="flex items-center justify-between">
-        <div>
+    <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-6">
+      <header className="grid grid-cols-1 gap-3 sm:flex sm:items-center sm:justify-between">
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold">Usuários</h1>
           <p className="text-sm text-muted-foreground">Gerencie funcionários, papéis e acessos ao sistema.</p>
         </div>
         <Dialog open={openNew} onOpenChange={setOpenNew}>
-          <DialogTrigger asChild><Button variant="gold"><Plus className="h-4 w-4 mr-1" /> Novo funcionário</Button></DialogTrigger>
+          <DialogTrigger asChild><Button variant="gold" className="w-full sm:w-auto"><Plus className="h-4 w-4 mr-1" /> Novo funcionário</Button></DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>Criar funcionário</DialogTitle></DialogHeader>
             <form onSubmit={handleCreate} className="space-y-3">
@@ -197,7 +197,76 @@ function UsuariosPage() {
         </Dialog>
       </header>
 
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
+      {/* Mobile: cards empilhados */}
+      <div className="md:hidden space-y-3">
+        {users.map((u) => (
+          <div key={u.id} className="bg-card border border-border rounded-xl p-4 space-y-3">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <div className="font-semibold truncate">{u.nome || "—"}</div>
+                <div className="text-xs text-muted-foreground truncate">{u.email}</div>
+              </div>
+              {u.ativo
+                ? <Badge variant="secondary" className="gap-1 shrink-0"><ShieldCheck className="h-3 w-3" /> Ativo</Badge>
+                : <Badge variant="destructive" className="gap-1 shrink-0"><ShieldOff className="h-3 w-3" /> Bloqueado</Badge>}
+            </div>
+            <div className="grid grid-cols-1 gap-2 text-sm">
+              <div>
+                <Label className="text-xs">Papel</Label>
+                <Select value={u.role} onValueChange={(v) => changeRole(u, v as UserRole)}>
+                  <SelectTrigger className="h-10 mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="corretor">Executivo</SelectItem>
+                    <SelectItem value="corretor_vendas">Corretor (Vendas)</SelectItem>
+                    <SelectItem value="correspondente_bancaria">Correspondente Bancária</SelectItem>
+                    <SelectItem value="administrativo">Administrativo</SelectItem>
+                    <SelectItem value="admin">Administrador</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs">Responsável</Label>
+                <Select value={u.responsavel_id ?? NO_RESPONSAVEL} onValueChange={(v) => changeResp(u, v)}>
+                  <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="—" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={NO_RESPONSAVEL}>—</SelectItem>
+                    {responsaveis.map((r) => <SelectItem key={r.id} value={r.id}>{r.nome}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+              <span>Último acesso: {u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }) : "nunca"}</span>
+            </div>
+            <div className="flex items-center justify-between gap-2 pt-2 border-t">
+              <div className="flex items-center gap-2">
+                <Switch checked={u.ativo} onCheckedChange={() => toggleAtivo(u)} />
+                <span className="text-xs">{u.ativo ? "Ativo" : "Bloqueado"}</span>
+              </div>
+              {u.role === "corretor_vendas" && (
+                <div className="flex items-center gap-2">
+                  <Switch checked={u.vendas_acesso} onCheckedChange={() => toggleVendasAcesso(u)} />
+                  <span className="text-xs">Vendas</span>
+                </div>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={() => setResetting(u)} className="flex-1">
+                <KeyRound className="h-4 w-4 mr-1" /> Senha
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => handleDelete(u)} className="flex-1 text-destructive hover:text-destructive">
+                <Trash2 className="h-4 w-4 mr-1" /> Excluir
+              </Button>
+            </div>
+          </div>
+        ))}
+        {users.length === 0 && (
+          <div className="text-center text-muted-foreground py-8 bg-card border border-border rounded-xl">Nenhum usuário cadastrado.</div>
+        )}
+      </div>
+
+      {/* Desktop: tabela */}
+      <div className="hidden md:block bg-card border border-border rounded-xl overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-muted/40 text-xs uppercase tracking-wide text-muted-foreground">
             <tr>

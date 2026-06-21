@@ -53,13 +53,14 @@ function PipelinePage() {
   }
 
   return (
-    <div className="p-6">
-      <header className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Pipeline</h1>
-        <p className="text-muted-foreground mt-1">Arraste os leads entre as etapas.</p>
+    <div className="p-4 md:p-6">
+      <header className="mb-4 md:mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Pipeline</h1>
+        <p className="text-muted-foreground text-sm md:text-base mt-1 hidden md:block">Arraste os leads entre as etapas.</p>
+        <p className="text-muted-foreground text-xs mt-1 md:hidden">Deslize as colunas para o lado. Toque em um card para abrir.</p>
       </header>
       <DndContext sensors={sensors} onDragEnd={onDragEnd}>
-        <div className="flex gap-4 overflow-x-auto pb-4">
+        <div className="flex gap-3 md:gap-4 overflow-x-auto pb-4 snap-x snap-mandatory md:snap-none -mx-4 px-4 md:mx-0 md:px-0">
           {ETAPAS.map((etapa) => (
             <Column key={etapa.id} id={etapa.id} title={etapa.nome}
               leads={leads.filter((l) => l.etapa === etapa.id)}
@@ -76,7 +77,7 @@ function Column({ id, title, leads, onOpen }: { id: string; title: string; leads
   const { setNodeRef, isOver } = useDroppable({ id });
   const colors = etapaColor(id as LeadRow["etapa"]);
   return (
-    <div ref={setNodeRef} className={`min-w-[280px] w-[280px] bg-muted/40 rounded-xl overflow-hidden ${isOver ? "ring-2 ring-gold" : ""}`}>
+    <div ref={setNodeRef} className={`shrink-0 w-[85vw] sm:w-[300px] md:w-[280px] snap-center bg-muted/40 rounded-xl overflow-hidden ${isOver ? "ring-2 ring-gold" : ""}`}>
       <div className={`flex items-center justify-between px-3 py-2 ${colors.bar} text-white`}>
         <h3 className="text-sm font-semibold">{title}</h3>
         <span className="text-xs bg-white/20 rounded-full px-2 py-0.5">{leads.length}</span>
