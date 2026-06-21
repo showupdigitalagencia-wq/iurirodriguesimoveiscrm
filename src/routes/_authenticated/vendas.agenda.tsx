@@ -363,9 +363,32 @@ function AgendaCorretorPage() {
               </Select>
             </div>
             <div>
-              <Label>Endereço do imóvel</Label>
-              <Input name="endereco" required maxLength={300} className="mt-1.5" placeholder="Rua, número, bairro" />
+              <Label>Imóvel do portfólio (opcional)</Label>
+              <Select value={selectedImovelId || "__none__"} onValueChange={(v) => setSelectedImovelId(v === "__none__" ? "" : v)}>
+                <SelectTrigger className="mt-1.5"><SelectValue placeholder="Selecione um imóvel..." /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">— Nenhum (digitar endereço) —</SelectItem>
+                  {imoveis.map((im) => (
+                    <SelectItem key={im.id} value={im.id}>{formatImovelOptionLabel(im)}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+            {selectedImovelId ? (
+              <div className="text-xs text-muted-foreground rounded-md border bg-muted/40 px-3 py-2">
+                <span className="font-medium">Endereço:</span>{" "}
+                {(() => {
+                  const im = imoveis.find((i) => i.id === selectedImovelId);
+                  return im ? formatImovelEndereco(im) : "—";
+                })()}
+              </div>
+            ) : (
+              <div>
+                <Label>Endereço do imóvel</Label>
+                <Input value={enderecoManual} onChange={(e) => setEnderecoManual(e.target.value)} maxLength={300} className="mt-1.5" placeholder="Rua, número, bairro, cidade" />
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-3">
               <div><Label>Data</Label><Input type="date" name="data" required defaultValue={visitaDefaults.date} className="mt-1.5" /></div>
               <div><Label>Hora</Label><Input type="time" name="hora" required defaultValue={visitaDefaults.time} className="mt-1.5" /></div>
