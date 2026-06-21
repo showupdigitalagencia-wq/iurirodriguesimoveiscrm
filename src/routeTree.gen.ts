@@ -56,6 +56,7 @@ import { Route as AuthenticatedLeadsLeadIdRouteImport } from './routes/_authenti
 import { Route as AuthenticatedExecutivosLandingPageRouteImport } from './routes/_authenticated/executivos.landing-page'
 import { Route as AuthenticatedExecutivosIdRouteImport } from './routes/_authenticated/executivos.$id'
 import { Route as AuthenticatedAdminSaudeSistemaRouteImport } from './routes/_authenticated/admin.saude-sistema'
+import { Route as AuthenticatedAdminSatisfacaoRouteImport } from './routes/_authenticated/admin.satisfacao'
 import { Route as AuthenticatedAdminPagamentosRouteImport } from './routes/_authenticated/admin.pagamentos'
 import { Route as AuthenticatedAdminLead360RouteImport } from './routes/_authenticated/admin.lead-360'
 import { Route as AuthenticatedAdminInadimplentesRouteImport } from './routes/_authenticated/admin.inadimplentes'
@@ -324,6 +325,12 @@ const AuthenticatedAdminSaudeSistemaRoute =
     path: '/saude-sistema',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminSatisfacaoRoute =
+  AuthenticatedAdminSatisfacaoRouteImport.update({
+    id: '/satisfacao',
+    path: '/satisfacao',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminPagamentosRoute =
   AuthenticatedAdminPagamentosRouteImport.update({
     id: '/pagamentos',
@@ -408,6 +415,7 @@ export interface FileRoutesByFullPath {
   '/admin/inadimplentes': typeof AuthenticatedAdminInadimplentesRoute
   '/admin/lead-360': typeof AuthenticatedAdminLead360Route
   '/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
+  '/admin/satisfacao': typeof AuthenticatedAdminSatisfacaoRoute
   '/admin/saude-sistema': typeof AuthenticatedAdminSaudeSistemaRoute
   '/executivos/$id': typeof AuthenticatedExecutivosIdRoute
   '/executivos/landing-page': typeof AuthenticatedExecutivosLandingPageRoute
@@ -462,6 +470,7 @@ export interface FileRoutesByTo {
   '/admin/inadimplentes': typeof AuthenticatedAdminInadimplentesRoute
   '/admin/lead-360': typeof AuthenticatedAdminLead360Route
   '/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
+  '/admin/satisfacao': typeof AuthenticatedAdminSatisfacaoRoute
   '/admin/saude-sistema': typeof AuthenticatedAdminSaudeSistemaRoute
   '/executivos/$id': typeof AuthenticatedExecutivosIdRoute
   '/executivos/landing-page': typeof AuthenticatedExecutivosLandingPageRoute
@@ -521,6 +530,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/inadimplentes': typeof AuthenticatedAdminInadimplentesRoute
   '/_authenticated/admin/lead-360': typeof AuthenticatedAdminLead360Route
   '/_authenticated/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
+  '/_authenticated/admin/satisfacao': typeof AuthenticatedAdminSatisfacaoRoute
   '/_authenticated/admin/saude-sistema': typeof AuthenticatedAdminSaudeSistemaRoute
   '/_authenticated/executivos/$id': typeof AuthenticatedExecutivosIdRoute
   '/_authenticated/executivos/landing-page': typeof AuthenticatedExecutivosLandingPageRoute
@@ -580,6 +590,7 @@ export interface FileRouteTypes {
     | '/admin/inadimplentes'
     | '/admin/lead-360'
     | '/admin/pagamentos'
+    | '/admin/satisfacao'
     | '/admin/saude-sistema'
     | '/executivos/$id'
     | '/executivos/landing-page'
@@ -634,6 +645,7 @@ export interface FileRouteTypes {
     | '/admin/inadimplentes'
     | '/admin/lead-360'
     | '/admin/pagamentos'
+    | '/admin/satisfacao'
     | '/admin/saude-sistema'
     | '/executivos/$id'
     | '/executivos/landing-page'
@@ -692,6 +704,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/inadimplentes'
     | '/_authenticated/admin/lead-360'
     | '/_authenticated/admin/pagamentos'
+    | '/_authenticated/admin/satisfacao'
     | '/_authenticated/admin/saude-sistema'
     | '/_authenticated/executivos/$id'
     | '/_authenticated/executivos/landing-page'
@@ -1074,6 +1087,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminSaudeSistemaRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/satisfacao': {
+      id: '/_authenticated/admin/satisfacao'
+      path: '/satisfacao'
+      fullPath: '/admin/satisfacao'
+      preLoaderRoute: typeof AuthenticatedAdminSatisfacaoRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/pagamentos': {
       id: '/_authenticated/admin/pagamentos'
       path: '/pagamentos'
@@ -1148,6 +1168,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminInadimplentesRoute: typeof AuthenticatedAdminInadimplentesRoute
   AuthenticatedAdminLead360Route: typeof AuthenticatedAdminLead360Route
   AuthenticatedAdminPagamentosRoute: typeof AuthenticatedAdminPagamentosRoute
+  AuthenticatedAdminSatisfacaoRoute: typeof AuthenticatedAdminSatisfacaoRoute
   AuthenticatedAdminSaudeSistemaRoute: typeof AuthenticatedAdminSaudeSistemaRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
@@ -1160,6 +1181,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminInadimplentesRoute: AuthenticatedAdminInadimplentesRoute,
   AuthenticatedAdminLead360Route: AuthenticatedAdminLead360Route,
   AuthenticatedAdminPagamentosRoute: AuthenticatedAdminPagamentosRoute,
+  AuthenticatedAdminSatisfacaoRoute: AuthenticatedAdminSatisfacaoRoute,
   AuthenticatedAdminSaudeSistemaRoute: AuthenticatedAdminSaudeSistemaRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
 }
