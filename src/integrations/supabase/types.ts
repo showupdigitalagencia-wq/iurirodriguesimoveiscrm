@@ -1454,6 +1454,10 @@ export type Database = {
         Returns: Database["public"]["Enums"]["app_role"]
       }
       get_portfolio_stats: { Args: { _days?: number }; Returns: Json }
+      get_vendas_relatorio: {
+        Args: { _from: string; _to: string }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
