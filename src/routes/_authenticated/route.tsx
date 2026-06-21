@@ -41,13 +41,13 @@ const MOBILE_BOTTOM = [
   { to: "/corretores", label: "Corretores", icon: BadgeCheck },
 ] as const;
 
-// Bottom bar exclusiva do corretor de vendas (5 itens)
+// Bottom bar exclusiva do corretor de vendas (5 itens — Plantão entra, sino fica no topo)
 const CORRETOR_MOBILE_BOTTOM = [
   { to: "/vendas", label: "Dashboard", icon: LayoutDashboard },
   { to: "/vendas/leads", label: "Leads", icon: Users },
   { to: "/vendas/pipeline", label: "Pipeline", icon: Kanban },
   { to: "/vendas/agenda", label: "Agenda", icon: CalendarDays },
-  { to: "/notificacoes", label: "Notificações", icon: BellRing },
+  { to: "/vendas/plantao", label: "Plantão", icon: CalendarClock },
 ] as const;
 
 // Ícones do topo mobile (direita)
