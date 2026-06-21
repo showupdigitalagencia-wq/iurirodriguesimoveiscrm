@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_log: {
+        Row: {
+          acao: string
+          antes: Json | null
+          contexto: Json | null
+          criado_em: string
+          depois: Json | null
+          id: string
+          registro_id: string | null
+          tabela: string | null
+          user_id: string | null
+          user_nome: string | null
+        }
+        Insert: {
+          acao: string
+          antes?: Json | null
+          contexto?: Json | null
+          criado_em?: string
+          depois?: Json | null
+          id?: string
+          registro_id?: string | null
+          tabela?: string | null
+          user_id?: string | null
+          user_nome?: string | null
+        }
+        Update: {
+          acao?: string
+          antes?: Json | null
+          contexto?: Json | null
+          criado_em?: string
+          depois?: Json | null
+          id?: string
+          registro_id?: string | null
+          tabela?: string | null
+          user_id?: string | null
+          user_nome?: string | null
+        }
+        Relationships: []
+      }
       candidatos: {
         Row: {
           arquivado_em: string | null
@@ -1514,6 +1553,17 @@ export type Database = {
       is_corretor_vendas_ou_executivo: {
         Args: { _uid?: string }
         Returns: boolean
+      }
+      log_audit: {
+        Args: {
+          _acao: string
+          _antes?: Json
+          _contexto?: Json
+          _depois?: Json
+          _registro_id?: string
+          _tabela?: string
+        }
+        Returns: string
       }
       plantonista_do_dia: { Args: { _data: string }; Returns: string }
     }
