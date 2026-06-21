@@ -6,12 +6,14 @@ export type VisitaRow = {
   lead_id: string;
   corretor_id: string;
   endereco: string;
+  imovel_id: string | null;
   data_inicio: string;
   duracao_min: number;
   observacoes: string | null;
   google_event_id: string | null;
   status: string;
 };
+
 
 export type ReuniaoCorretorRow = {
   id: string;
@@ -29,11 +31,12 @@ export const listVisitas = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("vendas_visitas" as never)
-      .select("id, lead_id, corretor_id, endereco, data_inicio, duracao_min, observacoes, google_event_id, status, vendas_leads(nome, telefone)")
+      .select("id, lead_id, corretor_id, endereco, imovel_id, data_inicio, duracao_min, observacoes, google_event_id, status, vendas_leads(nome, telefone)")
       .order("data_inicio", { ascending: true });
     if (error) throw new Error(error.message);
     return { items: (data ?? []) as unknown as (VisitaRow & { vendas_leads: { nome: string; telefone: string } | null })[] };
   });
+
 
 export const listReunioesCorretor = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -52,6 +55,7 @@ export const createVisita = createServerFn({ method: "POST" })
   .inputValidator((input: {
     lead_id: string;
     endereco: string;
+    imovel_id?: string | null;
     data_inicio: string;
     duracao_min?: number;
     observacoes?: string;
@@ -66,12 +70,14 @@ export const createVisita = createServerFn({ method: "POST" })
         lead_id: data.lead_id,
         corretor_id: userId,
         endereco: data.endereco,
+        imovel_id: data.imovel_id ?? null,
         data_inicio: data.data_inicio,
         duracao_min: data.duracao_min ?? 60,
         observacoes: data.observacoes ?? null,
       } as never)
       .select("id")
       .single();
+
     if (error) throw new Error(error.message);
     const visitaId = (visita as { id: string }).id;
 
@@ -151,6 +157,31 @@ export const listMyVendasLeads = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     return { items: (data ?? []) as { id: string; nome: string; telefone: string; etapa: string }[] };
   });
+
+export type ImovelOption = {
+  id: string;
+  codigo: string | null;
+  rua: string;
+  numero: string | null;
+  complemento: string | null;
+  bairro: string | null;
+  cidade: string | null;
+  tipo: string;
+  finalidade: string;
+};
+
+export const listImoveisForVisita = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("imoveis")
+      .select("id, codigo, rua, numero, complemento, bairro, cidade, tipo, finalidade")
+      .order("codigo", { ascending: true });
+    if (error) throw new Error(error.message);
+    return { items: (data ?? []) as ImovelOption[] };
+  });
+
+
 
 export const createReuniaoOnlineVenda = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

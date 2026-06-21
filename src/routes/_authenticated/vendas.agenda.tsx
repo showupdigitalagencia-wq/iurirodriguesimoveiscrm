@@ -15,7 +15,9 @@ import { ptBR } from "date-fns/locale";
 import { CalendarCheck2, ChevronLeft, ChevronRight, Loader2, Plus, Trash2, Link2, Link2Off, MapPin, Video } from "lucide-react";
 import { addBloqueio, addRecorrente, listDisponibilidade, removeDisponibilidade, type DisponibilidadeRow } from "@/lib/disponibilidade.functions";
 import { disconnectGoogle, getGoogleStatus, startGoogleOAuth } from "@/lib/google.functions";
-import { createReuniaoOnlineVenda, createVisita, deleteVisita, listMyVendasLeads, listReunioesCorretor, listVisitas, type ReuniaoCorretorRow, type VisitaRow } from "@/lib/visitas.functions";
+import { createReuniaoOnlineVenda, createVisita, deleteVisita, listImoveisForVisita, listMyVendasLeads, listReunioesCorretor, listVisitas, type ImovelOption, type ReuniaoCorretorRow, type VisitaRow } from "@/lib/visitas.functions";
+import { buildVisitaConfirmacaoMsg, formatImovelEndereco, formatImovelOptionLabel } from "@/lib/visita-helpers";
+
 
 export const Route = createFileRoute("/_authenticated/vendas/agenda")({
   head: () => ({ meta: [{ title: "Minha Agenda — Vendas" }] }),
@@ -44,11 +46,17 @@ function AgendaCorretorPage() {
   const fnCreateReuniao = useServerFn(createReuniaoOnlineVenda);
   const fnDeleteVisita = useServerFn(deleteVisita);
   const fnListLeads = useServerFn(listMyVendasLeads);
+  const fnListImoveis = useServerFn(listImoveisForVisita);
+
 
   const [items, setItems] = useState<DisponibilidadeRow[]>([]);
   const [visitas, setVisitas] = useState<VisitaItem[]>([]);
   const [reunioes, setReunioes] = useState<ReuniaoItem[]>([]);
   const [leads, setLeads] = useState<LeadOption[]>([]);
+  const [imoveis, setImoveis] = useState<ImovelOption[]>([]);
+  const [selectedImovelId, setSelectedImovelId] = useState<string>("");
+  const [enderecoManual, setEnderecoManual] = useState<string>("");
+
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<View>("semana");
   const [cursor, setCursor] = useState(new Date());
@@ -65,20 +73,23 @@ function AgendaCorretorPage() {
 
   const refresh = useCallback(async () => {
     try {
-      const [disp, vis, reun, lds] = await Promise.all([
+      const [disp, vis, reun, lds, ims] = await Promise.all([
         fnList({ data: {} }),
         fnListVisitas(),
         fnListReunioes(),
         fnListLeads(),
+        fnListImoveis(),
       ]);
       setItems(disp.items);
       setVisitas(vis.items as VisitaItem[]);
       setReunioes(reun.items as ReuniaoItem[]);
       setLeads(lds.items);
+      setImoveis(ims.items);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erro ao carregar agenda");
     } finally { setLoading(false); }
-  }, [fnList, fnListVisitas, fnListReunioes, fnListLeads]);
+  }, [fnList, fnListVisitas, fnListReunioes, fnListLeads, fnListImoveis]);
+
 
   useEffect(() => {
     refresh();
@@ -133,32 +144,42 @@ function AgendaCorretorPage() {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     const leadId = String(fd.get("lead_id") || "");
-    const endereco = String(fd.get("endereco") || "").trim();
     const data = String(fd.get("data") || "");
     const hora = String(fd.get("hora") || "");
     const observacoes = String(fd.get("observacoes") || "").trim();
-    if (!leadId || !endereco || !data || !hora) { toast.error("Preencha todos os campos"); return; }
+    const imovel = selectedImovelId ? imoveis.find((i) => i.id === selectedImovelId) ?? null : null;
+    const endereco = imovel ? formatImovelEndereco(imovel) : enderecoManual.trim();
+    if (!leadId || !endereco || !data || !hora) { toast.error("Selecione um imóvel ou informe o endereço, lead, data e hora"); return; }
     setSavingVisita(true);
     try {
       const iso = new Date(`${data}T${hora}:00`).toISOString();
       const res = await fnCreateVisita({ data: {
         lead_id: leadId,
         endereco,
+        imovel_id: selectedImovelId || null,
         data_inicio: iso,
         duracao_min: 60,
         observacoes: observacoes || undefined,
       }});
       toast.success("Visita agendada!");
       setOpenVisita(false);
+      setSelectedImovelId("");
+      setEnderecoManual("");
       refresh();
       if (res.lead?.telefone) {
-        const dataFmt = format(new Date(iso), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
-        const msg = `Olá ${res.lead.nome}! Confirmando nossa visita ao imóvel em ${endereco} no dia ${dataFmt}. Qualquer dúvida estou à disposição.`;
+        const dt = new Date(iso);
+        const msg = buildVisitaConfirmacaoMsg({
+          nome: res.lead.nome,
+          endereco,
+          dataFmt: format(dt, "dd/MM/yyyy", { locale: ptBR }),
+          horaFmt: format(dt, "HH:mm", { locale: ptBR }),
+        });
         window.open(whatsappLink(res.lead.telefone, msg), "_blank");
       }
     } catch (e) { toast.error(e instanceof Error ? e.message : "Erro ao agendar"); }
     finally { setSavingVisita(false); }
   }
+
 
   async function handleAddReuniao(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -342,9 +363,32 @@ function AgendaCorretorPage() {
               </Select>
             </div>
             <div>
-              <Label>Endereço do imóvel</Label>
-              <Input name="endereco" required maxLength={300} className="mt-1.5" placeholder="Rua, número, bairro" />
+              <Label>Imóvel do portfólio (opcional)</Label>
+              <Select value={selectedImovelId || "__none__"} onValueChange={(v) => setSelectedImovelId(v === "__none__" ? "" : v)}>
+                <SelectTrigger className="mt-1.5"><SelectValue placeholder="Selecione um imóvel..." /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">— Nenhum (digitar endereço) —</SelectItem>
+                  {imoveis.map((im) => (
+                    <SelectItem key={im.id} value={im.id}>{formatImovelOptionLabel(im)}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+            {selectedImovelId ? (
+              <div className="text-xs text-muted-foreground rounded-md border bg-muted/40 px-3 py-2">
+                <span className="font-medium">Endereço:</span>{" "}
+                {(() => {
+                  const im = imoveis.find((i) => i.id === selectedImovelId);
+                  return im ? formatImovelEndereco(im) : "—";
+                })()}
+              </div>
+            ) : (
+              <div>
+                <Label>Endereço do imóvel</Label>
+                <Input value={enderecoManual} onChange={(e) => setEnderecoManual(e.target.value)} maxLength={300} className="mt-1.5" placeholder="Rua, número, bairro, cidade" />
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-3">
               <div><Label>Data</Label><Input type="date" name="data" required defaultValue={visitaDefaults.date} className="mt-1.5" /></div>
               <div><Label>Hora</Label><Input type="time" name="hora" required defaultValue={visitaDefaults.time} className="mt-1.5" /></div>

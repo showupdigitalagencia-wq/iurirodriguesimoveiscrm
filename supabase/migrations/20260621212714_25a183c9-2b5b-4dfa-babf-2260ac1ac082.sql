@@ -1,0 +1,2 @@
+ALTER TABLE public.vendas_visitas ADD COLUMN IF NOT EXISTS imovel_id uuid REFERENCES public.imoveis(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS vendas_visitas_imovel_id_idx ON public.vendas_visitas(imovel_id);
