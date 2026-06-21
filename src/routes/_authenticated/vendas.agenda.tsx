@@ -475,24 +475,69 @@ function AgendaCorretorPage() {
           </div>
           <Dialog open={openRec} onOpenChange={setOpenRec}>
             <DialogTrigger asChild><Button size="sm" variant="gold"><Plus className="h-4 w-4 mr-1" /> Adicionar janela</Button></DialogTrigger>
-            <DialogContent>
-              <DialogHeader><DialogTitle>Nova janela semanal</DialogTitle></DialogHeader>
-              <form onSubmit={handleAddRec} className="space-y-3">
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Adicionar disponibilidade</DialogTitle>
+                <p className="text-xs text-muted-foreground mt-1">Marque vários dias e horários de uma vez — o sistema cria uma janela para cada combinação.</p>
+              </DialogHeader>
+              <form onSubmit={handleAddRec} className="space-y-4">
                 <div>
-                  <Label>Dia da semana</Label>
-                  <Select name="dia_semana" defaultValue="1">
-                    <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {DIAS.map((d, i) => <SelectItem key={i} value={String(i)}>{d}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  <Label>Dias da semana</Label>
+                  <div className="mt-2 grid grid-cols-4 gap-2">
+                    {DIAS.map((d, i) => {
+                      const checked = recDias.includes(i);
+                      return (
+                        <label key={i} className={`flex items-center gap-2 rounded-md border px-2 py-2 cursor-pointer transition ${checked ? "border-gold bg-gold/10" : "border-border hover:bg-muted/40"}`}>
+                          <Checkbox checked={checked} onCheckedChange={() => toggleRecDia(i)} />
+                          <span className="text-sm">{d}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div><Label>Início</Label><Input type="time" name="hora_inicio" required defaultValue="09:00" className="mt-1.5" /></div>
-                  <div><Label>Fim</Label><Input type="time" name="hora_fim" required defaultValue="18:00" className="mt-1.5" /></div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label>Horários</Label>
+                    <Button type="button" size="sm" variant="ghost" onClick={addIntervalo}>
+                      <Plus className="h-3.5 w-3.5 mr-1" /> Intervalo
+                    </Button>
+                  </div>
+                  {recIntervalos.map((it, i) => (
+                    <div key={i} className="grid grid-cols-[1fr_1fr_auto] gap-2 items-end">
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Início</Label>
+                        <Input type="time" value={it.inicio} onChange={(e) => setIntervalo(i, { inicio: e.target.value })} required className="mt-1" />
+                      </div>
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Fim</Label>
+                        <Input type="time" value={it.fim} onChange={(e) => setIntervalo(i, { fim: e.target.value })} required className="mt-1" />
+                      </div>
+                      <Button type="button" variant="ghost" size="icon" disabled={recIntervalos.length === 1} onClick={() => removeIntervalo(i)} className="text-destructive">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  <p className="text-[11px] text-muted-foreground">Use mais de um intervalo para separar manhã e tarde, por exemplo.</p>
                 </div>
-                <div><Label>Observação (opcional)</Label><Input name="observacao" maxLength={200} className="mt-1.5" placeholder="Ex.: Apenas Barra da Tijuca" /></div>
-                <DialogFooter><Button type="submit" variant="gold">Salvar</Button></DialogFooter>
+
+                <div>
+                  <Label>Observação (opcional)</Label>
+                  <Input value={recObs} onChange={(e) => setRecObs(e.target.value)} maxLength={200} className="mt-1.5" placeholder="Ex.: Apenas Barra da Tijuca" />
+                </div>
+
+                {recDias.length > 0 && (
+                  <div className="text-xs text-muted-foreground bg-muted/40 rounded-md px-3 py-2">
+                    Serão criadas <strong className="text-foreground">{recDias.length * recIntervalos.length}</strong> janela(s): {recDias.map((d) => DIAS[d]).join(", ")} · {recIntervalos.map((it) => `${it.inicio}-${it.fim}`).join(" / ")}
+                  </div>
+                )}
+
+                <DialogFooter>
+                  <Button type="submit" variant="gold" disabled={savingRec || recDias.length === 0}>
+                    {savingRec && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
+                    Salvar
+                  </Button>
+                </DialogFooter>
               </form>
             </DialogContent>
           </Dialog>
