@@ -1712,6 +1712,10 @@ export type Database = {
         Returns: Database["public"]["Enums"]["app_role"]
       }
       expirar_pesquisas_satisfacao: { Args: never; Returns: number }
+      get_comparativo_regioes: {
+        Args: { _from: string; _to: string }
+        Returns: Json
+      }
       get_funil_conversao: {
         Args: {
           _from: string
