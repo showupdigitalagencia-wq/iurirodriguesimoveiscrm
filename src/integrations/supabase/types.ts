@@ -866,6 +866,7 @@ export type Database = {
           criado_por: string | null
           data: string
           id: string
+          notificado_em: string | null
           updated_at: string
         }
         Insert: {
@@ -874,6 +875,7 @@ export type Database = {
           criado_por?: string | null
           data: string
           id?: string
+          notificado_em?: string | null
           updated_at?: string
         }
         Update: {
@@ -882,6 +884,7 @@ export type Database = {
           criado_por?: string | null
           data?: string
           id?: string
+          notificado_em?: string | null
           updated_at?: string
         }
         Relationships: []
