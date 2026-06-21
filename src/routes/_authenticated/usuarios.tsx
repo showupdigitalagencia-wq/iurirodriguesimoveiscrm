@@ -223,6 +223,8 @@ function UsuariosPage() {
                     <SelectContent>
                       <SelectItem value="corretor">Executivo</SelectItem>
                       <SelectItem value="corretor_vendas">Corretor (Vendas)</SelectItem>
+                      <SelectItem value="correspondente_bancaria">Correspondente Bancária</SelectItem>
+                      <SelectItem value="administrativo">Administrativo</SelectItem>
                       <SelectItem value="admin">Administrador</SelectItem>
                     </SelectContent>
                   </Select>
