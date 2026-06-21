@@ -813,6 +813,63 @@ export type Database = {
         }
         Relationships: []
       }
+      metas_mensais: {
+        Row: {
+          ano: number
+          corretor_id: string
+          created_at: string
+          criado_por: string | null
+          id: string
+          mes: number
+          meta_leads_atendidos: number
+          meta_locacoes: number
+          meta_receita: number
+          meta_vendas: number
+          updated_at: string
+        }
+        Insert: {
+          ano: number
+          corretor_id: string
+          created_at?: string
+          criado_por?: string | null
+          id?: string
+          mes: number
+          meta_leads_atendidos?: number
+          meta_locacoes?: number
+          meta_receita?: number
+          meta_vendas?: number
+          updated_at?: string
+        }
+        Update: {
+          ano?: number
+          corretor_id?: string
+          created_at?: string
+          criado_por?: string | null
+          id?: string
+          mes?: number
+          meta_leads_atendidos?: number
+          meta_locacoes?: number
+          meta_receita?: number
+          meta_vendas?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "metas_mensais_corretor_id_fkey"
+            columns: ["corretor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "metas_mensais_criado_por_fkey"
+            columns: ["criado_por"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notificacoes: {
         Row: {
           created_at: string
@@ -1666,6 +1723,14 @@ export type Database = {
         Returns: Json
       }
       get_leads_sem_resposta: { Args: never; Returns: Json }
+      get_meta_progresso: {
+        Args: { _ano: number; _corretor_id: string; _mes: number }
+        Returns: Json
+      }
+      get_metas_progresso_lista: {
+        Args: { _ano: number; _mes: number }
+        Returns: Json
+      }
       get_portfolio_stats: { Args: { _days?: number }; Returns: Json }
       get_satisfacao_stats: {
         Args: { _from: string; _to: string }
