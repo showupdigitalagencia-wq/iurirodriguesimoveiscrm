@@ -140,6 +140,7 @@ function AuthLayout() {
     supabase.auth.getUser().then(({ data: userData }) => {
       const userId = userData.user?.id;
       if (!userId) return;
+      setUserEmail(userData.user?.email ?? "");
       startUserSession(userId);
       supabase
         .from("user_roles")
@@ -152,6 +153,8 @@ function AuthLayout() {
           setIsCorretorVendas(roles.includes("corretor_vendas"));
           setIsAdministrativo(roles.includes("administrativo"));
           setIsCorrespondente(roles.includes("correspondente_bancaria"));
+          setHasNoRole(roles.length === 0);
+          setRolesLoaded(true);
         });
       supabase.from("configuracoes").select("valor").eq("chave", "sistema_corretores_ativo").maybeSingle()
         .then(({ data }) => { if (active) setVendasAtivo(data?.valor === true); });
