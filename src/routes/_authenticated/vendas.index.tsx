@@ -1,14 +1,12 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { VENDAS_ETAPAS, formatBRL, type VendasLead } from "@/lib/vendas-helpers";
-import { TrendingUp, Users, CheckCircle2, XCircle, CalendarClock, BellRing, Building2, Home, KeyRound, Tag, Handshake } from "lucide-react";
+import { TrendingUp, Users, CheckCircle2, XCircle, CalendarClock, BellRing } from "lucide-react";
 import { getPlantonistaHoje, getMeusLeadsPlantao } from "@/lib/plantao.functions";
+
 
 
 export const Route = createFileRoute("/_authenticated/vendas/")({
