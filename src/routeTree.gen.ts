@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SejaCorretorRouteImport } from './routes/seja-corretor'
 import { Route as FormularioRouteImport } from './routes/formulario'
 import { Route as FinanciamentoRouteImport } from './routes/financiamento'
 import { Route as CadastroRouteImport } from './routes/cadastro'
@@ -52,6 +53,11 @@ import { Route as AuthenticatedAdminImoveisRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminContratosRouteImport } from './routes/_authenticated/admin.contratos'
 import { Route as AuthenticatedAdminCandidatosRouteImport } from './routes/_authenticated/admin.candidatos'
 
+const SejaCorretorRoute = SejaCorretorRouteImport.update({
+  id: '/seja-corretor',
+  path: '/seja-corretor',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FormularioRoute = FormularioRouteImport.update({
   id: '/formulario',
   path: '/formulario',
@@ -289,6 +295,7 @@ export interface FileRoutesByFullPath {
   '/cadastro': typeof CadastroRoute
   '/financiamento': typeof FinanciamentoRoute
   '/formulario': typeof FormularioRoute
+  '/seja-corretor': typeof SejaCorretorRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/agenda': typeof AuthenticatedAgendaRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -332,6 +339,7 @@ export interface FileRoutesByTo {
   '/cadastro': typeof CadastroRoute
   '/financiamento': typeof FinanciamentoRoute
   '/formulario': typeof FormularioRoute
+  '/seja-corretor': typeof SejaCorretorRoute
   '/agenda': typeof AuthenticatedAgendaRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/correspondente': typeof AuthenticatedCorrespondenteRoute
@@ -374,6 +382,7 @@ export interface FileRoutesById {
   '/cadastro': typeof CadastroRoute
   '/financiamento': typeof FinanciamentoRoute
   '/formulario': typeof FormularioRoute
+  '/seja-corretor': typeof SejaCorretorRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/agenda': typeof AuthenticatedAgendaRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -419,6 +428,7 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/financiamento'
     | '/formulario'
+    | '/seja-corretor'
     | '/admin'
     | '/agenda'
     | '/configuracoes'
@@ -462,6 +472,7 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/financiamento'
     | '/formulario'
+    | '/seja-corretor'
     | '/agenda'
     | '/configuracoes'
     | '/correspondente'
@@ -503,6 +514,7 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/financiamento'
     | '/formulario'
+    | '/seja-corretor'
     | '/_authenticated/admin'
     | '/_authenticated/agenda'
     | '/_authenticated/configuracoes'
@@ -548,6 +560,7 @@ export interface RootRouteChildren {
   CadastroRoute: typeof CadastroRoute
   FinanciamentoRoute: typeof FinanciamentoRoute
   FormularioRoute: typeof FormularioRoute
+  SejaCorretorRoute: typeof SejaCorretorRoute
   ApiPublicCronLauraResumoDiarioRoute: typeof ApiPublicCronLauraResumoDiarioRoute
   ApiPublicCronReuniaoLembretesRoute: typeof ApiPublicCronReuniaoLembretesRoute
   ApiPublicCronReunioesInstitucionaisRoute: typeof ApiPublicCronReunioesInstitucionaisRoute
@@ -560,6 +573,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/seja-corretor': {
+      id: '/seja-corretor'
+      path: '/seja-corretor'
+      fullPath: '/seja-corretor'
+      preLoaderRoute: typeof SejaCorretorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/formulario': {
       id: '/formulario'
       path: '/formulario'
@@ -969,6 +989,7 @@ const rootRouteChildren: RootRouteChildren = {
   CadastroRoute: CadastroRoute,
   FinanciamentoRoute: FinanciamentoRoute,
   FormularioRoute: FormularioRoute,
+  SejaCorretorRoute: SejaCorretorRoute,
   ApiPublicCronLauraResumoDiarioRoute: ApiPublicCronLauraResumoDiarioRoute,
   ApiPublicCronReuniaoLembretesRoute: ApiPublicCronReuniaoLembretesRoute,
   ApiPublicCronReunioesInstitucionaisRoute:
