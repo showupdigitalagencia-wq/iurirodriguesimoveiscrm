@@ -145,8 +145,11 @@ function DetailDialog({ id, open, onClose, onChanged }: { id: string; open: bool
   const qc = useQueryClient();
   const getDetail = useServerFn(getFinanciamentoDetail);
   const upd = useServerFn(updateFinanciamentoStatus);
+  const del = useServerFn(deleteFinanciamento);
   const [observacao, setObservacao] = useState("");
   const [saving, setSaving] = useState<FinanciamentoStatus | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["financiamento_detail", id],
@@ -172,6 +175,27 @@ function DetailDialog({ id, open, onClose, onChanged }: { id: string; open: bool
       setSaving(null);
     }
   }
+
+  async function handleDelete() {
+    setDeleting(true);
+    try {
+      await del({ data: { id } });
+      toast.success("Pedido de financiamento excluído");
+      qc.invalidateQueries({ queryKey: ["financiamentos"] });
+      if (data?.financiamento.lead_id) {
+        qc.invalidateQueries({ queryKey: ["financiamento_status_lead", data.financiamento.lead_id] });
+      }
+      qc.invalidateQueries({ queryKey: ["financiamento_status_lead"] });
+      onChanged();
+      setConfirmDelete(false);
+      onClose();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao excluir");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
