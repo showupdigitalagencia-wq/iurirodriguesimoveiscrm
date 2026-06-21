@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { REGIOES } from "@/lib/lead-helpers";
 import { VENDAS_ETAPAS, formatBRL, vendasEtapaInfo, type VendasLead, type VendasEtapa, type VendasTipo } from "@/lib/vendas-helpers";
-import { createVisita, createReuniaoOnlineVenda, listImoveisForVisita, type ImovelOption } from "@/lib/visitas.functions";
+import { createVisita, createReuniaoOnlineVenda, listImoveisForVisita, confirmarVisita, type ImovelOption } from "@/lib/visitas.functions";
 import { formatImovelEndereco, formatImovelOptionLabel, buildVisitaConfirmacaoMsg } from "@/lib/visita-helpers";
 
 import { getFinanciamentoStatusByLead, type FinanciamentoStatus } from "@/lib/financiamento.functions";
