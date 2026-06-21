@@ -63,6 +63,7 @@ import { Route as AuthenticatedAdminImoveisRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminContratosRouteImport } from './routes/_authenticated/admin.contratos'
 import { Route as AuthenticatedAdminCandidatosRouteImport } from './routes/_authenticated/admin.candidatos'
 import { Route as AuthenticatedAdminAuditoriaRouteImport } from './routes/_authenticated/admin.auditoria'
+import { Route as ApiPublicHooksZapiIncomingRouteImport } from './routes/api/public/hooks/zapi-incoming'
 import { Route as ApiPublicHooksReativacaoLeadsPerdidosRouteImport } from './routes/api/public/hooks/reativacao-leads-perdidos'
 
 const SejaCorretorRoute = SejaCorretorRouteImport.update({
@@ -365,6 +366,12 @@ const AuthenticatedAdminAuditoriaRoute =
     path: '/auditoria',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const ApiPublicHooksZapiIncomingRoute =
+  ApiPublicHooksZapiIncomingRouteImport.update({
+    id: '/api/public/hooks/zapi-incoming',
+    path: '/api/public/hooks/zapi-incoming',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksReativacaoLeadsPerdidosRoute =
   ApiPublicHooksReativacaoLeadsPerdidosRouteImport.update({
     id: '/api/public/hooks/reativacao-leads-perdidos',
@@ -427,6 +434,7 @@ export interface FileRoutesByFullPath {
   '/executivos/': typeof AuthenticatedExecutivosIndexRoute
   '/vendas/': typeof AuthenticatedVendasIndexRoute
   '/api/public/hooks/reativacao-leads-perdidos': typeof ApiPublicHooksReativacaoLeadsPerdidosRoute
+  '/api/public/hooks/zapi-incoming': typeof ApiPublicHooksZapiIncomingRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -480,6 +488,7 @@ export interface FileRoutesByTo {
   '/executivos': typeof AuthenticatedExecutivosIndexRoute
   '/vendas': typeof AuthenticatedVendasIndexRoute
   '/api/public/hooks/reativacao-leads-perdidos': typeof ApiPublicHooksReativacaoLeadsPerdidosRoute
+  '/api/public/hooks/zapi-incoming': typeof ApiPublicHooksZapiIncomingRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -538,6 +547,7 @@ export interface FileRoutesById {
   '/_authenticated/executivos/': typeof AuthenticatedExecutivosIndexRoute
   '/_authenticated/vendas/': typeof AuthenticatedVendasIndexRoute
   '/api/public/hooks/reativacao-leads-perdidos': typeof ApiPublicHooksReativacaoLeadsPerdidosRoute
+  '/api/public/hooks/zapi-incoming': typeof ApiPublicHooksZapiIncomingRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -596,6 +606,7 @@ export interface FileRouteTypes {
     | '/executivos/'
     | '/vendas/'
     | '/api/public/hooks/reativacao-leads-perdidos'
+    | '/api/public/hooks/zapi-incoming'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -649,6 +660,7 @@ export interface FileRouteTypes {
     | '/executivos'
     | '/vendas'
     | '/api/public/hooks/reativacao-leads-perdidos'
+    | '/api/public/hooks/zapi-incoming'
   id:
     | '__root__'
     | '/'
@@ -706,6 +718,7 @@ export interface FileRouteTypes {
     | '/_authenticated/executivos/'
     | '/_authenticated/vendas/'
     | '/api/public/hooks/reativacao-leads-perdidos'
+    | '/api/public/hooks/zapi-incoming'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -727,6 +740,7 @@ export interface RootRouteChildren {
   ApiPublicOnesignalTestRoute: typeof ApiPublicOnesignalTestRoute
   ApiPublicWebhookRoute: typeof ApiPublicWebhookRoute
   ApiPublicHooksReativacaoLeadsPerdidosRoute: typeof ApiPublicHooksReativacaoLeadsPerdidosRoute
+  ApiPublicHooksZapiIncomingRoute: typeof ApiPublicHooksZapiIncomingRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1109,6 +1123,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAuditoriaRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/api/public/hooks/zapi-incoming': {
+      id: '/api/public/hooks/zapi-incoming'
+      path: '/api/public/hooks/zapi-incoming'
+      fullPath: '/api/public/hooks/zapi-incoming'
+      preLoaderRoute: typeof ApiPublicHooksZapiIncomingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/reativacao-leads-perdidos': {
       id: '/api/public/hooks/reativacao-leads-perdidos'
       path: '/api/public/hooks/reativacao-leads-perdidos'
@@ -1263,6 +1284,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicWebhookRoute: ApiPublicWebhookRoute,
   ApiPublicHooksReativacaoLeadsPerdidosRoute:
     ApiPublicHooksReativacaoLeadsPerdidosRoute,
+  ApiPublicHooksZapiIncomingRoute: ApiPublicHooksZapiIncomingRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
