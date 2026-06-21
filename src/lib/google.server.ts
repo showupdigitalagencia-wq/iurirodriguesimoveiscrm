@@ -243,3 +243,58 @@ export async function deleteCalendarEvent(input: {
   }
   return true;
 }
+
+export type FreeBusyBlock = { start: string; end: string };
+
+/**
+ * Consulta o calendário primário do usuário e retorna os intervalos ocupados
+ * que se sobrepõem ao período (start, end). Timeout de 3s — em caso de erro
+ * ou ausência de token, retorna { verificado: false }.
+ */
+export async function queryFreeBusy(
+  userId: string,
+  startISO: string,
+  endISO: string,
+): Promise<
+  | { verificado: false; motivo: "sem_token" | "timeout" | "erro_api" }
+  | { verificado: true; conflito: boolean; ocupados: FreeBusyBlock[] }
+> {
+  const token = await getValidAccessToken(userId);
+  if (!token) return { verificado: false, motivo: "sem_token" };
+
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 3000);
+  try {
+    const res = await fetch("https://www.googleapis.com/calendar/v3/freeBusy", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        timeMin: startISO,
+        timeMax: endISO,
+        timeZone: "America/Sao_Paulo",
+        items: [{ id: "primary" }],
+      }),
+      signal: ctrl.signal,
+    });
+    if (!res.ok) {
+      console.error("[Google] freeBusy failed", res.status);
+      return { verificado: false, motivo: "erro_api" };
+    }
+    const j = (await res.json()) as {
+      calendars?: Record<string, { busy?: FreeBusyBlock[] }>;
+    };
+    const busy = j.calendars?.primary?.busy ?? [];
+    return { verificado: true, conflito: busy.length > 0, ocupados: busy };
+  } catch (e) {
+    if ((e as Error).name === "AbortError") {
+      return { verificado: false, motivo: "timeout" };
+    }
+    console.error("[Google] freeBusy error", e);
+    return { verificado: false, motivo: "erro_api" };
+  } finally {
+    clearTimeout(timer);
+  }
+}
