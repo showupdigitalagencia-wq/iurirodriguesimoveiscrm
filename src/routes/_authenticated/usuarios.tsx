@@ -243,12 +243,12 @@ function UsuariosPage() {
                 <Switch checked={u.ativo} onCheckedChange={() => toggleAtivo(u)} />
                 <span className="text-xs">{u.ativo ? "Ativo" : "Bloqueado"}</span>
               </div>
-              {u.role === "corretor_vendas" && (
-                <div className="flex items-center gap-2">
-                  <Switch checked={u.vendas_acesso} onCheckedChange={() => toggleVendasAcesso(u)} />
-                  <span className="text-xs">Vendas</span>
-                </div>
-              )}
+              <div className="flex items-center gap-2">
+                <Switch checked={u.vendas_acesso} onCheckedChange={() => toggleVendasAcesso(u)} />
+                <span className={`text-xs ${u.vendas_acesso ? "text-foreground font-medium" : "text-muted-foreground"}`}>
+                  Vendas {u.vendas_acesso ? "ON" : "OFF"}
+                </span>
+              </div>
             </div>
             <div className="flex gap-2">
               <Button size="sm" variant="outline" onClick={() => setResetting(u)} className="flex-1">
