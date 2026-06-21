@@ -130,6 +130,7 @@ function AuthLayout() {
     if (isAdmin && vendasAtivo) base.push({ to: "/vendas", label: "Vendas", icon: Briefcase });
     if (isAdmin && adminModuloAtivo) base.push({ to: "/admin", label: "Administração", icon: Building2 });
     if (isAdmin || isExec) base.push({ to: "/executivos/landing-page", label: "Landing Page", icon: Megaphone });
+    if (isAdmin || isExec) base.push({ to: "/captacao-links", label: "Links de Captação", icon: Share2 });
     if (isAdmin) base.push({ to: "/correspondente", label: "Financiamento", icon: Banknote });
     return isAdmin ? [...base, ...ADMIN_NAV, ...CONFIG_NAV] : [...base, ...CONFIG_NAV];
   }, [isAdmin, isCorretorVendas, isAdministrativo, isCorrespondente, vendasAtivo, vendasAcessoIndividual, adminModuloAtivo, isExec]);
