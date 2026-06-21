@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Download, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Download, Loader2, ExternalLink } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import { DocumentosManager } from "@/components/admin/DocumentosManager";
 import { FotosManager, FotosThumbs } from "@/components/admin/FotosManager";
@@ -186,15 +186,22 @@ function ImoveisPage() {
                 <div className="text-xs text-muted-foreground">Vencimento: dia {(i as unknown as { dia_vencimento?: number | null }).dia_vencimento}</div>
               )}
               {(i as unknown as { vitrine_url?: string | null }).vitrine_url && (
-                <a
-                  href={(i as unknown as { vitrine_url?: string | null }).vitrine_url ?? "#"}
-                  target="_blank"
-                  rel="noreferrer"
+                <Button
+                  asChild
+                  size="sm"
+                  variant="outline"
+                  className="h-7 px-2 gap-1 text-xs border-gold/40 text-gold hover:bg-gold/10 hover:text-gold"
                   onClick={(e) => e.stopPropagation()}
-                  className="text-xs text-gold hover:underline inline-block"
                 >
-                  🔗 Ver na vitrine
-                </a>
+                  <a
+                    href={(i as unknown as { vitrine_url?: string | null }).vitrine_url ?? "#"}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                    Vitrine
+                  </a>
+                </Button>
               )}
 
 
