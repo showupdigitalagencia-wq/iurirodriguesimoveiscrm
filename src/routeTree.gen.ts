@@ -56,6 +56,7 @@ import { Route as AuthenticatedLeadsLeadIdRouteImport } from './routes/_authenti
 import { Route as AuthenticatedExecutivosLandingPageRouteImport } from './routes/_authenticated/executivos.landing-page'
 import { Route as AuthenticatedExecutivosIdRouteImport } from './routes/_authenticated/executivos.$id'
 import { Route as AuthenticatedAdminSaudeSistemaRouteImport } from './routes/_authenticated/admin.saude-sistema'
+import { Route as AuthenticatedAdminSatisfacaoRouteImport } from './routes/_authenticated/admin.satisfacao'
 import { Route as AuthenticatedAdminPagamentosRouteImport } from './routes/_authenticated/admin.pagamentos'
 import { Route as AuthenticatedAdminLead360RouteImport } from './routes/_authenticated/admin.lead-360'
 import { Route as AuthenticatedAdminInadimplentesRouteImport } from './routes/_authenticated/admin.inadimplentes'
@@ -63,6 +64,7 @@ import { Route as AuthenticatedAdminImoveisRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminContratosRouteImport } from './routes/_authenticated/admin.contratos'
 import { Route as AuthenticatedAdminCandidatosRouteImport } from './routes/_authenticated/admin.candidatos'
 import { Route as AuthenticatedAdminAuditoriaRouteImport } from './routes/_authenticated/admin.auditoria'
+import { Route as ApiPublicHooksZapiIncomingRouteImport } from './routes/api/public/hooks/zapi-incoming'
 import { Route as ApiPublicHooksReativacaoLeadsPerdidosRouteImport } from './routes/api/public/hooks/reativacao-leads-perdidos'
 
 const SejaCorretorRoute = SejaCorretorRouteImport.update({
@@ -323,6 +325,12 @@ const AuthenticatedAdminSaudeSistemaRoute =
     path: '/saude-sistema',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminSatisfacaoRoute =
+  AuthenticatedAdminSatisfacaoRouteImport.update({
+    id: '/satisfacao',
+    path: '/satisfacao',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminPagamentosRoute =
   AuthenticatedAdminPagamentosRouteImport.update({
     id: '/pagamentos',
@@ -365,6 +373,12 @@ const AuthenticatedAdminAuditoriaRoute =
     path: '/auditoria',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const ApiPublicHooksZapiIncomingRoute =
+  ApiPublicHooksZapiIncomingRouteImport.update({
+    id: '/api/public/hooks/zapi-incoming',
+    path: '/api/public/hooks/zapi-incoming',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksReativacaoLeadsPerdidosRoute =
   ApiPublicHooksReativacaoLeadsPerdidosRouteImport.update({
     id: '/api/public/hooks/reativacao-leads-perdidos',
@@ -401,6 +415,7 @@ export interface FileRoutesByFullPath {
   '/admin/inadimplentes': typeof AuthenticatedAdminInadimplentesRoute
   '/admin/lead-360': typeof AuthenticatedAdminLead360Route
   '/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
+  '/admin/satisfacao': typeof AuthenticatedAdminSatisfacaoRoute
   '/admin/saude-sistema': typeof AuthenticatedAdminSaudeSistemaRoute
   '/executivos/$id': typeof AuthenticatedExecutivosIdRoute
   '/executivos/landing-page': typeof AuthenticatedExecutivosLandingPageRoute
@@ -427,6 +442,7 @@ export interface FileRoutesByFullPath {
   '/executivos/': typeof AuthenticatedExecutivosIndexRoute
   '/vendas/': typeof AuthenticatedVendasIndexRoute
   '/api/public/hooks/reativacao-leads-perdidos': typeof ApiPublicHooksReativacaoLeadsPerdidosRoute
+  '/api/public/hooks/zapi-incoming': typeof ApiPublicHooksZapiIncomingRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -454,6 +470,7 @@ export interface FileRoutesByTo {
   '/admin/inadimplentes': typeof AuthenticatedAdminInadimplentesRoute
   '/admin/lead-360': typeof AuthenticatedAdminLead360Route
   '/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
+  '/admin/satisfacao': typeof AuthenticatedAdminSatisfacaoRoute
   '/admin/saude-sistema': typeof AuthenticatedAdminSaudeSistemaRoute
   '/executivos/$id': typeof AuthenticatedExecutivosIdRoute
   '/executivos/landing-page': typeof AuthenticatedExecutivosLandingPageRoute
@@ -480,6 +497,7 @@ export interface FileRoutesByTo {
   '/executivos': typeof AuthenticatedExecutivosIndexRoute
   '/vendas': typeof AuthenticatedVendasIndexRoute
   '/api/public/hooks/reativacao-leads-perdidos': typeof ApiPublicHooksReativacaoLeadsPerdidosRoute
+  '/api/public/hooks/zapi-incoming': typeof ApiPublicHooksZapiIncomingRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -512,6 +530,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/inadimplentes': typeof AuthenticatedAdminInadimplentesRoute
   '/_authenticated/admin/lead-360': typeof AuthenticatedAdminLead360Route
   '/_authenticated/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
+  '/_authenticated/admin/satisfacao': typeof AuthenticatedAdminSatisfacaoRoute
   '/_authenticated/admin/saude-sistema': typeof AuthenticatedAdminSaudeSistemaRoute
   '/_authenticated/executivos/$id': typeof AuthenticatedExecutivosIdRoute
   '/_authenticated/executivos/landing-page': typeof AuthenticatedExecutivosLandingPageRoute
@@ -538,6 +557,7 @@ export interface FileRoutesById {
   '/_authenticated/executivos/': typeof AuthenticatedExecutivosIndexRoute
   '/_authenticated/vendas/': typeof AuthenticatedVendasIndexRoute
   '/api/public/hooks/reativacao-leads-perdidos': typeof ApiPublicHooksReativacaoLeadsPerdidosRoute
+  '/api/public/hooks/zapi-incoming': typeof ApiPublicHooksZapiIncomingRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -570,6 +590,7 @@ export interface FileRouteTypes {
     | '/admin/inadimplentes'
     | '/admin/lead-360'
     | '/admin/pagamentos'
+    | '/admin/satisfacao'
     | '/admin/saude-sistema'
     | '/executivos/$id'
     | '/executivos/landing-page'
@@ -596,6 +617,7 @@ export interface FileRouteTypes {
     | '/executivos/'
     | '/vendas/'
     | '/api/public/hooks/reativacao-leads-perdidos'
+    | '/api/public/hooks/zapi-incoming'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -623,6 +645,7 @@ export interface FileRouteTypes {
     | '/admin/inadimplentes'
     | '/admin/lead-360'
     | '/admin/pagamentos'
+    | '/admin/satisfacao'
     | '/admin/saude-sistema'
     | '/executivos/$id'
     | '/executivos/landing-page'
@@ -649,6 +672,7 @@ export interface FileRouteTypes {
     | '/executivos'
     | '/vendas'
     | '/api/public/hooks/reativacao-leads-perdidos'
+    | '/api/public/hooks/zapi-incoming'
   id:
     | '__root__'
     | '/'
@@ -680,6 +704,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/inadimplentes'
     | '/_authenticated/admin/lead-360'
     | '/_authenticated/admin/pagamentos'
+    | '/_authenticated/admin/satisfacao'
     | '/_authenticated/admin/saude-sistema'
     | '/_authenticated/executivos/$id'
     | '/_authenticated/executivos/landing-page'
@@ -706,6 +731,7 @@ export interface FileRouteTypes {
     | '/_authenticated/executivos/'
     | '/_authenticated/vendas/'
     | '/api/public/hooks/reativacao-leads-perdidos'
+    | '/api/public/hooks/zapi-incoming'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -727,6 +753,7 @@ export interface RootRouteChildren {
   ApiPublicOnesignalTestRoute: typeof ApiPublicOnesignalTestRoute
   ApiPublicWebhookRoute: typeof ApiPublicWebhookRoute
   ApiPublicHooksReativacaoLeadsPerdidosRoute: typeof ApiPublicHooksReativacaoLeadsPerdidosRoute
+  ApiPublicHooksZapiIncomingRoute: typeof ApiPublicHooksZapiIncomingRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1060,6 +1087,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminSaudeSistemaRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/satisfacao': {
+      id: '/_authenticated/admin/satisfacao'
+      path: '/satisfacao'
+      fullPath: '/admin/satisfacao'
+      preLoaderRoute: typeof AuthenticatedAdminSatisfacaoRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/pagamentos': {
       id: '/_authenticated/admin/pagamentos'
       path: '/pagamentos'
@@ -1109,6 +1143,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAuditoriaRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/api/public/hooks/zapi-incoming': {
+      id: '/api/public/hooks/zapi-incoming'
+      path: '/api/public/hooks/zapi-incoming'
+      fullPath: '/api/public/hooks/zapi-incoming'
+      preLoaderRoute: typeof ApiPublicHooksZapiIncomingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/reativacao-leads-perdidos': {
       id: '/api/public/hooks/reativacao-leads-perdidos'
       path: '/api/public/hooks/reativacao-leads-perdidos'
@@ -1127,6 +1168,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminInadimplentesRoute: typeof AuthenticatedAdminInadimplentesRoute
   AuthenticatedAdminLead360Route: typeof AuthenticatedAdminLead360Route
   AuthenticatedAdminPagamentosRoute: typeof AuthenticatedAdminPagamentosRoute
+  AuthenticatedAdminSatisfacaoRoute: typeof AuthenticatedAdminSatisfacaoRoute
   AuthenticatedAdminSaudeSistemaRoute: typeof AuthenticatedAdminSaudeSistemaRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
@@ -1139,6 +1181,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminInadimplentesRoute: AuthenticatedAdminInadimplentesRoute,
   AuthenticatedAdminLead360Route: AuthenticatedAdminLead360Route,
   AuthenticatedAdminPagamentosRoute: AuthenticatedAdminPagamentosRoute,
+  AuthenticatedAdminSatisfacaoRoute: AuthenticatedAdminSatisfacaoRoute,
   AuthenticatedAdminSaudeSistemaRoute: AuthenticatedAdminSaudeSistemaRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
 }
@@ -1263,6 +1306,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicWebhookRoute: ApiPublicWebhookRoute,
   ApiPublicHooksReativacaoLeadsPerdidosRoute:
     ApiPublicHooksReativacaoLeadsPerdidosRoute,
+  ApiPublicHooksZapiIncomingRoute: ApiPublicHooksZapiIncomingRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
