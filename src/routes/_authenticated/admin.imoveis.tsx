@@ -320,6 +320,56 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
 }) {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<Partial<ImovelInsert>>({});
+  const [importUrl, setImportUrl] = useState("");
+  const [importing, setImporting] = useState(false);
+  const importFn = useServerFn(importImovelFromUrl);
+
+  async function handleImport() {
+    const url = importUrl.trim();
+    if (!url) { toast.error("Cole a URL do imóvel"); return; }
+    setImporting(true);
+    try {
+      const res = await importFn({ data: { url } });
+      if (!res.ok) {
+        toast.warning(res.warning ?? "Não consegui extrair dados — preencha manualmente.");
+        return;
+      }
+      const d = res.data;
+      setForm((f) => {
+        const next: Partial<ImovelInsert> = { ...f };
+        if (d.codigo) (next as any).codigo = d.codigo;
+        if (d.tipo) next.tipo = d.tipo;
+        if (d.finalidade) (next as any).finalidade = d.finalidade;
+        if (d.status) next.status = d.status as any;
+        if (d.bairro) next.bairro = d.bairro;
+        if (d.cidade) next.cidade = d.cidade;
+        if (d.valor_venda != null) (next as any).valor_venda = d.valor_venda;
+        if (d.valor_aluguel != null) next.valor_aluguel = d.valor_aluguel;
+        if (d.condominio != null) next.condominio = d.condominio;
+        if (d.iptu != null) next.iptu = d.iptu;
+        if (d.quartos != null) next.quartos = d.quartos;
+        if (d.banheiros != null) next.banheiros = d.banheiros;
+        if (d.vagas != null) next.vagas = d.vagas;
+        if (d.area_m2 != null) next.area_m2 = d.area_m2 as any;
+        if (d.descricao) next.observacoes = d.descricao;
+        if (d.fotos.length) {
+          const existing = new Set(f.fotos ?? []);
+          const merged = [...(f.fotos ?? [])];
+          for (const u of d.fotos) if (!existing.has(u)) merged.push(u);
+          next.fotos = merged;
+        }
+        return next;
+      });
+      toast.success(
+        `Dados importados${d.fotos.length ? ` — ${d.fotos.length} foto(s) anexada(s)` : ""}. Revise antes de salvar.`
+      );
+    } catch (e) {
+      console.error("[importImovel]", e);
+      toast.error("Não consegui extrair os dados automaticamente — preencha manualmente.");
+    } finally {
+      setImporting(false);
+    }
+  }
 
   const { data: corretores = [] } = useQuery({
     queryKey: ["corretores_fechamento"],
