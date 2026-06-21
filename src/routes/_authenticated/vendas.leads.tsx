@@ -255,6 +255,8 @@ function AgendarVisitaButton({ lead, onDone }: { lead: VendasLead; onDone: () =>
 
   async function submit() {
     if (!endereco.trim()) { toast.error("Informe o endereço"); return; }
+    const { confirmNoGoogleConflict } = await import("@/lib/google-conflict");
+    if (!(await confirmNoGoogleConflict(new Date(dataInicio).toISOString(), duracao))) return;
     setSaving(true);
     try {
       await createVisitaFn({ data: {
