@@ -10,12 +10,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { REGIOES } from "@/lib/lead-helpers";
 import { VENDAS_ETAPAS, formatBRL, vendasEtapaInfo, type VendasLead, type VendasEtapa, type VendasTipo } from "@/lib/vendas-helpers";
-import { createVisita, createReuniaoOnlineVenda, listImoveisForVisita, type ImovelOption } from "@/lib/visitas.functions";
+import { createVisita, createReuniaoOnlineVenda, listImoveisForVisita, confirmarVisita, type ImovelOption } from "@/lib/visitas.functions";
 import { formatImovelEndereco, formatImovelOptionLabel, buildVisitaConfirmacaoMsg } from "@/lib/visita-helpers";
 
 import { getFinanciamentoStatusByLead, type FinanciamentoStatus } from "@/lib/financiamento.functions";
 import { toast } from "sonner";
-import { MessageCircle, Trash2, Pencil, MapPin, Video, Banknote, Copy } from "lucide-react";
+import { MessageCircle, Trash2, Pencil, MapPin, Video, Banknote, Copy, CheckCircle2, XCircle } from "lucide-react";
 
 function toLocalInputValue(d: Date) {
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -46,18 +46,30 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
     },
   });
 
-  const { data: visitas = [] } = useQuery({
+  const { data: visitas = [], refetch: refetchVisitas } = useQuery({
     queryKey: ["vendas_lead_visitas", leadId],
     enabled: !!leadId && open,
     queryFn: async () => {
       const { data } = await supabase
         .from("vendas_visitas" as never)
-        .select("id, endereco, data_inicio, status")
+        .select("id, endereco, data_inicio, status, comparecimento")
         .eq("lead_id", leadId!)
         .order("data_inicio", { ascending: false });
-      return (data ?? []) as { id: string; endereco: string; data_inicio: string; status: string }[];
+      return (data ?? []) as { id: string; endereco: string; data_inicio: string; status: string; comparecimento: "realizada" | "nao_compareceu" | null }[];
     },
   });
+
+  const confirmarVisitaFn = useServerFn(confirmarVisita);
+  const visitasPendentes = visitas.filter((v) => v.comparecimento == null && new Date(v.data_inicio) < new Date());
+  async function handleConfirmar(visitaId: string, comparecimento: "realizada" | "nao_compareceu") {
+    try {
+      await confirmarVisitaFn({ data: { visita_id: visitaId, comparecimento } });
+      toast.success(comparecimento === "realizada" ? "Visita marcada como realizada" : "Visita marcada como não compareceu");
+      refetchVisitas();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao confirmar visita");
+    }
+  }
 
   const getFinStatus = useServerFn(getFinanciamentoStatusByLead);
   const { data: finStatus } = useQuery({
@@ -212,6 +224,27 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
             </Select>
           </div>
 
+          {visitasPendentes.length > 0 && (
+            <div className="space-y-2">
+              {visitasPendentes.map((v) => (
+                <div key={v.id} className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3">
+                  <div className="text-xs font-semibold text-amber-700 dark:text-amber-300 mb-1">
+                    Como foi a visita de {new Date(v.data_inicio).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", dateStyle: "short", timeStyle: "short" })}?
+                  </div>
+                  <div className="text-[11px] text-muted-foreground mb-2 truncate">{v.endereco}</div>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="gold" className="gap-1 h-7 text-xs" onClick={() => handleConfirmar(v.id, "realizada")}>
+                      <CheckCircle2 className="h-3.5 w-3.5" /> Realizada
+                    </Button>
+                    <Button size="sm" variant="outline" className="gap-1 h-7 text-xs" onClick={() => handleConfirmar(v.id, "nao_compareceu")}>
+                      <XCircle className="h-3.5 w-3.5" /> Não compareceu
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
           <div>
             <Label className="text-xs">Histórico de atividades</Label>
             <div className="mt-1 space-y-1 text-sm border rounded p-2 max-h-40 overflow-y-auto">
@@ -219,11 +252,16 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
               {lead.atribuido_em && (
                 <div className="text-xs text-muted-foreground">Atribuído em {new Date(lead.atribuido_em).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })} ({lead.atribuicao_status})</div>
               )}
-              {visitas.map((v) => (
-                <div key={v.id} className="text-xs">
-                  🏠 Visita {v.status} — {v.endereco} ({new Date(v.data_inicio).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })})
-                </div>
-              ))}
+              {visitas.map((v) => {
+                const compLabel = v.comparecimento === "realizada" ? " ✅ realizada"
+                  : v.comparecimento === "nao_compareceu" ? " ❌ não compareceu"
+                  : "";
+                return (
+                  <div key={v.id} className="text-xs">
+                    🏠 Visita {v.status}{compLabel} — {v.endereco} ({new Date(v.data_inicio).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })})
+                  </div>
+                );
+              })}
               {visitas.length === 0 && <div className="text-xs text-muted-foreground">Nenhuma visita registrada</div>}
             </div>
           </div>

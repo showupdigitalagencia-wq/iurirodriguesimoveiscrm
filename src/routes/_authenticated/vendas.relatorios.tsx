@@ -12,7 +12,7 @@ import {
 } from "recharts";
 import {
   TrendingUp, TrendingDown, Users, Trophy, Timer, Target,
-  Handshake, KeyRound, Crown, User, UsersRound,
+  Handshake, KeyRound, Crown, User, UsersRound, CalendarCheck,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/vendas/relatorios")({
@@ -33,6 +33,12 @@ type OrigemRow = { canal: string; qtd: number };
 type EvolRow = { dia: string; leads: number; fechados: number };
 type CompBlock = { vendas: number; locacoes: number; receita: number; total_leads: number; atendidos: number };
 
+type VisitasBlock = {
+  total: number; realizadas: number; nao_compareceu: number;
+  pendentes_confirmacao: number; futuras: number;
+  taxa_comparecimento: number | null;
+};
+
 type Relatorio = {
   periodo: { from: string; to: string; prev_from: string; prev_to: string };
   escopo: { is_admin: boolean; is_exec: boolean; scope: Scope; target_id: string | null; exec_id: string | null; usuarios: number };
@@ -42,6 +48,7 @@ type Relatorio = {
   equipes: EquipeRow[];
   plantao: PlantaoRow[];
   origem: OrigemRow[];
+  visitas?: VisitasBlock | null;
   comparacao: { atual: CompBlock; anterior: CompBlock };
 };
 
@@ -264,12 +271,22 @@ function VendasRelatoriosPage() {
       {data && !loading && (
         <>
           {/* KPI cards — métricas principais */}
-          <section className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+          <section className="grid grid-cols-2 lg:grid-cols-6 gap-3">
             <KpiCard icon={Users} label="Leads recebidos" value={data.comparacao.atual.total_leads} d={dLeads!} accent="sky" />
             <KpiCard icon={Target} label="Taxa de conversão" value={`${conv}%`} d={dConv} accent="emerald" />
             <KpiCard icon={Handshake} label="Vendas" value={data.comparacao.atual.vendas} d={dVendas!} accent="gold" />
             <KpiCard icon={KeyRound} label="Locações" value={data.comparacao.atual.locacoes} d={dLoc!} accent="violet" />
             <KpiCard icon={Timer} label="Tempo médio resposta" value={fmtTempo(data.tempo_resposta_seg)} d={null} accent="rose" />
+            <KpiCard
+              icon={CalendarCheck}
+              label="Taxa de comparecimento"
+              value={data.visitas?.taxa_comparecimento != null ? `${data.visitas.taxa_comparecimento}%` : "—"}
+              d={null}
+              accent="emerald"
+              hint={data.visitas
+                ? `${data.visitas.realizadas} realizadas · ${data.visitas.nao_compareceu} não compareceu${data.visitas.pendentes_confirmacao ? ` · ${data.visitas.pendentes_confirmacao} a confirmar` : ""}`
+                : undefined}
+            />
           </section>
 
           {/* Receita destacada */}
@@ -487,11 +504,12 @@ const ACCENT: Record<string, string> = {
   rose: "from-rose-500/10 to-transparent border-rose-500/20 text-rose-500",
 };
 
-function KpiCard({ icon: Icon, label, value, d, accent }: {
+function KpiCard({ icon: Icon, label, value, d, accent, hint }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string; value: number | string;
   d: { txt: string; up: boolean | null } | null;
   accent: keyof typeof ACCENT;
+  hint?: string;
 }) {
   const cls = ACCENT[accent];
   return (
@@ -506,6 +524,7 @@ function KpiCard({ icon: Icon, label, value, d, accent }: {
       </div>
       <div className="text-2xl md:text-3xl font-bold leading-tight">{value}</div>
       <div className="text-[11px] text-muted-foreground mt-0.5">{label}</div>
+      {hint && <div className="text-[10px] text-muted-foreground mt-1 leading-tight">{hint}</div>}
     </div>
   );
 }

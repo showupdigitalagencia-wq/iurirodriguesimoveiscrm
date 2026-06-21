@@ -147,6 +147,27 @@ export const deleteVisita = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const confirmarVisita = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { visita_id: string; comparecimento: "realizada" | "nao_compareceu" }) => input)
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    if (data.comparecimento !== "realizada" && data.comparecimento !== "nao_compareceu") {
+      throw new Error("comparecimento inválido");
+    }
+    const { error } = await supabase
+      .from("vendas_visitas" as never)
+      .update({
+        comparecimento: data.comparecimento,
+        confirmada_em: new Date().toISOString(),
+        confirmada_por: userId,
+        status: data.comparecimento === "realizada" ? "realizada" : "nao_compareceu",
+      } as never)
+      .eq("id", data.visita_id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
 export const listMyVendasLeads = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
