@@ -1597,6 +1597,10 @@ export type Database = {
       get_leads_sem_resposta: { Args: never; Returns: Json }
       get_portfolio_stats: { Args: { _days?: number }; Returns: Json }
       get_saude_sistema: { Args: never; Returns: Json }
+      get_tempo_resposta_ranking: {
+        Args: { _from: string; _scope?: string; _target?: string; _to: string }
+        Returns: Json
+      }
       get_vendas_relatorio: {
         Args: { _from: string; _to: string }
         Returns: Json
