@@ -1,63 +1,24 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { VENDAS_ETAPAS, formatBRL, type VendasLead } from "@/lib/vendas-helpers";
-import { TrendingUp, Users, CheckCircle2, XCircle, CalendarClock, BellRing, Building2, Home, KeyRound, Tag, Handshake } from "lucide-react";
+import { TrendingUp, Users, CheckCircle2, XCircle, CalendarClock, BellRing } from "lucide-react";
 import { getPlantonistaHoje, getMeusLeadsPlantao } from "@/lib/plantao.functions";
 
 
+
 export const Route = createFileRoute("/_authenticated/vendas/")({
-  validateSearch: (s: Record<string, unknown>) => ({
-    dias: [7, 15, 30, 60, 90].includes(Number(s.dias)) ? Number(s.dias) : 30,
-  }),
   component: VendasDashboard,
 });
 
-type PortfolioStats = {
-  disponivel_venda: number;
-  disponivel_locacao: number;
-  disponivel_total: number;
-  vendidos_periodo: number;
-  alugados_periodo: number;
-  desde: string;
-};
 
 function VendasDashboard() {
-  const { dias } = Route.useSearch();
-  const navigate = useNavigate({ from: "/vendas" });
-  const qc = useQueryClient();
   const getHoje = useServerFn(getPlantonistaHoje);
   const getMeus = useServerFn(getMeusLeadsPlantao);
   const hojeQ = useQuery({ queryKey: ["plantao-hoje-dash"], queryFn: () => getHoje(), refetchInterval: 60_000 });
   const meusQ = useQuery({ queryKey: ["plantao-meus-leads"], queryFn: () => getMeus(), refetchInterval: 60_000 });
-
-  const portfolioStatsQ = useQuery({
-    queryKey: ["portfolio_stats", dias],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_portfolio_stats", { _days: dias });
-      if (error) throw error;
-      return data as unknown as PortfolioStats;
-    },
-    refetchInterval: 30_000,
-  });
-
-  // Realtime: invalida ao mudar qualquer imóvel
-  useEffect(() => {
-    const channel = supabase
-      .channel("portfolio-stats-imoveis")
-      .on("postgres_changes", { event: "*", schema: "public", table: "imoveis" }, () => {
-        qc.invalidateQueries({ queryKey: ["portfolio_stats"] });
-      })
-      .subscribe();
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [qc]);
 
   const { data: leads = [] } = useQuery({
     queryKey: ["vendas_leads_dash"],
@@ -91,14 +52,6 @@ function VendasDashboard() {
     { label: "Conversão", value: `${conversao}%`, icon: TrendingUp },
   ];
 
-  const stats = portfolioStatsQ.data;
-  const portfolioCards = [
-    { label: "Total disponíveis", value: stats?.disponivel_total ?? 0, icon: Building2, color: "text-sky-600", to: "/vendas/portfolio", search: {} },
-    { label: "Disponíveis p/ Venda", value: stats?.disponivel_venda ?? 0, icon: Tag, color: "text-teal-600", to: "/vendas/portfolio", search: { finalidade: "venda" } },
-    { label: "Disponíveis p/ Locação", value: stats?.disponivel_locacao ?? 0, icon: KeyRound, color: "text-emerald-600", to: "/vendas/portfolio", search: { finalidade: "locacao" } },
-    { label: `Vendidos (${dias}d)`, value: stats?.vendidos_periodo ?? 0, icon: Handshake, color: "text-violet-600", to: "/vendas/portfolio", search: {} },
-    { label: `Alugados (${dias}d)`, value: stats?.alugados_periodo ?? 0, icon: Home, color: "text-blue-600", to: "/vendas/portfolio", search: {} },
-  ];
 
 
   return (
@@ -142,62 +95,7 @@ function VendasDashboard() {
         </Card>
       </Link>
 
-      {/* Portfólio de Imóveis — métricas em tempo real */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between gap-3 pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Building2 className="h-4 w-4 text-gold" /> Portfólio de Imóveis
-            <span className="text-[10px] font-normal text-muted-foreground ml-1">tempo real</span>
-          </CardTitle>
-          <div className="flex items-center gap-2">
-            <Label htmlFor="dias-portfolio" className="text-xs text-muted-foreground hidden sm:inline">Período</Label>
-            <Select
-              value={String(dias)}
-              onValueChange={(v) => navigate({ search: { dias: Number(v) }, replace: true })}
-            >
-              <SelectTrigger id="dias-portfolio" className="h-8 w-[120px] text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {[7, 15, 30, 60, 90].map((d) => (
-                  <SelectItem key={d} value={String(d)}>Últimos {d} dias</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-            {portfolioCards.map((c) => {
-              const Icon = c.icon;
-              return (
-                <Link
-                  key={c.label}
-                  to={c.to}
-                  search={c.search as never}
-                  className="block group"
-                >
-                  <div className="rounded-lg border bg-card hover:bg-muted/40 hover:border-foreground/20 transition p-3 h-full">
-                    <div className="flex items-center gap-2">
-                      <div className="h-9 w-9 rounded-md bg-muted flex items-center justify-center shrink-0">
-                        <Icon className={`h-4 w-4 ${c.color}`} />
-                      </div>
-                      <div className="text-[11px] text-muted-foreground leading-tight">{c.label}</div>
-                    </div>
-                    <div className="mt-2 text-2xl font-bold">
-                      {portfolioStatsQ.isLoading ? "…" : c.value}
-                    </div>
-                    <div className="text-[10px] text-muted-foreground group-hover:text-foreground/70">Abrir portfólio →</div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-          {portfolioStatsQ.error && (
-            <div className="text-xs text-destructive mt-2">Erro ao carregar métricas do portfólio.</div>
-          )}
-        </CardContent>
-      </Card>
+
 
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
