@@ -1333,6 +1333,9 @@ export type Database = {
       }
       vendas_visitas: {
         Row: {
+          comparecimento: string | null
+          confirmada_em: string | null
+          confirmada_por: string | null
           corretor_id: string
           created_at: string
           data_inicio: string
@@ -1347,6 +1350,9 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          comparecimento?: string | null
+          confirmada_em?: string | null
+          confirmada_por?: string | null
           corretor_id: string
           created_at?: string
           data_inicio: string
@@ -1361,6 +1367,9 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          comparecimento?: string | null
+          confirmada_em?: string | null
+          confirmada_por?: string | null
           corretor_id?: string
           created_at?: string
           data_inicio?: string
