@@ -209,7 +209,9 @@ function groupByImovelFolder(allImgs: string[]): string[] {
 function selectRelevantImages(allImgs: string[], ogImage: string | null): string[] {
   const folderImgs = groupByImovelFolder(allImgs);
   const folderSet = new Set(folderImgs);
-  const nonFolderImgs = allImgs.filter((u) => !u.match(/\/imoveis\/[^/]+\//i));
+  const nonFolderImgs = allImgs.filter(
+    (u) => !u.match(/\/imoveis\/[^/]+\//i) && !/\/\/[^/]*voaimgs\.com\.br\//i.test(u)
+  );
   const sameAdUploadImgs = filterRelevantImages(nonFolderImgs, ogImage);
 
   const merged =
