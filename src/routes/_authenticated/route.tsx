@@ -209,6 +209,27 @@ function AuthLayout() {
     ? MOBILE_TOP_ICONS.filter((item) => item.to !== "/configuracoes")
     : MOBILE_TOP_ICONS;
 
+  if (rolesLoaded && hasNoRole) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-6">
+        <div className="max-w-md w-full text-center bg-sidebar text-sidebar-foreground rounded-lg p-8 border border-sidebar-border">
+          <div className="text-[10px] uppercase tracking-[0.3em] text-sidebar-foreground/60">Iuri Rodrigues Imóveis</div>
+          <div className="text-xl font-bold text-gold mt-0.5 mb-6">Sistema NEXUS</div>
+          <h1 className="text-lg font-semibold mb-2">Aguardando liberação de acesso</h1>
+          <p className="text-sm text-sidebar-foreground/80 mb-2">
+            Sua conta <span className="text-gold">{userEmail}</span> foi criada com sucesso.
+          </p>
+          <p className="text-sm text-sidebar-foreground/70 mb-6">
+            Um administrador precisa atribuir seu perfil de acesso antes que você possa usar o sistema. Você receberá acesso em breve.
+          </p>
+          <Button onClick={logout} variant="ghost" size="sm" className="text-sidebar-foreground hover:bg-sidebar-accent">
+            <LogOut className="h-4 w-4 mr-2" /> Sair
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex bg-background">
       {/* Desktop sidebar — inalterado */}
