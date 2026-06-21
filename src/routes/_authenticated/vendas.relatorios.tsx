@@ -271,12 +271,22 @@ function VendasRelatoriosPage() {
       {data && !loading && (
         <>
           {/* KPI cards — métricas principais */}
-          <section className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+          <section className="grid grid-cols-2 lg:grid-cols-6 gap-3">
             <KpiCard icon={Users} label="Leads recebidos" value={data.comparacao.atual.total_leads} d={dLeads!} accent="sky" />
             <KpiCard icon={Target} label="Taxa de conversão" value={`${conv}%`} d={dConv} accent="emerald" />
             <KpiCard icon={Handshake} label="Vendas" value={data.comparacao.atual.vendas} d={dVendas!} accent="gold" />
             <KpiCard icon={KeyRound} label="Locações" value={data.comparacao.atual.locacoes} d={dLoc!} accent="violet" />
             <KpiCard icon={Timer} label="Tempo médio resposta" value={fmtTempo(data.tempo_resposta_seg)} d={null} accent="rose" />
+            <KpiCard
+              icon={CalendarCheck}
+              label="Taxa de comparecimento"
+              value={data.visitas?.taxa_comparecimento != null ? `${data.visitas.taxa_comparecimento}%` : "—"}
+              d={null}
+              accent="emerald"
+              hint={data.visitas
+                ? `${data.visitas.realizadas} realizadas · ${data.visitas.nao_compareceu} não compareceu${data.visitas.pendentes_confirmacao ? ` · ${data.visitas.pendentes_confirmacao} a confirmar` : ""}`
+                : undefined}
+            />
           </section>
 
           {/* Receita destacada */}
