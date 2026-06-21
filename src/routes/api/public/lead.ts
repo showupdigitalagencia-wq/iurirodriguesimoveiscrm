@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
+import { withWebhookLog } from "@/lib/webhook-log.server";
+
 
 const LeadInput = z.object({
   nome: z.string().min(2).max(120),
