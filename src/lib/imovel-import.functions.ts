@@ -180,6 +180,32 @@ function filterRelevantImages(allImgs: string[], ogImage: string | null): string
   return filtered.length ? filtered : allImgs;
 }
 
+/**
+ * Quando as fotos estão num CDN com pasta por imóvel (ex.: voaimgs.com.br/.../imoveis/<id>/...),
+ * agrupa pela pasta mais frequente — é o sinal mais forte de "fotos deste anúncio"
+ * e elimina imagens de outros imóveis listados na mesma página.
+ */
+function groupByImovelFolder(allImgs: string[]): string[] {
+  const folderCount = new Map<string, number>();
+  const byFolder = new Map<string, string[]>();
+  for (const u of allImgs) {
+    const m = u.match(/(\/imoveis\/[^/]+\/)/i);
+    if (!m) continue;
+    const key = m[1];
+    folderCount.set(key, (folderCount.get(key) ?? 0) + 1);
+    const arr = byFolder.get(key) ?? [];
+    arr.push(u);
+    byFolder.set(key, arr);
+  }
+  if (folderCount.size === 0) return allImgs;
+  let best: string | null = null;
+  let bestCount = 0;
+  for (const [k, c] of folderCount) {
+    if (c > bestCount) { best = k; bestCount = c; }
+  }
+  return best ? (byFolder.get(best) ?? allImgs) : allImgs;
+}
+
 export const importImovelFromUrl = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { url: string }) =>
@@ -251,7 +277,11 @@ export const importImovelFromUrl = createServerFn({ method: "POST" })
     }
 
     // ---------- IMAGES (download + upload to bucket "imoveis-fotos") ----------
-    const imgRegex = /https?:\/\/[^\s"'>]+\/upload\/imoveis\/[^\s"'>]+\.(?:jpe?g|png|webp)/gi;
+    // Cobre fotos no domínio da própria imobiliária (/upload/imoveis/...) E no CDN
+    // do Voa Corretor (img.voaimgs.com.br/.../imoveis/<id>/...). Sem o CDN, só a
+    // capa era capturada e a galeria inteira do anúncio ficava de fora.
+    const imgRegex =
+      /https?:\/\/[^\s"'>]+\/(?:upload\/)?imoveis\/[^\s"'>]+\.(?:jpe?g|png|webp)/gi;
     const rawImgs = Array.from(new Set(html.match(imgRegex) ?? []));
     // Dedupe por nome de arquivo, preferindo URL direta (sem thumb.php)
     const byBasename = new Map<string, string>();
@@ -263,7 +293,14 @@ export const importImovelFromUrl = createServerFn({ method: "POST" })
       }
     }
     const allImgs = Array.from(byBasename.values());
-    const remoteFotos = filterRelevantImages(allImgs, ogImage);
+    // Quando há pasta por imóvel no CDN, agrupa por ela; caso contrário, cai no
+    // filtro antigo pelo prefixo do og:image.
+    const grouped = groupByImovelFolder(allImgs);
+    const remoteFotos =
+      grouped.length && grouped.length !== allImgs.length
+        ? grouped
+        : filterRelevantImages(allImgs, ogImage);
+
 
     // Baixa cada imagem e grava no bucket privado "imoveis-fotos".
     // Mantém URLs remotas como fallback se algum download falhar.
