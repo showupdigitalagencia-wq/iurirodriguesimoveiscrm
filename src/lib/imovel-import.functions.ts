@@ -292,12 +292,16 @@ export const importImovelFromUrl = createServerFn({ method: "POST" })
       tipo || finalidade || quartos != null || banheiros != null || valor_venda != null ||
       valor_aluguel != null || fotos.length > 0 || cidade || bairro;
 
+    const warnings: string[] = [];
+    if (!anyExtracted) warnings.push("Não consegui extrair dados automaticamente — preencha manualmente.");
+    if (downloadFailures > 0) {
+      warnings.push(`${downloadFailures} foto(s) não puderam ser baixadas e foram mantidas como link externo.`);
+    }
+
     return {
       ok: !!anyExtracted,
       source: url,
-      warning: !anyExtracted
-        ? "Não consegui extrair dados automaticamente — preencha manualmente."
-        : undefined,
+      warning: warnings.length ? warnings.join(" ") : undefined,
       data: {
         codigo,
         tipo,
