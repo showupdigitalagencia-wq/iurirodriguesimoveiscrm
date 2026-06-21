@@ -398,6 +398,17 @@ export const deleteFinanciamento = createServerFn({ method: "POST" })
       if (rmErr) console.warn("[deleteFinanciamento] remove storage falhou", rmErr.message);
     }
 
+    try {
+      await context.supabase.rpc("log_audit" as never, {
+        _acao: "financiamento_delete",
+        _tabela: "financiamentos",
+        _registro_id: data.id,
+        _antes: r as never,
+        _depois: null,
+        _contexto: { storage_paths_removidos: paths.length },
+      } as never);
+    } catch (e) { console.warn("[audit financiamento_delete]", e); }
+
     const { error: delErr } = await supabaseAdmin
       .from("financiamentos" as never)
       .delete()
@@ -406,3 +417,4 @@ export const deleteFinanciamento = createServerFn({ method: "POST" })
 
     return { ok: true };
   });
+
