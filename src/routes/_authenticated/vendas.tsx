@@ -46,6 +46,23 @@ function VendasLayout() {
           <p className="text-xs md:text-sm text-muted-foreground">Pipeline de compra e locação</p>
         </div>
       </div>
+      {/* Tabs mobile — scroll horizontal, sempre acessíveis */}
+      <nav className="md:hidden -mx-3 px-3 flex gap-1 border-b overflow-x-auto scrollbar-none">
+        {TABS.map((t) => {
+          const Icon = t.icon;
+          return (
+            <Link
+              key={t.to}
+              to={t.to}
+              activeOptions={{ exact: t.exact }}
+              activeProps={{ className: "border-gold text-gold" }}
+              className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2.5 text-sm border-b-2 border-transparent text-muted-foreground hover:text-foreground min-h-[44px] whitespace-nowrap"
+            >
+              <Icon className="h-4 w-4" /> {t.label}
+            </Link>
+          );
+        })}
+      </nav>
       {/* Tabs desktop */}
       <nav className="hidden md:flex gap-1 border-b overflow-x-auto">
         {TABS.map((t) => {
