@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-const Role = z.enum(["admin", "corretor", "corretor_vendas"]);
+const Role = z.enum(["admin", "corretor", "corretor_vendas", "correspondente_bancaria", "administrativo"]);
 
 async function assertAdmin(supabase: SupabaseClient, userId: string) {
   const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
