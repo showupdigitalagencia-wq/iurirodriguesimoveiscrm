@@ -46,18 +46,30 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
     },
   });
 
-  const { data: visitas = [] } = useQuery({
+  const { data: visitas = [], refetch: refetchVisitas } = useQuery({
     queryKey: ["vendas_lead_visitas", leadId],
     enabled: !!leadId && open,
     queryFn: async () => {
       const { data } = await supabase
         .from("vendas_visitas" as never)
-        .select("id, endereco, data_inicio, status")
+        .select("id, endereco, data_inicio, status, comparecimento")
         .eq("lead_id", leadId!)
         .order("data_inicio", { ascending: false });
-      return (data ?? []) as { id: string; endereco: string; data_inicio: string; status: string }[];
+      return (data ?? []) as { id: string; endereco: string; data_inicio: string; status: string; comparecimento: "realizada" | "nao_compareceu" | null }[];
     },
   });
+
+  const confirmarVisitaFn = useServerFn(confirmarVisita);
+  const visitasPendentes = visitas.filter((v) => v.comparecimento == null && new Date(v.data_inicio) < new Date());
+  async function handleConfirmar(visitaId: string, comparecimento: "realizada" | "nao_compareceu") {
+    try {
+      await confirmarVisitaFn({ data: { visita_id: visitaId, comparecimento } });
+      toast.success(comparecimento === "realizada" ? "Visita marcada como realizada" : "Visita marcada como não compareceu");
+      refetchVisitas();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao confirmar visita");
+    }
+  }
 
   const getFinStatus = useServerFn(getFinanciamentoStatusByLead);
   const { data: finStatus } = useQuery({
