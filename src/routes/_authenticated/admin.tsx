@@ -41,6 +41,7 @@ function AdminLayout() {
 
   let tabs: { to: string; label: string; icon: typeof LayoutDashboard; exact: boolean }[] = [...BASE_TABS];
   if (canCandidatos) tabs.push({ to: "/admin/candidatos", label: "Candidatos", icon: UserPlus, exact: false });
+  if (isAdmin) tabs.push({ to: "/admin/funil", label: "Funil", icon: TrendingDown, exact: false });
   if (isAdmin) tabs.push({ to: "/admin/saude-sistema", label: "Saúde", icon: Activity, exact: false });
   if (isAdmin) tabs.push({ to: "/admin/auditoria", label: "Auditoria", icon: ScrollText, exact: false });
 
