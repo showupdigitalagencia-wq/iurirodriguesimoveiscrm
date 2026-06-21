@@ -81,6 +81,12 @@ export const Route = createFileRoute("/api/public/webhook")({
         }
 
         const body = (typeof raw === "object" && raw !== null ? raw : {}) as Record<string, unknown>;
+
+        // === Evolution API (WhatsApp da empresa) ===
+        // Eventos messages.upsert chegam com { event, instance, data: { key, pushName, message, ... } }
+        const evolutionResp = await tryHandleEvolution(body);
+        if (evolutionResp) return evolutionResp;
+
         const flat = flattenMeta(body);
 
         const nome = pick(flat, ["nome", "name", "full_name", "fullname", "nome_completo"]) ?? "Sem nome";
