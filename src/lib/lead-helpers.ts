@@ -15,6 +15,7 @@ export const ETAPAS: { id: LeadEtapa; nome: string }[] = [
   { id: "follow_up", nome: "Follow Up" },
   { id: "fechado", nome: "Fechado" },
   { id: "descartado", nome: "Descartado" },
+  { id: "descredenciado", nome: "Descredenciado" },
 ];
 
 export const REGIOES: { id: LeadRegiao; nome: string }[] = [
@@ -54,7 +55,7 @@ export function urgencyForLead(lead: Pick<LeadRow, "created_at" | "first_respons
   level: "ok" | "warning" | "critical";
   minutes: number;
 } {
-  if (lead.etapa === "fechado" || lead.etapa === "descartado") {
+  if (lead.etapa === "fechado" || lead.etapa === "descartado" || lead.etapa === "descredenciado") {
     return { level: "ok", minutes: 0 };
   }
   if (lead.first_response_at) return { level: "ok", minutes: 0 };
@@ -106,6 +107,7 @@ export const ETAPA_COLORS: Record<LeadEtapa, {
   follow_up:           { badge: "bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-500/15 dark:text-gray-300 dark:border-gray-500/30",       bar: "bg-gray-500",   border: "border-l-gray-500",   dot: "bg-gray-500" },
   fechado:             { badge: "bg-green-100 text-green-800 border-green-200 dark:bg-green-500/15 dark:text-green-300 dark:border-green-500/30", bar: "bg-green-500",  border: "border-l-green-500",  dot: "bg-green-500" },
   descartado:          { badge: "bg-red-100 text-red-800 border-red-200 dark:bg-red-500/15 dark:text-red-300 dark:border-red-500/30",             bar: "bg-red-500",    border: "border-l-red-500",    dot: "bg-red-500" },
+  descredenciado:      { badge: "bg-red-200 text-red-950 border-red-400 dark:bg-red-900/40 dark:text-red-200 dark:border-red-800",                bar: "bg-red-800",    border: "border-l-red-800",    dot: "bg-red-800" },
 };
 
 export function etapaColor(id: LeadEtapa) {

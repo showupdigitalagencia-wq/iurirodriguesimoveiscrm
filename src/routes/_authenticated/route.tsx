@@ -78,6 +78,7 @@ function AuthLayout() {
   const router = useRouter();
   const [rolesLoaded, setRolesLoaded] = useState(false);
   const [hasNoRole, setHasNoRole] = useState(false);
+  const [accessRevoked, setAccessRevoked] = useState(false);
   const [userEmail, setUserEmail] = useState<string>("");
   const [isAdmin, setIsAdmin] = useState(false);
   const [isCorretorVendas, setIsCorretorVendas] = useState(false);
@@ -162,8 +163,13 @@ function AuthLayout() {
         .then(({ data }) => { if (active) setVendasAtivo(data?.valor === true); });
       supabase.from("configuracoes").select("valor").eq("chave", "modulo_administrativo_ativo").maybeSingle()
         .then(({ data }) => { if (active) setAdminModuloAtivo(data?.valor === true); });
-      supabase.from("profiles").select("vendas_acesso").eq("id", userId).maybeSingle()
-        .then(({ data }) => { if (active) setVendasAcessoIndividual((data as { vendas_acesso?: boolean } | null)?.vendas_acesso === true); });
+      supabase.from("profiles").select("vendas_acesso, ativo").eq("id", userId).maybeSingle()
+        .then(({ data }) => {
+          if (!active) return;
+          const p = data as { vendas_acesso?: boolean; ativo?: boolean } | null;
+          setVendasAcessoIndividual(p?.vendas_acesso === true);
+          setAccessRevoked(p?.ativo === false);
+        });
       supabase.rpc("can_view_candidatos").then(({ data }) => { if (active) setCanCandidatos(data === true); });
       supabase.rpc("current_user_is_executivo").then(({ data }) => { if (active) setIsExec(data === true); });
     });
@@ -212,17 +218,22 @@ function AuthLayout() {
     : MOBILE_TOP_ICONS;
 
   if (rolesLoaded && hasNoRole) {
+    const desativado = accessRevoked;
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-6">
         <div className="max-w-md w-full text-center bg-sidebar text-sidebar-foreground rounded-lg p-8 border border-sidebar-border">
           <div className="text-[10px] uppercase tracking-[0.3em] text-sidebar-foreground/60">Iuri Rodrigues Imóveis</div>
           <div className="text-xl font-bold text-gold mt-0.5 mb-6">Sistema NEXUS</div>
-          <h1 className="text-lg font-semibold mb-2">Aguardando liberação de acesso</h1>
+          <h1 className={`text-lg font-semibold mb-2 ${desativado ? "text-red-400" : ""}`}>
+            {desativado ? "Acesso desativado" : "Aguardando liberação de acesso"}
+          </h1>
           <p className="text-sm text-sidebar-foreground/80 mb-2">
-            Sua conta <span className="text-gold">{userEmail}</span> foi criada com sucesso.
+            Conta: <span className="text-gold">{userEmail}</span>
           </p>
           <p className="text-sm text-sidebar-foreground/70 mb-6">
-            Um administrador precisa atribuir seu perfil de acesso antes que você possa usar o sistema. Você receberá acesso em breve.
+            {desativado
+              ? "Seu acesso foi desativado. Entre em contato com a administração para mais informações."
+              : "Um administrador precisa atribuir seu perfil de acesso antes que você possa usar o sistema. Você receberá acesso em breve."}
           </p>
           <Button onClick={logout} variant="ghost" size="sm" className="text-sidebar-foreground hover:bg-sidebar-accent">
             <LogOut className="h-4 w-4 mr-2" /> Sair

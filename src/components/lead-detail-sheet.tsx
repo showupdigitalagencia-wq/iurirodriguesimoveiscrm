@@ -10,12 +10,12 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { ETAPAS, REGIOES, etapaNome, canalNome, regiaoNome, etapaColor, type LeadRow, type LeadRegiao } from "@/lib/lead-helpers";
-import { updateLead, updateLeadEtapa, addNote, markFirstResponse } from "@/lib/leads.functions";
+import { updateLead, updateLeadEtapa, addNote, markFirstResponse, descredenciarCorretor } from "@/lib/leads.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Phone, MessageCircle, MapPin, Mail, Clock, MessageSquarePlus, CheckCircle2, ArrowLeft, Trash2, CalendarPlus } from "lucide-react";
+import { Phone, MessageCircle, MapPin, Mail, Clock, MessageSquarePlus, CheckCircle2, ArrowLeft, Trash2, CalendarPlus, ShieldOff } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { ReuniaoFormDialog } from "@/components/reuniao-form-dialog";
 
@@ -60,6 +60,10 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
   const callEtapa = useServerFn(updateLeadEtapa);
   const callNote = useServerFn(addNote);
   const callFirst = useServerFn(markFirstResponse);
+  const callDescredenciar = useServerFn(descredenciarCorretor);
+  const [descredOpen, setDescredOpen] = useState(false);
+  const [descredMotivo, setDescredMotivo] = useState("");
+  const [descredLoading, setDescredLoading] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -188,6 +192,27 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
     }
   }
 
+  async function confirmDescredenciar() {
+    if (!leadId) return;
+    const motivo = descredMotivo.trim();
+    if (motivo.length < 3) { toast.error("Informe o motivo (mín. 3 caracteres)"); return; }
+    setDescredLoading(true);
+    try {
+      const res = await callDescredenciar({ data: { lead_id: leadId, motivo } });
+      const extra = res.leads_vendas_pendentes
+        ? ` ${res.leads_vendas_pendentes} lead(s) de vendas marcados para reatribuição.`
+        : "";
+      toast.success(`Corretor descredenciado.${extra}`);
+      setDescredOpen(false);
+      setDescredMotivo("");
+      await reload();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao descredenciar");
+    } finally {
+      setDescredLoading(false);
+    }
+  }
+
   const whatsappLink = lead ? `https://wa.me/${lead.telefone.replace(/\D/g, "")}` : "#";
 
   return (
@@ -286,7 +311,17 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
 
               <TabsContent value="info" className="space-y-4 mt-4">
                 <div className="flex justify-between items-center gap-2">
-                  <div>
+                  <div className="flex flex-wrap gap-2">
+                    {isAdmin && !editing && lead.etapa === "fechado" && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-red-700 border-red-300 hover:bg-red-50 dark:text-red-300 dark:border-red-800 dark:hover:bg-red-950/30"
+                        onClick={() => { setDescredMotivo(""); setDescredOpen(true); }}
+                      >
+                        <ShieldOff className="h-4 w-4" /> Descredenciar
+                      </Button>
+                    )}
                     {isAdmin && !editing && (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
@@ -411,6 +446,21 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
                   </div>
                 ) : (
                   <dl className="space-y-3 text-sm">
+                    {lead.etapa === "descredenciado" && (
+                      <div className="rounded-lg border border-red-300 bg-red-50 p-3 dark:border-red-900/60 dark:bg-red-950/30">
+                        <div className="flex items-center gap-2 text-red-800 dark:text-red-300 text-xs uppercase tracking-wide font-semibold">
+                          <ShieldOff className="h-3.5 w-3.5" /> Descredenciado
+                        </div>
+                        {lead.motivo_descredenciamento && (
+                          <p className="mt-1.5 text-sm whitespace-pre-wrap text-red-900 dark:text-red-200">{lead.motivo_descredenciamento}</p>
+                        )}
+                        {lead.descredenciado_em && (
+                          <div className="mt-1 text-[11px] text-red-700/80 dark:text-red-300/70">
+                            {format(new Date(lead.descredenciado_em), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                          </div>
+                        )}
+                      </div>
+                    )}
                     <InfoRow icon={<Phone className="h-4 w-4" />} label="Telefone" value={lead.telefone} />
                     {lead.email && <InfoRow icon={<Mail className="h-4 w-4" />} label="Email" value={lead.email} />}
                     <InfoRow icon={<MapPin className="h-4 w-4" />} label="Região" value={regiaoNome(lead.regiao)} />
@@ -494,16 +544,30 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
               </TabsContent>
 
               <TabsContent value="historico" className="mt-4 space-y-2">
-                {historico.map((h) => (
-                  <div key={h.id} className="flex gap-3 text-sm border-l-2 border-gold/40 pl-3 py-1">
-                    <div className="flex-1">
-                      <div className="font-medium capitalize">{h.acao.replace(/_/g, " ")}</div>
-                      <div className="text-[11px] text-muted-foreground">
-                        {format(new Date(h.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                {historico.map((h) => {
+                  const det = h.detalhe as { motivo?: string; nota?: string; etapa?: string } | null;
+                  const isDescred = h.acao === "descredenciado";
+                  return (
+                    <div
+                      key={h.id}
+                      className={`flex gap-3 text-sm border-l-2 pl-3 py-1 ${isDescred ? "border-red-500" : "border-gold/40"}`}
+                    >
+                      <div className="flex-1">
+                        <div className={`font-medium capitalize ${isDescred ? "text-red-700 dark:text-red-300" : ""}`}>
+                          {h.acao.replace(/_/g, " ")}
+                        </div>
+                        {isDescred && det?.motivo && (
+                          <p className="text-sm text-muted-foreground whitespace-pre-wrap mt-0.5">
+                            Motivo: {det.motivo}
+                          </p>
+                        )}
+                        <div className="text-[11px] text-muted-foreground">
+                          {format(new Date(h.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
                 {historico.length === 0 && (
                   <p className="text-sm text-muted-foreground text-center py-4">Sem histórico.</p>
                 )}
@@ -522,6 +586,43 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
         defaultLeadId={leadId}
         onCreated={() => { reload(); }}
       />
+      <AlertDialog open={descredOpen} onOpenChange={(o) => { if (!descredLoading) setDescredOpen(o); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-red-700 dark:text-red-300">
+              <ShieldOff className="h-5 w-5" /> Descredenciar corretor?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação remove imediatamente todos os acessos de <strong>{lead?.nome}</strong> ao sistema.
+              {" "}Leads de vendas ativos serão sinalizados para reatribuição manual.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2">
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground">
+              Motivo do descredenciamento <span className="text-red-600">*</span>
+            </Label>
+            <Textarea
+              rows={4}
+              value={descredMotivo}
+              onChange={(e) => setDescredMotivo(e.target.value)}
+              placeholder="Ex.: Inatividade prolongada, quebra de contrato, conduta inadequada..."
+              maxLength={2000}
+              autoFocus
+            />
+            <div className="text-[11px] text-muted-foreground text-right">{descredMotivo.length}/2000</div>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={descredLoading}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); confirmDescredenciar(); }}
+              disabled={descredLoading || descredMotivo.trim().length < 3}
+              className="bg-red-700 text-white hover:bg-red-800"
+            >
+              {descredLoading ? "Descredenciando…" : "Descredenciar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Sheet>
   );
 }
