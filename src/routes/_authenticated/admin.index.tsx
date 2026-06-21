@@ -97,9 +97,25 @@ function AdminDashboard() {
     },
   });
 
+  // ---- Realtime: atualiza o portfólio sem precisar recarregar a página ----
+  useEffect(() => {
+    const channel = supabase
+      .channel("admin-imoveis-dashboard")
+      .on("postgres_changes", { event: "*", schema: "public", table: "imoveis" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["admin_imoveis_dash"] });
+      })
+      .subscribe((status) => { setRealtimeOn(status === "SUBSCRIBED"); });
+    return () => { supabase.removeChannel(channel); };
+  }, [queryClient]);
+
+  // ---- Snapshot do portfólio (inclui imóveis importados — todos vivem em `imoveis`) ----
   const totalImoveis = imoveis.length;
-  const disponiveis = imoveis.filter((i) => i.status === "disponivel").length;
+  const disponiveisLocacao = imoveis.filter((i) => i.status === "disponivel_locacao" || i.status === "disponivel").length;
+  const disponiveisVenda = imoveis.filter((i) => i.status === "disponivel_venda" || i.status === "disponivel").length;
+  const disponiveis = disponiveisLocacao + disponiveisVenda;
   const locados = imoveis.filter((i) => i.status === "locado").length;
+  const vendidosTotal = imoveis.filter((i) => i.status === "vendido").length;
+  const emManutencao = imoveis.filter((i) => i.status === "manutencao" || i.status === "em_manutencao").length;
   const ativos = contratos.filter((c) => c.status === "ativo" || c.status === "vencendo").length;
   const hoje = new Date();
   const em90 = new Date(); em90.setDate(hoje.getDate() + 90);
