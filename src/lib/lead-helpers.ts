@@ -15,6 +15,7 @@ export const ETAPAS: { id: LeadEtapa; nome: string }[] = [
   { id: "follow_up", nome: "Follow Up" },
   { id: "fechado", nome: "Fechado" },
   { id: "descartado", nome: "Descartado" },
+  { id: "descredenciado", nome: "Descredenciado" },
 ];
 
 export const REGIOES: { id: LeadRegiao; nome: string }[] = [
