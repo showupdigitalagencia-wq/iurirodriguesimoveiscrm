@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { normalizeOrigem, shouldUsePlantao } from "@/lib/plantao-shared";
+import { withWebhookLog } from "@/lib/webhook-log.server";
+
 
 // Webhook de reincidência: recebe nova mensagem de um lead já existente
 // e (1) atualiza ultima_mensagem_em, (2) reatribui ao plantonista do dia
@@ -15,7 +17,7 @@ export const Route = createFileRoute("/api/public/lead-mensagem")({
         status: 200, headers: { "Content-Type": "application/json" },
       }),
 
-      POST: async ({ request }) => {
+      POST: async ({ request }) => withWebhookLog(request, async (request) => {
         let raw: unknown;
         try { raw = await request.json(); } catch {
           return new Response(JSON.stringify({ error: "JSON inválido" }), { status: 400, headers: { "Content-Type": "application/json" } });
@@ -102,7 +104,8 @@ export const Route = createFileRoute("/api/public/lead-mensagem")({
         return new Response(JSON.stringify({ ok: true, id: novo.id, plantonista }), {
           status: 201, headers: { "Content-Type": "application/json" },
         });
-      },
+      }, { fonteFallback: "whatsapp_empresa" }),
+
     },
   },
 });

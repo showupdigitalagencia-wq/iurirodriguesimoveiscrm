@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { normalizeOrigem, shouldUsePlantao } from "@/lib/plantao-shared";
+import { withWebhookLog } from "@/lib/webhook-log.server";
+
 
 
 type Regiao = "barra_da_tijuca" | "recreio" | "belford_roxo" | "nilopolis" | "mesquita" | "jacarepagua" | "zona_sul" | "zona_norte" | "zona_oeste" | "centro" | "outras";
@@ -72,7 +74,7 @@ export const Route = createFileRoute("/api/public/webhook")({
         status: 200, headers: { "Content-Type": "application/json" },
       }),
 
-      POST: async ({ request }) => {
+      POST: async ({ request }) => withWebhookLog(request, async (request) => {
         let raw: unknown;
         try { raw = await request.json(); } catch {
           return new Response(JSON.stringify({ error: "JSON inválido" }), {
@@ -348,7 +350,8 @@ export const Route = createFileRoute("/api/public/webhook")({
         return new Response(JSON.stringify({ ok: true, id: lead.id, regiao, canal }), {
           status: 201, headers: { "Content-Type": "application/json" },
         });
-      },
+      }),
+
     },
   },
 });

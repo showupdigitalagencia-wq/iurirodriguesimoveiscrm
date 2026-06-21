@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
+import { withWebhookLog } from "@/lib/webhook-log.server";
+
 
 const LeadInput = z.object({
   nome: z.string().min(2).max(120),
@@ -33,7 +35,7 @@ const MAPA: Record<string, "denise" | "fabiola" | "renata" | "robson"> = {
 export const Route = createFileRoute("/api/public/lead")({
   server: {
     handlers: {
-      POST: async ({ request }) => {
+      POST: async ({ request }) => withWebhookLog(request, async (request) => {
         let body: unknown;
         try { body = await request.json(); } catch {
           return new Response(JSON.stringify({ error: "JSON inválido" }), { status: 400 });
@@ -81,7 +83,8 @@ export const Route = createFileRoute("/api/public/lead")({
         return new Response(JSON.stringify({ ok: true, id: lead.id }), {
           status: 201, headers: { "Content-Type": "application/json" },
         });
-      },
+      }, { fonteOverride: "site" }),
+
     },
   },
 });
