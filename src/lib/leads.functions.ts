@@ -136,18 +136,11 @@ export const descredenciarCorretor = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     if (lead.email) {
-      const { data: prof } = await supabaseAdmin
-        .from("profiles")
-        .select("id")
-        .ilike("nome", `%`)
-        .limit(1)
-        .maybeSingle();
-      // Lookup correto: por email via auth.users
+      // Lookup do user pelo email via auth admin
       const { data: authUsers } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
       const match = authUsers?.users?.find(
         (u) => (u.email ?? "").toLowerCase() === (lead.email ?? "").toLowerCase()
       );
-      void prof;
       if (match) {
         userIdRemovido = match.id;
         // Desativar profile
