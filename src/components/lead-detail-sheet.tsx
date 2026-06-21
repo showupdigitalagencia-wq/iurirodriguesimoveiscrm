@@ -192,6 +192,27 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
     }
   }
 
+  async function confirmDescredenciar() {
+    if (!leadId) return;
+    const motivo = descredMotivo.trim();
+    if (motivo.length < 3) { toast.error("Informe o motivo (mín. 3 caracteres)"); return; }
+    setDescredLoading(true);
+    try {
+      const res = await callDescredenciar({ data: { lead_id: leadId, motivo } });
+      const extra = res.leads_vendas_pendentes
+        ? ` ${res.leads_vendas_pendentes} lead(s) de vendas marcados para reatribuição.`
+        : "";
+      toast.success(`Corretor descredenciado.${extra}`);
+      setDescredOpen(false);
+      setDescredMotivo("");
+      await reload();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao descredenciar");
+    } finally {
+      setDescredLoading(false);
+    }
+  }
+
   const whatsappLink = lead ? `https://wa.me/${lead.telefone.replace(/\D/g, "")}` : "#";
 
   return (
