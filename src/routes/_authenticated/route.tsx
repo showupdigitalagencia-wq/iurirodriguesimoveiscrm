@@ -78,6 +78,7 @@ function AuthLayout() {
   const router = useRouter();
   const [rolesLoaded, setRolesLoaded] = useState(false);
   const [hasNoRole, setHasNoRole] = useState(false);
+  const [accessRevoked, setAccessRevoked] = useState(false);
   const [userEmail, setUserEmail] = useState<string>("");
   const [isAdmin, setIsAdmin] = useState(false);
   const [isCorretorVendas, setIsCorretorVendas] = useState(false);
