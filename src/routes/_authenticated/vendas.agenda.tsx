@@ -73,20 +73,23 @@ function AgendaCorretorPage() {
 
   const refresh = useCallback(async () => {
     try {
-      const [disp, vis, reun, lds] = await Promise.all([
+      const [disp, vis, reun, lds, ims] = await Promise.all([
         fnList({ data: {} }),
         fnListVisitas(),
         fnListReunioes(),
         fnListLeads(),
+        fnListImoveis(),
       ]);
       setItems(disp.items);
       setVisitas(vis.items as VisitaItem[]);
       setReunioes(reun.items as ReuniaoItem[]);
       setLeads(lds.items);
+      setImoveis(ims.items);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erro ao carregar agenda");
     } finally { setLoading(false); }
-  }, [fnList, fnListVisitas, fnListReunioes, fnListLeads]);
+  }, [fnList, fnListVisitas, fnListReunioes, fnListLeads, fnListImoveis]);
+
 
   useEffect(() => {
     refresh();
