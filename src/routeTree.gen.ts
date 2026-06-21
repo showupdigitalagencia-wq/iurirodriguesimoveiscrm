@@ -44,6 +44,7 @@ import { Route as ApiPublicCronReunioesInstitucionaisRouteImport } from './route
 import { Route as ApiPublicCronReuniaoLembretesRouteImport } from './routes/api/public/cron-reuniao-lembretes'
 import { Route as ApiPublicCronPlantaoDiarioRouteImport } from './routes/api/public/cron-plantao-diario'
 import { Route as ApiPublicCronLauraResumoDiarioRouteImport } from './routes/api/public/cron-laura-resumo-diario'
+import { Route as AuthenticatedVendasRelatoriosRouteImport } from './routes/_authenticated/vendas.relatorios'
 import { Route as AuthenticatedVendasPortfolioRouteImport } from './routes/_authenticated/vendas.portfolio'
 import { Route as AuthenticatedVendasPlantaoRouteImport } from './routes/_authenticated/vendas.plantao'
 import { Route as AuthenticatedVendasPipelineRouteImport } from './routes/_authenticated/vendas.pipeline'
@@ -244,6 +245,12 @@ const ApiPublicCronLauraResumoDiarioRoute =
     path: '/api/public/cron-laura-resumo-diario',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AuthenticatedVendasRelatoriosRoute =
+  AuthenticatedVendasRelatoriosRouteImport.update({
+    id: '/relatorios',
+    path: '/relatorios',
+    getParentRoute: () => AuthenticatedVendasRoute,
+  } as any)
 const AuthenticatedVendasPortfolioRoute =
   AuthenticatedVendasPortfolioRouteImport.update({
     id: '/portfolio',
@@ -358,6 +365,7 @@ export interface FileRoutesByFullPath {
   '/vendas/pipeline': typeof AuthenticatedVendasPipelineRoute
   '/vendas/plantao': typeof AuthenticatedVendasPlantaoRoute
   '/vendas/portfolio': typeof AuthenticatedVendasPortfolioRoute
+  '/vendas/relatorios': typeof AuthenticatedVendasRelatoriosRoute
   '/api/public/cron-laura-resumo-diario': typeof ApiPublicCronLauraResumoDiarioRoute
   '/api/public/cron-plantao-diario': typeof ApiPublicCronPlantaoDiarioRoute
   '/api/public/cron-reuniao-lembretes': typeof ApiPublicCronReuniaoLembretesRoute
@@ -404,6 +412,7 @@ export interface FileRoutesByTo {
   '/vendas/pipeline': typeof AuthenticatedVendasPipelineRoute
   '/vendas/plantao': typeof AuthenticatedVendasPlantaoRoute
   '/vendas/portfolio': typeof AuthenticatedVendasPortfolioRoute
+  '/vendas/relatorios': typeof AuthenticatedVendasRelatoriosRoute
   '/api/public/cron-laura-resumo-diario': typeof ApiPublicCronLauraResumoDiarioRoute
   '/api/public/cron-plantao-diario': typeof ApiPublicCronPlantaoDiarioRoute
   '/api/public/cron-reuniao-lembretes': typeof ApiPublicCronReuniaoLembretesRoute
@@ -455,6 +464,7 @@ export interface FileRoutesById {
   '/_authenticated/vendas/pipeline': typeof AuthenticatedVendasPipelineRoute
   '/_authenticated/vendas/plantao': typeof AuthenticatedVendasPlantaoRoute
   '/_authenticated/vendas/portfolio': typeof AuthenticatedVendasPortfolioRoute
+  '/_authenticated/vendas/relatorios': typeof AuthenticatedVendasRelatoriosRoute
   '/api/public/cron-laura-resumo-diario': typeof ApiPublicCronLauraResumoDiarioRoute
   '/api/public/cron-plantao-diario': typeof ApiPublicCronPlantaoDiarioRoute
   '/api/public/cron-reuniao-lembretes': typeof ApiPublicCronReuniaoLembretesRoute
@@ -506,6 +516,7 @@ export interface FileRouteTypes {
     | '/vendas/pipeline'
     | '/vendas/plantao'
     | '/vendas/portfolio'
+    | '/vendas/relatorios'
     | '/api/public/cron-laura-resumo-diario'
     | '/api/public/cron-plantao-diario'
     | '/api/public/cron-reuniao-lembretes'
@@ -552,6 +563,7 @@ export interface FileRouteTypes {
     | '/vendas/pipeline'
     | '/vendas/plantao'
     | '/vendas/portfolio'
+    | '/vendas/relatorios'
     | '/api/public/cron-laura-resumo-diario'
     | '/api/public/cron-plantao-diario'
     | '/api/public/cron-reuniao-lembretes'
@@ -602,6 +614,7 @@ export interface FileRouteTypes {
     | '/_authenticated/vendas/pipeline'
     | '/_authenticated/vendas/plantao'
     | '/_authenticated/vendas/portfolio'
+    | '/_authenticated/vendas/relatorios'
     | '/api/public/cron-laura-resumo-diario'
     | '/api/public/cron-plantao-diario'
     | '/api/public/cron-reuniao-lembretes'
@@ -884,6 +897,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronLauraResumoDiarioRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/vendas/relatorios': {
+      id: '/_authenticated/vendas/relatorios'
+      path: '/relatorios'
+      fullPath: '/vendas/relatorios'
+      preLoaderRoute: typeof AuthenticatedVendasRelatoriosRouteImport
+      parentRoute: typeof AuthenticatedVendasRoute
+    }
     '/_authenticated/vendas/portfolio': {
       id: '/_authenticated/vendas/portfolio'
       path: '/portfolio'
@@ -1035,6 +1055,7 @@ interface AuthenticatedVendasRouteChildren {
   AuthenticatedVendasPipelineRoute: typeof AuthenticatedVendasPipelineRoute
   AuthenticatedVendasPlantaoRoute: typeof AuthenticatedVendasPlantaoRoute
   AuthenticatedVendasPortfolioRoute: typeof AuthenticatedVendasPortfolioRoute
+  AuthenticatedVendasRelatoriosRoute: typeof AuthenticatedVendasRelatoriosRoute
   AuthenticatedVendasIndexRoute: typeof AuthenticatedVendasIndexRoute
 }
 
@@ -1044,6 +1065,7 @@ const AuthenticatedVendasRouteChildren: AuthenticatedVendasRouteChildren = {
   AuthenticatedVendasPipelineRoute: AuthenticatedVendasPipelineRoute,
   AuthenticatedVendasPlantaoRoute: AuthenticatedVendasPlantaoRoute,
   AuthenticatedVendasPortfolioRoute: AuthenticatedVendasPortfolioRoute,
+  AuthenticatedVendasRelatoriosRoute: AuthenticatedVendasRelatoriosRoute,
   AuthenticatedVendasIndexRoute: AuthenticatedVendasIndexRoute,
 }
 

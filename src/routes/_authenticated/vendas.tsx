@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, Link, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { LayoutDashboard, Kanban, Users, CalendarDays, BellRing, CalendarClock, Building2 } from "lucide-react";
+import { LayoutDashboard, Kanban, Users, CalendarDays, BellRing, CalendarClock, Building2, BarChart3 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/vendas")({
   beforeLoad: async () => {
@@ -35,6 +35,7 @@ const TABS = [
   { to: "/vendas/agenda", label: "Agenda", icon: CalendarDays, exact: false },
   { to: "/vendas/portfolio", label: "Portfólio", icon: Building2, exact: false },
   { to: "/vendas/plantao", label: "Plantão", icon: CalendarClock, exact: false },
+  { to: "/vendas/relatorios", label: "Relatórios", icon: BarChart3, exact: false },
   { to: "/notificacoes", label: "Notificações", icon: BellRing, exact: false },
 ] as const;
 
