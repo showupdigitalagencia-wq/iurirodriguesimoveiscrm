@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SejaCorretorRouteImport } from './routes/seja-corretor'
 import { Route as FormularioRouteImport } from './routes/formulario'
 import { Route as FinanciamentoRouteImport } from './routes/financiamento'
 import { Route as CadastroRouteImport } from './routes/cadastro'
@@ -27,6 +28,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedCorretoresRouteImport } from './routes/_authenticated/corretores'
 import { Route as AuthenticatedCorrespondenteRouteImport } from './routes/_authenticated/correspondente'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
+import { Route as AuthenticatedCaptacaoLinksRouteImport } from './routes/_authenticated/captacao-links'
 import { Route as AuthenticatedAgendaRouteImport } from './routes/_authenticated/agenda'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedVendasIndexRouteImport } from './routes/_authenticated/vendas.index'
@@ -52,6 +54,11 @@ import { Route as AuthenticatedAdminImoveisRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminContratosRouteImport } from './routes/_authenticated/admin.contratos'
 import { Route as AuthenticatedAdminCandidatosRouteImport } from './routes/_authenticated/admin.candidatos'
 
+const SejaCorretorRoute = SejaCorretorRouteImport.update({
+  id: '/seja-corretor',
+  path: '/seja-corretor',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FormularioRoute = FormularioRouteImport.update({
   id: '/formulario',
   path: '/formulario',
@@ -143,6 +150,12 @@ const AuthenticatedConfiguracoesRoute =
   AuthenticatedConfiguracoesRouteImport.update({
     id: '/configuracoes',
     path: '/configuracoes',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedCaptacaoLinksRoute =
+  AuthenticatedCaptacaoLinksRouteImport.update({
+    id: '/captacao-links',
+    path: '/captacao-links',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAgendaRoute = AuthenticatedAgendaRouteImport.update({
@@ -289,8 +302,10 @@ export interface FileRoutesByFullPath {
   '/cadastro': typeof CadastroRoute
   '/financiamento': typeof FinanciamentoRoute
   '/formulario': typeof FormularioRoute
+  '/seja-corretor': typeof SejaCorretorRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/agenda': typeof AuthenticatedAgendaRoute
+  '/captacao-links': typeof AuthenticatedCaptacaoLinksRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/correspondente': typeof AuthenticatedCorrespondenteRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
@@ -332,7 +347,9 @@ export interface FileRoutesByTo {
   '/cadastro': typeof CadastroRoute
   '/financiamento': typeof FinanciamentoRoute
   '/formulario': typeof FormularioRoute
+  '/seja-corretor': typeof SejaCorretorRoute
   '/agenda': typeof AuthenticatedAgendaRoute
+  '/captacao-links': typeof AuthenticatedCaptacaoLinksRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/correspondente': typeof AuthenticatedCorrespondenteRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
@@ -374,8 +391,10 @@ export interface FileRoutesById {
   '/cadastro': typeof CadastroRoute
   '/financiamento': typeof FinanciamentoRoute
   '/formulario': typeof FormularioRoute
+  '/seja-corretor': typeof SejaCorretorRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/agenda': typeof AuthenticatedAgendaRoute
+  '/_authenticated/captacao-links': typeof AuthenticatedCaptacaoLinksRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/_authenticated/correspondente': typeof AuthenticatedCorrespondenteRoute
   '/_authenticated/corretores': typeof AuthenticatedCorretoresRoute
@@ -419,8 +438,10 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/financiamento'
     | '/formulario'
+    | '/seja-corretor'
     | '/admin'
     | '/agenda'
+    | '/captacao-links'
     | '/configuracoes'
     | '/correspondente'
     | '/corretores'
@@ -462,7 +483,9 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/financiamento'
     | '/formulario'
+    | '/seja-corretor'
     | '/agenda'
+    | '/captacao-links'
     | '/configuracoes'
     | '/correspondente'
     | '/corretores'
@@ -503,8 +526,10 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/financiamento'
     | '/formulario'
+    | '/seja-corretor'
     | '/_authenticated/admin'
     | '/_authenticated/agenda'
+    | '/_authenticated/captacao-links'
     | '/_authenticated/configuracoes'
     | '/_authenticated/correspondente'
     | '/_authenticated/corretores'
@@ -548,6 +573,7 @@ export interface RootRouteChildren {
   CadastroRoute: typeof CadastroRoute
   FinanciamentoRoute: typeof FinanciamentoRoute
   FormularioRoute: typeof FormularioRoute
+  SejaCorretorRoute: typeof SejaCorretorRoute
   ApiPublicCronLauraResumoDiarioRoute: typeof ApiPublicCronLauraResumoDiarioRoute
   ApiPublicCronReuniaoLembretesRoute: typeof ApiPublicCronReuniaoLembretesRoute
   ApiPublicCronReunioesInstitucionaisRoute: typeof ApiPublicCronReunioesInstitucionaisRoute
@@ -560,6 +586,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/seja-corretor': {
+      id: '/seja-corretor'
+      path: '/seja-corretor'
+      fullPath: '/seja-corretor'
+      preLoaderRoute: typeof SejaCorretorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/formulario': {
       id: '/formulario'
       path: '/formulario'
@@ -684,6 +717,13 @@ declare module '@tanstack/react-router' {
       path: '/configuracoes'
       fullPath: '/configuracoes'
       preLoaderRoute: typeof AuthenticatedConfiguracoesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/captacao-links': {
+      id: '/_authenticated/captacao-links'
+      path: '/captacao-links'
+      fullPath: '/captacao-links'
+      preLoaderRoute: typeof AuthenticatedCaptacaoLinksRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/agenda': {
@@ -928,6 +968,7 @@ const AuthenticatedVendasRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedAgendaRoute: typeof AuthenticatedAgendaRoute
+  AuthenticatedCaptacaoLinksRoute: typeof AuthenticatedCaptacaoLinksRoute
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
   AuthenticatedCorrespondenteRoute: typeof AuthenticatedCorrespondenteRoute
   AuthenticatedCorretoresRoute: typeof AuthenticatedCorretoresRoute
@@ -945,6 +986,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedAgendaRoute: AuthenticatedAgendaRoute,
+  AuthenticatedCaptacaoLinksRoute: AuthenticatedCaptacaoLinksRoute,
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
   AuthenticatedCorrespondenteRoute: AuthenticatedCorrespondenteRoute,
   AuthenticatedCorretoresRoute: AuthenticatedCorretoresRoute,
@@ -969,6 +1011,7 @@ const rootRouteChildren: RootRouteChildren = {
   CadastroRoute: CadastroRoute,
   FinanciamentoRoute: FinanciamentoRoute,
   FormularioRoute: FormularioRoute,
+  SejaCorretorRoute: SejaCorretorRoute,
   ApiPublicCronLauraResumoDiarioRoute: ApiPublicCronLauraResumoDiarioRoute,
   ApiPublicCronReuniaoLembretesRoute: ApiPublicCronReuniaoLembretesRoute,
   ApiPublicCronReunioesInstitucionaisRoute:

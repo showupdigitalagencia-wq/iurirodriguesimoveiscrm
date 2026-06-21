@@ -13,6 +13,13 @@ import { Trash2, Copy } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { startGoogleOAuth, getGoogleStatus, disconnectGoogle } from "@/lib/google.functions";
 import { getVslUrl, setVslUrl, setVslAllowSkip } from "@/lib/candidatos.functions";
+import {
+  getCaptacaoConfig,
+  setCaptacaoVslUrl,
+  uploadCaptacaoTeamPhoto,
+  updateCaptacaoTeamMeta,
+  removeCaptacaoTeamPhoto,
+} from "@/lib/captacao.functions";
 
 type Resp = { id: string; canal: string; nome: string; whatsapp: string };
 type Mapping = {
@@ -91,6 +98,8 @@ function ConfigPage() {
           <SistemaCorretoresToggle />
           <ModuloAdministrativoToggle />
           <VslUrlSection />
+          <VslCaptacaoSection />
+          <TeamPhotosSection />
           <SophiaToggle chave="sophia_executivos_acesso" titulo="Liberar Laura para Executivos" descricao="Quando ativado, executivos podem usar a assistente Laura." />
           <SophiaToggle chave="sophia_corretores_acesso" titulo="Liberar Laura para Corretores" descricao="Quando ativado, corretores podem usar a assistente Laura." />
         </TabsContent>
@@ -671,6 +680,211 @@ function VslUrlSection() {
         </div>
         <Switch checked={allowSkip} onCheckedChange={toggleSkip} disabled={loading || savingSkip} />
       </div>
+    </div>
+  );
+}
+
+// ============================================================
+// VSL da Landing Page /seja-corretor (Captação de Corretores)
+// ============================================================
+function VslCaptacaoSection() {
+  const fnGet = useServerFn(getCaptacaoConfig);
+  const fnSet = useServerFn(setCaptacaoVslUrl);
+  const [url, setUrlState] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    fnGet({})
+      .then((r) => setUrlState(r.vslUrl ?? ""))
+      .finally(() => setLoading(false));
+  }, [fnGet]);
+
+  async function save() {
+    setSaving(true);
+    try {
+      await fnSet({ data: { url } });
+      toast.success("Link VSL da captação salvo");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao salvar");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="rounded-lg border p-5 space-y-4">
+      <div>
+        <h3 className="font-semibold">Link do vídeo VSL — Captação de Corretores (/seja-corretor)</h3>
+        <p className="text-sm text-muted-foreground mt-1">
+          Cole o link do YouTube com o vídeo institucional do Iuri para a LP pública de captação.
+        </p>
+      </div>
+      <div className="flex gap-2 flex-wrap">
+        <Input
+          placeholder="https://www.youtube.com/watch?v=..."
+          value={url}
+          onChange={(e) => setUrlState(e.target.value)}
+          disabled={loading}
+          className="flex-1 min-w-[240px]"
+        />
+        <Button onClick={save} disabled={saving || loading} variant="gold">
+          {saving ? "Salvando..." : "Salvar"}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// Fotos do Time — LP /seja-corretor (até 4)
+// ============================================================
+type TeamSlot = { url: string | null; nome: string; cargo: string };
+
+async function fileToB64(file: File): Promise<{ nome: string; mimeType: string; base64: string }> {
+  const buf = await file.arrayBuffer();
+  let bin = "";
+  const bytes = new Uint8Array(buf);
+  for (let i = 0; i < bytes.byteLength; i++) bin += String.fromCharCode(bytes[i]);
+  return { nome: file.name, mimeType: file.type || "application/octet-stream", base64: btoa(bin) };
+}
+
+function TeamPhotosSection() {
+  const fnGet = useServerFn(getCaptacaoConfig);
+  const fnUpload = useServerFn(uploadCaptacaoTeamPhoto);
+  const fnUpdate = useServerFn(updateCaptacaoTeamMeta);
+  const fnRemove = useServerFn(removeCaptacaoTeamPhoto);
+  const [photos, setPhotos] = useState<TeamSlot[]>([]);
+  const [drafts, setDrafts] = useState<Record<number, { nome: string; cargo: string }>>({});
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState<number | null>(null);
+
+  async function reload() {
+    setLoading(true);
+    try {
+      const r = await fnGet({});
+      setPhotos(r.photos as TeamSlot[]);
+      const d: Record<number, { nome: string; cargo: string }> = {};
+      r.photos.forEach((p, i) => (d[i] = { nome: p.nome, cargo: p.cargo }));
+      setDrafts(d);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    reload();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function onPickFile(i: number, file: File) {
+    setBusy(i);
+    try {
+      const arquivo = await fileToB64(file);
+      const meta = drafts[i] ?? { nome: "", cargo: "" };
+      await fnUpload({ data: { index: i, nome: meta.nome, cargo: meta.cargo, arquivo } });
+      toast.success("Foto enviada");
+      await reload();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao enviar");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function saveMeta(i: number) {
+    setBusy(i);
+    try {
+      const meta = drafts[i] ?? { nome: "", cargo: "" };
+      await fnUpdate({ data: { index: i, nome: meta.nome, cargo: meta.cargo } });
+      toast.success("Dados salvos");
+      await reload();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao salvar");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function remove(i: number) {
+    if (!confirm("Remover esta foto?")) return;
+    setBusy(i);
+    try {
+      await fnRemove({ data: { index: i } });
+      toast.success("Foto removida");
+      await reload();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao remover");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  return (
+    <div className="rounded-lg border p-5 space-y-4">
+      <div>
+        <h3 className="font-semibold">Fotos do Time — LP /seja-corretor</h3>
+        <p className="text-sm text-muted-foreground mt-1">
+          Até 4 fotos do time, exibidas na galeria da landing page de captação. JPG ou PNG, formato vertical (3:4) recomendado.
+        </p>
+      </div>
+      {loading ? (
+        <div className="text-sm text-muted-foreground">Carregando...</div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {[0, 1, 2, 3].map((i) => {
+            const p = photos[i];
+            const draft = drafts[i] ?? { nome: "", cargo: "" };
+            return (
+              <div key={i} className="rounded-md border p-4 space-y-3 bg-muted/30">
+                <div className="aspect-[3/4] w-full bg-muted rounded overflow-hidden flex items-center justify-center text-xs text-muted-foreground">
+                  {p?.url ? (
+                    <img src={p.url} alt={p.nome} className="w-full h-full object-cover" />
+                  ) : (
+                    "Sem foto"
+                  )}
+                </div>
+                <Input
+                  placeholder="Nome"
+                  value={draft.nome}
+                  onChange={(e) => setDrafts((d) => ({ ...d, [i]: { ...draft, nome: e.target.value } }))}
+                  maxLength={80}
+                />
+                <Input
+                  placeholder="Cargo"
+                  value={draft.cargo}
+                  onChange={(e) => setDrafts((d) => ({ ...d, [i]: { ...draft, cargo: e.target.value } }))}
+                  maxLength={80}
+                />
+                <div className="flex flex-wrap gap-2">
+                  <Label className="inline-flex items-center gap-2 cursor-pointer rounded-md border px-3 py-1.5 text-sm hover:bg-accent">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      disabled={busy === i}
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) onPickFile(i, f);
+                        e.target.value = "";
+                      }}
+                    />
+                    {p?.url ? "Trocar foto" : "Enviar foto"}
+                  </Label>
+                  <Button size="sm" variant="outline" disabled={busy === i} onClick={() => saveMeta(i)}>
+                    Salvar dados
+                  </Button>
+                  {p?.url && (
+                    <Button size="sm" variant="ghost" disabled={busy === i} onClick={() => remove(i)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
