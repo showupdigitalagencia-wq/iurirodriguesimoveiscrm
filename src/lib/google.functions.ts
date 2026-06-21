@@ -40,3 +40,19 @@ export const disconnectGoogle = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+export const verificarConflitoGoogleCalendar = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { start: string; end: string }) => {
+    if (!input?.start || !input?.end) throw new Error("start e end obrigatórios");
+    const s = new Date(input.start);
+    const e = new Date(input.end);
+    if (isNaN(s.getTime()) || isNaN(e.getTime()) || e <= s) {
+      throw new Error("intervalo inválido");
+    }
+    return { start: s.toISOString(), end: e.toISOString() };
+  })
+  .handler(async ({ context, data }) => {
+    const { queryFreeBusy } = await import("@/lib/google.server");
+    return queryFreeBusy(context.userId, data.start, data.end);
+  });

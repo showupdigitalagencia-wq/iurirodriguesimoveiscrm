@@ -224,9 +224,11 @@ export function ReuniaoFormDialog({ open, onOpenChange, defaultLeadId, onCreated
       toast.error("Conecte sua conta Google para gerar o link do Meet");
       return;
     }
+    const iso = new Date(`${form.data}T${form.hora}:00`).toISOString();
+    const { confirmNoGoogleConflict } = await import("@/lib/google-conflict");
+    if (!(await confirmNoGoogleConflict(iso, Number(form.duracao) || 60))) return;
     setSaving(true);
     try {
-      const iso = new Date(`${form.data}T${form.hora}:00`).toISOString();
       const res = await call({
         data: {
           titulo: form.titulo.trim(),

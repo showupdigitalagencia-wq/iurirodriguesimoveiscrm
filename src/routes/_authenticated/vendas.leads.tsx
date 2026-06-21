@@ -255,6 +255,8 @@ function AgendarVisitaButton({ lead, onDone }: { lead: VendasLead; onDone: () =>
 
   async function submit() {
     if (!endereco.trim()) { toast.error("Informe o endereço"); return; }
+    const { confirmNoGoogleConflict } = await import("@/lib/google-conflict");
+    if (!(await confirmNoGoogleConflict(new Date(dataInicio).toISOString(), duracao))) return;
     setSaving(true);
     try {
       await createVisitaFn({ data: {
@@ -314,6 +316,8 @@ function ReuniaoOnlineButton({ lead, onDone }: { lead: VendasLead; onDone: () =>
   const createReuniaoFn = useServerFn(createReuniaoOnlineVenda);
 
   async function submit() {
+    const { confirmNoGoogleConflict } = await import("@/lib/google-conflict");
+    if (!(await confirmNoGoogleConflict(new Date(dataInicio).toISOString(), duracao))) return;
     setSaving(true);
     try {
       const res = await createReuniaoFn({ data: {
