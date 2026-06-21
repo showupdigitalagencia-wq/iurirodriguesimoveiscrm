@@ -603,6 +603,39 @@ export const sophiaChat = createServerFn({ method: "POST" })
           return { periodo_dias: dias, total: data?.length ?? 0, valor_total: total_valor, imoveis: data ?? [] };
         },
       }),
+
+      // ============ PORTFÓLIO DE IMÓVEIS DISPONÍVEIS ============
+      // Exceção controlada ao bloqueio administrativo: TODOS os perfis
+      // (admin, administrativo, executivo, corretor) podem consultar imóveis
+      // DISPONÍVEIS para oferecer aos leads. Retorna SOMENTE dados públicos —
+      // nunca proprietário, locatário, contrato, pagamento ou comissão.
+      portfolio_buscar_imoveis: tool({
+        description: "Busca imóveis DISPONÍVEIS para locação ou venda no portfólio (visível para todos os perfis, inclusive corretores e executivos). Use para perguntas tipo 'temos apartamento na Barra por até R$ 2.500?', 'quais imóveis disponíveis em Recreio?'. Retorna APENAS dados públicos do imóvel — NUNCA dados do proprietário, contrato ou pagamento.",
+        inputSchema: z.object({
+          bairro: z.string().optional().describe("Bairro, região ou cidade (parcial, case-insensitive)"),
+          tipo: z.string().optional().describe("apartamento, casa, comercial, cobertura, studio, terreno..."),
+          finalidade: z.enum(["locacao", "venda"]).optional(),
+          quartos_min: z.number().int().min(0).max(10).optional(),
+          valor_max: z.number().min(0).optional().describe("Valor máximo (aluguel se finalidade=locacao, venda se finalidade=venda)"),
+          valor_min: z.number().min(0).optional(),
+          limite: z.number().int().min(1).max(30).default(15),
+        }),
+        execute: async ({ bairro, tipo, finalidade, quartos_min, valor_max, valor_min, limite }) => {
+          let q = supabaseAdmin
+            .from("imoveis_portfolio")
+            .select("id, codigo, tipo, finalidade, rua, numero, bairro, cidade, quartos, banheiros, vagas, area_m2, valor_aluguel, valor_venda, condominio, iptu, fotos, vitrine_url");
+          if (bairro) q = q.or(`bairro.ilike.%${bairro}%,cidade.ilike.%${bairro}%`);
+          if (tipo) q = q.eq("tipo", tipo);
+          if (finalidade) q = q.in("finalidade", [finalidade, "ambos"]);
+          if (quartos_min != null) q = q.gte("quartos", quartos_min);
+          const campoValor = finalidade === "venda" ? "valor_venda" : "valor_aluguel";
+          if (valor_max != null) q = q.lte(campoValor, valor_max);
+          if (valor_min != null) q = q.gte(campoValor, valor_min);
+          const { data, error } = await q.order("created_at", { ascending: false }).limit(limite);
+          if (error) return { erro: error.message, total: 0, imoveis: [] };
+          return { total: data?.length ?? 0, imoveis: data ?? [], aviso_privacidade: "Dados do proprietário não são compartilhados." };
+        },
+      }),
     };
 
     const escopoTexto =
