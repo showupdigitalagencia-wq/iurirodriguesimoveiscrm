@@ -245,6 +245,14 @@ export const updateFinanciamentoStatus = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertCanManage(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: prev } = await supabaseAdmin
+      .from("financiamentos" as never)
+      .select("status, lead_id, nome")
+      .eq("id", data.id)
+      .maybeSingle();
+    const prevRow = prev as { status: FinanciamentoStatus; lead_id: string | null; nome: string } | null;
+
     const { error } = await supabaseAdmin
       .from("financiamentos" as never)
       .update({
@@ -254,6 +262,60 @@ export const updateFinanciamentoStatus = createServerFn({ method: "POST" })
       } as never)
       .eq("id", data.id);
     if (error) throw new Error(error.message);
+
+    // Push para executivo responsável + corretor + admins quando aprovado/recusado
+    const statusMudou = prevRow && prevRow.status !== data.status;
+    const ehFinal = data.status === "aprovado" || data.status === "recusado";
+    if (statusMudou && ehFinal && prevRow) {
+      try {
+        const { sendOneSignalPush } = await import("@/lib/onesignal.server");
+        const destinatariosIds = new Set<string>();
+
+        if (prevRow.lead_id) {
+          const { data: leadRow } = await supabaseAdmin
+            .from("vendas_leads")
+            .select("atribuido_por, corretor_id")
+            .eq("id", prevRow.lead_id)
+            .maybeSingle();
+          const lr = leadRow as { atribuido_por: string | null; corretor_id: string | null } | null;
+          if (lr?.atribuido_por) destinatariosIds.add(lr.atribuido_por);
+          if (lr?.corretor_id) destinatariosIds.add(lr.corretor_id);
+        }
+
+        const { data: admins } = await supabaseAdmin
+          .from("user_roles")
+          .select("user_id")
+          .eq("role", "admin");
+        ((admins ?? []) as { user_id: string }[]).forEach((a) => destinatariosIds.add(a.user_id));
+
+        if (destinatariosIds.size > 0) {
+          const { data: profs } = await supabaseAdmin
+            .from("profiles")
+            .select("onesignal_external_id")
+            .in("id", Array.from(destinatariosIds));
+          const externalIds = ((profs ?? []) as { onesignal_external_id: string | null }[])
+            .map((p) => p.onesignal_external_id)
+            .filter((x): x is string => !!x);
+
+          if (externalIds.length > 0) {
+            const aprovado = data.status === "aprovado";
+            const title = aprovado ? "Financiamento aprovado" : "Financiamento recusado";
+            const obs = data.observacao ? ` — ${data.observacao}` : "";
+            const message = `${prevRow.nome}: ${aprovado ? "aprovado" : "recusado"} pela correspondente${obs}`;
+            await sendOneSignalPush({
+              externalIds,
+              title,
+              message,
+              url: "https://sistemanexus.app/correspondente",
+              data: { financiamento_id: data.id, status: data.status },
+            });
+          }
+        }
+      } catch (e) {
+        console.warn("[updateFinanciamentoStatus] push falhou", e);
+      }
+    }
+
     return { ok: true };
   });
 
