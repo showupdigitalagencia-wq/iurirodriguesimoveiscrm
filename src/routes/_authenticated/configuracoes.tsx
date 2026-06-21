@@ -21,7 +21,8 @@ import {
   removeCaptacaoTeamPhoto,
 } from "@/lib/captacao.functions";
 import { exportSistemaZip } from "@/lib/export-sistema.functions";
-import { Download } from "lucide-react";
+import { listarBackups, gerarUrlBackup, rodarBackupManual } from "@/lib/backups.functions";
+import { Download, Archive, RefreshCcw } from "lucide-react";
 
 type Resp = { id: string; canal: string; nome: string; whatsapp: string };
 type Mapping = {
