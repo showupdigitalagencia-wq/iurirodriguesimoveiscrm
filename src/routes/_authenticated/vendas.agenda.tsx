@@ -15,7 +15,9 @@ import { ptBR } from "date-fns/locale";
 import { CalendarCheck2, ChevronLeft, ChevronRight, Loader2, Plus, Trash2, Link2, Link2Off, MapPin, Video } from "lucide-react";
 import { addBloqueio, addRecorrente, listDisponibilidade, removeDisponibilidade, type DisponibilidadeRow } from "@/lib/disponibilidade.functions";
 import { disconnectGoogle, getGoogleStatus, startGoogleOAuth } from "@/lib/google.functions";
-import { createReuniaoOnlineVenda, createVisita, deleteVisita, listMyVendasLeads, listReunioesCorretor, listVisitas, type ReuniaoCorretorRow, type VisitaRow } from "@/lib/visitas.functions";
+import { createReuniaoOnlineVenda, createVisita, deleteVisita, listImoveisForVisita, listMyVendasLeads, listReunioesCorretor, listVisitas, type ImovelOption, type ReuniaoCorretorRow, type VisitaRow } from "@/lib/visitas.functions";
+import { buildVisitaConfirmacaoMsg, formatImovelEndereco, formatImovelOptionLabel } from "@/lib/visita-helpers";
+
 
 export const Route = createFileRoute("/_authenticated/vendas/agenda")({
   head: () => ({ meta: [{ title: "Minha Agenda — Vendas" }] }),
