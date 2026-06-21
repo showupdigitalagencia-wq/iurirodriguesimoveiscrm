@@ -152,6 +152,7 @@ function FinanciamentoPage() {
 
   return (
     <div className="min-h-screen" style={{ background: "#0a0a0a", color: "white", fontFamily: "var(--font-sans)" }}>
+      <Toaster richColors position="top-center" />
       <section className="px-6 pt-12 pb-10 md:pt-16 md:pb-12" style={{ background: "#0a0a0a" }}>
         <div className="max-w-3xl mx-auto text-center space-y-6">
           <img src={LOGO_URL} alt="Iuri Rodrigues Imóveis" className="w-full max-w-[160px] md:max-w-[200px] mx-auto object-contain" style={{ mixBlendMode: "screen" }} />
