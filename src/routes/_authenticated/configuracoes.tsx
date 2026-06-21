@@ -98,6 +98,8 @@ function ConfigPage() {
           <SistemaCorretoresToggle />
           <ModuloAdministrativoToggle />
           <VslUrlSection />
+          <VslCaptacaoSection />
+          <TeamPhotosSection />
           <SophiaToggle chave="sophia_executivos_acesso" titulo="Liberar Laura para Executivos" descricao="Quando ativado, executivos podem usar a assistente Laura." />
           <SophiaToggle chave="sophia_corretores_acesso" titulo="Liberar Laura para Corretores" descricao="Quando ativado, corretores podem usar a assistente Laura." />
         </TabsContent>
