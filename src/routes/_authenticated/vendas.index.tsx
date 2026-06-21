@@ -95,62 +95,7 @@ function VendasDashboard() {
         </Card>
       </Link>
 
-      {/* Portfólio de Imóveis — métricas em tempo real */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between gap-3 pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Building2 className="h-4 w-4 text-gold" /> Portfólio de Imóveis
-            <span className="text-[10px] font-normal text-muted-foreground ml-1">tempo real</span>
-          </CardTitle>
-          <div className="flex items-center gap-2">
-            <Label htmlFor="dias-portfolio" className="text-xs text-muted-foreground hidden sm:inline">Período</Label>
-            <Select
-              value={String(dias)}
-              onValueChange={(v) => navigate({ search: { dias: Number(v) }, replace: true })}
-            >
-              <SelectTrigger id="dias-portfolio" className="h-8 w-[120px] text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {[7, 15, 30, 60, 90].map((d) => (
-                  <SelectItem key={d} value={String(d)}>Últimos {d} dias</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-            {portfolioCards.map((c) => {
-              const Icon = c.icon;
-              return (
-                <Link
-                  key={c.label}
-                  to={c.to}
-                  search={c.search as never}
-                  className="block group"
-                >
-                  <div className="rounded-lg border bg-card hover:bg-muted/40 hover:border-foreground/20 transition p-3 h-full">
-                    <div className="flex items-center gap-2">
-                      <div className="h-9 w-9 rounded-md bg-muted flex items-center justify-center shrink-0">
-                        <Icon className={`h-4 w-4 ${c.color}`} />
-                      </div>
-                      <div className="text-[11px] text-muted-foreground leading-tight">{c.label}</div>
-                    </div>
-                    <div className="mt-2 text-2xl font-bold">
-                      {portfolioStatsQ.isLoading ? "…" : c.value}
-                    </div>
-                    <div className="text-[10px] text-muted-foreground group-hover:text-foreground/70">Abrir portfólio →</div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-          {portfolioStatsQ.error && (
-            <div className="text-xs text-destructive mt-2">Erro ao carregar métricas do portfólio.</div>
-          )}
-        </CardContent>
-      </Card>
+
 
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
