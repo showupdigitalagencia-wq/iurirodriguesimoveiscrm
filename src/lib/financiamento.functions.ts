@@ -340,3 +340,45 @@ export const getFinanciamentoStatusByLead = createServerFn({ method: "POST" })
     const r = row as { status: FinanciamentoStatus; observacao: string | null };
     return { status: r.status, observacao: r.observacao };
   });
+
+// ============================================================
+// 7. EXCLUIR financiamento (admin ou correspondente)
+//    Remove storage + linha. NÃO mexe no lead de vendas.
+// ============================================================
+export const deleteFinanciamento = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { id: string }) =>
+    z.object({ id: z.string().uuid() }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await assertCanManage(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: row, error: selErr } = await supabaseAdmin
+      .from("financiamentos" as never)
+      .select("id, rg_path, cpf_path, comp_renda_path, comp_residencia_path, extrato_path")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (selErr) throw new Error(selErr.message);
+    if (!row) throw new Error("Financiamento não encontrado");
+    const r = row as {
+      rg_path: string | null; cpf_path: string | null;
+      comp_renda_path: string | null; comp_residencia_path: string | null;
+      extrato_path: string | null;
+    };
+
+    const paths = [r.rg_path, r.cpf_path, r.comp_renda_path, r.comp_residencia_path, r.extrato_path]
+      .filter((p): p is string => !!p);
+    if (paths.length > 0) {
+      const { error: rmErr } = await supabaseAdmin.storage.from("financiamento-docs").remove(paths);
+      if (rmErr) console.warn("[deleteFinanciamento] remove storage falhou", rmErr.message);
+    }
+
+    const { error: delErr } = await supabaseAdmin
+      .from("financiamentos" as never)
+      .delete()
+      .eq("id", data.id);
+    if (delErr) throw new Error(delErr.message);
+
+    return { ok: true };
+  });
