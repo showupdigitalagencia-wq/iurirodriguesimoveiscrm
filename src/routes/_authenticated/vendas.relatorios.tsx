@@ -12,7 +12,7 @@ import {
 } from "recharts";
 import {
   TrendingUp, TrendingDown, Users, Trophy, Timer, Target,
-  Handshake, KeyRound, Crown, User, UsersRound,
+  Handshake, KeyRound, Crown, User, UsersRound, CalendarCheck,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/vendas/relatorios")({
