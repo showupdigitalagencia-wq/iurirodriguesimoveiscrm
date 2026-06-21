@@ -254,20 +254,40 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
 function AgendarVisitaInline({ lead, onDone }: { lead: VendasLead; onDone: () => void }) {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [imovelId, setImovelId] = useState<string>("");
   const [endereco, setEndereco] = useState("");
   const [dataInicio, setDataInicio] = useState(() => { const d = new Date(); d.setHours(d.getHours() + 1, 0, 0, 0); return toLocalInputValue(d); });
   const [duracao, setDuracao] = useState(60);
   const [observacoes, setObservacoes] = useState("");
   const fn = useServerFn(createVisita);
+  const listImoveis = useServerFn(listImoveisForVisita);
+
+  const { data: imoveisData } = useQuery({
+    queryKey: ["imoveis_for_visita"],
+    enabled: open,
+    queryFn: () => listImoveis(),
+  });
+  const imoveis: ImovelOption[] = imoveisData?.items ?? [];
+
+  function onSelectImovel(id: string) {
+    setImovelId(id);
+    const im = imoveis.find((x) => x.id === id);
+    if (im) setEndereco(formatImovelEndereco(im));
+  }
 
   async function submit() {
-    if (!endereco.trim()) { toast.error("Informe o endereço"); return; }
+    if (!endereco.trim()) { toast.error("Selecione um imóvel ou informe o endereço"); return; }
     setSaving(true);
     try {
-      await fn({ data: { lead_id: lead.id, endereco: endereco.trim(), data_inicio: new Date(dataInicio).toISOString(), duracao_min: duracao, observacoes: observacoes.trim() || undefined } });
+      await fn({ data: { lead_id: lead.id, endereco: endereco.trim(), imovel_id: imovelId || null, data_inicio: new Date(dataInicio).toISOString(), duracao_min: duracao, observacoes: observacoes.trim() || undefined } });
       toast.success("Visita agendada");
       const dt = new Date(dataInicio);
-      const msg = `Olá ${lead.nome}! Confirmando sua visita ao imóvel em ${endereco.trim()} no dia ${dt.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })} às ${dt.toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" })}. Iuri Rodrigues Imóveis 🏢`;
+      const msg = buildVisitaConfirmacaoMsg({
+        nome: lead.nome,
+        endereco: endereco.trim(),
+        dataFmt: dt.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" }),
+        horaFmt: dt.toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" }),
+      });
       const tel = (lead.telefone ?? "").replace(/\D/g, "");
       if (tel) window.open(`https://wa.me/${tel.length <= 11 ? "55" + tel : tel}?text=${encodeURIComponent(msg)}`, "_blank");
       setOpen(false); onDone();
@@ -280,7 +300,23 @@ function AgendarVisitaInline({ lead, onDone }: { lead: VendasLead; onDone: () =>
       <DialogContent className="max-w-md">
         <DialogHeader><DialogTitle>Agendar visita — {lead.nome}</DialogTitle></DialogHeader>
         <div className="space-y-3 py-2">
-          <div><Label>Endereço *</Label><Input value={endereco} onChange={(e) => setEndereco(e.target.value)} /></div>
+          <div>
+            <Label>Imóvel do portfólio (opcional)</Label>
+            <Select value={imovelId || "__none__"} onValueChange={(v) => v === "__none__" ? (setImovelId(""), setEndereco("")) : onSelectImovel(v)}>
+              <SelectTrigger className="mt-1.5"><SelectValue placeholder="Selecione um imóvel..." /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">— Nenhum (digitar endereço) —</SelectItem>
+                {imoveis.map((im) => (
+                  <SelectItem key={im.id} value={im.id}>{formatImovelOptionLabel(im)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Endereço *</Label>
+            <Input value={endereco} onChange={(e) => setEndereco(e.target.value)} placeholder="Rua, número, bairro, cidade" />
+            <p className="text-xs text-muted-foreground mt-1">Preenchido ao selecionar o imóvel, ou digite manualmente.</p>
+          </div>
           <div className="grid grid-cols-2 gap-2">
             <div><Label>Data/hora</Label><Input type="datetime-local" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} /></div>
             <div><Label>Duração (min)</Label><Input type="number" min={15} value={duracao} onChange={(e) => setDuracao(Number(e.target.value) || 60)} /></div>
@@ -295,6 +331,7 @@ function AgendarVisitaInline({ lead, onDone }: { lead: VendasLead; onDone: () =>
     </Dialog>
   );
 }
+
 
 function ReuniaoOnlineInline({ lead, onDone }: { lead: VendasLead; onDone: () => void }) {
   const [open, setOpen] = useState(false);
