@@ -708,6 +708,7 @@ export type Database = {
           nome: string
           observacoes: string | null
           origem: string | null
+          reativacao_sugerida_em: string | null
           regiao: Database["public"]["Enums"]["lead_regiao"]
           responsavel_id: string | null
           telefone: string
@@ -730,6 +731,7 @@ export type Database = {
           nome: string
           observacoes?: string | null
           origem?: string | null
+          reativacao_sugerida_em?: string | null
           regiao: Database["public"]["Enums"]["lead_regiao"]
           responsavel_id?: string | null
           telefone: string
@@ -752,6 +754,7 @@ export type Database = {
           nome?: string
           observacoes?: string | null
           origem?: string | null
+          reativacao_sugerida_em?: string | null
           regiao?: Database["public"]["Enums"]["lead_regiao"]
           responsavel_id?: string | null
           telefone?: string
@@ -1271,6 +1274,7 @@ export type Database = {
           origem: Database["public"]["Enums"]["lead_origem"]
           origem_detalhe: string | null
           plantao_dia: string | null
+          reativacao_sugerida_em: string | null
           recusas: Json
           regiao: Database["public"]["Enums"]["lead_regiao"]
           telefone: string
@@ -1296,6 +1300,7 @@ export type Database = {
           origem?: Database["public"]["Enums"]["lead_origem"]
           origem_detalhe?: string | null
           plantao_dia?: string | null
+          reativacao_sugerida_em?: string | null
           recusas?: Json
           regiao?: Database["public"]["Enums"]["lead_regiao"]
           telefone: string
@@ -1321,6 +1326,7 @@ export type Database = {
           origem?: Database["public"]["Enums"]["lead_origem"]
           origem_detalhe?: string | null
           plantao_dia?: string | null
+          reativacao_sugerida_em?: string | null
           recusas?: Json
           regiao?: Database["public"]["Enums"]["lead_regiao"]
           telefone?: string
