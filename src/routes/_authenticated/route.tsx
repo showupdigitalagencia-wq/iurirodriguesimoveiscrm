@@ -163,8 +163,13 @@ function AuthLayout() {
         .then(({ data }) => { if (active) setVendasAtivo(data?.valor === true); });
       supabase.from("configuracoes").select("valor").eq("chave", "modulo_administrativo_ativo").maybeSingle()
         .then(({ data }) => { if (active) setAdminModuloAtivo(data?.valor === true); });
-      supabase.from("profiles").select("vendas_acesso").eq("id", userId).maybeSingle()
-        .then(({ data }) => { if (active) setVendasAcessoIndividual((data as { vendas_acesso?: boolean } | null)?.vendas_acesso === true); });
+      supabase.from("profiles").select("vendas_acesso, ativo").eq("id", userId).maybeSingle()
+        .then(({ data }) => {
+          if (!active) return;
+          const p = data as { vendas_acesso?: boolean; ativo?: boolean } | null;
+          setVendasAcessoIndividual(p?.vendas_acesso === true);
+          setAccessRevoked(p?.ativo === false);
+        });
       supabase.rpc("can_view_candidatos").then(({ data }) => { if (active) setCanCandidatos(data === true); });
       supabase.rpc("current_user_is_executivo").then(({ data }) => { if (active) setIsExec(data === true); });
     });
