@@ -19,14 +19,14 @@ export const listUsers = createServerFn({ method: "POST" })
     const { data: authData, error: authErr } = await supabaseAdmin.auth.admin.listUsers({ perPage: 200 });
     if (authErr) throw new Error(authErr.message);
 
-    const { data: profiles } = await supabaseAdmin.from("profiles").select("id, nome, ativo, responsavel_id, vendas_acesso");
+    const { data: profiles } = await supabaseAdmin.from("profiles").select("id, nome, ativo, responsavel_id, vendas_acesso, plantao_elegivel");
     const { data: roles } = await supabaseAdmin.from("user_roles").select("user_id, role");
 
     const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));
     const roleMap = new Map((roles ?? []).map((r) => [r.user_id, r.role]));
 
     return authData.users.map((u) => {
-      const p = profileMap.get(u.id) as { nome?: string; ativo?: boolean; responsavel_id?: string | null; vendas_acesso?: boolean } | undefined;
+      const p = profileMap.get(u.id) as { nome?: string; ativo?: boolean; responsavel_id?: string | null; vendas_acesso?: boolean; plantao_elegivel?: boolean } | undefined;
       return {
         id: u.id,
         email: u.email ?? "",
@@ -34,6 +34,7 @@ export const listUsers = createServerFn({ method: "POST" })
         ativo: p?.ativo ?? true,
         responsavel_id: p?.responsavel_id ?? null,
         vendas_acesso: p?.vendas_acesso ?? false,
+        plantao_elegivel: p?.plantao_elegivel ?? false,
         role: roleMap.get(u.id) ?? "corretor",
         last_sign_in_at: u.last_sign_in_at ?? null,
         created_at: u.created_at,
@@ -86,16 +87,18 @@ export const updateUser = createServerFn({ method: "POST" })
     responsavel_id: z.string().uuid().nullable().optional(),
     ativo: z.boolean().optional(),
     vendas_acesso: z.boolean().optional(),
+    plantao_elegivel: z.boolean().optional(),
   }).parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase as unknown as SupabaseClient, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const profilePatch: { nome?: string; responsavel_id?: string | null; ativo?: boolean; vendas_acesso?: boolean } = {};
+    const profilePatch: { nome?: string; responsavel_id?: string | null; ativo?: boolean; vendas_acesso?: boolean; plantao_elegivel?: boolean } = {};
     if (data.nome !== undefined) profilePatch.nome = data.nome;
     if (data.responsavel_id !== undefined) profilePatch.responsavel_id = data.responsavel_id;
     if (data.ativo !== undefined) profilePatch.ativo = data.ativo;
     if (data.vendas_acesso !== undefined) profilePatch.vendas_acesso = data.vendas_acesso;
+    if (data.plantao_elegivel !== undefined) profilePatch.plantao_elegivel = data.plantao_elegivel;
     if (Object.keys(profilePatch).length) {
       await supabaseAdmin.from("profiles").update(profilePatch).eq("id", data.id);
     }

@@ -71,12 +71,13 @@ export const listCorretoresElegiveis = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     await ensureAdminOrExec(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    // corretor_vendas + corretor (legado) + executivos
-    const [{ data: roles }, { data: execs }] = await Promise.all([
+    // corretor_vendas + corretor (legado) + executivos + qualquer usuário marcado "Elegível para Plantão"
+    const [{ data: roles }, { data: execs }, { data: elegiveis }] = await Promise.all([
       supabaseAdmin.from("user_roles").select("user_id, role").in("role", ["corretor_vendas", "corretor"]),
       supabaseAdmin.from("profiles")
         .select("id, nome, responsavel_id, ativo, responsaveis:responsavel_id(id, nome, ativo)")
         .not("responsavel_id", "is", null),
+      supabaseAdmin.from("profiles").select("id, ativo, plantao_elegivel").eq("plantao_elegivel", true),
     ]);
     const ids = new Set<string>((roles ?? []).map((r: { user_id: string }) => r.user_id));
     for (const p of (execs ?? []) as { id: string; nome: string; ativo: boolean | null; responsaveis: { nome: string; ativo: boolean | null } | null }[]) {
@@ -85,6 +86,9 @@ export const listCorretoresElegiveis = createServerFn({ method: "POST" })
       if ((resp.nome ?? "").trim().split(/\s+/)[0]?.toLowerCase() === (p.nome ?? "").trim().split(/\s+/)[0]?.toLowerCase()) {
         ids.add(p.id);
       }
+    }
+    for (const p of (elegiveis ?? []) as { id: string; ativo: boolean | null }[]) {
+      if (p.ativo !== false) ids.add(p.id);
     }
     if (!ids.size) return { items: [] as { id: string; nome: string }[] };
     const { data: profs } = await supabaseAdmin.from("profiles").select("id, nome, ativo").in("id", Array.from(ids));

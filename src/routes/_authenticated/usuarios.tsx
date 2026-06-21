@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Loader2, Plus, KeyRound, Trash2, ShieldCheck, ShieldOff } from "lucide-react";
+import { Loader2, Plus, KeyRound, Trash2, ShieldCheck, ShieldOff, CalendarClock } from "lucide-react";
 import { listUsers, createUser, updateUser, resetUserPassword, deleteUser, getMyRole } from "@/lib/users.functions";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -23,6 +23,7 @@ type UserRow = {
   id: string; email: string; nome: string; ativo: boolean;
   responsavel_id: string | null; role: UserRole;
   vendas_acesso: boolean;
+  plantao_elegivel: boolean;
   last_sign_in_at: string | null; created_at: string;
 };
 
@@ -121,6 +122,14 @@ function UsuariosPage() {
     try {
       await fnUpdate({ data: { id: u.id, vendas_acesso: !u.vendas_acesso } });
       toast.success(!u.vendas_acesso ? "Acesso ao Vendas liberado" : "Acesso ao Vendas removido");
+      refresh();
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
+  }
+
+  async function togglePlantaoElegivel(u: UserRow) {
+    try {
+      await fnUpdate({ data: { id: u.id, plantao_elegivel: !u.plantao_elegivel } });
+      toast.success(!u.plantao_elegivel ? "Incluído no pool do Plantão" : "Removido do pool do Plantão");
       refresh();
     } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
   }
