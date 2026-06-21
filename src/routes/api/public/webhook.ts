@@ -352,3 +352,187 @@ export const Route = createFileRoute("/api/public/webhook")({
     },
   },
 });
+
+// ============================================================
+// Evolution API (WhatsApp da empresa) — formato MESSAGES_UPSERT
+// ============================================================
+
+type EvoData = {
+  key?: { remoteJid?: string; fromMe?: boolean; id?: string };
+  pushName?: string;
+  message?: {
+    conversation?: string;
+    extendedTextMessage?: { text?: string };
+    imageMessage?: { caption?: string };
+    videoMessage?: { caption?: string };
+    documentMessage?: { caption?: string };
+    audioMessage?: unknown;
+  };
+  messageType?: string;
+  messageTimestamp?: number | string;
+};
+
+function extractEvolutionData(body: Record<string, unknown>): EvoData | null {
+  const event = String(body.event ?? "").toLowerCase().replace(/[._-]/g, "");
+  const data = (body.data ?? null) as EvoData | null;
+  const hasShape = !!data && !!data.key && typeof data.key.remoteJid === "string";
+  if (!hasShape) return null;
+  // aceita messages.upsert / MESSAGES_UPSERT / sem event explícito mas com shape
+  if (event && !event.includes("messagesupsert") && !event.includes("message")) return null;
+  return data;
+}
+
+function extractEvolutionText(msg: EvoData["message"] | undefined): string {
+  if (!msg) return "";
+  return (
+    msg.conversation ??
+    msg.extendedTextMessage?.text ??
+    msg.imageMessage?.caption ??
+    msg.videoMessage?.caption ??
+    msg.documentMessage?.caption ??
+    (msg.audioMessage ? "[áudio]" : "")
+  ) || "";
+}
+
+function jidToPhone(jid: string | undefined): string {
+  if (!jid) return "";
+  // 5521999998888@s.whatsapp.net -> 5521999998888
+  return jid.split("@")[0]!.replace(/\D/g, "");
+}
+
+async function tryHandleEvolution(body: Record<string, unknown>): Promise<Response | null> {
+  const evo = extractEvolutionData(body);
+  if (!evo) return null;
+
+  const jid = evo.key?.remoteJid ?? "";
+  // Ignora grupos e mensagens enviadas por nós
+  if (jid.endsWith("@g.us") || jid.endsWith("@broadcast")) {
+    return new Response(JSON.stringify({ ok: true, ignored: "grupo/broadcast" }), {
+      status: 200, headers: { "Content-Type": "application/json" },
+    });
+  }
+  if (evo.key?.fromMe) {
+    return new Response(JSON.stringify({ ok: true, ignored: "fromMe" }), {
+      status: 200, headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const telefone = jidToPhone(jid);
+  if (!telefone) {
+    return new Response(JSON.stringify({ error: "remoteJid sem telefone" }), {
+      status: 400, headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const nome = (evo.pushName && evo.pushName.trim()) || "Contato WhatsApp";
+  const mensagem = extractEvolutionText(evo.message);
+  const origem = "whatsapp_empresa" as const;
+
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+  const hoje = new Date().toISOString().slice(0, 10);
+  const { data: escala } = await supabaseAdmin
+    .from("plantao_escala" as never).select("corretor_id").eq("data", hoje).maybeSingle();
+  const plantonista = (escala as { corretor_id: string } | null)?.corretor_id ?? null;
+
+  const { data: existing } = await supabaseAdmin
+    .from("vendas_leads")
+    .select("id, corretor_id, atribuicao_status")
+    .eq("telefone", telefone)
+    .order("created_at" as never, { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (existing) {
+    const cur = existing as { id: string; corretor_id: string | null; atribuicao_status: string | null };
+    const updates: Record<string, unknown> = { ultima_mensagem_em: new Date().toISOString() };
+    let reassigned = false;
+    if (plantonista && plantonista !== cur.corretor_id) {
+      updates.corretor_id = plantonista;
+      updates.atribuicao_status = "pendente";
+      updates.atribuido_em = new Date().toISOString();
+      updates.plantao_dia = hoje;
+      reassigned = true;
+    }
+    await supabaseAdmin.from("vendas_leads").update(updates as never).eq("id", cur.id);
+    await supabaseAdmin.from("plantao_log" as never).insert({
+      lead_id: cur.id, corretor_id: plantonista,
+      motivo: reassigned ? "reincidencia" : "mensagem",
+      origem, detalhe: { telefone, anterior: cur.corretor_id, mensagem: mensagem.slice(0, 200), fonte: "evolution" } as never,
+    } as never);
+    if (reassigned && plantonista) {
+      await evoNotifyPlantonista({ supabaseAdmin, corretorId: plantonista, leadId: cur.id, nome, telefone, mensagem, isReassign: true });
+    }
+    return new Response(JSON.stringify({ ok: true, id: cur.id, fluxo: "evolution", reassigned }), {
+      status: 200, headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const insert = {
+    nome, telefone, etapa: "novo",
+    origem, origem_detalhe: "evolution_api",
+    observacoes: mensagem ? `Primeira mensagem: ${mensagem.slice(0, 500)}` : null,
+    ultima_mensagem_em: new Date().toISOString(),
+    plantao_dia: hoje,
+    corretor_id: plantonista,
+    atribuicao_status: plantonista ? "pendente" : null,
+    atribuido_em: plantonista ? new Date().toISOString() : null,
+  } as never;
+  const { data: novo, error } = await supabaseAdmin.from("vendas_leads").insert(insert).select("id").single();
+  if (error || !novo) {
+    return new Response(JSON.stringify({ error: error?.message ?? "Erro ao criar lead" }), {
+      status: 500, headers: { "Content-Type": "application/json" },
+    });
+  }
+  await supabaseAdmin.from("plantao_log" as never).insert({
+    lead_id: novo.id, corretor_id: plantonista,
+    motivo: plantonista ? "novo_lead" : "sem_plantonista",
+    origem, detalhe: { telefone, mensagem: mensagem.slice(0, 200), fonte: "evolution" } as never,
+  } as never);
+  if (plantonista) {
+    await evoNotifyPlantonista({ supabaseAdmin, corretorId: plantonista, leadId: novo.id, nome, telefone, mensagem, isReassign: false });
+  } else {
+    await evoNotifyAdmins({ supabaseAdmin, leadId: novo.id, nome, telefone });
+  }
+  return new Response(JSON.stringify({ ok: true, id: novo.id, fluxo: "evolution", plantonista }), {
+    status: 201, headers: { "Content-Type": "application/json" },
+  });
+}
+
+async function evoNotifyPlantonista(args: { supabaseAdmin: any; corretorId: string; leadId: string; nome: string; telefone: string; mensagem: string; isReassign: boolean }) {
+  try {
+    const { data: prof } = await args.supabaseAdmin
+      .from("profiles").select("onesignal_external_id").eq("id", args.corretorId).maybeSingle();
+    const ext = (prof as { onesignal_external_id: string | null } | null)?.onesignal_external_id;
+    if (!ext) return;
+    const { sendOneSignalPush } = await import("@/lib/onesignal.server");
+    const preview = args.mensagem ? ` — "${args.mensagem.slice(0, 60)}"` : "";
+    await sendOneSignalPush({
+      externalId: ext,
+      title: args.isReassign ? "🔁 WhatsApp reatribuído" : "💬 Novo WhatsApp da empresa",
+      message: `${args.nome} · ${args.telefone}${preview}`,
+      url: "https://sistemanexus.app/vendas/leads",
+      data: { lead_id: args.leadId, origem: "whatsapp_empresa" },
+    });
+  } catch (e) { console.warn("[webhook evolution] push falhou", e); }
+}
+
+async function evoNotifyAdmins(args: { supabaseAdmin: any; leadId: string; nome: string; telefone: string }) {
+  try {
+    const { data: roles } = await args.supabaseAdmin.from("user_roles").select("user_id").eq("role", "admin");
+    const ids = ((roles ?? []) as { user_id: string }[]).map((r) => r.user_id);
+    if (!ids.length) return;
+    const { data: profs } = await args.supabaseAdmin.from("profiles").select("onesignal_external_id").in("id", ids);
+    const ext = ((profs ?? []) as { onesignal_external_id: string | null }[])
+      .map((p) => p.onesignal_external_id).filter((x): x is string => !!x);
+    if (!ext.length) return;
+    const { sendOneSignalPush } = await import("@/lib/onesignal.server");
+    await sendOneSignalPush({
+      externalIds: ext,
+      title: "⚠️ WhatsApp sem plantonista",
+      message: `${args.nome} · ${args.telefone} — escale alguém no Plantão`,
+      url: "https://sistemanexus.app/vendas/plantao",
+      data: { lead_id: args.leadId },
+    });
+  } catch (e) { console.warn("[webhook evolution] push admin falhou", e); }
+}
