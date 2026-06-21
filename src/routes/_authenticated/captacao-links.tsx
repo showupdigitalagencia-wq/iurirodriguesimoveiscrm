@@ -116,10 +116,10 @@ function CaptacaoLinksPage() {
   }
 
   return (
-    <div className="p-6 md:p-8 space-y-6 max-w-5xl">
+    <div className="p-4 md:p-8 space-y-6 max-w-5xl">
       <header className="space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight">Links de Captação de Corretores</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Links de Captação de Corretores</h1>
+        <p className="text-muted-foreground text-sm md:text-base">
           Compartilhe seu link exclusivo para atrair novos corretores para sua região. Cada link é
           rastreado pelo parâmetro <code className="text-xs">?ref=</code>.
         </p>
@@ -135,37 +135,38 @@ function CaptacaoLinksPage() {
         {execsToShow.map((exec) => {
           const link = buildLink(exec.ref);
           return (
-            <div key={exec.ref} className="rounded-lg border p-5 space-y-4 bg-card">
+            <div key={exec.ref} className="rounded-lg border p-4 md:p-5 space-y-4 bg-card">
               <div>
                 <div className="text-xs uppercase tracking-wider text-muted-foreground">
                   {exec.regiao}
                 </div>
-                <h3 className="text-xl font-semibold text-gold">{exec.nome}</h3>
+                <h3 className="text-lg md:text-xl font-semibold text-gold">{exec.nome}</h3>
               </div>
 
-              <div className="rounded-md bg-muted px-3 py-2 text-sm font-mono break-all">
+              <div className="rounded-md bg-muted px-3 py-2 text-xs md:text-sm font-mono break-all">
                 {link}
               </div>
 
-              <div className="flex flex-wrap gap-2">
-                <Button onClick={() => copyLink(link)} variant="outline" size="sm">
+              <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
+                <Button onClick={() => copyLink(link)} variant="outline" size="sm" className="w-full sm:w-auto">
                   <Copy className="h-4 w-4 mr-1.5" /> Copiar link
                 </Button>
                 <Button
                   onClick={() => shareWhatsApp(link)}
                   variant="gold"
                   size="sm"
+                  className="w-full sm:w-auto"
                 >
-                  <MessageCircle className="h-4 w-4 mr-1.5" /> Compartilhar no WhatsApp
+                  <MessageCircle className="h-4 w-4 mr-1.5" /> WhatsApp
                 </Button>
-                <Button asChild variant="ghost" size="sm">
+                <Button asChild variant="ghost" size="sm" className="col-span-2 sm:w-auto">
                   <a href={link} target="_blank" rel="noopener noreferrer">
                     <ExternalLink className="h-4 w-4 mr-1.5" /> Abrir LP
                   </a>
                 </Button>
               </div>
 
-              <div className="rounded-md overflow-hidden border" style={{ background: "#0a0a0a" }}>
+              <div className="hidden md:block rounded-md overflow-hidden border" style={{ background: "#0a0a0a" }}>
                 <iframe
                   src={link}
                   title={`Preview LP — ${exec.nome}`}
