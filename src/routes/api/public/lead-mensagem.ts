@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { normalizeOrigem, shouldUsePlantao } from "@/lib/plantao-shared";
+import { withWebhookLog } from "@/lib/webhook-log.server";
+
 
 // Webhook de reincidência: recebe nova mensagem de um lead já existente
 // e (1) atualiza ultima_mensagem_em, (2) reatribui ao plantonista do dia
