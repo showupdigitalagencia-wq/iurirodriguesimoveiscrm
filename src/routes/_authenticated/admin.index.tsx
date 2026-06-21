@@ -29,7 +29,9 @@ function toISO(d: Date) {
 }
 
 function AdminDashboard() {
+  const queryClient = useQueryClient();
   const [preset, setPreset] = useState<"7" | "15" | "30" | "60" | "90" | "custom">("30");
+  const [realtimeOn, setRealtimeOn] = useState(false);
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
 
