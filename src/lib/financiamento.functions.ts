@@ -224,8 +224,19 @@ export const getFinanciamentoDetail = createServerFn({ method: "POST" })
       comp_residencia: await sign(r.comp_residencia_path),
       extrato: await sign(r.extrato_path),
     };
+    try {
+      await context.supabase.rpc("log_audit" as never, {
+        _acao: "financiamento_documentos_view",
+        _tabela: "financiamentos",
+        _registro_id: data.id,
+        _antes: null,
+        _depois: null,
+        _contexto: { nome: r.nome, cpf_mask: r.cpf?.slice(-4) ?? null, lead_id: r.lead_id },
+      } as never);
+    } catch (e) { console.warn("[audit doc_view]", e); }
     return { financiamento: r, urls };
   });
+
 
 // ============================================================
 // 5. ATUALIZAR STATUS
