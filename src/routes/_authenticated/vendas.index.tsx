@@ -10,11 +10,9 @@ import { getPlantonistaHoje, getMeusLeadsPlantao } from "@/lib/plantao.functions
 
 
 export const Route = createFileRoute("/_authenticated/vendas/")({
-  validateSearch: (s: Record<string, unknown>) => ({
-    dias: [7, 15, 30, 60, 90].includes(Number(s.dias)) ? Number(s.dias) : 30,
-  }),
   component: VendasDashboard,
 });
+
 
 type PortfolioStats = {
   disponivel_venda: number;
