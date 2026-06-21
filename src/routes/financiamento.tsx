@@ -135,6 +135,7 @@ function FinanciamentoPage() {
   if (done) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6" style={{ background: "#0a0a0a", color: "white" }}>
+        <Toaster richColors position="top-center" />
         <div className="max-w-lg text-center space-y-6">
           <div className="text-6xl">🎉</div>
           <h1 className="text-3xl md:text-4xl" style={{ fontFamily: "var(--font-display)", color: GOLD }}>
