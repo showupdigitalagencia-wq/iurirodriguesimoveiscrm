@@ -206,6 +206,37 @@ function groupByImovelFolder(allImgs: string[]): string[] {
   return best ? (byFolder.get(best) ?? allImgs) : allImgs;
 }
 
+function selectRelevantImages(allImgs: string[], ogImage: string | null): string[] {
+  const folderImgs = groupByImovelFolder(allImgs);
+  const folderSet = new Set(folderImgs);
+  const nonFolderImgs = allImgs.filter((u) => !u.match(/\/imoveis\/[^/]+\//i));
+  const sameAdUploadImgs = filterRelevantImages(nonFolderImgs, ogImage);
+
+  const merged =
+    folderImgs.length && folderImgs.length !== allImgs.length
+      ? [...folderImgs, ...sameAdUploadImgs]
+      : filterRelevantImages(allImgs, ogImage);
+
+  return Array.from(new Set(merged.filter((u) => folderSet.has(u) || allImgs.includes(u))));
+}
+
+function describeError(err: unknown): Record<string, unknown> {
+  if (err instanceof Error) {
+    return { name: err.name, message: err.message, stack: err.stack, cause: err.cause };
+  }
+  return { value: String(err) };
+}
+
+async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs: number) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export const importImovelFromUrl = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { url: string }) =>
