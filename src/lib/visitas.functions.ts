@@ -55,6 +55,7 @@ export const createVisita = createServerFn({ method: "POST" })
   .inputValidator((input: {
     lead_id: string;
     endereco: string;
+    imovel_id?: string | null;
     data_inicio: string;
     duracao_min?: number;
     observacoes?: string;
@@ -69,12 +70,14 @@ export const createVisita = createServerFn({ method: "POST" })
         lead_id: data.lead_id,
         corretor_id: userId,
         endereco: data.endereco,
+        imovel_id: data.imovel_id ?? null,
         data_inicio: data.data_inicio,
         duracao_min: data.duracao_min ?? 60,
         observacoes: data.observacoes ?? null,
       } as never)
       .select("id")
       .single();
+
     if (error) throw new Error(error.message);
     const visitaId = (visita as { id: string }).id;
 
