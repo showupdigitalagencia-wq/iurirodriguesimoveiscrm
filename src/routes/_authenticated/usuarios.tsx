@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_authenticated/usuarios")({
   component: UsuariosPage,
 });
 
-type UserRole = "admin" | "corretor" | "corretor_vendas";
+type UserRole = "admin" | "corretor" | "corretor_vendas" | "correspondente_bancaria" | "administrativo";
 type UserRow = {
   id: string; email: string; nome: string; ativo: boolean;
   responsavel_id: string | null; role: UserRole;
@@ -173,6 +173,8 @@ function UsuariosPage() {
                   <SelectContent>
                     <SelectItem value="corretor">Executivo</SelectItem>
                     <SelectItem value="corretor_vendas">Corretor (Vendas)</SelectItem>
+                    <SelectItem value="correspondente_bancaria">Correspondente Bancária</SelectItem>
+                    <SelectItem value="administrativo">Administrativo</SelectItem>
                     <SelectItem value="admin">Administrador</SelectItem>
                   </SelectContent>
                 </Select>
@@ -221,6 +223,8 @@ function UsuariosPage() {
                     <SelectContent>
                       <SelectItem value="corretor">Executivo</SelectItem>
                       <SelectItem value="corretor_vendas">Corretor (Vendas)</SelectItem>
+                      <SelectItem value="correspondente_bancaria">Correspondente Bancária</SelectItem>
+                      <SelectItem value="administrativo">Administrativo</SelectItem>
                       <SelectItem value="admin">Administrador</SelectItem>
                     </SelectContent>
                   </Select>

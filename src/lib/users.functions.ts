@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-const Role = z.enum(["admin", "corretor", "corretor_vendas"]);
+const Role = z.enum(["admin", "corretor", "corretor_vendas", "correspondente_bancaria", "administrativo"]);
 
 async function assertAdmin(supabase: SupabaseClient, userId: string) {
   const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
@@ -62,8 +62,8 @@ export const createUser = createServerFn({ method: "POST" })
     });
     if (error || !created.user) throw new Error(error?.message ?? "Falha ao criar usuário");
 
-    // Trigger cria profile + role default (corretor). Atualizamos se necessário.
-    // Corretor_vendas já entra com acesso liberado ao sistema de vendas.
+    // Trigger NÃO cria role por padrão (apenas o primeiro usuário vira admin).
+    // Sempre gravamos o role escolhido para garantir acesso correto.
     await supabaseAdmin.from("profiles").upsert({
       id: created.user.id,
       nome: data.nome,
@@ -71,10 +71,8 @@ export const createUser = createServerFn({ method: "POST" })
       vendas_acesso: data.role === "corretor_vendas" ? true : undefined,
     });
 
-    if (data.role !== "corretor") {
-      await supabaseAdmin.from("user_roles").delete().eq("user_id", created.user.id);
-      await supabaseAdmin.from("user_roles").insert({ user_id: created.user.id, role: data.role });
-    }
+    await supabaseAdmin.from("user_roles").delete().eq("user_id", created.user.id);
+    await supabaseAdmin.from("user_roles").insert({ user_id: created.user.id, role: data.role });
 
     return { ok: true, id: created.user.id };
   });
