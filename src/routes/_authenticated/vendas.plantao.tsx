@@ -53,12 +53,12 @@ function PlantaoPage() {
   });
   const elegQ = useQuery({
     queryKey: ["plantao-elegiveis"],
-    queryFn: () => listE({ data: {} }),
+    queryFn: () => listE(),
     enabled: canEdit,
   });
   const hojeQ = useQuery({
     queryKey: ["plantao-hoje"],
-    queryFn: () => getHoje({ data: {} }),
+    queryFn: () => getHoje(),
     refetchInterval: 60_000,
   });
 
