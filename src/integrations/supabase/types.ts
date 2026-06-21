@@ -697,6 +697,8 @@ export type Database = {
           created_at: string
           creci: string | null
           dados_corretor: Json | null
+          descredenciado_em: string | null
+          descredenciado_por: string | null
           email: string | null
           etapa: Database["public"]["Enums"]["lead_etapa"]
           faixa_valor: string | null
@@ -704,6 +706,7 @@ export type Database = {
           first_response_at: string | null
           id: string
           is_corretor: boolean
+          motivo_descredenciamento: string | null
           motivo_perda: string | null
           nome: string
           observacoes: string | null
@@ -720,6 +723,8 @@ export type Database = {
           created_at?: string
           creci?: string | null
           dados_corretor?: Json | null
+          descredenciado_em?: string | null
+          descredenciado_por?: string | null
           email?: string | null
           etapa?: Database["public"]["Enums"]["lead_etapa"]
           faixa_valor?: string | null
@@ -727,6 +732,7 @@ export type Database = {
           first_response_at?: string | null
           id?: string
           is_corretor?: boolean
+          motivo_descredenciamento?: string | null
           motivo_perda?: string | null
           nome: string
           observacoes?: string | null
@@ -743,6 +749,8 @@ export type Database = {
           created_at?: string
           creci?: string | null
           dados_corretor?: Json | null
+          descredenciado_em?: string | null
+          descredenciado_por?: string | null
           email?: string | null
           etapa?: Database["public"]["Enums"]["lead_etapa"]
           faixa_valor?: string | null
@@ -750,6 +758,7 @@ export type Database = {
           first_response_at?: string | null
           id?: string
           is_corretor?: boolean
+          motivo_descredenciamento?: string | null
           motivo_perda?: string | null
           nome?: string
           observacoes?: string | null
@@ -1607,6 +1616,7 @@ export type Database = {
         | "follow_up"
         | "fechado"
         | "descartado"
+        | "descredenciado"
       lead_origem:
         | "zap_imoveis"
         | "olx"
@@ -1793,6 +1803,7 @@ export const Constants = {
         "follow_up",
         "fechado",
         "descartado",
+        "descredenciado",
       ],
       lead_origem: [
         "zap_imoveis",
