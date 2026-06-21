@@ -11,12 +11,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Download, Loader2 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import { DocumentosManager } from "@/components/admin/DocumentosManager";
 import { FotosManager, FotosThumbs } from "@/components/admin/FotosManager";
 import { ImoveisImportExport } from "@/components/admin/ImoveisImportExport";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { useServerFn } from "@tanstack/react-start";
+import { importImovelFromUrl } from "@/lib/imovel-import.functions";
 
 type Imovel = Database["public"]["Tables"]["imoveis"]["Row"];
 type ImovelInsert = Database["public"]["Tables"]["imoveis"]["Insert"];
@@ -318,6 +320,56 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
 }) {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<Partial<ImovelInsert>>({});
+  const [importUrl, setImportUrl] = useState("");
+  const [importing, setImporting] = useState(false);
+  const importFn = useServerFn(importImovelFromUrl);
+
+  async function handleImport() {
+    const url = importUrl.trim();
+    if (!url) { toast.error("Cole a URL do imóvel"); return; }
+    setImporting(true);
+    try {
+      const res = await importFn({ data: { url } });
+      if (!res.ok) {
+        toast.warning(res.warning ?? "Não consegui extrair dados — preencha manualmente.");
+        return;
+      }
+      const d = res.data;
+      setForm((f) => {
+        const next: Partial<ImovelInsert> = { ...f };
+        if (d.codigo) (next as any).codigo = d.codigo;
+        if (d.tipo) next.tipo = d.tipo;
+        if (d.finalidade) (next as any).finalidade = d.finalidade;
+        if (d.status) next.status = d.status as any;
+        if (d.bairro) next.bairro = d.bairro;
+        if (d.cidade) next.cidade = d.cidade;
+        if (d.valor_venda != null) (next as any).valor_venda = d.valor_venda;
+        if (d.valor_aluguel != null) next.valor_aluguel = d.valor_aluguel;
+        if (d.condominio != null) next.condominio = d.condominio;
+        if (d.iptu != null) next.iptu = d.iptu;
+        if (d.quartos != null) next.quartos = d.quartos;
+        if (d.banheiros != null) next.banheiros = d.banheiros;
+        if (d.vagas != null) next.vagas = d.vagas;
+        if (d.area_m2 != null) next.area_m2 = d.area_m2 as any;
+        if (d.descricao) next.observacoes = d.descricao;
+        if (d.fotos.length) {
+          const existing = new Set(f.fotos ?? []);
+          const merged = [...(f.fotos ?? [])];
+          for (const u of d.fotos) if (!existing.has(u)) merged.push(u);
+          next.fotos = merged;
+        }
+        return next;
+      });
+      toast.success(
+        `Dados importados${d.fotos.length ? ` — ${d.fotos.length} foto(s) anexada(s)` : ""}. Revise antes de salvar.`
+      );
+    } catch (e) {
+      console.error("[importImovel]", e);
+      toast.error("Não consegui extrair os dados automaticamente — preencha manualmente.");
+    } finally {
+      setImporting(false);
+    }
+  }
 
   const { data: corretores = [] } = useQuery({
     queryKey: ["corretores_fechamento"],
@@ -405,7 +457,7 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
 
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { onOpenChange(v); if (!v) setForm({}); }}>
+    <Dialog open={open} onOpenChange={(v) => { onOpenChange(v); if (!v) { setForm({}); setImportUrl(""); } }}>
       <DialogContent className="sm:max-w-3xl sm:max-h-[90vh]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -417,16 +469,38 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
             )}
           </DialogTitle>
         </DialogHeader>
-        {(
-          <div className="grid gap-1 max-w-xs">
-            <Label>Código do Imóvel {imovel ? "" : "(gerado automaticamente — pode editar)"}</Label>
-            <Input
-              value={(form as { codigo?: string }).codigo ?? ""}
-              onChange={(e) => set("codigo" as never, e.target.value as never)}
-              placeholder="IM-0001"
-            />
+        {!imovel && (
+          <div className="rounded-md border bg-muted/40 p-3 space-y-2">
+            <Label className="text-sm font-semibold flex items-center gap-2">
+              <Download className="h-4 w-4" /> Importar do site (Voa Corretor)
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              Cole a URL pública do imóvel (ex.: https://www.iurirodriguesimoveis.com.br/imovel/.../AP0021)
+              e clique em <strong>Buscar dados</strong>. Os campos serão preenchidos automaticamente — revise antes de salvar.
+            </p>
+            <div className="flex gap-2">
+              <Input
+                type="url"
+                placeholder="https://www.iurirodriguesimoveis.com.br/imovel/..."
+                value={importUrl}
+                onChange={(e) => setImportUrl(e.target.value)}
+                disabled={importing}
+              />
+              <Button type="button" onClick={handleImport} disabled={importing || !importUrl.trim()}>
+                {importing ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Download className="h-4 w-4 mr-1" />}
+                {importing ? "Buscando..." : "Buscar dados"}
+              </Button>
+            </div>
           </div>
         )}
+        <div className="grid gap-1 max-w-xs">
+          <Label>Código do Imóvel {imovel ? "" : "(gerado automaticamente — pode editar)"}</Label>
+          <Input
+            value={(form as { codigo?: string }).codigo ?? ""}
+            onChange={(e) => set("codigo" as never, e.target.value as never)}
+            placeholder="IM-0001"
+          />
+        </div>
 
         <div className="grid gap-4 md:grid-cols-2">
           <div>
