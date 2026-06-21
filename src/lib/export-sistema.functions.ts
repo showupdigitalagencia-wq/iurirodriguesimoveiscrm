@@ -112,10 +112,6 @@ export const exportSistemaZip = createServerFn({ method: "POST" })
     try {
       await supabaseAdmin.rpc("log_audit", {
         _acao: "export_sistema",
-        _tabela: null,
-        _registro_id: null,
-        _antes: null,
-        _depois: null,
         _contexto: { tabelas: resumo, tamanho_bytes: zipped.length } as never,
       });
     } catch {
