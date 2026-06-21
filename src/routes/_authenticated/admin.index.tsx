@@ -1,12 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Building2, FileText, AlertTriangle, CheckCircle2, TrendingUp, TrendingDown } from "lucide-react";
+import { Building2, FileText, AlertTriangle, CheckCircle2, TrendingUp, TrendingDown, Wrench, Home, Tag, Radio } from "lucide-react";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   component: AdminDashboard,
@@ -28,7 +29,9 @@ function toISO(d: Date) {
 }
 
 function AdminDashboard() {
+  const queryClient = useQueryClient();
   const [preset, setPreset] = useState<"7" | "15" | "30" | "60" | "90" | "custom">("30");
+  const [realtimeOn, setRealtimeOn] = useState(false);
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
 
@@ -94,9 +97,25 @@ function AdminDashboard() {
     },
   });
 
+  // ---- Realtime: atualiza o portfólio sem precisar recarregar a página ----
+  useEffect(() => {
+    const channel = supabase
+      .channel("admin-imoveis-dashboard")
+      .on("postgres_changes", { event: "*", schema: "public", table: "imoveis" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["admin_imoveis_dash"] });
+      })
+      .subscribe((status) => { setRealtimeOn(status === "SUBSCRIBED"); });
+    return () => { supabase.removeChannel(channel); };
+  }, [queryClient]);
+
+  // ---- Snapshot do portfólio (inclui imóveis importados — todos vivem em `imoveis`) ----
   const totalImoveis = imoveis.length;
-  const disponiveis = imoveis.filter((i) => i.status === "disponivel").length;
+  const disponiveisLocacao = imoveis.filter((i) => i.status === "disponivel_locacao" || i.status === "disponivel").length;
+  const disponiveisVenda = imoveis.filter((i) => i.status === "disponivel_venda" || i.status === "disponivel").length;
+  const disponiveis = disponiveisLocacao + disponiveisVenda;
   const locados = imoveis.filter((i) => i.status === "locado").length;
+  const vendidosTotal = imoveis.filter((i) => i.status === "vendido").length;
+  const emManutencao = imoveis.filter((i) => i.status === "manutencao" || i.status === "em_manutencao").length;
   const ativos = contratos.filter((c) => c.status === "ativo" || c.status === "vencendo").length;
   const hoje = new Date();
   const em90 = new Date(); em90.setDate(hoje.getDate() + 90);
@@ -200,11 +219,24 @@ function AdminDashboard() {
   const [tab, setTab] = useState<"equipe" | "corretor">("equipe");
 
   const cards = [
-    { label: "Imóveis", value: totalImoveis, icon: Building2 },
-    { label: "Disponíveis", value: disponiveis, icon: CheckCircle2 },
-    { label: "Locados", value: locados, icon: Building2 },
-    { label: "Contratos ativos", value: ativos, icon: FileText },
+    { label: "Total de imóveis", value: totalImoveis, icon: Building2, sub: "Cadastrados (inclui importados)" },
+    { label: "Disp. Locação", value: disponiveisLocacao, icon: Home, sub: "Snapshot atual" },
+    { label: "Disp. Venda", value: disponiveisVenda, icon: Tag, sub: "Snapshot atual" },
+    { label: "Locados (período)", value: locadosPer.length, icon: CheckCircle2, sub: `${days} dias` },
+    { label: "Vendidos (período)", value: vendidosPer.length, icon: Building2, sub: `${days} dias` },
+    { label: "Em manutenção", value: emManutencao, icon: Wrench, sub: "Snapshot atual" },
   ];
+
+  // Distribuição do portfólio (snapshot — para o gráfico)
+  const outros = totalImoveis - (disponiveisLocacao + disponiveisVenda + locados + vendidosTotal + emManutencao);
+  const portfolioDist = [
+    { name: "Disp. Locação", value: disponiveisLocacao, color: "#c9a35b" },
+    { name: "Disp. Venda", value: disponiveisVenda, color: "#a8893f" },
+    { name: "Locados", value: locados, color: "#10b981" },
+    { name: "Vendidos", value: vendidosTotal, color: "#3b82f6" },
+    { name: "Manutenção", value: emManutencao, color: "#f59e0b" },
+    ...(outros > 0 ? [{ name: "Outros", value: outros, color: "#6b7280" }] : []),
+  ].filter((d) => d.value > 0);
 
   // Gráfico — buckets ao longo do período
   const buckets = Math.min(12, Math.max(4, Math.ceil(days / 7)));
@@ -262,23 +294,72 @@ function AdminDashboard() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-sm font-semibold text-muted-foreground">Portfólio de Imóveis</h2>
+        <span className={`inline-flex items-center gap-1.5 text-[11px] px-2 py-0.5 rounded-full border ${realtimeOn ? "border-emerald-500/40 text-emerald-600 bg-emerald-500/10" : "border-muted-foreground/30 text-muted-foreground"}`}>
+          <Radio className={`h-3 w-3 ${realtimeOn ? "animate-pulse" : ""}`} /> {realtimeOn ? "Tempo real" : "Conectando..."}
+        </span>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {cards.map((c) => {
           const Icon = c.icon;
           return (
             <Card key={c.label}>
               <CardContent className="p-4 flex items-center gap-3">
-                <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center">
+                <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center shrink-0">
                   <Icon className="h-5 w-5 text-gold" />
                 </div>
-                <div>
-                  <div className="text-xs text-muted-foreground">{c.label}</div>
+                <div className="min-w-0">
+                  <div className="text-xs text-muted-foreground truncate">{c.label}</div>
                   <div className="text-xl font-semibold">{c.value}</div>
+                  {c.sub && <div className="text-[10px] text-muted-foreground/70 truncate">{c.sub}</div>}
                 </div>
               </CardContent>
             </Card>
           );
         })}
+      </div>
+
+      {/* Distribuição do portfólio */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Building2 className="h-4 w-4 text-gold" /> Distribuição do portfólio
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {portfolioDist.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Sem imóveis cadastrados.</p>
+          ) : (
+            <div className="h-[280px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={portfolioDist} dataKey="value" nameKey="name" outerRadius={100} label={(e) => `${e.name}: ${e.value}`}>
+                    {portfolioDist.map((d) => <Cell key={d.name} fill={d.color} />)}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Contratos ativos — mantido como métrica auxiliar */}
+      <div className="grid grid-cols-2 md:grid-cols-1 gap-3">
+        <Card>
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center shrink-0">
+              <FileText className="h-5 w-5 text-gold" />
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">Contratos ativos</div>
+              <div className="text-xl font-semibold">{ativos}</div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid md:grid-cols-3 gap-3">
