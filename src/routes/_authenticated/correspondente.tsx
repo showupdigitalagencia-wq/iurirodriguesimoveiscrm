@@ -6,6 +6,7 @@ import {
   listFinanciamentos,
   getFinanciamentoDetail,
   updateFinanciamentoStatus,
+  deleteFinanciamento,
   type FinanciamentoRow,
   type FinanciamentoStatus,
 } from "@/lib/financiamento.functions";
@@ -17,9 +18,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { FileText, ExternalLink, CheckCircle2, XCircle, Clock, Loader2 } from "lucide-react";
+import { FileText, ExternalLink, CheckCircle2, XCircle, Clock, Loader2, Trash2 } from "lucide-react";
+
 
 export const Route = createFileRoute("/_authenticated/correspondente")({
   component: FinanciamentoAdminPage,
