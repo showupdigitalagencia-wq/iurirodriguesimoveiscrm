@@ -259,6 +259,15 @@ function UsuariosPage() {
                 </span>
               </div>
             </div>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs text-muted-foreground flex items-center gap-1"><CalendarClock className="h-3 w-3" /> Elegível p/ Plantão</span>
+              <div className="flex items-center gap-2">
+                <Switch checked={u.plantao_elegivel} onCheckedChange={() => togglePlantaoElegivel(u)} />
+                <span className={`text-xs ${u.plantao_elegivel ? "text-foreground font-medium" : "text-muted-foreground"}`}>
+                  {u.plantao_elegivel ? "Sim" : "Não"}
+                </span>
+              </div>
+            </div>
             <div className="flex gap-2">
               <Button size="sm" variant="outline" onClick={() => setResetting(u)} className="flex-1">
                 <KeyRound className="h-4 w-4 mr-1" /> Senha
@@ -285,6 +294,7 @@ function UsuariosPage() {
               <th className="text-left px-4 py-3">Último acesso</th>
               <th className="text-left px-4 py-3">Status</th>
               <th className="text-left px-4 py-3">Acesso Vendas</th>
+              <th className="text-left px-4 py-3">Plantão</th>
               <th className="text-right px-4 py-3">Ações</th>
             </tr>
           </thead>
@@ -335,6 +345,14 @@ function UsuariosPage() {
                       : <Badge variant="outline" className="gap-1 text-muted-foreground"><ShieldOff className="h-3 w-3" /> Bloqueado</Badge>}
                   </div>
                 </td>
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <Switch checked={u.plantao_elegivel} onCheckedChange={() => togglePlantaoElegivel(u)} />
+                    {u.plantao_elegivel
+                      ? <Badge variant="secondary" className="gap-1"><CalendarClock className="h-3 w-3" /> Elegível</Badge>
+                      : <Badge variant="outline" className="gap-1 text-muted-foreground">—</Badge>}
+                  </div>
+                </td>
                 <td className="px-4 py-3 text-right">
                   <Button size="sm" variant="ghost" onClick={() => setResetting(u)} title="Redefinir senha">
                     <KeyRound className="h-4 w-4" />
@@ -346,7 +364,7 @@ function UsuariosPage() {
               </tr>
             ))}
             {users.length === 0 && (
-              <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">Nenhum usuário cadastrado.</td></tr>
+              <tr><td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">Nenhum usuário cadastrado.</td></tr>
             )}
           </tbody>
         </table>
