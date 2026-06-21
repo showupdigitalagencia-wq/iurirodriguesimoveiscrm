@@ -81,8 +81,11 @@ function inferFinalidade(text: string): "locacao" | "venda" | "ambos" | null {
  */
 function filterRelevantImages(allImgs: string[], ogImage: string | null): string[] {
   if (!ogImage) return allImgs;
-  const base = ogImage.split("/").pop() ?? "";
-  // Remove números finais e extensão para obter "raiz" do slug
+  // og:image pode vir como wrapper (...thumb.php?w=600&img=https://.../arquivo.jpg)
+  // Extrai o último nome de arquivo de imagem da string.
+  const fileMatch = ogImage.match(/([^/?&=]+\.(?:jpe?g|png|webp))(?:[?#].*)?$/i);
+  const base = fileMatch?.[1] ?? "";
+  if (!base) return allImgs;
   const rootMatch = base.match(/^([a-z0-9-]+?)(\d{3,}|)(?:\.[a-z]+)?$/i);
   const root = rootMatch?.[1] ?? base.replace(/\.[a-z]+$/i, "");
   if (root.length < 12) return allImgs;
