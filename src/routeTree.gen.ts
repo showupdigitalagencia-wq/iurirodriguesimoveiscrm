@@ -49,6 +49,7 @@ import { Route as AuthenticatedVendasRelatoriosRouteImport } from './routes/_aut
 import { Route as AuthenticatedVendasPortfolioRouteImport } from './routes/_authenticated/vendas.portfolio'
 import { Route as AuthenticatedVendasPlantaoRouteImport } from './routes/_authenticated/vendas.plantao'
 import { Route as AuthenticatedVendasPipelineRouteImport } from './routes/_authenticated/vendas.pipeline'
+import { Route as AuthenticatedVendasMetasRouteImport } from './routes/_authenticated/vendas.metas'
 import { Route as AuthenticatedVendasLeadsRouteImport } from './routes/_authenticated/vendas.leads'
 import { Route as AuthenticatedVendasFunilRouteImport } from './routes/_authenticated/vendas.funil'
 import { Route as AuthenticatedVendasAgendaRouteImport } from './routes/_authenticated/vendas.agenda'
@@ -283,6 +284,12 @@ const AuthenticatedVendasPipelineRoute =
     path: '/pipeline',
     getParentRoute: () => AuthenticatedVendasRoute,
   } as any)
+const AuthenticatedVendasMetasRoute =
+  AuthenticatedVendasMetasRouteImport.update({
+    id: '/metas',
+    path: '/metas',
+    getParentRoute: () => AuthenticatedVendasRoute,
+  } as any)
 const AuthenticatedVendasLeadsRoute =
   AuthenticatedVendasLeadsRouteImport.update({
     id: '/leads',
@@ -423,6 +430,7 @@ export interface FileRoutesByFullPath {
   '/vendas/agenda': typeof AuthenticatedVendasAgendaRoute
   '/vendas/funil': typeof AuthenticatedVendasFunilRoute
   '/vendas/leads': typeof AuthenticatedVendasLeadsRoute
+  '/vendas/metas': typeof AuthenticatedVendasMetasRoute
   '/vendas/pipeline': typeof AuthenticatedVendasPipelineRoute
   '/vendas/plantao': typeof AuthenticatedVendasPlantaoRoute
   '/vendas/portfolio': typeof AuthenticatedVendasPortfolioRoute
@@ -478,6 +486,7 @@ export interface FileRoutesByTo {
   '/vendas/agenda': typeof AuthenticatedVendasAgendaRoute
   '/vendas/funil': typeof AuthenticatedVendasFunilRoute
   '/vendas/leads': typeof AuthenticatedVendasLeadsRoute
+  '/vendas/metas': typeof AuthenticatedVendasMetasRoute
   '/vendas/pipeline': typeof AuthenticatedVendasPipelineRoute
   '/vendas/plantao': typeof AuthenticatedVendasPlantaoRoute
   '/vendas/portfolio': typeof AuthenticatedVendasPortfolioRoute
@@ -538,6 +547,7 @@ export interface FileRoutesById {
   '/_authenticated/vendas/agenda': typeof AuthenticatedVendasAgendaRoute
   '/_authenticated/vendas/funil': typeof AuthenticatedVendasFunilRoute
   '/_authenticated/vendas/leads': typeof AuthenticatedVendasLeadsRoute
+  '/_authenticated/vendas/metas': typeof AuthenticatedVendasMetasRoute
   '/_authenticated/vendas/pipeline': typeof AuthenticatedVendasPipelineRoute
   '/_authenticated/vendas/plantao': typeof AuthenticatedVendasPlantaoRoute
   '/_authenticated/vendas/portfolio': typeof AuthenticatedVendasPortfolioRoute
@@ -598,6 +608,7 @@ export interface FileRouteTypes {
     | '/vendas/agenda'
     | '/vendas/funil'
     | '/vendas/leads'
+    | '/vendas/metas'
     | '/vendas/pipeline'
     | '/vendas/plantao'
     | '/vendas/portfolio'
@@ -653,6 +664,7 @@ export interface FileRouteTypes {
     | '/vendas/agenda'
     | '/vendas/funil'
     | '/vendas/leads'
+    | '/vendas/metas'
     | '/vendas/pipeline'
     | '/vendas/plantao'
     | '/vendas/portfolio'
@@ -712,6 +724,7 @@ export interface FileRouteTypes {
     | '/_authenticated/vendas/agenda'
     | '/_authenticated/vendas/funil'
     | '/_authenticated/vendas/leads'
+    | '/_authenticated/vendas/metas'
     | '/_authenticated/vendas/pipeline'
     | '/_authenticated/vendas/plantao'
     | '/_authenticated/vendas/portfolio'
@@ -1038,6 +1051,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedVendasPipelineRouteImport
       parentRoute: typeof AuthenticatedVendasRoute
     }
+    '/_authenticated/vendas/metas': {
+      id: '/_authenticated/vendas/metas'
+      path: '/metas'
+      fullPath: '/vendas/metas'
+      preLoaderRoute: typeof AuthenticatedVendasMetasRouteImport
+      parentRoute: typeof AuthenticatedVendasRoute
+    }
     '/_authenticated/vendas/leads': {
       id: '/_authenticated/vendas/leads'
       path: '/leads'
@@ -1223,6 +1243,7 @@ interface AuthenticatedVendasRouteChildren {
   AuthenticatedVendasAgendaRoute: typeof AuthenticatedVendasAgendaRoute
   AuthenticatedVendasFunilRoute: typeof AuthenticatedVendasFunilRoute
   AuthenticatedVendasLeadsRoute: typeof AuthenticatedVendasLeadsRoute
+  AuthenticatedVendasMetasRoute: typeof AuthenticatedVendasMetasRoute
   AuthenticatedVendasPipelineRoute: typeof AuthenticatedVendasPipelineRoute
   AuthenticatedVendasPlantaoRoute: typeof AuthenticatedVendasPlantaoRoute
   AuthenticatedVendasPortfolioRoute: typeof AuthenticatedVendasPortfolioRoute
@@ -1235,6 +1256,7 @@ const AuthenticatedVendasRouteChildren: AuthenticatedVendasRouteChildren = {
   AuthenticatedVendasAgendaRoute: AuthenticatedVendasAgendaRoute,
   AuthenticatedVendasFunilRoute: AuthenticatedVendasFunilRoute,
   AuthenticatedVendasLeadsRoute: AuthenticatedVendasLeadsRoute,
+  AuthenticatedVendasMetasRoute: AuthenticatedVendasMetasRoute,
   AuthenticatedVendasPipelineRoute: AuthenticatedVendasPipelineRoute,
   AuthenticatedVendasPlantaoRoute: AuthenticatedVendasPlantaoRoute,
   AuthenticatedVendasPortfolioRoute: AuthenticatedVendasPortfolioRoute,
