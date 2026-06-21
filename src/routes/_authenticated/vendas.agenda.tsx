@@ -144,32 +144,42 @@ function AgendaCorretorPage() {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     const leadId = String(fd.get("lead_id") || "");
-    const endereco = String(fd.get("endereco") || "").trim();
     const data = String(fd.get("data") || "");
     const hora = String(fd.get("hora") || "");
     const observacoes = String(fd.get("observacoes") || "").trim();
-    if (!leadId || !endereco || !data || !hora) { toast.error("Preencha todos os campos"); return; }
+    const imovel = selectedImovelId ? imoveis.find((i) => i.id === selectedImovelId) ?? null : null;
+    const endereco = imovel ? formatImovelEndereco(imovel) : enderecoManual.trim();
+    if (!leadId || !endereco || !data || !hora) { toast.error("Selecione um imóvel ou informe o endereço, lead, data e hora"); return; }
     setSavingVisita(true);
     try {
       const iso = new Date(`${data}T${hora}:00`).toISOString();
       const res = await fnCreateVisita({ data: {
         lead_id: leadId,
         endereco,
+        imovel_id: selectedImovelId || null,
         data_inicio: iso,
         duracao_min: 60,
         observacoes: observacoes || undefined,
       }});
       toast.success("Visita agendada!");
       setOpenVisita(false);
+      setSelectedImovelId("");
+      setEnderecoManual("");
       refresh();
       if (res.lead?.telefone) {
-        const dataFmt = format(new Date(iso), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
-        const msg = `Olá ${res.lead.nome}! Confirmando nossa visita ao imóvel em ${endereco} no dia ${dataFmt}. Qualquer dúvida estou à disposição.`;
+        const dt = new Date(iso);
+        const msg = buildVisitaConfirmacaoMsg({
+          nome: res.lead.nome,
+          endereco,
+          dataFmt: format(dt, "dd/MM/yyyy", { locale: ptBR }),
+          horaFmt: format(dt, "HH:mm", { locale: ptBR }),
+        });
         window.open(whatsappLink(res.lead.telefone, msg), "_blank");
       }
     } catch (e) { toast.error(e instanceof Error ? e.message : "Erro ao agendar"); }
     finally { setSavingVisita(false); }
   }
+
 
   async function handleAddReuniao(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
