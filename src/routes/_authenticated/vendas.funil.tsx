@@ -1,4 +1,4 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,21 +16,10 @@ type FunilResult = {
   escopo: { is_admin: boolean; is_exec: boolean; scope: string; usuarios: number };
 };
 
-export const Route = createFileRoute("/_authenticated/admin/funil")({
-  beforeLoad: async () => {
-    const { data: ud } = await supabase.auth.getUser();
-    const uid = ud.user?.id;
-    if (!uid) throw redirect({ to: "/auth" });
-    const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", uid);
-    const isAdmin = roles?.some((r) => r.role === "admin") ?? false;
-    if (!isAdmin) throw redirect({ to: "/admin" });
-  },
+export const Route = createFileRoute("/_authenticated/vendas/funil")({
   component: FunilPage,
 });
 
-function toIso(d: Date) {
-  return d.toISOString();
-}
 function defaultRange() {
   const to = new Date();
   const from = new Date();
@@ -56,13 +45,13 @@ function FunilPage() {
     setLoading(true);
     setErr(null);
     try {
-      const fromIso = toIso(new Date(`${from}T00:00:00`));
-      const toIsoStr = toIso(new Date(`${to}T23:59:59`));
+      const fromIso = new Date(`${from}T00:00:00`).toISOString();
+      const toIsoStr = new Date(`${to}T23:59:59`).toISOString();
       const { data: res, error } = await supabase.rpc("get_funil_conversao" as never, {
         _pipeline: pipeline,
         _from: fromIso,
         _to: toIsoStr,
-        _scope: "all",
+        _scope: "auto",
         _target: null,
       } as never);
       if (error) throw error;
@@ -80,15 +69,22 @@ function FunilPage() {
   }, [pipeline]);
 
   const maxPassaram = useMemo(() => {
-    if (!data) return 0;
+    if (!data) return 1;
     return Math.max(1, ...data.etapas.map((e) => e.passaram));
   }, [data]);
+
+  const escopoLabel = data?.escopo.is_admin
+    ? "Visão geral (admin)"
+    : data?.escopo.is_exec
+      ? "Visão da equipe (executivo)"
+      : "Meu funil";
 
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <TrendingDown className="h-5 w-5 text-gold" />
         <h2 className="text-lg md:text-xl font-semibold">Funil de Conversão</h2>
+        {data && <span className="text-xs text-muted-foreground">— {escopoLabel}</span>}
       </div>
 
       <Card>
@@ -101,9 +97,7 @@ function FunilPage() {
           <div>
             <label className="block text-xs text-muted-foreground mb-1">Pipeline</label>
             <Select value={pipeline} onValueChange={(v) => setPipeline(v as "captacao" | "vendas")}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue />
-              </SelectTrigger>
+              <SelectTrigger className="w-[220px]"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="vendas">Vendas</SelectItem>
                 <SelectItem value="captacao">Captação de Corretores</SelectItem>
@@ -159,14 +153,14 @@ function FunilPage() {
                       <div className="flex items-center gap-2 pl-4 py-1 text-xs text-muted-foreground">
                         <TrendingDown className="h-3 w-3" />
                         <span>
-                          Conversão: <strong className={conv && conv < 50 ? "text-red-600" : "text-foreground"}>
+                          Conversão: <strong className={conv !== null && conv < 50 ? "text-red-600" : "text-foreground"}>
                             {conv === null ? "—" : `${conv.toFixed(1)}%`}
                           </strong>
                         </span>
                       </div>
                     )}
                     <div className="flex items-stretch gap-3">
-                      <div className="w-[200px] shrink-0 text-sm font-medium py-2">
+                      <div className="w-[180px] md:w-[200px] shrink-0 text-sm font-medium py-2">
                         {nomeEtapa(pipeline, etapa.id)}
                       </div>
                       <div className="flex-1 relative bg-muted/30 rounded">
@@ -174,7 +168,7 @@ function FunilPage() {
                           className="h-full rounded bg-gold/20 border border-gold/40 transition-all"
                           style={{ width: `${Math.max(widthPct, 2)}%`, minHeight: 40 }}
                         />
-                        <div className="absolute inset-0 flex items-center px-3 text-sm">
+                        <div className="absolute inset-0 flex items-center px-3 text-sm flex-wrap">
                           <span className="font-semibold">{etapa.passaram}</span>
                           <span className="text-muted-foreground ml-1">passaram</span>
                           <span className="mx-2 text-muted-foreground">•</span>
@@ -189,8 +183,8 @@ function FunilPage() {
             </div>
           )}
           <p className="text-xs text-muted-foreground mt-4">
-            <strong>Passaram</strong>: leads que entraram nesta etapa no período (com base no histórico de mudanças).{" "}
-            <strong>Agora</strong>: leads que estão atualmente nesta etapa (entre os criados no período).
+            <strong>Passaram</strong>: leads que entraram nesta etapa no período (histórico de mudanças).{" "}
+            <strong>Agora</strong>: leads atualmente nesta etapa (entre os criados no período).
           </p>
         </CardContent>
       </Card>
