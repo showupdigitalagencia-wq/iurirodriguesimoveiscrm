@@ -70,6 +70,55 @@ function u8ToBase64(bytes: Uint8Array): string {
   return btoa(bin);
 }
 
+export type BuildExportResult = {
+  filename: string;
+  bytes: Uint8Array;
+  resumo: Record<string, number>;
+};
+
+/**
+ * Helper interno: gera o ZIP e devolve buffer + resumo.
+ * Usado pelo download manual (exportSistemaZip) e pelo backup automático semanal.
+ * Não faz checagem de auth — quem chama é responsável por validar.
+ */
+export async function buildExportZipBuffer(
+  geradoPorId: string | null,
+): Promise<BuildExportResult> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+  const files: Record<string, Uint8Array> = {};
+  const resumo: Record<string, number> = {};
+
+  for (const [tabela, cols] of Object.entries(ALLOWLIST)) {
+    const { data, error } = await supabaseAdmin
+      .from(tabela as never)
+      .select(cols.join(","));
+    if (error) {
+      throw new Error(`Erro ao exportar ${tabela}: ${error.message}`);
+    }
+    const rows = (data ?? []) as Array<Record<string, unknown>>;
+    resumo[tabela] = rows.length;
+    files[`${tabela}.csv`] = strToU8(toCsv(rows, cols));
+  }
+
+  const manifest = {
+    gerado_em: new Date().toISOString(),
+    gerado_por: geradoPorId,
+    tabelas: resumo,
+    observacao:
+      "Exportação contém apenas campos estruturados (allowlist). Não inclui documentos, fotos ou URLs de storage.",
+  };
+  files["manifest.json"] = strToU8(JSON.stringify(manifest, null, 2));
+
+  const zipped = zipSync(files, { level: 6 });
+  const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+  return {
+    filename: `nexus-export-${stamp}.zip`,
+    bytes: zipped,
+    resumo,
+  };
+}
+
 export const exportSistemaZip = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -80,49 +129,22 @@ export const exportSistemaZip = createServerFn({ method: "POST" })
     if (!isAdmin) throw new Error("Forbidden");
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const result = await buildExportZipBuffer(context.userId);
+    const base64 = u8ToBase64(result.bytes);
 
-    const files: Record<string, Uint8Array> = {};
-    const resumo: Record<string, number> = {};
-
-    for (const [tabela, cols] of Object.entries(ALLOWLIST)) {
-      const { data, error } = await supabaseAdmin
-        .from(tabela as never)
-        .select(cols.join(","));
-      if (error) {
-        throw new Error(`Erro ao exportar ${tabela}: ${error.message}`);
-      }
-      const rows = (data ?? []) as Array<Record<string, unknown>>;
-      resumo[tabela] = rows.length;
-      files[`${tabela}.csv`] = strToU8(toCsv(rows, cols));
-    }
-
-    const manifest = {
-      gerado_em: new Date().toISOString(),
-      gerado_por: context.userId,
-      tabelas: resumo,
-      observacao:
-        "Exportação contém apenas campos estruturados (allowlist). Não inclui documentos, fotos ou URLs de storage.",
-    };
-    files["manifest.json"] = strToU8(JSON.stringify(manifest, null, 2));
-
-    const zipped = zipSync(files, { level: 6 });
-    const base64 = u8ToBase64(zipped);
-
-    // Log de auditoria (Fase 2)
     try {
       await supabaseAdmin.rpc("log_audit", {
         _acao: "export_sistema",
-        _contexto: { tabelas: resumo, tamanho_bytes: zipped.length } as never,
+        _contexto: { tabelas: result.resumo, tamanho_bytes: result.bytes.length } as never,
       });
     } catch {
       // não falha export por erro de log
     }
 
-    const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
     return {
-      filename: `nexus-export-${stamp}.zip`,
+      filename: result.filename,
       base64,
-      tamanho: zipped.length,
-      resumo,
+      tamanho: result.bytes.length,
+      resumo: result.resumo,
     };
   });
