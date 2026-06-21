@@ -33,6 +33,12 @@ type OrigemRow = { canal: string; qtd: number };
 type EvolRow = { dia: string; leads: number; fechados: number };
 type CompBlock = { vendas: number; locacoes: number; receita: number; total_leads: number; atendidos: number };
 
+type VisitasBlock = {
+  total: number; realizadas: number; nao_compareceu: number;
+  pendentes_confirmacao: number; futuras: number;
+  taxa_comparecimento: number | null;
+};
+
 type Relatorio = {
   periodo: { from: string; to: string; prev_from: string; prev_to: string };
   escopo: { is_admin: boolean; is_exec: boolean; scope: Scope; target_id: string | null; exec_id: string | null; usuarios: number };
@@ -42,6 +48,7 @@ type Relatorio = {
   equipes: EquipeRow[];
   plantao: PlantaoRow[];
   origem: OrigemRow[];
+  visitas?: VisitasBlock | null;
   comparacao: { atual: CompBlock; anterior: CompBlock };
 };
 
