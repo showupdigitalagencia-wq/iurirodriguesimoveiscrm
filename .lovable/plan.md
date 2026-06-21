@@ -1,89 +1,59 @@
-## Escopo
+## Objetivo
 
-Email fica fora. Tudo o resto da feature de captação de corretores, ponta a ponta.
+Deixar todas as funções do Sistema NEXUS totalmente utilizáveis no celular, mantendo o desktop intacto. A navegação principal (sidebar + bottom bar + "Mais") já existe — o trabalho agora é adaptar cada **tela interna** (tabelas, kanban, formulários, modais e dashboards) para fluir bem em telas pequenas.
 
-## 1. Banco (1 migration)
+## Princípios aplicados em todas as telas
 
-- `candidatos` (tabela nova):
-  - dados pessoais: nome, cpf, telefone, email, creci, regiao (enum `lead_regiao`)
-  - links dos 4 docs no Storage: `rg_path`, `cpf_path`, `creci_path`, `comprovante_path`
-  - `status`: `pendente_revisao` | `arquivado`
-  - `lead_id` (FK opcional pra `leads`), `responsavel_id` (executivo da região)
-  - `drive_folder_id`, `arquivado_em`, `arquivado_por`
-  - RLS: leitura/escrita apenas Admin + Administrativo
-- `configuracoes`: adicionar chave `vsl_youtube_url` (texto)
-- `regiao_responsavel` (tabela de mapa): `regiao` (enum) → `responsavel_id`. Seed inicial:
-  - `barra_da_tijuca` → Robson
-  - `recreio` → Fabíola
-  - `belford_roxo` → Renata
-  - `nilopolis` → Denise
-  - `mesquita` → Denise
-  - (demais regiões caem em Admin/Iuri como fallback)
-- Storage bucket privado `candidatos-docs` + políticas (insert público anônimo restrito ao path do próprio candidato; leitura Admin/Administrativo)
+- Nenhuma tabela "estoura" lateralmente: viram cards empilhados no mobile (`md:hidden` cards / `hidden md:block` tabela).
+- Todo Dialog/Sheet vira tela cheia no mobile, com botões grandes (mín. 44px) e rolagem interna.
+- Cabeçalhos de página: título + ações usam `grid` no mobile e `flex` no desktop (sem botões cortados).
+- Kanban (Pipeline) ganha modo "swipe horizontal por etapa" no mobile com indicador de etapa.
+- Gráficos do dashboard/relatórios reduzem para 1 coluna e altura adequada no celular.
+- Formulários longos (Configurações, Imóveis, Reunião, Lead) usam abas/seções colapsáveis no mobile.
 
-## 2. Landing page pública `/ingresso`
+## Ondas de execução
 
-Rota top-level, sem login, SSR. Visual preto/dourado.
-Seções: logo → headline "Bem-vindo à primeira etapa do Sistema Nexus" → vídeo VSL (iframe YouTube, URL vinda de `configuracoes.vsl_youtube_url`) → benefícios → estatísticas → formulário.
+Vou entregar em **3 ondas**, validando cada uma com Playwright em viewport 390x844 antes de seguir:
 
-Formulário: nome, CPF, WhatsApp, email, CRECI, região (select), upload de 4 arquivos (RG, CPF, CRECI, comprovante).
+### Onda 1 — Operacional do dia a dia (mais usado no celular)
+- `pipeline.tsx` + `vendas.pipeline.tsx` — Kanban responsivo (swipe entre colunas)
+- `leads.tsx` + `vendas.leads.tsx` — Tabela → cards no mobile, filtros em sheet
+- `lead-detail-sheet.tsx` + `vendas-lead-detail.tsx` — Sheet fullscreen no mobile
+- `create-lead-dialog.tsx` — Dialog fullscreen com inputs maiores
+- `agenda.tsx` + `vendas.agenda.tsx` — Calendário/lista adaptada
+- `reuniao-form-dialog.tsx` + `reuniao-detail-dialog.tsx` — Fullscreen mobile
+- `notificacoes.tsx` — Lista já é vertical, ajustar paddings/headers
+- `correspondente.tsx` — Cards + Dialog fullscreen para upload de docs
 
-## 3. Server function pública `submeterCandidato`
+### Onda 2 — Gestão e relatórios
+- `dashboard.tsx` + `vendas.index.tsx` — Cards stats 1 col, gráficos full width
+- `relatorio.tsx` — Gráficos empilhados, filtros em sheet
+- `corretores.tsx` — Tabela → cards no mobile
+- `executivos.index.tsx` + `executivos.$id.tsx` + `executivos.landing-page.tsx` — Layout fluido
+- `captacao-links.tsx` — Cards de link + preview adaptado
+- `sophia-chat.tsx` — Chat full-height no mobile
 
-- valida com Zod
-- upload dos 4 arquivos para `candidatos-docs` via `supabaseAdmin` (rota pública, sem sessão)
-- procura lead em `leads` por telefone OU CPF (canal corretor)
-- se achar: atualiza dados, move `etapa = documentos_enviados`, mantém `responsavel_id` existente
-- se não achar: cria lead com `responsavel_id = regiao_responsavel[regiao]`, `etapa = documentos_enviados`, `canal = indicacao`, `is_corretor = true`
-- cria row em `candidatos` linkada ao lead
-- dispara push OneSignal pra: Larissa (Administrativo), Iuri e Wederson (Admin), + executivo da região
-  - título: "📄 Novo candidato enviou documentação!"
-  - mensagem: "Nome: {nome} | Região: {regiao}"
+### Onda 3 — Administrativo e configuração
+- `admin.index.tsx`, `admin.imoveis.tsx`, `admin.contratos.tsx`, `admin.pagamentos.tsx`, `admin.inadimplentes.tsx`, `admin.candidatos.tsx` — Tabelas → cards, forms adaptados
+- `configuracoes.tsx` — Seções colapsáveis/abas no mobile
+- `usuarios.tsx` — Tabela → cards, dialog criar usuário fullscreen
+- `tempo-acesso.tsx` — Lista/gráficos adaptados
 
-## 4. Tela `/administrativo/candidatos`
+## Detalhes técnicos
 
-Rota `_authenticated/admin.candidatos.tsx`, visível Admin + Administrativo.
-- lista: nome, data envio, região, status (badge)
-- filtros: status (Pendente / Arquivado / Todos)
-- ao clicar → drawer com:
-  - dados completos
-  - 4 documentos com botões Visualizar / Baixar (signed URL do Storage)
-  - link pro lead vinculado no pipeline de captação
-  - botão **"Salvar no Google Drive"**
+- Padrão de tabela responsiva: dentro de cada rota com tabela, adicionar bloco `<div className="md:hidden space-y-3">…cards…</div>` e envolver a `<Table>` em `<div className="hidden md:block">`. Sem refatorar lógica de dados — só apresentação.
+- Padrão de Dialog mobile: usar `className="max-w-[100vw] sm:max-w-lg h-[100dvh] sm:h-auto sm:max-h-[90vh] rounded-none sm:rounded-lg"` com `<DialogContent>` rolável.
+- Kanban swipe: usar scroll-snap horizontal (`snap-x snap-mandatory`) com cada coluna `w-[85vw] md:w-72 snap-center`, sem libs extras.
+- Não mexer em lógica de negócio, RLS, server functions, queries ou tipos.
+- Não criar componentes novos a menos que seja para evitar duplicação (ex: um `ResponsiveTable` helper se ficar repetitivo).
 
-## 5. Botão "Salvar no Drive"
+## Validação
 
-Server function autenticada (`requireSupabaseAuth`):
-- usa o token Google do **usuário logado** (Larissa, quando ela clica) — reaproveita `drive.server.ts`
-- cria pasta `Captação Corretores / {nome do candidato}`
-- baixa os 4 arquivos do Storage e faz upload pro Drive
-- salva `drive_folder_id` no candidato
-- marca `status = arquivado`, `arquivado_em = now()`, `arquivado_por = uid`
-- registra docs em `documentos` (mesma tabela do módulo Admin)
+Ao final de cada onda: rodar Playwright em 390x844, navegar pelas telas da onda logado como admin, tirar screenshots e conferir que nada está cortado/cortando texto/sem botão acessível.
 
-## 6. Config admin (campo VSL)
+## Fora de escopo
 
-Em `/configuracoes`, seção Admin: input "Link do vídeo VSL (YouTube)" que grava em `configuracoes.vsl_youtube_url`. Server function `setVslUrl` (apenas Admin).
-
-## 7. Sub-aba "Landing Page" (Executivos + Admin)
-
-Rota `_authenticated/executivos.landing-page.tsx` (ou aba dentro de `/executivos`):
-- preview embed da LP via `<iframe src="/ingresso">`
-- link público em destaque: `https://iurirodriguesimoveiscrm.lovable.app/ingresso`
-- botão "Copiar link"
-- botão "Enviar via WhatsApp" → abre `wa.me/?text=...` com mensagem pronta
-
-## Fora do escopo agora
-
-- Email para Larissa (adiar até resolver DNS)
-- Edição da página de Configurações de mapa região→responsável via UI (vai por seed; se quiser editar depois, fazemos uma telinha)
-
-## Ordem de execução
-
-1. Migration (DB + bucket + seed)
-2. Aguarda aprovação da migration
-3. Server functions + LP + Candidatos + Drive + Config + Sub-aba (tudo em paralelo no mesmo turno)
-
-## Pergunta
-
-Posso seguir? Só preciso confirmar: **regiões não mapeadas (jacarepaguá, zona sul, zona norte, zona oeste, centro, outras) caem no Iuri (Admin)** ou prefere round-robin entre os 4 executivos cadastrados?
+- Mudar visual/tema/cores (preto e dourado mantido).
+- Adicionar/remover funcionalidades.
+- Mexer em backend, migrations ou permissões.
+- PWA / instalação no celular (pode ser uma próxima etapa se você quiser).
