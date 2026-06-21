@@ -74,13 +74,13 @@ function VendasRelatoriosPage() {
   useEffect(() => {
     let alive = true;
     setLoading(true); setErr(null);
-    supabase.rpc("get_vendas_relatorio", { _from: range.from, _to: range.to })
-      .then(({ data: d, error }) => {
-        if (!alive) return;
-        if (error) { setErr(error.message); setData(null); }
-        else setData(d as unknown as Relatorio);
-      })
-      .finally(() => { if (alive) setLoading(false); });
+    (async () => {
+      const { data: d, error } = await supabase.rpc("get_vendas_relatorio", { _from: range.from, _to: range.to });
+      if (!alive) return;
+      if (error) { setErr(error.message); setData(null); }
+      else setData(d as unknown as Relatorio);
+      setLoading(false);
+    })();
     return () => { alive = false; };
   }, [range.from, range.to]);
 
