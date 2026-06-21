@@ -186,15 +186,22 @@ function ImoveisPage() {
                 <div className="text-xs text-muted-foreground">Vencimento: dia {(i as unknown as { dia_vencimento?: number | null }).dia_vencimento}</div>
               )}
               {(i as unknown as { vitrine_url?: string | null }).vitrine_url && (
-                <a
-                  href={(i as unknown as { vitrine_url?: string | null }).vitrine_url ?? "#"}
-                  target="_blank"
-                  rel="noreferrer"
+                <Button
+                  asChild
+                  size="sm"
+                  variant="outline"
+                  className="h-7 px-2 gap-1 text-xs border-gold/40 text-gold hover:bg-gold/10 hover:text-gold"
                   onClick={(e) => e.stopPropagation()}
-                  className="text-xs text-gold hover:underline inline-block"
                 >
-                  🔗 Ver na vitrine
-                </a>
+                  <a
+                    href={(i as unknown as { vitrine_url?: string | null }).vitrine_url ?? "#"}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                    Vitrine
+                  </a>
+                </Button>
               )}
 
 
