@@ -1,7 +1,8 @@
 import { createFileRoute, Outlet, Link, redirect } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { LayoutDashboard, Building2, FileText, DollarSign, AlertOctagon, UserPlus } from "lucide-react";
+import { LayoutDashboard, Building2, FileText, DollarSign, AlertOctagon, UserPlus, Activity } from "lucide-react";
+
 
 export const Route = createFileRoute("/_authenticated/admin")({
   beforeLoad: async () => {
