@@ -60,6 +60,7 @@ import { Route as AuthenticatedAdminImoveisRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminContratosRouteImport } from './routes/_authenticated/admin.contratos'
 import { Route as AuthenticatedAdminCandidatosRouteImport } from './routes/_authenticated/admin.candidatos'
 import { Route as AuthenticatedAdminAuditoriaRouteImport } from './routes/_authenticated/admin.auditoria'
+import { Route as ApiPublicHooksReativacaoLeadsPerdidosRouteImport } from './routes/api/public/hooks/reativacao-leads-perdidos'
 
 const SejaCorretorRoute = SejaCorretorRouteImport.update({
   id: '/seja-corretor',
@@ -343,6 +344,12 @@ const AuthenticatedAdminAuditoriaRoute =
     path: '/auditoria',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const ApiPublicHooksReativacaoLeadsPerdidosRoute =
+  ApiPublicHooksReativacaoLeadsPerdidosRouteImport.update({
+    id: '/api/public/hooks/reativacao-leads-perdidos',
+    path: '/api/public/hooks/reativacao-leads-perdidos',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -395,6 +402,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/executivos/': typeof AuthenticatedExecutivosIndexRoute
   '/vendas/': typeof AuthenticatedVendasIndexRoute
+  '/api/public/hooks/reativacao-leads-perdidos': typeof ApiPublicHooksReativacaoLeadsPerdidosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -444,6 +452,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/executivos': typeof AuthenticatedExecutivosIndexRoute
   '/vendas': typeof AuthenticatedVendasIndexRoute
+  '/api/public/hooks/reativacao-leads-perdidos': typeof ApiPublicHooksReativacaoLeadsPerdidosRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -498,6 +507,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/executivos/': typeof AuthenticatedExecutivosIndexRoute
   '/_authenticated/vendas/': typeof AuthenticatedVendasIndexRoute
+  '/api/public/hooks/reativacao-leads-perdidos': typeof ApiPublicHooksReativacaoLeadsPerdidosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -552,6 +562,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/executivos/'
     | '/vendas/'
+    | '/api/public/hooks/reativacao-leads-perdidos'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -601,6 +612,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/executivos'
     | '/vendas'
+    | '/api/public/hooks/reativacao-leads-perdidos'
   id:
     | '__root__'
     | '/'
@@ -654,6 +666,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/'
     | '/_authenticated/executivos/'
     | '/_authenticated/vendas/'
+    | '/api/public/hooks/reativacao-leads-perdidos'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -674,6 +687,7 @@ export interface RootRouteChildren {
   ApiPublicLeadMensagemRoute: typeof ApiPublicLeadMensagemRoute
   ApiPublicOnesignalTestRoute: typeof ApiPublicOnesignalTestRoute
   ApiPublicWebhookRoute: typeof ApiPublicWebhookRoute
+  ApiPublicHooksReativacaoLeadsPerdidosRoute: typeof ApiPublicHooksReativacaoLeadsPerdidosRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1035,6 +1049,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAuditoriaRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/api/public/hooks/reativacao-leads-perdidos': {
+      id: '/api/public/hooks/reativacao-leads-perdidos'
+      path: '/api/public/hooks/reativacao-leads-perdidos'
+      fullPath: '/api/public/hooks/reativacao-leads-perdidos'
+      preLoaderRoute: typeof ApiPublicHooksReativacaoLeadsPerdidosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -1174,6 +1195,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicLeadMensagemRoute: ApiPublicLeadMensagemRoute,
   ApiPublicOnesignalTestRoute: ApiPublicOnesignalTestRoute,
   ApiPublicWebhookRoute: ApiPublicWebhookRoute,
+  ApiPublicHooksReativacaoLeadsPerdidosRoute:
+    ApiPublicHooksReativacaoLeadsPerdidosRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
