@@ -20,6 +20,8 @@ import {
   updateCaptacaoTeamMeta,
   removeCaptacaoTeamPhoto,
 } from "@/lib/captacao.functions";
+import { exportSistemaZip } from "@/lib/export-sistema.functions";
+import { Download } from "lucide-react";
 
 type Resp = { id: string; canal: string; nome: string; whatsapp: string };
 type Mapping = {
@@ -101,6 +103,7 @@ function ConfigPage() {
           <VslCaptacaoSection />
           <TeamPhotosSection />
           <ReativacaoLeadsConfig />
+          <ExportSistemaSection />
           <SophiaToggle chave="sophia_executivos_acesso" titulo="Liberar Laura para Executivos" descricao="Quando ativado, executivos podem usar a assistente Laura." />
           <SophiaToggle chave="sophia_corretores_acesso" titulo="Liberar Laura para Corretores" descricao="Quando ativado, corretores podem usar a assistente Laura." />
         </TabsContent>
@@ -263,6 +266,59 @@ function ReativacaoLeadsConfig() {
           {saving ? "Salvando..." : "Salvar"}
         </Button>
       </div>
+    </div>
+  );
+}
+
+
+function ExportSistemaSection() {
+  const exportar = useServerFn(exportSistemaZip);
+  const [loading, setLoading] = useState(false);
+  const [ultimoResumo, setUltimoResumo] = useState<Record<string, number> | null>(null);
+
+  async function baixar() {
+    setLoading(true);
+    try {
+      const res = await exportar();
+      const bin = atob(res.base64);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      const blob = new Blob([bytes], { type: "application/zip" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = res.filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setUltimoResumo(res.resumo);
+      toast.success(`Exportação concluída (${(res.tamanho / 1024).toFixed(1)} KB)`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao exportar");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="rounded-lg border p-5 space-y-3">
+      <div>
+        <h3 className="font-semibold">📦 Exportação de dados do sistema</h3>
+        <p className="text-sm text-muted-foreground mt-1">
+          Gera um arquivo ZIP com CSVs de leads (captação e vendas), imóveis, contratos, financiamentos e candidatos. Apenas campos estruturados — documentos, fotos e URLs de storage <strong>não</strong> são incluídos. A ação fica registrada no log de auditoria.
+        </p>
+      </div>
+      <Button onClick={baixar} disabled={loading} className="gap-2">
+        <Download className="h-4 w-4" />
+        {loading ? "Gerando ZIP..." : "Exportar dados do sistema"}
+      </Button>
+      {ultimoResumo && (
+        <div className="text-xs text-muted-foreground border-t pt-3 mt-2">
+          <strong>Última exportação:</strong>{" "}
+          {Object.entries(ultimoResumo).map(([t, n]) => `${t}: ${n}`).join(" · ")}
+        </div>
+      )}
     </div>
   );
 }
