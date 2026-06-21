@@ -166,7 +166,17 @@ export const importImovelFromUrl = createServerFn({ method: "POST" })
 
     // ---------- IMAGES ----------
     const imgRegex = /https?:\/\/[^\s"'>]+\/upload\/imoveis\/[^\s"'>]+\.(?:jpe?g|png|webp)/gi;
-    const allImgs = Array.from(new Set(html.match(imgRegex) ?? []));
+    const rawImgs = Array.from(new Set(html.match(imgRegex) ?? []));
+    // Dedupe por nome de arquivo, preferindo URL direta (sem thumb.php)
+    const byBasename = new Map<string, string>();
+    for (const u of rawImgs) {
+      const fn = u.split("/").pop() ?? u;
+      const existing = byBasename.get(fn);
+      if (!existing || (existing.includes("thumb.php") && !u.includes("thumb.php"))) {
+        byBasename.set(fn, u);
+      }
+    }
+    const allImgs = Array.from(byBasename.values());
     const fotos = filterRelevantImages(allImgs, ogImage);
 
     // ---------- TEXTO BASE ----------
