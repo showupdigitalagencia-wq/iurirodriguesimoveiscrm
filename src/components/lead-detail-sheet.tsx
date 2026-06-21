@@ -586,6 +586,43 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
         defaultLeadId={leadId}
         onCreated={() => { reload(); }}
       />
+      <AlertDialog open={descredOpen} onOpenChange={(o) => { if (!descredLoading) setDescredOpen(o); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-red-700 dark:text-red-300">
+              <ShieldOff className="h-5 w-5" /> Descredenciar corretor?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação remove imediatamente todos os acessos de <strong>{lead?.nome}</strong> ao sistema.
+              {" "}Leads de vendas ativos serão sinalizados para reatribuição manual.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2">
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground">
+              Motivo do descredenciamento <span className="text-red-600">*</span>
+            </Label>
+            <Textarea
+              rows={4}
+              value={descredMotivo}
+              onChange={(e) => setDescredMotivo(e.target.value)}
+              placeholder="Ex.: Inatividade prolongada, quebra de contrato, conduta inadequada..."
+              maxLength={2000}
+              autoFocus
+            />
+            <div className="text-[11px] text-muted-foreground text-right">{descredMotivo.length}/2000</div>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={descredLoading}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); confirmDescredenciar(); }}
+              disabled={descredLoading || descredMotivo.trim().length < 3}
+              className="bg-red-700 text-white hover:bg-red-800"
+            >
+              {descredLoading ? "Descredenciando…" : "Descredenciar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Sheet>
   );
 }
