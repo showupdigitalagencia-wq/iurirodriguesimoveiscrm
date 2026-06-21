@@ -315,8 +315,11 @@ function SejaCorretorPage() {
         </div>
       </section>
 
-      <footer className="px-6 py-8 text-center text-xs text-white/40" style={{ background: "#0a0a0a" }}>
-        © Iuri Rodrigues Imóveis · Ecossistema Nexus
+      <footer className="px-6 py-8 text-center text-xs text-white/50 space-y-1" style={{ background: "#0a0a0a", borderTop: `1px solid ${GOLD}33` }}>
+        <div>© Iuri Rodrigues Imóveis · Ecossistema Nexus</div>
+        <div className="text-[11px] text-white/40">
+          Iuri Rodrigues Imóveis — <span style={{ color: GOLD }}>CRECI 11379J</span> — CNPJ 33.587.804/0001-98
+        </div>
       </footer>
     </div>
   );

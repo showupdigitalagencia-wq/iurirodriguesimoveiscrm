@@ -67,6 +67,9 @@ function AuthPage() {
             Acesso exclusivo. Novas contas são criadas apenas pelo Administrador.
           </p>
         </div>
+        <p className="mt-4 text-center text-[11px] text-muted-foreground/70">
+          CRECI 11379J | CNPJ 33.587.804/0001-98
+        </p>
       </div>
       <Toaster richColors position="top-right" />
     </main>
