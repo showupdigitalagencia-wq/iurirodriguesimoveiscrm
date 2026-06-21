@@ -294,23 +294,72 @@ function AdminDashboard() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-sm font-semibold text-muted-foreground">Portfólio de Imóveis</h2>
+        <span className={`inline-flex items-center gap-1.5 text-[11px] px-2 py-0.5 rounded-full border ${realtimeOn ? "border-emerald-500/40 text-emerald-600 bg-emerald-500/10" : "border-muted-foreground/30 text-muted-foreground"}`}>
+          <Radio className={`h-3 w-3 ${realtimeOn ? "animate-pulse" : ""}`} /> {realtimeOn ? "Tempo real" : "Conectando..."}
+        </span>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {cards.map((c) => {
           const Icon = c.icon;
           return (
             <Card key={c.label}>
               <CardContent className="p-4 flex items-center gap-3">
-                <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center">
+                <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center shrink-0">
                   <Icon className="h-5 w-5 text-gold" />
                 </div>
-                <div>
-                  <div className="text-xs text-muted-foreground">{c.label}</div>
+                <div className="min-w-0">
+                  <div className="text-xs text-muted-foreground truncate">{c.label}</div>
                   <div className="text-xl font-semibold">{c.value}</div>
+                  {c.sub && <div className="text-[10px] text-muted-foreground/70 truncate">{c.sub}</div>}
                 </div>
               </CardContent>
             </Card>
           );
         })}
+      </div>
+
+      {/* Distribuição do portfólio */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Building2 className="h-4 w-4 text-gold" /> Distribuição do portfólio
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {portfolioDist.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Sem imóveis cadastrados.</p>
+          ) : (
+            <div className="h-[280px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={portfolioDist} dataKey="value" nameKey="name" outerRadius={100} label={(e) => `${e.name}: ${e.value}`}>
+                    {portfolioDist.map((d) => <Cell key={d.name} fill={d.color} />)}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Contratos ativos — mantido como métrica auxiliar */}
+      <div className="grid grid-cols-2 md:grid-cols-1 gap-3">
+        <Card>
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center shrink-0">
+              <FileText className="h-5 w-5 text-gold" />
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">Contratos ativos</div>
+              <div className="text-xl font-semibold">{ativos}</div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid md:grid-cols-3 gap-3">
