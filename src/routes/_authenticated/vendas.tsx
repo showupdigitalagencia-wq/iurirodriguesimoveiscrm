@@ -38,6 +38,7 @@ const TABS = [
   { to: "/vendas/relatorios", label: "Relatórios", icon: BarChart3, exact: false },
   { to: "/vendas/funil", label: "Funil", icon: TrendingDown, exact: false },
   { to: "/vendas/tempo-resposta", label: "Resposta", icon: Clock, exact: false },
+  { to: "/vendas/metas", label: "Metas", icon: Target, exact: false },
   { to: "/notificacoes", label: "Notificações", icon: BellRing, exact: false },
 ] as const;
 
