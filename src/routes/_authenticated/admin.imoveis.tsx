@@ -11,12 +11,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Download, Loader2 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 import { DocumentosManager } from "@/components/admin/DocumentosManager";
 import { FotosManager, FotosThumbs } from "@/components/admin/FotosManager";
 import { ImoveisImportExport } from "@/components/admin/ImoveisImportExport";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { useServerFn } from "@tanstack/react-start";
+import { importImovelFromUrl } from "@/lib/imovel-import.functions";
 
 type Imovel = Database["public"]["Tables"]["imoveis"]["Row"];
 type ImovelInsert = Database["public"]["Tables"]["imoveis"]["Insert"];
