@@ -26,12 +26,12 @@ const SALES_COLORS = ["#d4af37", "#1f2937"];
 type Preset = "7d" | "15d" | "30d" | "60d" | "90d" | "custom";
 type Scope = "me" | "team" | "user" | "all";
 
-type CorretorRow = { id: string; nome: string; recebidos: number; atendidos: number; vendas: number; locacoes: number; fechados: number; receita: number; conversao: number };
-type EquipeRow = { id: string; nome: string; recebidos: number; atendidos: number; vendas: number; locacoes: number; fechados: number; receita: number; conversao: number };
+type CorretorRow = { id: string; nome: string; recebidos: number; atendidos: number; vendas: number; locacoes: number; fechados: number; fechados_sem_comissao?: number; receita: number; conversao: number };
+type EquipeRow = { id: string; nome: string; recebidos: number; atendidos: number; vendas: number; locacoes: number; fechados: number; fechados_sem_comissao?: number; receita: number; conversao: number };
 type PlantaoRow = { id: string; nome: string; recebidos: number; atendidos: number; redirecionados: number; reatribuicoes: number };
 type OrigemRow = { canal: string; qtd: number };
 type EvolRow = { dia: string; leads: number; fechados: number };
-type CompBlock = { vendas: number; locacoes: number; receita: number; total_leads: number; atendidos: number };
+type CompBlock = { vendas: number; locacoes: number; receita: number; total_leads: number; atendidos: number; fechados_sem_comissao?: number };
 
 type VisitasBlock = {
   total: number; realizadas: number; nao_compareceu: number;
