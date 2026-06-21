@@ -74,7 +74,7 @@ export const Route = createFileRoute("/api/public/webhook")({
         status: 200, headers: { "Content-Type": "application/json" },
       }),
 
-      POST: async ({ request }) => {
+      POST: async ({ request }) => withWebhookLog(request, async (request) => {
         let raw: unknown;
         try { raw = await request.json(); } catch {
           return new Response(JSON.stringify({ error: "JSON inválido" }), {
