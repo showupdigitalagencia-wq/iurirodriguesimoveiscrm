@@ -1,0 +1,1 @@
+ALTER TABLE public.plantao_escala ADD COLUMN IF NOT EXISTS notificado_em timestamptz;

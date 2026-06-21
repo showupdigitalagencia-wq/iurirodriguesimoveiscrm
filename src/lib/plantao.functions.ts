@@ -47,13 +47,58 @@ export const setPlantonista = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await ensureAdminOrExec(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    // upsert por data
+    // Detecta se já existia plantonista diferente para o mesmo dia (troca)
+    const { data: prevRaw } = await supabaseAdmin
+      .from("plantao_escala" as never)
+      .select("corretor_id")
+      .eq("data", data.data)
+      .maybeSingle();
+    const prev = prevRaw as { corretor_id: string } | null;
+    // upsert por data — zera `notificado_em` se trocou de corretor para que o aviso saia
+    const changed = !prev || prev.corretor_id !== data.corretor_id;
     const { error } = await supabaseAdmin
       .from("plantao_escala" as never)
-      .upsert({ data: data.data, corretor_id: data.corretor_id, criado_por: context.userId } as never, { onConflict: "data" });
+      .upsert({
+        data: data.data,
+        corretor_id: data.corretor_id,
+        criado_por: context.userId,
+        ...(changed ? { notificado_em: null } : {}),
+      } as never, { onConflict: "data" });
     if (error) throw new Error(error.message);
+
+    // Se a alteração afeta o DIA DE HOJE e o plantonista mudou, dispara push imediato
+    const nowBrt = new Date(Date.now() - 3 * 60 * 60 * 1000);
+    const hojeStr = `${nowBrt.getUTCFullYear()}-${String(nowBrt.getUTCMonth() + 1).padStart(2, "0")}-${String(nowBrt.getUTCDate()).padStart(2, "0")}`;
+    if (changed && data.data === hojeStr) {
+      try {
+        const { data: profRaw } = await supabaseAdmin
+          .from("profiles")
+          .select("nome, onesignal_external_id")
+          .eq("id", data.corretor_id)
+          .maybeSingle();
+        const prof = profRaw as { nome: string; onesignal_external_id: string | null } | null;
+        if (prof?.onesignal_external_id) {
+          const { sendOneSignalPush } = await import("@/lib/onesignal.server");
+          const primeiroNome = (prof.nome || "").trim().split(/\s+/)[0] || "Plantonista";
+          await sendOneSignalPush({
+            externalIds: [prof.onesignal_external_id],
+            title: "🔄 Você assumiu o plantão agora!",
+            message: `${primeiroNome}, você é o plantonista de hoje a partir de agora.`,
+            url: "https://sistemanexus.app/vendas",
+            data: { tipo: "plantao_troca_turno", data: hojeStr },
+          });
+          await supabaseAdmin
+            .from("plantao_escala" as never)
+            .update({ notificado_em: new Date().toISOString() } as never)
+            .eq("data", hojeStr);
+        }
+      } catch (e) {
+        console.warn("[plantao] push troca turno falhou", e);
+      }
+    }
     return { ok: true };
   });
+
 
 export const removerPlantonista = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -101,16 +146,24 @@ export const listCorretoresElegiveis = createServerFn({ method: "POST" })
 
 export const getPlantonistaHoje = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async () => {
+  .handler(async ({ context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const hoje = new Date().toISOString().slice(0, 10);
+    // Data "hoje" no fuso de Brasília (UTC-3)
+    const brt = new Date(Date.now() - 3 * 60 * 60 * 1000);
+    const hoje = `${brt.getUTCFullYear()}-${String(brt.getUTCMonth() + 1).padStart(2, "0")}-${String(brt.getUTCDate()).padStart(2, "0")}`;
     const { data: esc } = await supabaseAdmin
       .from("plantao_escala" as never).select("corretor_id").eq("data", hoje).maybeSingle();
     const corretorId = (esc as { corretor_id: string } | null)?.corretor_id ?? null;
-    if (!corretorId) return { data: hoje, corretor_id: null, corretor_nome: null };
+    if (!corretorId) return { data: hoje, corretor_id: null, corretor_nome: null, eu_sou: false };
     const { data: p } = await supabaseAdmin.from("profiles").select("nome").eq("id", corretorId).maybeSingle();
-    return { data: hoje, corretor_id: corretorId, corretor_nome: (p as { nome: string } | null)?.nome ?? null };
+    return {
+      data: hoje,
+      corretor_id: corretorId,
+      corretor_nome: (p as { nome: string } | null)?.nome ?? null,
+      eu_sou: corretorId === context.userId,
+    };
   });
+
 
 export const getMeusLeadsPlantao = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

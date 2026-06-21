@@ -4,8 +4,9 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { VENDAS_ETAPAS, formatBRL, type VendasLead } from "@/lib/vendas-helpers";
-import { TrendingUp, Users, CheckCircle2, XCircle, CalendarClock } from "lucide-react";
+import { TrendingUp, Users, CheckCircle2, XCircle, CalendarClock, BellRing } from "lucide-react";
 import { getPlantonistaHoje, getMeusLeadsPlantao } from "@/lib/plantao.functions";
+
 
 export const Route = createFileRoute("/_authenticated/vendas/")({
   component: VendasDashboard,
@@ -51,6 +52,21 @@ function VendasDashboard() {
 
   return (
     <div className="space-y-6">
+      {hojeQ.data?.eu_sou && (
+        <Link to="/vendas/plantao" className="block">
+          <div className="rounded-lg border-2 border-amber-400 bg-gradient-to-r from-amber-50 via-yellow-50 to-amber-50 dark:from-amber-950/40 dark:via-yellow-950/40 dark:to-amber-950/40 px-4 py-3 flex items-center gap-3 shadow-md ring-2 ring-amber-200/60 dark:ring-amber-800/60 animate-in fade-in">
+            <div className="h-10 w-10 rounded-full bg-amber-400 text-amber-950 flex items-center justify-center shrink-0">
+              <BellRing className="h-5 w-5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-base font-bold text-amber-900 dark:text-amber-100">🔔 Você está de plantão hoje</div>
+              <div className="text-xs text-amber-800/90 dark:text-amber-200/90">Os leads do dia (ZAP, OLX, Site, WhatsApp) serão atribuídos a você. Fique de olho!</div>
+            </div>
+          </div>
+        </Link>
+      )}
+
+
       <Link to="/vendas/plantao" className="block">
         <Card className="hover:bg-muted/30 transition-colors">
           <CardContent className="p-4 flex items-center gap-3">
