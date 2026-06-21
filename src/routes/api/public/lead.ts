@@ -35,7 +35,7 @@ const MAPA: Record<string, "denise" | "fabiola" | "renata" | "robson"> = {
 export const Route = createFileRoute("/api/public/lead")({
   server: {
     handlers: {
-      POST: async ({ request }) => {
+      POST: async ({ request }) => withWebhookLog(request, async (request) => {
         let body: unknown;
         try { body = await request.json(); } catch {
           return new Response(JSON.stringify({ error: "JSON inválido" }), { status: 400 });
