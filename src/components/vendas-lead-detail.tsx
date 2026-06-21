@@ -315,6 +315,8 @@ function AgendarVisitaInline({ lead, onDone }: { lead: VendasLead; onDone: () =>
 
   async function submit() {
     if (!endereco.trim()) { toast.error("Selecione um imóvel ou informe o endereço"); return; }
+    const { confirmNoGoogleConflict } = await import("@/lib/google-conflict");
+    if (!(await confirmNoGoogleConflict(new Date(dataInicio).toISOString(), duracao))) return;
     setSaving(true);
     try {
       await fn({ data: { lead_id: lead.id, endereco: endereco.trim(), imovel_id: imovelId || null, data_inicio: new Date(dataInicio).toISOString(), duracao_min: duracao, observacoes: observacoes.trim() || undefined } });
