@@ -361,8 +361,9 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
         return next;
       });
       toast.success(
-        `Dados importados${d.fotos.length ? ` — ${d.fotos.length} foto(s) anexada(s)` : ""}. Revise antes de salvar.`
+        `Dados importados${d.fotos.length ? ` — ${d.fotos.length} foto(s) baixada(s) e salva(s)` : ""}. Revise antes de salvar.`
       );
+      if (res.warning) toast.warning(res.warning);
     } catch (e) {
       console.error("[importImovel]", e);
       toast.error("Não consegui extrair os dados automaticamente — preencha manualmente.");
