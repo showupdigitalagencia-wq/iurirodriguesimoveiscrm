@@ -1281,6 +1281,7 @@ export type Database = {
         | "corretor_vendas"
         | "administrativo"
         | "correspondente_bancaria"
+        | "candidatos_viewer"
       candidato_status: "pendente_revisao" | "arquivado"
       financiamento_status: "pendente" | "em_analise" | "aprovado" | "recusado"
       lead_canal: "denise" | "fabiola" | "renata" | "robson" | "teste_nego"
@@ -1452,6 +1453,7 @@ export const Constants = {
         "corretor_vendas",
         "administrativo",
         "correspondente_bancaria",
+        "candidatos_viewer",
       ],
       candidato_status: ["pendente_revisao", "arquivado"],
       financiamento_status: ["pendente", "em_analise", "aprovado", "recusado"],
