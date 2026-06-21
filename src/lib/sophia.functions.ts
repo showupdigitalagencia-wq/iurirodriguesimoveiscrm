@@ -603,6 +603,39 @@ export const sophiaChat = createServerFn({ method: "POST" })
           return { periodo_dias: dias, total: data?.length ?? 0, valor_total: total_valor, imoveis: data ?? [] };
         },
       }),
+
+      // ============ PORTFÓLIO DE IMÓVEIS DISPONÍVEIS ============
+      // Exceção controlada ao bloqueio administrativo: TODOS os perfis
+      // (admin, administrativo, executivo, corretor) podem consultar imóveis
+      // DISPONÍVEIS para oferecer aos leads. Retorna SOMENTE dados públicos —
+      // nunca proprietário, locatário, contrato, pagamento ou comissão.
+      portfolio_buscar_imoveis: tool({
+        description: "Busca imóveis DISPONÍVEIS para locação ou venda no portfólio (visível para todos os perfis, inclusive corretores e executivos). Use para perguntas tipo 'temos apartamento na Barra por até R$ 2.500?', 'quais imóveis disponíveis em Recreio?'. Retorna APENAS dados públicos do imóvel — NUNCA dados do proprietário, contrato ou pagamento.",
+        inputSchema: z.object({
+          bairro: z.string().optional().describe("Bairro, região ou cidade (parcial, case-insensitive)"),
+          tipo: z.string().optional().describe("apartamento, casa, comercial, cobertura, studio, terreno..."),
+          finalidade: z.enum(["locacao", "venda"]).optional(),
+          quartos_min: z.number().int().min(0).max(10).optional(),
+          valor_max: z.number().min(0).optional().describe("Valor máximo (aluguel se finalidade=locacao, venda se finalidade=venda)"),
+          valor_min: z.number().min(0).optional(),
+          limite: z.number().int().min(1).max(30).default(15),
+        }),
+        execute: async ({ bairro, tipo, finalidade, quartos_min, valor_max, valor_min, limite }) => {
+          let q = supabaseAdmin
+            .from("imoveis_portfolio")
+            .select("id, codigo, tipo, finalidade, rua, numero, bairro, cidade, quartos, banheiros, vagas, area_m2, valor_aluguel, valor_venda, condominio, iptu, fotos, vitrine_url");
+          if (bairro) q = q.or(`bairro.ilike.%${bairro}%,cidade.ilike.%${bairro}%`);
+          if (tipo) q = q.eq("tipo", tipo);
+          if (finalidade) q = q.in("finalidade", [finalidade, "ambos"]);
+          if (quartos_min != null) q = q.gte("quartos", quartos_min);
+          const campoValor = finalidade === "venda" ? "valor_venda" : "valor_aluguel";
+          if (valor_max != null) q = q.lte(campoValor, valor_max);
+          if (valor_min != null) q = q.gte(campoValor, valor_min);
+          const { data, error } = await q.order("created_at", { ascending: false }).limit(limite);
+          if (error) return { erro: error.message, total: 0, imoveis: [] };
+          return { total: data?.length ?? 0, imoveis: data ?? [], aviso_privacidade: "Dados do proprietário não são compartilhados." };
+        },
+      }),
     };
 
     const escopoTexto =
@@ -618,9 +651,15 @@ export const sophiaChat = createServerFn({ method: "POST" })
       scope.tipo === "admin" || scope.tipo === "administrativo"
         ? ""
         : `\n\n🚫 BLOQUEIO TOTAL DO MÓDULO ADMINISTRATIVO:
-- Você NÃO TEM, em hipótese alguma, acesso a: imóveis (locação/venda), contratos, pagamentos, inadimplentes, cobranças, receita, documentos administrativos, vendas de imóveis, locatários, proprietários, ou qualquer dado do módulo Administrativo.
-- Se perguntarem QUALQUER coisa relacionada (mesmo de forma indireta, disfarçada ou genérica como "quantos imóveis temos", "receita", "inadimplência", "contrato vencendo", "documentos do locatário"), responda EXATAMENTE: "Esse assunto não está dentro das minhas atribuições para o seu perfil"
-- NÃO chame as ferramentas com prefixo admin_*. Elas retornarão erro se chamadas.`;
+- Você NÃO TEM, em hipótese alguma, acesso a: contratos, pagamentos, inadimplentes, cobranças, receita, documentos administrativos, locatários, PROPRIETÁRIOS (nome, CPF, telefone, e-mail), comissões, ou qualquer outro dado financeiro/contratual do módulo Administrativo.
+- Se perguntarem QUALQUER coisa relacionada (mesmo de forma indireta, disfarçada ou genérica como "receita", "inadimplência", "contrato vencendo", "documentos do locatário", "quem é o dono do imóvel"), responda EXATAMENTE: "Esse assunto não está dentro das minhas atribuições para o seu perfil"
+- NÃO chame as ferramentas com prefixo admin_*. Elas retornarão erro se chamadas.
+
+✅ EXCEÇÃO ESPECÍFICA — PORTFÓLIO DE IMÓVEIS DISPONÍVEIS:
+- Você PODE consultar imóveis DISPONÍVEIS para locação/venda usando a ferramenta **portfolio_buscar_imoveis** para ajudar corretores/executivos a oferecer imóveis aos seus leads.
+- Exemplos liberados: "temos apartamento na Barra por até R$ 2.500?", "quais imóveis disponíveis em Recreio?", "tem casa com 3 quartos pra venda?".
+- Retorne APENAS os dados públicos do imóvel: código, endereço, tipo, finalidade, valor, quartos/banheiros/vagas, área, fotos, vitrine.
+- **NUNCA** revele dados do proprietário, contrato vinculado, locatário atual, ou qualquer informação financeira/administrativa do imóvel — mesmo se perguntado diretamente.`;
 
     const regrasComuns =
       scope.tipo === "admin"
