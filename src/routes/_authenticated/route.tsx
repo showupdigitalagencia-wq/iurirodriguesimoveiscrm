@@ -76,6 +76,9 @@ const CORRESPONDENTE_ALLOWED_PREFIXES = ["/correspondente", "/notificacoes", "/c
 
 function AuthLayout() {
   const router = useRouter();
+  const [rolesLoaded, setRolesLoaded] = useState(false);
+  const [hasNoRole, setHasNoRole] = useState(false);
+  const [userEmail, setUserEmail] = useState<string>("");
   const [isAdmin, setIsAdmin] = useState(false);
   const [isCorretorVendas, setIsCorretorVendas] = useState(false);
   const [isAdministrativo, setIsAdministrativo] = useState(false);
@@ -137,6 +140,7 @@ function AuthLayout() {
     supabase.auth.getUser().then(({ data: userData }) => {
       const userId = userData.user?.id;
       if (!userId) return;
+      setUserEmail(userData.user?.email ?? "");
       startUserSession(userId);
       supabase
         .from("user_roles")
@@ -149,6 +153,8 @@ function AuthLayout() {
           setIsCorretorVendas(roles.includes("corretor_vendas"));
           setIsAdministrativo(roles.includes("administrativo"));
           setIsCorrespondente(roles.includes("correspondente_bancaria"));
+          setHasNoRole(roles.length === 0);
+          setRolesLoaded(true);
         });
       supabase.from("configuracoes").select("valor").eq("chave", "sistema_corretores_ativo").maybeSingle()
         .then(({ data }) => { if (active) setVendasAtivo(data?.valor === true); });
@@ -202,6 +208,27 @@ function AuthLayout() {
   const mobileTopItems = isCorretorVendas && !isAdmin
     ? MOBILE_TOP_ICONS.filter((item) => item.to !== "/configuracoes")
     : MOBILE_TOP_ICONS;
+
+  if (rolesLoaded && hasNoRole) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-6">
+        <div className="max-w-md w-full text-center bg-sidebar text-sidebar-foreground rounded-lg p-8 border border-sidebar-border">
+          <div className="text-[10px] uppercase tracking-[0.3em] text-sidebar-foreground/60">Iuri Rodrigues Imóveis</div>
+          <div className="text-xl font-bold text-gold mt-0.5 mb-6">Sistema NEXUS</div>
+          <h1 className="text-lg font-semibold mb-2">Aguardando liberação de acesso</h1>
+          <p className="text-sm text-sidebar-foreground/80 mb-2">
+            Sua conta <span className="text-gold">{userEmail}</span> foi criada com sucesso.
+          </p>
+          <p className="text-sm text-sidebar-foreground/70 mb-6">
+            Um administrador precisa atribuir seu perfil de acesso antes que você possa usar o sistema. Você receberá acesso em breve.
+          </p>
+          <Button onClick={logout} variant="ghost" size="sm" className="text-sidebar-foreground hover:bg-sidebar-accent">
+            <LogOut className="h-4 w-4 mr-2" /> Sair
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex bg-background">
