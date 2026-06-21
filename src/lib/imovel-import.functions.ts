@@ -324,13 +324,9 @@ export const importImovelFromUrl = createServerFn({ method: "POST" })
       }
     }
     const allImgs = Array.from(byBasename.values());
-    // Quando há pasta por imóvel no CDN, agrupa por ela; caso contrário, cai no
-    // filtro antigo pelo prefixo do og:image.
-    const grouped = groupByImovelFolder(allImgs);
-    const remoteFotos =
-      grouped.length && grouped.length !== allImgs.length
-        ? grouped
-        : filterRelevantImages(allImgs, ogImage);
+    // Combina as fotos do CDN agrupadas por pasta do imóvel com as fotos diretas
+    // do domínio da imobiliária que pertencem ao mesmo anúncio.
+    const remoteFotos = selectRelevantImages(allImgs, ogImage);
 
 
     // Baixa cada imagem e grava no bucket privado "imoveis-fotos".
@@ -342,14 +338,17 @@ export const importImovelFromUrl = createServerFn({ method: "POST" })
 
     for (const imgUrl of remoteFotos) {
       try {
-        const imgRes = await fetch(imgUrl, {
+        const startedAt = Date.now();
+        const imgRes = await fetchWithTimeout(imgUrl, {
           headers: {
             "User-Agent":
               "Mozilla/5.0 (compatible; NexusBot/1.0; +https://sistemanexus.app)",
             Referer: url,
           },
-        });
-        if (!imgRes.ok) throw new Error(`HTTP ${imgRes.status}`);
+        }, 20_000);
+        if (!imgRes.ok) {
+          throw new Error(`download HTTP ${imgRes.status} ${imgRes.statusText}`);
+        }
         const contentType =
           imgRes.headers.get("content-type")?.split(";")[0]?.trim() || "image/jpeg";
         const bytes = new Uint8Array(await imgRes.arrayBuffer());
@@ -371,9 +370,20 @@ export const importImovelFromUrl = createServerFn({ method: "POST" })
           .from("imoveis-fotos")
           .upload(path, bytes, { contentType, upsert: false });
         if (upErr) throw upErr;
+        console.info("[importImovel] foto salva", {
+          sourceUrl: imgUrl,
+          path,
+          status: imgRes.status,
+          contentType,
+          bytes: bytes.byteLength,
+          ms: Date.now() - startedAt,
+        });
         fotos.push(path);
       } catch (err) {
-        console.warn("[importImovel] falha ao baixar foto", imgUrl, err);
+        console.warn("[importImovel] falha ao baixar/salvar foto", {
+          sourceUrl: imgUrl,
+          error: describeError(err),
+        });
         downloadFailures++;
         // fallback: mantém a URL remota para não perder a referência visual
         fotos.push(imgUrl);
