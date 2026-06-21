@@ -223,32 +223,37 @@ function ImoveisPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center gap-3 flex-wrap">
+      <div className="grid grid-cols-1 gap-3 md:flex md:justify-between md:items-center md:flex-wrap">
         <div className="text-sm text-muted-foreground">{filtered.length} imóve{filtered.length === 1 ? "l" : "is"}</div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="grid grid-cols-1 gap-2 sm:flex sm:items-center sm:gap-2 sm:flex-wrap">
           <Input
             placeholder="Buscar por locatário ou proprietário..."
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
-            className="h-9 w-[260px]"
+            className="h-10 w-full sm:w-[260px]"
           />
-          <Label className="text-xs text-muted-foreground">Finalidade:</Label>
-          <Select value={finalidadeFiltro} onValueChange={(v) => setFinalidadeFiltro(v as never)}>
-            <SelectTrigger className="h-9 w-[180px]"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="todos">Todas</SelectItem>
-              <SelectItem value="locacao">Locação</SelectItem>
-              <SelectItem value="venda">Venda</SelectItem>
-              <SelectItem value="ambos">Locação e Venda</SelectItem>
-            </SelectContent>
-          </Select>
-          <ImoveisImportExport
-            imoveis={filtered as unknown as Record<string, unknown>[]}
-            onImported={() => qc.invalidateQueries({ queryKey: ["imoveis"] })}
-          />
-          <Button onClick={openNew}><Plus className="h-4 w-4 mr-1" /> Novo Imóvel</Button>
+          <div className="flex items-center gap-2">
+            <Label className="text-xs text-muted-foreground shrink-0">Finalidade:</Label>
+            <Select value={finalidadeFiltro} onValueChange={(v) => setFinalidadeFiltro(v as never)}>
+              <SelectTrigger className="h-10 w-full sm:w-[180px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todas</SelectItem>
+                <SelectItem value="locacao">Locação</SelectItem>
+                <SelectItem value="venda">Venda</SelectItem>
+                <SelectItem value="ambos">Locação e Venda</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex gap-2">
+            <ImoveisImportExport
+              imoveis={filtered as unknown as Record<string, unknown>[]}
+              onImported={() => qc.invalidateQueries({ queryKey: ["imoveis"] })}
+            />
+            <Button onClick={openNew} className="flex-1 sm:flex-none"><Plus className="h-4 w-4 mr-1" /> Novo Imóvel</Button>
+          </div>
         </div>
       </div>
+
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as never)}>
         <TabsList>
@@ -401,7 +406,7 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
 
   return (
     <Dialog open={open} onOpenChange={(v) => { onOpenChange(v); if (!v) setForm({}); }}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-3xl sm:max-h-[90vh]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {imovel ? "Editar Imóvel" : "Novo Imóvel"}
