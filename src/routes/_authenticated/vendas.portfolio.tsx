@@ -16,6 +16,9 @@ import type { Database } from "@/integrations/supabase/types";
 type Imovel = Database["public"]["Views"]["imoveis_portfolio"]["Row"];
 
 export const Route = createFileRoute("/_authenticated/vendas/portfolio")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    finalidade: (search.finalidade as string) ?? undefined,
+  }),
   component: PortfolioPage,
 });
 
@@ -47,9 +50,12 @@ function formatBRL(v: number | null | undefined) {
 }
 
 function PortfolioPage() {
+  const search = Route.useSearch();
   const [bairro, setBairro] = useState("");
   const [tipo, setTipo] = useState<string>("todos");
-  const [finalidade, setFinalidade] = useState<string>("todos");
+  const [finalidade, setFinalidade] = useState<string>(
+    search.finalidade === "venda" || search.finalidade === "locacao" ? search.finalidade : "todos",
+  );
   const [valorMin, setValorMin] = useState("");
   const [valorMax, setValorMax] = useState("");
   const [quartos, setQuartos] = useState<string>("todos");
