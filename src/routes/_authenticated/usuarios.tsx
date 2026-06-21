@@ -319,12 +319,12 @@ function UsuariosPage() {
                   </div>
                 </td>
                 <td className="px-4 py-3">
-                  {u.role === "corretor_vendas" ? (
-                    <div className="flex items-center gap-2">
-                      <Switch checked={u.vendas_acesso} onCheckedChange={() => toggleVendasAcesso(u)} />
-                      <span className="text-xs text-muted-foreground">{u.vendas_acesso ? "Liberado" : "Bloqueado"}</span>
-                    </div>
-                  ) : <span className="text-xs text-muted-foreground">—</span>}
+                  <div className="flex items-center gap-2">
+                    <Switch checked={u.vendas_acesso} onCheckedChange={() => toggleVendasAcesso(u)} />
+                    {u.vendas_acesso
+                      ? <Badge variant="secondary" className="gap-1"><ShieldCheck className="h-3 w-3" /> Liberado</Badge>
+                      : <Badge variant="outline" className="gap-1 text-muted-foreground"><ShieldOff className="h-3 w-3" /> Bloqueado</Badge>}
+                  </div>
                 </td>
                 <td className="px-4 py-3 text-right">
                   <Button size="sm" variant="ghost" onClick={() => setResetting(u)} title="Redefinir senha">
