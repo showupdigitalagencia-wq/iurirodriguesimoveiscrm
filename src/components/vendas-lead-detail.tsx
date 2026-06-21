@@ -35,6 +35,7 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
   const qc = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [savingEtapa, setSavingEtapa] = useState(false);
+  const [fecharOpen, setFecharOpen] = useState(false);
   const [form, setForm] = useState<Partial<VendasLead>>({});
 
   const { data: lead, refetch } = useQuery({
