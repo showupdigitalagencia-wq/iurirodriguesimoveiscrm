@@ -31,11 +31,12 @@ export const listVisitas = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("vendas_visitas" as never)
-      .select("id, lead_id, corretor_id, endereco, data_inicio, duracao_min, observacoes, google_event_id, status, vendas_leads(nome, telefone)")
+      .select("id, lead_id, corretor_id, endereco, imovel_id, data_inicio, duracao_min, observacoes, google_event_id, status, vendas_leads(nome, telefone)")
       .order("data_inicio", { ascending: true });
     if (error) throw new Error(error.message);
     return { items: (data ?? []) as unknown as (VisitaRow & { vendas_leads: { nome: string; telefone: string } | null })[] };
   });
+
 
 export const listReunioesCorretor = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
