@@ -219,11 +219,24 @@ function AdminDashboard() {
   const [tab, setTab] = useState<"equipe" | "corretor">("equipe");
 
   const cards = [
-    { label: "Imóveis", value: totalImoveis, icon: Building2 },
-    { label: "Disponíveis", value: disponiveis, icon: CheckCircle2 },
-    { label: "Locados", value: locados, icon: Building2 },
-    { label: "Contratos ativos", value: ativos, icon: FileText },
+    { label: "Total de imóveis", value: totalImoveis, icon: Building2, sub: "Cadastrados (inclui importados)" },
+    { label: "Disp. Locação", value: disponiveisLocacao, icon: Home, sub: "Snapshot atual" },
+    { label: "Disp. Venda", value: disponiveisVenda, icon: Tag, sub: "Snapshot atual" },
+    { label: "Locados (período)", value: locadosPer.length, icon: CheckCircle2, sub: `${days} dias` },
+    { label: "Vendidos (período)", value: vendidosPer.length, icon: Building2, sub: `${days} dias` },
+    { label: "Em manutenção", value: emManutencao, icon: Wrench, sub: "Snapshot atual" },
   ];
+
+  // Distribuição do portfólio (snapshot — para o gráfico)
+  const outros = totalImoveis - (disponiveisLocacao + disponiveisVenda + locados + vendidosTotal + emManutencao);
+  const portfolioDist = [
+    { name: "Disp. Locação", value: disponiveisLocacao, color: "#c9a35b" },
+    { name: "Disp. Venda", value: disponiveisVenda, color: "#a8893f" },
+    { name: "Locados", value: locados, color: "#10b981" },
+    { name: "Vendidos", value: vendidosTotal, color: "#3b82f6" },
+    { name: "Manutenção", value: emManutencao, color: "#f59e0b" },
+    ...(outros > 0 ? [{ name: "Outros", value: outros, color: "#6b7280" }] : []),
+  ].filter((d) => d.value > 0);
 
   // Gráfico — buckets ao longo do período
   const buckets = Math.min(12, Math.max(4, Math.ceil(days / 7)));
