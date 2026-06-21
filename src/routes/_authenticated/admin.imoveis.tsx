@@ -469,16 +469,38 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
             )}
           </DialogTitle>
         </DialogHeader>
-        {(
-          <div className="grid gap-1 max-w-xs">
-            <Label>Código do Imóvel {imovel ? "" : "(gerado automaticamente — pode editar)"}</Label>
-            <Input
-              value={(form as { codigo?: string }).codigo ?? ""}
-              onChange={(e) => set("codigo" as never, e.target.value as never)}
-              placeholder="IM-0001"
-            />
+        {!imovel && (
+          <div className="rounded-md border bg-muted/40 p-3 space-y-2">
+            <Label className="text-sm font-semibold flex items-center gap-2">
+              <Download className="h-4 w-4" /> Importar do site (Voa Corretor)
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              Cole a URL pública do imóvel (ex.: https://www.iurirodriguesimoveis.com.br/imovel/.../AP0021)
+              e clique em <strong>Buscar dados</strong>. Os campos serão preenchidos automaticamente — revise antes de salvar.
+            </p>
+            <div className="flex gap-2">
+              <Input
+                type="url"
+                placeholder="https://www.iurirodriguesimoveis.com.br/imovel/..."
+                value={importUrl}
+                onChange={(e) => setImportUrl(e.target.value)}
+                disabled={importing}
+              />
+              <Button type="button" onClick={handleImport} disabled={importing || !importUrl.trim()}>
+                {importing ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Download className="h-4 w-4 mr-1" />}
+                {importing ? "Buscando..." : "Buscar dados"}
+              </Button>
+            </div>
           </div>
         )}
+        <div className="grid gap-1 max-w-xs">
+          <Label>Código do Imóvel {imovel ? "" : "(gerado automaticamente — pode editar)"}</Label>
+          <Input
+            value={(form as { codigo?: string }).codigo ?? ""}
+            onChange={(e) => set("codigo" as never, e.target.value as never)}
+            placeholder="IM-0001"
+          />
+        </div>
 
         <div className="grid gap-4 md:grid-cols-2">
           <div>
