@@ -16,6 +16,9 @@ import type { Database } from "@/integrations/supabase/types";
 type Imovel = Database["public"]["Views"]["imoveis_portfolio"]["Row"];
 
 export const Route = createFileRoute("/_authenticated/vendas/portfolio")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    finalidade: (search.finalidade as string) ?? undefined,
+  }),
   component: PortfolioPage,
 });
 
