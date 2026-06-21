@@ -146,16 +146,24 @@ export const listCorretoresElegiveis = createServerFn({ method: "POST" })
 
 export const getPlantonistaHoje = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async () => {
+  .handler(async ({ context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const hoje = new Date().toISOString().slice(0, 10);
+    // Data "hoje" no fuso de Brasília (UTC-3)
+    const brt = new Date(Date.now() - 3 * 60 * 60 * 1000);
+    const hoje = `${brt.getUTCFullYear()}-${String(brt.getUTCMonth() + 1).padStart(2, "0")}-${String(brt.getUTCDate()).padStart(2, "0")}`;
     const { data: esc } = await supabaseAdmin
       .from("plantao_escala" as never).select("corretor_id").eq("data", hoje).maybeSingle();
     const corretorId = (esc as { corretor_id: string } | null)?.corretor_id ?? null;
-    if (!corretorId) return { data: hoje, corretor_id: null, corretor_nome: null };
+    if (!corretorId) return { data: hoje, corretor_id: null, corretor_nome: null, eu_sou: false };
     const { data: p } = await supabaseAdmin.from("profiles").select("nome").eq("id", corretorId).maybeSingle();
-    return { data: hoje, corretor_id: corretorId, corretor_nome: (p as { nome: string } | null)?.nome ?? null };
+    return {
+      data: hoje,
+      corretor_id: corretorId,
+      corretor_nome: (p as { nome: string } | null)?.nome ?? null,
+      eu_sou: corretorId === context.userId,
+    };
   });
+
 
 export const getMeusLeadsPlantao = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
