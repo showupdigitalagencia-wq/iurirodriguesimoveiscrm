@@ -28,6 +28,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedCorretoresRouteImport } from './routes/_authenticated/corretores'
 import { Route as AuthenticatedCorrespondenteRouteImport } from './routes/_authenticated/correspondente'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
+import { Route as AuthenticatedCaptacaoLinksRouteImport } from './routes/_authenticated/captacao-links'
 import { Route as AuthenticatedAgendaRouteImport } from './routes/_authenticated/agenda'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedVendasIndexRouteImport } from './routes/_authenticated/vendas.index'
@@ -149,6 +150,12 @@ const AuthenticatedConfiguracoesRoute =
   AuthenticatedConfiguracoesRouteImport.update({
     id: '/configuracoes',
     path: '/configuracoes',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedCaptacaoLinksRoute =
+  AuthenticatedCaptacaoLinksRouteImport.update({
+    id: '/captacao-links',
+    path: '/captacao-links',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAgendaRoute = AuthenticatedAgendaRouteImport.update({
@@ -298,6 +305,7 @@ export interface FileRoutesByFullPath {
   '/seja-corretor': typeof SejaCorretorRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/agenda': typeof AuthenticatedAgendaRoute
+  '/captacao-links': typeof AuthenticatedCaptacaoLinksRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/correspondente': typeof AuthenticatedCorrespondenteRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
@@ -341,6 +349,7 @@ export interface FileRoutesByTo {
   '/formulario': typeof FormularioRoute
   '/seja-corretor': typeof SejaCorretorRoute
   '/agenda': typeof AuthenticatedAgendaRoute
+  '/captacao-links': typeof AuthenticatedCaptacaoLinksRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/correspondente': typeof AuthenticatedCorrespondenteRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
@@ -385,6 +394,7 @@ export interface FileRoutesById {
   '/seja-corretor': typeof SejaCorretorRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/agenda': typeof AuthenticatedAgendaRoute
+  '/_authenticated/captacao-links': typeof AuthenticatedCaptacaoLinksRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/_authenticated/correspondente': typeof AuthenticatedCorrespondenteRoute
   '/_authenticated/corretores': typeof AuthenticatedCorretoresRoute
@@ -431,6 +441,7 @@ export interface FileRouteTypes {
     | '/seja-corretor'
     | '/admin'
     | '/agenda'
+    | '/captacao-links'
     | '/configuracoes'
     | '/correspondente'
     | '/corretores'
@@ -474,6 +485,7 @@ export interface FileRouteTypes {
     | '/formulario'
     | '/seja-corretor'
     | '/agenda'
+    | '/captacao-links'
     | '/configuracoes'
     | '/correspondente'
     | '/corretores'
@@ -517,6 +529,7 @@ export interface FileRouteTypes {
     | '/seja-corretor'
     | '/_authenticated/admin'
     | '/_authenticated/agenda'
+    | '/_authenticated/captacao-links'
     | '/_authenticated/configuracoes'
     | '/_authenticated/correspondente'
     | '/_authenticated/corretores'
@@ -704,6 +717,13 @@ declare module '@tanstack/react-router' {
       path: '/configuracoes'
       fullPath: '/configuracoes'
       preLoaderRoute: typeof AuthenticatedConfiguracoesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/captacao-links': {
+      id: '/_authenticated/captacao-links'
+      path: '/captacao-links'
+      fullPath: '/captacao-links'
+      preLoaderRoute: typeof AuthenticatedCaptacaoLinksRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/agenda': {
@@ -948,6 +968,7 @@ const AuthenticatedVendasRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedAgendaRoute: typeof AuthenticatedAgendaRoute
+  AuthenticatedCaptacaoLinksRoute: typeof AuthenticatedCaptacaoLinksRoute
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
   AuthenticatedCorrespondenteRoute: typeof AuthenticatedCorrespondenteRoute
   AuthenticatedCorretoresRoute: typeof AuthenticatedCorretoresRoute
@@ -965,6 +986,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedAgendaRoute: AuthenticatedAgendaRoute,
+  AuthenticatedCaptacaoLinksRoute: AuthenticatedCaptacaoLinksRoute,
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
   AuthenticatedCorrespondenteRoute: AuthenticatedCorrespondenteRoute,
   AuthenticatedCorretoresRoute: AuthenticatedCorretoresRoute,
