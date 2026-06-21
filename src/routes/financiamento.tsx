@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 import { Loader2, Upload } from "lucide-react";
 
 const searchSchema = z.object({
@@ -134,6 +135,7 @@ function FinanciamentoPage() {
   if (done) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6" style={{ background: "#0a0a0a", color: "white" }}>
+        <Toaster richColors position="top-center" />
         <div className="max-w-lg text-center space-y-6">
           <div className="text-6xl">🎉</div>
           <h1 className="text-3xl md:text-4xl" style={{ fontFamily: "var(--font-display)", color: GOLD }}>
@@ -151,6 +153,7 @@ function FinanciamentoPage() {
 
   return (
     <div className="min-h-screen" style={{ background: "#0a0a0a", color: "white", fontFamily: "var(--font-sans)" }}>
+      <Toaster richColors position="top-center" />
       <section className="px-6 pt-12 pb-10 md:pt-16 md:pb-12" style={{ background: "#0a0a0a" }}>
         <div className="max-w-3xl mx-auto text-center space-y-6">
           <img src={LOGO_URL} alt="Iuri Rodrigues Imóveis" className="w-full max-w-[160px] md:max-w-[200px] mx-auto object-contain" style={{ mixBlendMode: "screen" }} />
