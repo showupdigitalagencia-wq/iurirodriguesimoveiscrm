@@ -68,6 +68,7 @@ import { Route as AuthenticatedAdminCandidatosRouteImport } from './routes/_auth
 import { Route as AuthenticatedAdminAuditoriaRouteImport } from './routes/_authenticated/admin.auditoria'
 import { Route as ApiPublicHooksZapiIncomingRouteImport } from './routes/api/public/hooks/zapi-incoming'
 import { Route as ApiPublicHooksReativacaoLeadsPerdidosRouteImport } from './routes/api/public/hooks/reativacao-leads-perdidos'
+import { Route as ApiPublicHooksBackupSemanalRouteImport } from './routes/api/public/hooks/backup-semanal'
 
 const SejaCorretorRoute = SejaCorretorRouteImport.update({
   id: '/seja-corretor',
@@ -399,6 +400,12 @@ const ApiPublicHooksReativacaoLeadsPerdidosRoute =
     path: '/api/public/hooks/reativacao-leads-perdidos',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksBackupSemanalRoute =
+  ApiPublicHooksBackupSemanalRouteImport.update({
+    id: '/api/public/hooks/backup-semanal',
+    path: '/api/public/hooks/backup-semanal',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -457,6 +464,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/executivos/': typeof AuthenticatedExecutivosIndexRoute
   '/vendas/': typeof AuthenticatedVendasIndexRoute
+  '/api/public/hooks/backup-semanal': typeof ApiPublicHooksBackupSemanalRoute
   '/api/public/hooks/reativacao-leads-perdidos': typeof ApiPublicHooksReativacaoLeadsPerdidosRoute
   '/api/public/hooks/zapi-incoming': typeof ApiPublicHooksZapiIncomingRoute
 }
@@ -514,6 +522,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/executivos': typeof AuthenticatedExecutivosIndexRoute
   '/vendas': typeof AuthenticatedVendasIndexRoute
+  '/api/public/hooks/backup-semanal': typeof ApiPublicHooksBackupSemanalRoute
   '/api/public/hooks/reativacao-leads-perdidos': typeof ApiPublicHooksReativacaoLeadsPerdidosRoute
   '/api/public/hooks/zapi-incoming': typeof ApiPublicHooksZapiIncomingRoute
 }
@@ -576,6 +585,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/executivos/': typeof AuthenticatedExecutivosIndexRoute
   '/_authenticated/vendas/': typeof AuthenticatedVendasIndexRoute
+  '/api/public/hooks/backup-semanal': typeof ApiPublicHooksBackupSemanalRoute
   '/api/public/hooks/reativacao-leads-perdidos': typeof ApiPublicHooksReativacaoLeadsPerdidosRoute
   '/api/public/hooks/zapi-incoming': typeof ApiPublicHooksZapiIncomingRoute
 }
@@ -638,6 +648,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/executivos/'
     | '/vendas/'
+    | '/api/public/hooks/backup-semanal'
     | '/api/public/hooks/reativacao-leads-perdidos'
     | '/api/public/hooks/zapi-incoming'
   fileRoutesByTo: FileRoutesByTo
@@ -695,6 +706,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/executivos'
     | '/vendas'
+    | '/api/public/hooks/backup-semanal'
     | '/api/public/hooks/reativacao-leads-perdidos'
     | '/api/public/hooks/zapi-incoming'
   id:
@@ -756,6 +768,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/'
     | '/_authenticated/executivos/'
     | '/_authenticated/vendas/'
+    | '/api/public/hooks/backup-semanal'
     | '/api/public/hooks/reativacao-leads-perdidos'
     | '/api/public/hooks/zapi-incoming'
   fileRoutesById: FileRoutesById
@@ -778,6 +791,7 @@ export interface RootRouteChildren {
   ApiPublicLeadMensagemRoute: typeof ApiPublicLeadMensagemRoute
   ApiPublicOnesignalTestRoute: typeof ApiPublicOnesignalTestRoute
   ApiPublicWebhookRoute: typeof ApiPublicWebhookRoute
+  ApiPublicHooksBackupSemanalRoute: typeof ApiPublicHooksBackupSemanalRoute
   ApiPublicHooksReativacaoLeadsPerdidosRoute: typeof ApiPublicHooksReativacaoLeadsPerdidosRoute
   ApiPublicHooksZapiIncomingRoute: typeof ApiPublicHooksZapiIncomingRoute
 }
@@ -1197,6 +1211,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksReativacaoLeadsPerdidosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/backup-semanal': {
+      id: '/api/public/hooks/backup-semanal'
+      path: '/api/public/hooks/backup-semanal'
+      fullPath: '/api/public/hooks/backup-semanal'
+      preLoaderRoute: typeof ApiPublicHooksBackupSemanalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -1348,6 +1369,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicLeadMensagemRoute: ApiPublicLeadMensagemRoute,
   ApiPublicOnesignalTestRoute: ApiPublicOnesignalTestRoute,
   ApiPublicWebhookRoute: ApiPublicWebhookRoute,
+  ApiPublicHooksBackupSemanalRoute: ApiPublicHooksBackupSemanalRoute,
   ApiPublicHooksReativacaoLeadsPerdidosRoute:
     ApiPublicHooksReativacaoLeadsPerdidosRoute,
   ApiPublicHooksZapiIncomingRoute: ApiPublicHooksZapiIncomingRoute,
