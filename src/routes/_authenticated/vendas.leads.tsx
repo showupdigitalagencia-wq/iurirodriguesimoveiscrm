@@ -453,7 +453,7 @@ function CreateVendasLeadDialog({ onCreated }: { onCreated: () => void }) {
               <Select value={form.etapa} onValueChange={(v) => setForm({ ...form, etapa: v as VendasEtapa })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {VENDAS_ETAPAS.map((e) => (
+                  {VENDAS_ETAPAS.filter((e) => e.id !== "fechado").map((e) => (
                     <SelectItem key={e.id} value={e.id}>{e.emoji} {e.nome}</SelectItem>
                   ))}
                 </SelectContent>

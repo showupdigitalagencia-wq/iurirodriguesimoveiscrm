@@ -1428,14 +1428,17 @@ export type Database = {
           atribuicao_status: string | null
           atribuido_em: string | null
           atribuido_por: string | null
+          comissao: number | null
           corretor_id: string | null
           created_at: string
           created_by: string | null
           email: string | null
           etapa: Database["public"]["Enums"]["vendas_etapa"]
           executivo_canal: Database["public"]["Enums"]["lead_canal"] | null
+          fechado_em: string | null
           first_response_at: string | null
           id: string
+          imovel_id: string | null
           nome: string
           observacoes: string | null
           origem: Database["public"]["Enums"]["lead_origem"]
@@ -1454,14 +1457,17 @@ export type Database = {
           atribuicao_status?: string | null
           atribuido_em?: string | null
           atribuido_por?: string | null
+          comissao?: number | null
           corretor_id?: string | null
           created_at?: string
           created_by?: string | null
           email?: string | null
           etapa?: Database["public"]["Enums"]["vendas_etapa"]
           executivo_canal?: Database["public"]["Enums"]["lead_canal"] | null
+          fechado_em?: string | null
           first_response_at?: string | null
           id?: string
+          imovel_id?: string | null
           nome: string
           observacoes?: string | null
           origem?: Database["public"]["Enums"]["lead_origem"]
@@ -1480,14 +1486,17 @@ export type Database = {
           atribuicao_status?: string | null
           atribuido_em?: string | null
           atribuido_por?: string | null
+          comissao?: number | null
           corretor_id?: string | null
           created_at?: string
           created_by?: string | null
           email?: string | null
           etapa?: Database["public"]["Enums"]["vendas_etapa"]
           executivo_canal?: Database["public"]["Enums"]["lead_canal"] | null
+          fechado_em?: string | null
           first_response_at?: string | null
           id?: string
+          imovel_id?: string | null
           nome?: string
           observacoes?: string | null
           origem?: Database["public"]["Enums"]["lead_origem"]
@@ -1502,7 +1511,22 @@ export type Database = {
           updated_at?: string
           valor?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "vendas_leads_imovel_id_fkey"
+            columns: ["imovel_id"]
+            isOneToOne: false
+            referencedRelation: "imoveis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendas_leads_imovel_id_fkey"
+            columns: ["imovel_id"]
+            isOneToOne: false
+            referencedRelation: "imoveis_portfolio"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       vendas_visitas: {
         Row: {
@@ -1712,6 +1736,10 @@ export type Database = {
         Returns: Database["public"]["Enums"]["app_role"]
       }
       expirar_pesquisas_satisfacao: { Args: never; Returns: number }
+      fechar_lead_vendas: {
+        Args: { _imovel_id: string; _lead_id: string }
+        Returns: Json
+      }
       get_comparativo_regioes: {
         Args: { _from: string; _to: string }
         Returns: Json
@@ -1736,6 +1764,10 @@ export type Database = {
         Returns: Json
       }
       get_portfolio_stats: { Args: { _days?: number }; Returns: Json }
+      get_receita_administracao: {
+        Args: { _from: string; _to: string }
+        Returns: Json
+      }
       get_satisfacao_stats: {
         Args: { _from: string; _to: string }
         Returns: Json

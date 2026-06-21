@@ -117,6 +117,10 @@ function AdminDashboard() {
   const vendidosTotal = imoveis.filter((i) => i.status === "vendido").length;
   const emManutencao = imoveis.filter((i) => i.status === "manutencao" || i.status === "em_manutencao").length;
   const ativos = contratos.filter((c) => c.status === "ativo" || c.status === "vencendo").length;
+  const aluguelTotalAtivos = contratos
+    .filter((c) => c.status === "ativo" || c.status === "vencendo")
+    .reduce((s, c: any) => s + Number(c.valor_aluguel || 0), 0);
+  const receitaAdmMensal = aluguelTotalAtivos * 0.12;
   const hoje = new Date();
   const em90 = new Date(); em90.setDate(hoje.getDate() + 90);
   const vencendo = contratos.filter((c) => {
@@ -347,8 +351,8 @@ function AdminDashboard() {
         </CardContent>
       </Card>
 
-      {/* Contratos ativos — mantido como métrica auxiliar */}
-      <div className="grid grid-cols-2 md:grid-cols-1 gap-3">
+      {/* Contratos ativos + Receita de administração */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
             <div className="h-10 w-10 rounded-md bg-muted flex items-center justify-center shrink-0">
@@ -357,6 +361,19 @@ function AdminDashboard() {
             <div>
               <div className="text-xs text-muted-foreground">Contratos ativos</div>
               <div className="text-xl font-semibold">{ativos}</div>
+              <div className="text-[10px] text-muted-foreground">{formatBRL(aluguelTotalAtivos)} em aluguel/mês</div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-gold/30 bg-gold/5">
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="h-10 w-10 rounded-md bg-gold/15 flex items-center justify-center shrink-0">
+              <TrendingUp className="h-5 w-5 text-gold" />
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">Receita de administração (12% / mês)</div>
+              <div className="text-xl font-bold text-gold">{formatBRL(receitaAdmMensal)}</div>
+              <div className="text-[10px] text-muted-foreground">Taxa sobre contratos de locação ativos</div>
             </div>
           </CardContent>
         </Card>
