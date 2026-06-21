@@ -14,46 +14,11 @@ export const Route = createFileRoute("/_authenticated/vendas/")({
 });
 
 
-type PortfolioStats = {
-  disponivel_venda: number;
-  disponivel_locacao: number;
-  disponivel_total: number;
-  vendidos_periodo: number;
-  alugados_periodo: number;
-  desde: string;
-};
-
 function VendasDashboard() {
-  const { dias } = Route.useSearch();
-  const navigate = useNavigate({ from: "/vendas" });
-  const qc = useQueryClient();
   const getHoje = useServerFn(getPlantonistaHoje);
   const getMeus = useServerFn(getMeusLeadsPlantao);
   const hojeQ = useQuery({ queryKey: ["plantao-hoje-dash"], queryFn: () => getHoje(), refetchInterval: 60_000 });
   const meusQ = useQuery({ queryKey: ["plantao-meus-leads"], queryFn: () => getMeus(), refetchInterval: 60_000 });
-
-  const portfolioStatsQ = useQuery({
-    queryKey: ["portfolio_stats", dias],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_portfolio_stats", { _days: dias });
-      if (error) throw error;
-      return data as unknown as PortfolioStats;
-    },
-    refetchInterval: 30_000,
-  });
-
-  // Realtime: invalida ao mudar qualquer imóvel
-  useEffect(() => {
-    const channel = supabase
-      .channel("portfolio-stats-imoveis")
-      .on("postgres_changes", { event: "*", schema: "public", table: "imoveis" }, () => {
-        qc.invalidateQueries({ queryKey: ["portfolio_stats"] });
-      })
-      .subscribe();
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [qc]);
 
   const { data: leads = [] } = useQuery({
     queryKey: ["vendas_leads_dash"],
@@ -87,14 +52,6 @@ function VendasDashboard() {
     { label: "Conversão", value: `${conversao}%`, icon: TrendingUp },
   ];
 
-  const stats = portfolioStatsQ.data;
-  const portfolioCards = [
-    { label: "Total disponíveis", value: stats?.disponivel_total ?? 0, icon: Building2, color: "text-sky-600", to: "/vendas/portfolio", search: {} },
-    { label: "Disponíveis p/ Venda", value: stats?.disponivel_venda ?? 0, icon: Tag, color: "text-teal-600", to: "/vendas/portfolio", search: { finalidade: "venda" } },
-    { label: "Disponíveis p/ Locação", value: stats?.disponivel_locacao ?? 0, icon: KeyRound, color: "text-emerald-600", to: "/vendas/portfolio", search: { finalidade: "locacao" } },
-    { label: `Vendidos (${dias}d)`, value: stats?.vendidos_periodo ?? 0, icon: Handshake, color: "text-violet-600", to: "/vendas/portfolio", search: {} },
-    { label: `Alugados (${dias}d)`, value: stats?.alugados_periodo ?? 0, icon: Home, color: "text-blue-600", to: "/vendas/portfolio", search: {} },
-  ];
 
 
   return (
