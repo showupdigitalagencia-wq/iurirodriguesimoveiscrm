@@ -292,8 +292,13 @@ function VendasRelatoriosPage() {
           {/* Receita destacada */}
           <section className="rounded-2xl border border-gold/30 bg-gradient-to-r from-gold/5 via-card to-card p-5 flex items-center justify-between gap-3 flex-wrap">
             <div>
-              <div className="text-xs uppercase tracking-wider text-muted-foreground">Receita gerada no período</div>
+              <div className="text-xs uppercase tracking-wider text-muted-foreground">Receita gerada no período (comissão)</div>
               <div className="text-3xl md:text-4xl font-bold mt-1 text-gold">{brl(Number(data.comparacao.atual.receita))}</div>
+              {Number(data.comparacao.atual.fechados_sem_comissao || 0) > 0 && (
+                <div className="text-[11px] mt-1 text-amber-600 dark:text-amber-400">
+                  ⚠ {data.comparacao.atual.fechados_sem_comissao} fechado(s) sem comissão calculada — preencha o imóvel no lead.
+                </div>
+              )}
             </div>
             {dRec && (
               <div className={`flex items-center gap-2 text-sm font-medium ${dRec.up === null ? "text-muted-foreground" : dRec.up ? "text-emerald-500" : "text-red-500"}`}>
