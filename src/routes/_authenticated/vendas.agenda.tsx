@@ -218,19 +218,48 @@ function AgendaCorretorPage() {
     catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
   }
 
+  // Form state: cadastro em lote (vários dias + vários intervalos)
+  const [recDias, setRecDias] = useState<number[]>([1, 2, 3, 4, 5]); // Seg-Sex
+  const [recIntervalos, setRecIntervalos] = useState<{ inicio: string; fim: string }[]>([{ inicio: "09:00", fim: "18:00" }]);
+  const [recObs, setRecObs] = useState("");
+  const [savingRec, setSavingRec] = useState(false);
+
+  function toggleRecDia(d: number) {
+    setRecDias((cur) => cur.includes(d) ? cur.filter((x) => x !== d) : [...cur, d].sort());
+  }
+  function setIntervalo(i: number, patch: Partial<{ inicio: string; fim: string }>) {
+    setRecIntervalos((cur) => cur.map((it, idx) => idx === i ? { ...it, ...patch } : it));
+  }
+  function addIntervalo() { setRecIntervalos((cur) => [...cur, { inicio: "14:00", fim: "18:00" }]); }
+  function removeIntervalo(i: number) { setRecIntervalos((cur) => cur.length > 1 ? cur.filter((_, idx) => idx !== i) : cur); }
+
   async function handleAddRec(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const fd = new FormData(e.currentTarget);
+    if (recDias.length === 0) { toast.error("Selecione ao menos um dia"); return; }
+    if (recIntervalos.some((it) => !it.inicio || !it.fim || it.fim <= it.inicio)) {
+      toast.error("Verifique os horários: fim deve ser após início");
+      return;
+    }
+    setSavingRec(true);
+    let ok = 0, fail = 0;
     try {
-      await fnAddRec({ data: {
-        dia_semana: Number(fd.get("dia_semana")),
-        hora_inicio: String(fd.get("hora_inicio")),
-        hora_fim: String(fd.get("hora_fim")),
-        observacao: String(fd.get("observacao") || "") || undefined,
-      }});
-      toast.success("Janela adicionada");
-      setOpenRec(false); refresh();
-    } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
+      for (const dia of recDias) {
+        for (const it of recIntervalos) {
+          try {
+            await fnAddRec({ data: {
+              dia_semana: dia,
+              hora_inicio: it.inicio,
+              hora_fim: it.fim,
+              observacao: recObs || undefined,
+            }});
+            ok++;
+          } catch { fail++; }
+        }
+      }
+      if (ok > 0) toast.success(`${ok} janela(s) adicionada(s)${fail ? ` · ${fail} falharam` : ""}`);
+      else toast.error("Nenhuma janela adicionada");
+      if (ok > 0) { setOpenRec(false); refresh(); }
+    } finally { setSavingRec(false); }
   }
 
   async function handleAddBlock(e: React.FormEvent<HTMLFormElement>) {
