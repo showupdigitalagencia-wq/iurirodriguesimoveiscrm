@@ -178,7 +178,7 @@ export const Route = createFileRoute("/api/public/webhook")({
               telefone: telefone.replace(/\D/g, ""),
               email: email ?? null,
               regiao: regiao as never,
-              etapa: "novo" as never,
+              etapa: "novo_lead" as never,
               observacoes: observacoes ?? null,
               origem,
               origem_detalhe: form_id ?? null,
@@ -469,7 +469,7 @@ async function tryHandleEvolution(body: Record<string, unknown>): Promise<Respon
   }
 
   const insert = {
-    nome, telefone, etapa: "novo",
+    nome, telefone, etapa: "novo_lead",
     origem, origem_detalhe: "evolution_api",
     observacoes: mensagem ? `Primeira mensagem: ${mensagem.slice(0, 500)}` : null,
     ultima_mensagem_em: new Date().toISOString(),

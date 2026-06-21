@@ -77,7 +77,7 @@ export const Route = createFileRoute("/api/public/lead-mensagem")({
           });
         }
         const insert = {
-          nome, telefone, etapa: "novo",
+          nome, telefone, etapa: "novo_lead",
           origem, origem_detalhe: (body.origem_detalhe as string | null) ?? null,
           ultima_mensagem_em: new Date().toISOString(),
           plantao_dia: hoje,
