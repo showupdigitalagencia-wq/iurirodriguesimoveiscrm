@@ -1458,6 +1458,16 @@ export type Database = {
         Args: { _from: string; _to: string }
         Returns: Json
       }
+      get_vendas_relatorio_escopos: { Args: never; Returns: Json }
+      get_vendas_relatorio_v2: {
+        Args: {
+          _from: string
+          _scope?: string
+          _target_id?: string
+          _to: string
+        }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
