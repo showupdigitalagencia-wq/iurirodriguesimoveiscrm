@@ -1264,6 +1264,7 @@ export type Database = {
           email: string | null
           etapa: Database["public"]["Enums"]["vendas_etapa"]
           executivo_canal: Database["public"]["Enums"]["lead_canal"] | null
+          first_response_at: string | null
           id: string
           nome: string
           observacoes: string | null
@@ -1288,6 +1289,7 @@ export type Database = {
           email?: string | null
           etapa?: Database["public"]["Enums"]["vendas_etapa"]
           executivo_canal?: Database["public"]["Enums"]["lead_canal"] | null
+          first_response_at?: string | null
           id?: string
           nome: string
           observacoes?: string | null
@@ -1312,6 +1314,7 @@ export type Database = {
           email?: string | null
           etapa?: Database["public"]["Enums"]["vendas_etapa"]
           executivo_canal?: Database["public"]["Enums"]["lead_canal"] | null
+          first_response_at?: string | null
           id?: string
           nome?: string
           observacoes?: string | null
@@ -1522,6 +1525,7 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      get_leads_sem_resposta: { Args: never; Returns: Json }
       get_portfolio_stats: { Args: { _days?: number }; Returns: Json }
       get_saude_sistema: { Args: never; Returns: Json }
       get_vendas_relatorio: {
