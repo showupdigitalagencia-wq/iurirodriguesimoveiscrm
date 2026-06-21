@@ -13,6 +13,13 @@ import { Trash2, Copy } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { startGoogleOAuth, getGoogleStatus, disconnectGoogle } from "@/lib/google.functions";
 import { getVslUrl, setVslUrl, setVslAllowSkip } from "@/lib/candidatos.functions";
+import {
+  getCaptacaoConfig,
+  setCaptacaoVslUrl,
+  uploadCaptacaoTeamPhoto,
+  updateCaptacaoTeamMeta,
+  removeCaptacaoTeamPhoto,
+} from "@/lib/captacao.functions";
 
 type Resp = { id: string; canal: string; nome: string; whatsapp: string };
 type Mapping = {
