@@ -46,6 +46,8 @@ function AgendaCorretorPage() {
   const fnCreateReuniao = useServerFn(createReuniaoOnlineVenda);
   const fnDeleteVisita = useServerFn(deleteVisita);
   const fnListLeads = useServerFn(listMyVendasLeads);
+  const fnListImoveis = useServerFn(listImoveisForVisita);
+
 
   const [items, setItems] = useState<DisponibilidadeRow[]>([]);
   const [visitas, setVisitas] = useState<VisitaItem[]>([]);
