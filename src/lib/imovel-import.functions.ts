@@ -206,6 +206,39 @@ function groupByImovelFolder(allImgs: string[]): string[] {
   return best ? (byFolder.get(best) ?? allImgs) : allImgs;
 }
 
+function selectRelevantImages(allImgs: string[], ogImage: string | null): string[] {
+  const folderImgs = groupByImovelFolder(allImgs);
+  const folderSet = new Set(folderImgs);
+  const nonFolderImgs = allImgs.filter(
+    (u) => !u.match(/\/imoveis\/[^/]+\//i) && !/\/\/[^/]*voaimgs\.com\.br\//i.test(u)
+  );
+  const sameAdUploadImgs = filterRelevantImages(nonFolderImgs, ogImage);
+
+  const merged =
+    folderImgs.length && folderImgs.length !== allImgs.length
+      ? [...folderImgs, ...sameAdUploadImgs]
+      : filterRelevantImages(allImgs, ogImage);
+
+  return Array.from(new Set(merged.filter((u) => folderSet.has(u) || allImgs.includes(u))));
+}
+
+function describeError(err: unknown): Record<string, unknown> {
+  if (err instanceof Error) {
+    return { name: err.name, message: err.message, stack: err.stack, cause: err.cause };
+  }
+  return { value: String(err) };
+}
+
+async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs: number) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export const importImovelFromUrl = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { url: string }) =>
@@ -293,13 +326,9 @@ export const importImovelFromUrl = createServerFn({ method: "POST" })
       }
     }
     const allImgs = Array.from(byBasename.values());
-    // Quando há pasta por imóvel no CDN, agrupa por ela; caso contrário, cai no
-    // filtro antigo pelo prefixo do og:image.
-    const grouped = groupByImovelFolder(allImgs);
-    const remoteFotos =
-      grouped.length && grouped.length !== allImgs.length
-        ? grouped
-        : filterRelevantImages(allImgs, ogImage);
+    // Combina as fotos do CDN agrupadas por pasta do imóvel com as fotos diretas
+    // do domínio da imobiliária que pertencem ao mesmo anúncio.
+    const remoteFotos = selectRelevantImages(allImgs, ogImage);
 
 
     // Baixa cada imagem e grava no bucket privado "imoveis-fotos".
@@ -311,14 +340,17 @@ export const importImovelFromUrl = createServerFn({ method: "POST" })
 
     for (const imgUrl of remoteFotos) {
       try {
-        const imgRes = await fetch(imgUrl, {
+        const startedAt = Date.now();
+        const imgRes = await fetchWithTimeout(imgUrl, {
           headers: {
             "User-Agent":
               "Mozilla/5.0 (compatible; NexusBot/1.0; +https://sistemanexus.app)",
             Referer: url,
           },
-        });
-        if (!imgRes.ok) throw new Error(`HTTP ${imgRes.status}`);
+        }, 20_000);
+        if (!imgRes.ok) {
+          throw new Error(`download HTTP ${imgRes.status} ${imgRes.statusText}`);
+        }
         const contentType =
           imgRes.headers.get("content-type")?.split(";")[0]?.trim() || "image/jpeg";
         const bytes = new Uint8Array(await imgRes.arrayBuffer());
@@ -340,9 +372,20 @@ export const importImovelFromUrl = createServerFn({ method: "POST" })
           .from("imoveis-fotos")
           .upload(path, bytes, { contentType, upsert: false });
         if (upErr) throw upErr;
+        console.info("[importImovel] foto salva", {
+          sourceUrl: imgUrl,
+          path,
+          status: imgRes.status,
+          contentType,
+          bytes: bytes.byteLength,
+          ms: Date.now() - startedAt,
+        });
         fotos.push(path);
       } catch (err) {
-        console.warn("[importImovel] falha ao baixar foto", imgUrl, err);
+        console.warn("[importImovel] falha ao baixar/salvar foto", {
+          sourceUrl: imgUrl,
+          error: describeError(err),
+        });
         downloadFailures++;
         // fallback: mantém a URL remota para não perder a referência visual
         fotos.push(imgUrl);
