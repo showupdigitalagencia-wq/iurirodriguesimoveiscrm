@@ -224,8 +224,19 @@ export const getFinanciamentoDetail = createServerFn({ method: "POST" })
       comp_residencia: await sign(r.comp_residencia_path),
       extrato: await sign(r.extrato_path),
     };
+    try {
+      await context.supabase.rpc("log_audit" as never, {
+        _acao: "financiamento_documentos_view",
+        _tabela: "financiamentos",
+        _registro_id: data.id,
+        _antes: null,
+        _depois: null,
+        _contexto: { nome: r.nome, cpf_mask: r.cpf?.slice(-4) ?? null, lead_id: r.lead_id },
+      } as never);
+    } catch (e) { console.warn("[audit doc_view]", e); }
     return { financiamento: r, urls };
   });
+
 
 // ============================================================
 // 5. ATUALIZAR STATUS
@@ -262,6 +273,19 @@ export const updateFinanciamentoStatus = createServerFn({ method: "POST" })
       } as never)
       .eq("id", data.id);
     if (error) throw new Error(error.message);
+
+    // Auditoria: status do financiamento
+    try {
+      await context.supabase.rpc("log_audit" as never, {
+        _acao: "financiamento_status_change",
+        _tabela: "financiamentos",
+        _registro_id: data.id,
+        _antes: prevRow ? { status: prevRow.status } : null,
+        _depois: { status: data.status, observacao: data.observacao || null },
+        _contexto: { lead_id: prevRow?.lead_id ?? null, nome: prevRow?.nome ?? null },
+      } as never);
+    } catch (e) { console.warn("[audit financiamento_status]", e); }
+
 
     // Push para executivo responsável + corretor + admins quando aprovado/recusado
     const statusMudou = prevRow && prevRow.status !== data.status;
@@ -374,6 +398,17 @@ export const deleteFinanciamento = createServerFn({ method: "POST" })
       if (rmErr) console.warn("[deleteFinanciamento] remove storage falhou", rmErr.message);
     }
 
+    try {
+      await context.supabase.rpc("log_audit" as never, {
+        _acao: "financiamento_delete",
+        _tabela: "financiamentos",
+        _registro_id: data.id,
+        _antes: r as never,
+        _depois: null,
+        _contexto: { storage_paths_removidos: paths.length },
+      } as never);
+    } catch (e) { console.warn("[audit financiamento_delete]", e); }
+
     const { error: delErr } = await supabaseAdmin
       .from("financiamentos" as never)
       .delete()
@@ -382,3 +417,4 @@ export const deleteFinanciamento = createServerFn({ method: "POST" })
 
     return { ok: true };
   });
+

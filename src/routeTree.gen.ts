@@ -59,6 +59,7 @@ import { Route as AuthenticatedAdminInadimplentesRouteImport } from './routes/_a
 import { Route as AuthenticatedAdminImoveisRouteImport } from './routes/_authenticated/admin.imoveis'
 import { Route as AuthenticatedAdminContratosRouteImport } from './routes/_authenticated/admin.contratos'
 import { Route as AuthenticatedAdminCandidatosRouteImport } from './routes/_authenticated/admin.candidatos'
+import { Route as AuthenticatedAdminAuditoriaRouteImport } from './routes/_authenticated/admin.auditoria'
 
 const SejaCorretorRoute = SejaCorretorRouteImport.update({
   id: '/seja-corretor',
@@ -336,6 +337,12 @@ const AuthenticatedAdminCandidatosRoute =
     path: '/candidatos',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminAuditoriaRoute =
+  AuthenticatedAdminAuditoriaRouteImport.update({
+    id: '/auditoria',
+    path: '/auditoria',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -359,6 +366,7 @@ export interface FileRoutesByFullPath {
   '/tempo-acesso': typeof AuthenticatedTempoAcessoRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/vendas': typeof AuthenticatedVendasRouteWithChildren
+  '/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
   '/admin/candidatos': typeof AuthenticatedAdminCandidatosRoute
   '/admin/contratos': typeof AuthenticatedAdminContratosRoute
   '/admin/imoveis': typeof AuthenticatedAdminImoveisRoute
@@ -407,6 +415,7 @@ export interface FileRoutesByTo {
   '/relatorio': typeof AuthenticatedRelatorioRoute
   '/tempo-acesso': typeof AuthenticatedTempoAcessoRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
+  '/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
   '/admin/candidatos': typeof AuthenticatedAdminCandidatosRoute
   '/admin/contratos': typeof AuthenticatedAdminContratosRoute
   '/admin/imoveis': typeof AuthenticatedAdminImoveisRoute
@@ -460,6 +469,7 @@ export interface FileRoutesById {
   '/_authenticated/tempo-acesso': typeof AuthenticatedTempoAcessoRoute
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
   '/_authenticated/vendas': typeof AuthenticatedVendasRouteWithChildren
+  '/_authenticated/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
   '/_authenticated/admin/candidatos': typeof AuthenticatedAdminCandidatosRoute
   '/_authenticated/admin/contratos': typeof AuthenticatedAdminContratosRoute
   '/_authenticated/admin/imoveis': typeof AuthenticatedAdminImoveisRoute
@@ -513,6 +523,7 @@ export interface FileRouteTypes {
     | '/tempo-acesso'
     | '/usuarios'
     | '/vendas'
+    | '/admin/auditoria'
     | '/admin/candidatos'
     | '/admin/contratos'
     | '/admin/imoveis'
@@ -561,6 +572,7 @@ export interface FileRouteTypes {
     | '/relatorio'
     | '/tempo-acesso'
     | '/usuarios'
+    | '/admin/auditoria'
     | '/admin/candidatos'
     | '/admin/contratos'
     | '/admin/imoveis'
@@ -613,6 +625,7 @@ export interface FileRouteTypes {
     | '/_authenticated/tempo-acesso'
     | '/_authenticated/usuarios'
     | '/_authenticated/vendas'
+    | '/_authenticated/admin/auditoria'
     | '/_authenticated/admin/candidatos'
     | '/_authenticated/admin/contratos'
     | '/_authenticated/admin/imoveis'
@@ -1015,10 +1028,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminCandidatosRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/auditoria': {
+      id: '/_authenticated/admin/auditoria'
+      path: '/auditoria'
+      fullPath: '/admin/auditoria'
+      preLoaderRoute: typeof AuthenticatedAdminAuditoriaRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
   }
 }
 
 interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminAuditoriaRoute: typeof AuthenticatedAdminAuditoriaRoute
   AuthenticatedAdminCandidatosRoute: typeof AuthenticatedAdminCandidatosRoute
   AuthenticatedAdminContratosRoute: typeof AuthenticatedAdminContratosRoute
   AuthenticatedAdminImoveisRoute: typeof AuthenticatedAdminImoveisRoute
@@ -1029,6 +1050,7 @@ interface AuthenticatedAdminRouteChildren {
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminAuditoriaRoute: AuthenticatedAdminAuditoriaRoute,
   AuthenticatedAdminCandidatosRoute: AuthenticatedAdminCandidatosRoute,
   AuthenticatedAdminContratosRoute: AuthenticatedAdminContratosRoute,
   AuthenticatedAdminImoveisRoute: AuthenticatedAdminImoveisRoute,
