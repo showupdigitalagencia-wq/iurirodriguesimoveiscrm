@@ -93,6 +93,11 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
 
   async function changeEtapa(etapa: VendasEtapa) {
     if (!lead) return;
+    // Fechamento exige modal com seleção de imóvel + cálculo de comissão
+    if (etapa === "fechado") {
+      setFecharOpen(true);
+      return;
+    }
     setSavingEtapa(true);
     try {
       const { error } = await supabase.from("vendas_leads").update({ etapa }).eq("id", lead.id);
