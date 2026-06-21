@@ -15,7 +15,7 @@ import { formatImovelEndereco, formatImovelOptionLabel, buildVisitaConfirmacaoMs
 
 import { getFinanciamentoStatusByLead, type FinanciamentoStatus } from "@/lib/financiamento.functions";
 import { toast } from "sonner";
-import { MessageCircle, Trash2, Pencil, MapPin, Video, Banknote, Copy } from "lucide-react";
+import { MessageCircle, Trash2, Pencil, MapPin, Video, Banknote, Copy, CheckCircle2, XCircle } from "lucide-react";
 
 function toLocalInputValue(d: Date) {
   const pad = (n: number) => String(n).padStart(2, "0");
