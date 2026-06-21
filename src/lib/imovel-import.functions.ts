@@ -167,7 +167,7 @@ export const importImovelFromUrl = createServerFn({ method: "POST" })
       }
     }
 
-    // ---------- IMAGES ----------
+    // ---------- IMAGES (download + upload to bucket "imoveis-fotos") ----------
     const imgRegex = /https?:\/\/[^\s"'>]+\/upload\/imoveis\/[^\s"'>]+\.(?:jpe?g|png|webp)/gi;
     const rawImgs = Array.from(new Set(html.match(imgRegex) ?? []));
     // Dedupe por nome de arquivo, preferindo URL direta (sem thumb.php)
@@ -180,7 +180,54 @@ export const importImovelFromUrl = createServerFn({ method: "POST" })
       }
     }
     const allImgs = Array.from(byBasename.values());
-    const fotos = filterRelevantImages(allImgs, ogImage);
+    const remoteFotos = filterRelevantImages(allImgs, ogImage);
+
+    // Baixa cada imagem e grava no bucket privado "imoveis-fotos".
+    // Mantém URLs remotas como fallback se algum download falhar.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const folder = `import/${(extractCodigoFromUrl(url) ?? "voa").toLowerCase()}-${Date.now()}`;
+    const fotos: string[] = [];
+    let downloadFailures = 0;
+
+    for (const imgUrl of remoteFotos) {
+      try {
+        const imgRes = await fetch(imgUrl, {
+          headers: {
+            "User-Agent":
+              "Mozilla/5.0 (compatible; NexusBot/1.0; +https://sistemanexus.app)",
+            Referer: url,
+          },
+        });
+        if (!imgRes.ok) throw new Error(`HTTP ${imgRes.status}`);
+        const contentType =
+          imgRes.headers.get("content-type")?.split(";")[0]?.trim() || "image/jpeg";
+        const bytes = new Uint8Array(await imgRes.arrayBuffer());
+        // Sanitiza nome e força extensão coerente com o content-type
+        const extFromType: Record<string, string> = {
+          "image/jpeg": "jpg",
+          "image/jpg": "jpg",
+          "image/png": "png",
+          "image/webp": "webp",
+        };
+        const ext = extFromType[contentType] ?? "jpg";
+        const baseName = (imgUrl.split("/").pop() ?? "foto")
+          .replace(/\?.*$/, "")
+          .replace(/\.[a-z]+$/i, "")
+          .replace(/[^a-z0-9-_]/gi, "_")
+          .slice(0, 60);
+        const path = `${folder}/${String(fotos.length + 1).padStart(2, "0")}-${baseName}.${ext}`;
+        const { error: upErr } = await supabaseAdmin.storage
+          .from("imoveis-fotos")
+          .upload(path, bytes, { contentType, upsert: false });
+        if (upErr) throw upErr;
+        fotos.push(path);
+      } catch (err) {
+        console.warn("[importImovel] falha ao baixar foto", imgUrl, err);
+        downloadFailures++;
+        // fallback: mantém a URL remota para não perder a referência visual
+        fotos.push(imgUrl);
+      }
+    }
 
     // ---------- TEXTO BASE ----------
     const descricao = jld?.description ?? metaDesc ?? "";
