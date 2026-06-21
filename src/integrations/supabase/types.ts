@@ -1295,6 +1295,7 @@ export type Database = {
           endereco: string
           google_event_id: string | null
           id: string
+          imovel_id: string | null
           lead_id: string
           observacoes: string | null
           status: string
@@ -1308,6 +1309,7 @@ export type Database = {
           endereco: string
           google_event_id?: string | null
           id?: string
+          imovel_id?: string | null
           lead_id: string
           observacoes?: string | null
           status?: string
@@ -1321,12 +1323,27 @@ export type Database = {
           endereco?: string
           google_event_id?: string | null
           id?: string
+          imovel_id?: string | null
           lead_id?: string
           observacoes?: string | null
           status?: string
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "vendas_visitas_imovel_id_fkey"
+            columns: ["imovel_id"]
+            isOneToOne: false
+            referencedRelation: "imoveis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendas_visitas_imovel_id_fkey"
+            columns: ["imovel_id"]
+            isOneToOne: false
+            referencedRelation: "imoveis_portfolio"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "vendas_visitas_lead_id_fkey"
             columns: ["lead_id"]
