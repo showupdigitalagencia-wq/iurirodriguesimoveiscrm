@@ -53,6 +53,10 @@ function AgendaCorretorPage() {
   const [visitas, setVisitas] = useState<VisitaItem[]>([]);
   const [reunioes, setReunioes] = useState<ReuniaoItem[]>([]);
   const [leads, setLeads] = useState<LeadOption[]>([]);
+  const [imoveis, setImoveis] = useState<ImovelOption[]>([]);
+  const [selectedImovelId, setSelectedImovelId] = useState<string>("");
+  const [enderecoManual, setEnderecoManual] = useState<string>("");
+
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<View>("semana");
   const [cursor, setCursor] = useState(new Date());
