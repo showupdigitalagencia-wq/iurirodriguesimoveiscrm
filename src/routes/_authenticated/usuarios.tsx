@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_authenticated/usuarios")({
   component: UsuariosPage,
 });
 
-type UserRole = "admin" | "corretor" | "corretor_vendas";
+type UserRole = "admin" | "corretor" | "corretor_vendas" | "correspondente_bancaria" | "administrativo";
 type UserRow = {
   id: string; email: string; nome: string; ativo: boolean;
   responsavel_id: string | null; role: UserRole;
