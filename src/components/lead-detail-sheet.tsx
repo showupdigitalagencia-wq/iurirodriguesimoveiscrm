@@ -60,6 +60,10 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
   const callEtapa = useServerFn(updateLeadEtapa);
   const callNote = useServerFn(addNote);
   const callFirst = useServerFn(markFirstResponse);
+  const callDescredenciar = useServerFn(descredenciarCorretor);
+  const [descredOpen, setDescredOpen] = useState(false);
+  const [descredMotivo, setDescredMotivo] = useState("");
+  const [descredLoading, setDescredLoading] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
