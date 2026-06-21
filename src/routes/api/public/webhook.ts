@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { normalizeOrigem, shouldUsePlantao } from "@/lib/plantao-shared";
+import { withWebhookLog } from "@/lib/webhook-log.server";
+
 
 
 type Regiao = "barra_da_tijuca" | "recreio" | "belford_roxo" | "nilopolis" | "mesquita" | "jacarepagua" | "zona_sul" | "zona_norte" | "zona_oeste" | "centro" | "outras";
