@@ -258,6 +258,3 @@ function Stat({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
-
-// dummy ref to silence unused-import in case Button drops out of tree
-void Button;
