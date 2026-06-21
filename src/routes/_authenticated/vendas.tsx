@@ -33,6 +33,7 @@ const TABS = [
   { to: "/vendas/leads", label: "Leads", icon: Users, exact: false },
   { to: "/vendas/pipeline", label: "Pipeline", icon: Kanban, exact: false },
   { to: "/vendas/agenda", label: "Agenda", icon: CalendarDays, exact: false },
+  { to: "/vendas/portfolio", label: "Portfólio", icon: Building2, exact: false },
   { to: "/vendas/plantao", label: "Plantão", icon: CalendarClock, exact: false },
   { to: "/notificacoes", label: "Notificações", icon: BellRing, exact: false },
 ] as const;
