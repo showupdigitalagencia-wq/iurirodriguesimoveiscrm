@@ -6,12 +6,14 @@ export type VisitaRow = {
   lead_id: string;
   corretor_id: string;
   endereco: string;
+  imovel_id: string | null;
   data_inicio: string;
   duracao_min: number;
   observacoes: string | null;
   google_event_id: string | null;
   status: string;
 };
+
 
 export type ReuniaoCorretorRow = {
   id: string;
