@@ -291,7 +291,7 @@ function AuthLayout() {
           <Outlet />
         </main>
 
-        {/* Bottom nav mobile — 5 itens principais + menu '...' para secundários */}
+        {/* Bottom nav mobile — derivado de navItems para garantir paridade com desktop */}
         <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-sidebar text-sidebar-foreground border-t border-sidebar-border pb-[env(safe-area-inset-bottom)]">
           {isCorretorVendas && !isAdmin ? (
             <ul className="grid grid-cols-5 items-stretch">
@@ -310,83 +310,72 @@ function AuthLayout() {
                 );
               })}
             </ul>
-          ) : (
-            <ul className="grid grid-cols-5 items-stretch">
-              {MOBILE_BOTTOM.slice(0, 4).map((item) => {
-                const Icon = item.icon;
-                return (
-                  <li key={item.to}>
-                    <Link to={item.to}
-                      className="flex flex-col items-center justify-center gap-1 h-16 text-[10px] font-medium text-sidebar-foreground/80 hover:text-gold [&.active]:text-gold"
-                      activeProps={{ className: "active" }}>
-                      <Icon className="h-5 w-5" />
-                      <span className="leading-none truncate max-w-[68px]">{item.label}</span>
-                    </Link>
+          ) : (() => {
+            // Para todos os outros perfis (admin, exec, administrativo, correspondente):
+            // deriva direto de navItems (mesma fonte do menu desktop), garantindo paridade total.
+            // Itens já presentes no header mobile (top icons) são removidos para evitar duplicação.
+            const topPaths = new Set<string>(mobileTopItems.map((t) => t.to));
+            const filtered = navItems.filter((i) => !topPaths.has(i.to));
+            const primary = filtered.slice(0, 4);
+            const overflow = filtered.slice(4);
+            const showOverflow = overflow.length > 0;
+            return (
+              <ul className="grid grid-cols-5 items-stretch">
+                {primary.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <li key={item.to}>
+                      <Link to={item.to}
+                        activeOptions={item.to === "/vendas" || item.to === "/admin" ? { exact: true } : undefined}
+                        className="flex flex-col items-center justify-center gap-1 h-16 text-[10px] font-medium text-sidebar-foreground/80 hover:text-gold [&.active]:text-gold"
+                        activeProps={{ className: "active" }}>
+                        <Icon className="h-5 w-5" />
+                        <span className="leading-none truncate max-w-[68px]">{item.label}</span>
+                      </Link>
+                    </li>
+                  );
+                })}
+                {showOverflow && (
+                  <li>
+                    <Sheet>
+                      <SheetTrigger asChild>
+                        <button
+                          className="flex flex-col items-center justify-center gap-1 h-16 w-full text-[10px] font-medium text-sidebar-foreground/80 hover:text-gold"
+                          aria-label="Mais"
+                        >
+                          <MoreHorizontal className="h-5 w-5" />
+                          <span className="leading-none">Mais</span>
+                        </button>
+                      </SheetTrigger>
+                      <SheetContent side="bottom" className="bg-sidebar text-sidebar-foreground border-sidebar-border">
+                        <SheetHeader>
+                          <SheetTitle className="text-gold">Menu</SheetTitle>
+                        </SheetHeader>
+                        <ul className="mt-4 grid gap-1 max-h-[70vh] overflow-y-auto">
+                          {overflow.map((item) => {
+                            const Icon = item.icon;
+                            return (
+                              <li key={item.to}>
+                                <Link to={item.to}
+                                  activeOptions={item.to === "/vendas" || item.to === "/admin" ? { exact: true } : undefined}
+                                  className="flex items-center gap-3 px-3 py-3 rounded-md text-sm hover:bg-sidebar-accent [&.active]:bg-sidebar-accent [&.active]:text-gold"
+                                  activeProps={{ className: "active" }}>
+                                  <Icon className="h-5 w-5" />
+                                  {item.label}
+                                </Link>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </SheetContent>
+                    </Sheet>
                   </li>
-                );
-              })}
-              <li>
-                <Sheet>
-                  <SheetTrigger asChild>
-                    <button
-                      className="flex flex-col items-center justify-center gap-1 h-16 w-full text-[10px] font-medium text-sidebar-foreground/80 hover:text-gold"
-                      aria-label="Mais"
-                    >
-                      <MoreHorizontal className="h-5 w-5" />
-                      <span className="leading-none">Mais</span>
-                    </button>
-                  </SheetTrigger>
-                  <SheetContent side="bottom" className="bg-sidebar text-sidebar-foreground border-sidebar-border">
-                    <SheetHeader>
-                      <SheetTitle className="text-gold">Menu</SheetTitle>
-                    </SheetHeader>
-                    <ul className="mt-4 grid gap-1 max-h-[70vh] overflow-y-auto">
-                      {[
-                        MOBILE_BOTTOM[4],
-                        { to: "/relatorio", label: "Relatórios", icon: BarChart3 },
-                        ...(isAdmin && vendasAtivo
-                          ? [
-                              { to: "/vendas", label: "Vendas — Dashboard", icon: Briefcase },
-                              { to: "/vendas/leads", label: "Vendas — Leads", icon: Users },
-                              { to: "/vendas/pipeline", label: "Vendas — Pipeline", icon: Kanban },
-                              { to: "/vendas/agenda", label: "Vendas — Agenda", icon: CalendarDays },
-                            ]
-                          : []),
-                        ...(isAdmin && adminModuloAtivo
-                          ? [
-                              { to: "/admin", label: "Administrativo — Dashboard", icon: Building2 },
-                              { to: "/admin/imoveis", label: "Administrativo — Imóveis", icon: Building2 },
-                              { to: "/admin/contratos", label: "Administrativo — Contratos", icon: Building2 },
-                              { to: "/admin/pagamentos", label: "Administrativo — Pagamentos", icon: Building2 },
-                              { to: "/admin/inadimplentes", label: "Administrativo — Inadimplentes", icon: Building2 },
-                              ...(canCandidatos ? [{ to: "/admin/candidatos", label: "Administrativo — Candidatos", icon: Building2 }] : []),
-                            ]
-                          : []),
-                        ...((isAdmin || isExec || isAdministrativo) ? [{ to: "/executivos/landing-page", label: "Landing Page", icon: Megaphone }] : []),
-                        ...(isAdmin ? ADMIN_NAV : []),
-                        { to: "/notificacoes", label: "Notificações", icon: BellRing },
-                        { to: "/configuracoes", label: "Configurações", icon: Settings },
-                      ].map((item) => {
-                        const Icon = item.icon;
-                        return (
-                          <li key={item.to}>
-                            <Link to={item.to}
-                              activeOptions={item.to === "/vendas" || item.to === "/admin" ? { exact: true } : undefined}
-                              className="flex items-center gap-3 px-3 py-3 rounded-md text-sm hover:bg-sidebar-accent [&.active]:bg-sidebar-accent [&.active]:text-gold"
-                              activeProps={{ className: "active" }}>
-                              <Icon className="h-5 w-5" />
-                              {item.label}
-                            </Link>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </SheetContent>
-                </Sheet>
-              </li>
-            </ul>
-          )}
+                )}
+              </ul>
+            );
+          })()}
         </nav>
+
       </div>
 
       {isAdmin && <LauraChat />}
