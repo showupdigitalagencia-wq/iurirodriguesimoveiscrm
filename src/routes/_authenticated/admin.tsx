@@ -33,14 +33,16 @@ const BASE_TABS = [
 ] as const;
 
 function AdminLayout() {
+  const { isAdmin } = Route.useRouteContext();
   const [canCandidatos, setCanCandidatos] = useState(false);
   useEffect(() => {
     supabase.rpc("can_view_candidatos").then(({ data }) => setCanCandidatos(data === true));
   }, []);
 
-  const tabs = canCandidatos
-    ? [...BASE_TABS, { to: "/admin/candidatos" as const, label: "Candidatos", icon: UserPlus, exact: false }]
-    : BASE_TABS;
+  let tabs: { to: string; label: string; icon: typeof LayoutDashboard; exact: boolean }[] = [...BASE_TABS];
+  if (canCandidatos) tabs.push({ to: "/admin/candidatos", label: "Candidatos", icon: UserPlus, exact: false });
+  if (isAdmin) tabs.push({ to: "/admin/saude-sistema", label: "Saúde", icon: Activity, exact: false });
+
 
   return (
     <div className="p-3 md:p-6 space-y-4 pb-24 md:pb-6">
