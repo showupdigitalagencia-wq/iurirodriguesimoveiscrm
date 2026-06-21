@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Loader2, Plus, KeyRound, Trash2, ShieldCheck, ShieldOff } from "lucide-react";
+import { Loader2, Plus, KeyRound, Trash2, ShieldCheck, ShieldOff, CalendarClock } from "lucide-react";
 import { listUsers, createUser, updateUser, resetUserPassword, deleteUser, getMyRole } from "@/lib/users.functions";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -23,6 +23,7 @@ type UserRow = {
   id: string; email: string; nome: string; ativo: boolean;
   responsavel_id: string | null; role: UserRole;
   vendas_acesso: boolean;
+  plantao_elegivel: boolean;
   last_sign_in_at: string | null; created_at: string;
 };
 
@@ -121,6 +122,14 @@ function UsuariosPage() {
     try {
       await fnUpdate({ data: { id: u.id, vendas_acesso: !u.vendas_acesso } });
       toast.success(!u.vendas_acesso ? "Acesso ao Vendas liberado" : "Acesso ao Vendas removido");
+      refresh();
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
+  }
+
+  async function togglePlantaoElegivel(u: UserRow) {
+    try {
+      await fnUpdate({ data: { id: u.id, plantao_elegivel: !u.plantao_elegivel } });
+      toast.success(!u.plantao_elegivel ? "Incluído no pool do Plantão" : "Removido do pool do Plantão");
       refresh();
     } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
   }
@@ -250,6 +259,15 @@ function UsuariosPage() {
                 </span>
               </div>
             </div>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs text-muted-foreground flex items-center gap-1"><CalendarClock className="h-3 w-3" /> Elegível p/ Plantão</span>
+              <div className="flex items-center gap-2">
+                <Switch checked={u.plantao_elegivel} onCheckedChange={() => togglePlantaoElegivel(u)} />
+                <span className={`text-xs ${u.plantao_elegivel ? "text-foreground font-medium" : "text-muted-foreground"}`}>
+                  {u.plantao_elegivel ? "Sim" : "Não"}
+                </span>
+              </div>
+            </div>
             <div className="flex gap-2">
               <Button size="sm" variant="outline" onClick={() => setResetting(u)} className="flex-1">
                 <KeyRound className="h-4 w-4 mr-1" /> Senha
@@ -276,6 +294,7 @@ function UsuariosPage() {
               <th className="text-left px-4 py-3">Último acesso</th>
               <th className="text-left px-4 py-3">Status</th>
               <th className="text-left px-4 py-3">Acesso Vendas</th>
+              <th className="text-left px-4 py-3">Plantão</th>
               <th className="text-right px-4 py-3">Ações</th>
             </tr>
           </thead>
@@ -326,6 +345,14 @@ function UsuariosPage() {
                       : <Badge variant="outline" className="gap-1 text-muted-foreground"><ShieldOff className="h-3 w-3" /> Bloqueado</Badge>}
                   </div>
                 </td>
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <Switch checked={u.plantao_elegivel} onCheckedChange={() => togglePlantaoElegivel(u)} />
+                    {u.plantao_elegivel
+                      ? <Badge variant="secondary" className="gap-1"><CalendarClock className="h-3 w-3" /> Elegível</Badge>
+                      : <Badge variant="outline" className="gap-1 text-muted-foreground">—</Badge>}
+                  </div>
+                </td>
                 <td className="px-4 py-3 text-right">
                   <Button size="sm" variant="ghost" onClick={() => setResetting(u)} title="Redefinir senha">
                     <KeyRound className="h-4 w-4" />
@@ -337,7 +364,7 @@ function UsuariosPage() {
               </tr>
             ))}
             {users.length === 0 && (
-              <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">Nenhum usuário cadastrado.</td></tr>
+              <tr><td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">Nenhum usuário cadastrado.</td></tr>
             )}
           </tbody>
         </table>
