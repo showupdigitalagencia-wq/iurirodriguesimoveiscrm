@@ -125,7 +125,7 @@ function VendasRelatoriosPage() {
     (async () => {
       const { data: d, error } = await supabase.rpc("get_vendas_relatorio_v2", {
         _from: range.from, _to: range.to,
-        _scope: scope, _target_id: targetId || null,
+        _scope: scope, _target_id: targetId || undefined,
       });
       if (!alive) return;
       if (error) { setErr(error.message); setData(null); }
