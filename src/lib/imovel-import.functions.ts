@@ -159,67 +159,58 @@ function inferFinalidade(text: string): "locacao" | "venda" | "ambos" | null {
 }
 
 /**
- * Filtra fotos pelo prefixo do nome do og:image, para evitar imagens de outros
- * imóveis ("relacionados") que aparecem na mesma página.
+ * Extrai o "stem" do nome do arquivo da og:image, removendo o sufixo
+ * <índice><hash hex longo>.<ext> que o Voa Corretor anexa em cada foto.
+ * Ex.: "flat-para-alugar-com-1-quarto-52351153950a41c4a80c9e77414d643987ea.jpeg"
+ *      -> "flat-para-alugar-com-1-quarto-"
  */
-function filterRelevantImages(allImgs: string[], ogImage: string | null): string[] {
-  if (!ogImage) return allImgs;
-  // og:image pode vir como wrapper (...thumb.php?w=600&img=https://.../arquivo.jpg)
-  // Extrai o último nome de arquivo de imagem da string.
+function ogImageStem(ogImage: string | null): string | null {
+  if (!ogImage) return null;
   const fileMatch = ogImage.match(/([^/?&=]+\.(?:jpe?g|png|webp))(?:[?#].*)?$/i);
-  const base = fileMatch?.[1] ?? "";
-  if (!base) return allImgs;
-  const rootMatch = base.match(/^([a-z0-9-]+?)(\d{3,}|)(?:\.[a-z]+)?$/i);
-  const root = rootMatch?.[1] ?? base.replace(/\.[a-z]+$/i, "");
-  if (root.length < 12) return allImgs;
-  const prefix = root.slice(0, Math.min(root.length, 35));
-  const filtered = allImgs.filter((u) => {
-    const fn = u.split("/").pop() ?? "";
-    return fn.startsWith(prefix);
-  });
-  return filtered.length ? filtered : allImgs;
+  const fn = fileMatch?.[1];
+  if (!fn) return null;
+  const noExt = fn.replace(/\.[a-z]+$/i, "");
+  // Remove dígito(s) de índice + hash hex/alfanumérico longo (>= 20 chars) no final.
+  const stem = noExt.replace(/\d+[a-z0-9]{20,}$/i, "");
+  return stem && stem !== noExt && stem.length >= 6 ? stem : null;
 }
 
 /**
- * Quando as fotos estão num CDN com pasta por imóvel (ex.: voaimgs.com.br/.../imoveis/<id>/...),
- * agrupa pela pasta mais frequente — é o sinal mais forte de "fotos deste anúncio"
- * e elimina imagens de outros imóveis listados na mesma página.
+ * Seleciona as fotos do mesmo anúncio:
+ *  1. Stem do slug via og:image (cobre o layout do Voa Corretor em que TODAS
+ *     as fotos do anúncio compartilham o mesmo slug e diferem só pelo dígito
+ *     de índice + hash).
+ *  2. Pasta dedicada por imóvel no CDN (/imoveis/<id>/...), quando existir.
+ *  3. Fallback: devolve todas as imagens.
  */
-function groupByImovelFolder(allImgs: string[]): string[] {
+function selectRelevantImages(allImgs: string[], ogImage: string | null): string[] {
+  const stem = ogImageStem(ogImage);
+  if (stem) {
+    const lower = stem.toLowerCase();
+    const byStem = allImgs.filter((u) => (u.split("/").pop() ?? "").toLowerCase().startsWith(lower));
+    if (byStem.length > 0) return byStem;
+  }
+
   const folderCount = new Map<string, number>();
   const byFolder = new Map<string, string[]>();
   for (const u of allImgs) {
     const m = u.match(/(\/imoveis\/[^/]+\/)/i);
     if (!m) continue;
-    const key = m[1];
-    folderCount.set(key, (folderCount.get(key) ?? 0) + 1);
-    const arr = byFolder.get(key) ?? [];
+    folderCount.set(m[1], (folderCount.get(m[1]) ?? 0) + 1);
+    const arr = byFolder.get(m[1]) ?? [];
     arr.push(u);
-    byFolder.set(key, arr);
+    byFolder.set(m[1], arr);
   }
-  if (folderCount.size === 0) return allImgs;
-  let best: string | null = null;
-  let bestCount = 0;
-  for (const [k, c] of folderCount) {
-    if (c > bestCount) { best = k; bestCount = c; }
+  if (folderCount.size > 0) {
+    let best: string | null = null;
+    let bestCount = 0;
+    for (const [k, c] of folderCount) {
+      if (c > bestCount) { best = k; bestCount = c; }
+    }
+    if (best) return byFolder.get(best) ?? allImgs;
   }
-  return best ? (byFolder.get(best) ?? allImgs) : allImgs;
-}
 
-function selectRelevantImages(allImgs: string[], ogImage: string | null): string[] {
-  const folderImgs = groupByImovelFolder(allImgs);
-  const folderSet = new Set(folderImgs);
-  const nonFolderImgs = allImgs.filter(
-    (u) => !u.match(/\/imoveis\/[^/]+\//i) && !/\/\/[^/]*voaimgs\.com\.br\//i.test(u)
-  );
-  const sameAdUploadImgs = filterRelevantImages(nonFolderImgs, ogImage);
-
-  const merged =
-    folderImgs.length && folderImgs.length !== allImgs.length
-      ? [...folderImgs, ...sameAdUploadImgs]
-      : filterRelevantImages(allImgs, ogImage);
-
-  return Array.from(new Set(merged.filter((u) => folderSet.has(u) || allImgs.includes(u))));
+  return allImgs;
 }
 
 function describeError(err: unknown): Record<string, unknown> {
