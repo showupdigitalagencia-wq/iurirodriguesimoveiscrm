@@ -21,7 +21,8 @@ import {
   removeCaptacaoTeamPhoto,
 } from "@/lib/captacao.functions";
 import { exportSistemaZip } from "@/lib/export-sistema.functions";
-import { Download } from "lucide-react";
+import { listarBackups, gerarUrlBackup, rodarBackupManual } from "@/lib/backups.functions";
+import { Download, Archive, RefreshCcw } from "lucide-react";
 
 type Resp = { id: string; canal: string; nome: string; whatsapp: string };
 type Mapping = {
@@ -104,6 +105,7 @@ function ConfigPage() {
           <TeamPhotosSection />
           <ReativacaoLeadsConfig />
           <ExportSistemaSection />
+          <BackupsSection />
           <SophiaToggle chave="sophia_executivos_acesso" titulo="Liberar Laura para Executivos" descricao="Quando ativado, executivos podem usar a assistente Laura." />
           <SophiaToggle chave="sophia_corretores_acesso" titulo="Liberar Laura para Corretores" descricao="Quando ativado, corretores podem usar a assistente Laura." />
         </TabsContent>
@@ -317,6 +319,98 @@ function ExportSistemaSection() {
         <div className="text-xs text-muted-foreground border-t pt-3 mt-2">
           <strong>Última exportação:</strong>{" "}
           {Object.entries(ultimoResumo).map(([t, n]) => `${t}: ${n}`).join(" · ")}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function BackupsSection() {
+  const listar = useServerFn(listarBackups);
+  const gerarUrl = useServerFn(gerarUrlBackup);
+  const rodar = useServerFn(rodarBackupManual);
+  const [items, setItems] = useState<Array<{ nome: string; data: string; tamanho_bytes: number; criado_em: string | null }> | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [rodando, setRodando] = useState(false);
+
+  async function carregar() {
+    setLoading(true);
+    try {
+      const res = await listar();
+      setItems(res);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao listar backups");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { carregar(); }, []);
+
+  async function baixar(nome: string) {
+    try {
+      const { url } = await gerarUrl({ data: { nome } });
+      window.open(url, "_blank", "noopener");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao gerar URL");
+    }
+  }
+
+  async function rodarAgora() {
+    setRodando(true);
+    try {
+      const res = await rodar();
+      toast.success(`Backup gerado: ${res.arquivo} (${(res.tamanho_bytes / 1024).toFixed(1)} KB)`);
+      await carregar();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao rodar backup");
+    } finally {
+      setRodando(false);
+    }
+  }
+
+  function fmtTamanho(b: number) {
+    if (b < 1024) return `${b} B`;
+    if (b < 1024 * 1024) return `${(b / 1024).toFixed(1)} KB`;
+    return `${(b / 1024 / 1024).toFixed(2)} MB`;
+  }
+
+  return (
+    <div className="rounded-lg border p-5 space-y-3">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="font-semibold flex items-center gap-2"><Archive className="h-4 w-4" /> Backups automáticos</h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            Gerados automaticamente toda segunda-feira (09:00 UTC) e mantidos por 8 semanas. Os arquivos ficam num bucket privado; o download usa URL temporária de 5 minutos.
+          </p>
+        </div>
+        <Button variant="outline" size="sm" onClick={rodarAgora} disabled={rodando} className="gap-2 shrink-0">
+          <RefreshCcw className={`h-4 w-4 ${rodando ? "animate-spin" : ""}`} />
+          {rodando ? "Gerando..." : "Rodar agora"}
+        </Button>
+      </div>
+
+      {loading && <div className="text-sm text-muted-foreground">Carregando...</div>}
+      {!loading && items && items.length === 0 && (
+        <div className="text-sm text-muted-foreground border-t pt-3">
+          Nenhum backup gerado ainda. O primeiro será criado na próxima segunda-feira ou clique em "Rodar agora".
+        </div>
+      )}
+      {items && items.length > 0 && (
+        <div className="border-t pt-3 space-y-1">
+          {items.map((it) => (
+            <div key={it.nome} className="flex items-center justify-between gap-3 py-1.5 text-sm">
+              <div>
+                <div className="font-medium">{it.nome}</div>
+                <div className="text-xs text-muted-foreground">
+                  {it.data} · {fmtTamanho(it.tamanho_bytes)}
+                </div>
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => baixar(it.nome)} className="gap-2">
+                <Download className="h-4 w-4" /> Baixar
+              </Button>
+            </div>
+          ))}
         </div>
       )}
     </div>
