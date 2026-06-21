@@ -350,7 +350,8 @@ export const Route = createFileRoute("/api/public/webhook")({
         return new Response(JSON.stringify({ ok: true, id: lead.id, regiao, canal }), {
           status: 201, headers: { "Content-Type": "application/json" },
         });
-      },
+      }),
+
     },
   },
 });
