@@ -15,7 +15,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Phone, MessageCircle, MapPin, Mail, Clock, MessageSquarePlus, CheckCircle2, ArrowLeft, Trash2, CalendarPlus } from "lucide-react";
+import { Phone, MessageCircle, MapPin, Mail, Clock, MessageSquarePlus, CheckCircle2, ArrowLeft, Trash2, CalendarPlus, ShieldOff } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { ReuniaoFormDialog } from "@/components/reuniao-form-dialog";
 
