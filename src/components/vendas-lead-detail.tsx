@@ -224,6 +224,27 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
             </Select>
           </div>
 
+          {visitasPendentes.length > 0 && (
+            <div className="space-y-2">
+              {visitasPendentes.map((v) => (
+                <div key={v.id} className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3">
+                  <div className="text-xs font-semibold text-amber-700 dark:text-amber-300 mb-1">
+                    Como foi a visita de {new Date(v.data_inicio).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", dateStyle: "short", timeStyle: "short" })}?
+                  </div>
+                  <div className="text-[11px] text-muted-foreground mb-2 truncate">{v.endereco}</div>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="gold" className="gap-1 h-7 text-xs" onClick={() => handleConfirmar(v.id, "realizada")}>
+                      <CheckCircle2 className="h-3.5 w-3.5" /> Realizada
+                    </Button>
+                    <Button size="sm" variant="outline" className="gap-1 h-7 text-xs" onClick={() => handleConfirmar(v.id, "nao_compareceu")}>
+                      <XCircle className="h-3.5 w-3.5" /> Não compareceu
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
           <div>
             <Label className="text-xs">Histórico de atividades</Label>
             <div className="mt-1 space-y-1 text-sm border rounded p-2 max-h-40 overflow-y-auto">
@@ -231,11 +252,16 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
               {lead.atribuido_em && (
                 <div className="text-xs text-muted-foreground">Atribuído em {new Date(lead.atribuido_em).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })} ({lead.atribuicao_status})</div>
               )}
-              {visitas.map((v) => (
-                <div key={v.id} className="text-xs">
-                  🏠 Visita {v.status} — {v.endereco} ({new Date(v.data_inicio).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })})
-                </div>
-              ))}
+              {visitas.map((v) => {
+                const compLabel = v.comparecimento === "realizada" ? " ✅ realizada"
+                  : v.comparecimento === "nao_compareceu" ? " ❌ não compareceu"
+                  : "";
+                return (
+                  <div key={v.id} className="text-xs">
+                    🏠 Visita {v.status}{compLabel} — {v.endereco} ({new Date(v.data_inicio).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })})
+                  </div>
+                );
+              })}
               {visitas.length === 0 && <div className="text-xs text-muted-foreground">Nenhuma visita registrada</div>}
             </div>
           </div>
