@@ -446,6 +446,21 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
                   </div>
                 ) : (
                   <dl className="space-y-3 text-sm">
+                    {lead.etapa === "descredenciado" && (
+                      <div className="rounded-lg border border-red-300 bg-red-50 p-3 dark:border-red-900/60 dark:bg-red-950/30">
+                        <div className="flex items-center gap-2 text-red-800 dark:text-red-300 text-xs uppercase tracking-wide font-semibold">
+                          <ShieldOff className="h-3.5 w-3.5" /> Descredenciado
+                        </div>
+                        {lead.motivo_descredenciamento && (
+                          <p className="mt-1.5 text-sm whitespace-pre-wrap text-red-900 dark:text-red-200">{lead.motivo_descredenciamento}</p>
+                        )}
+                        {lead.descredenciado_em && (
+                          <div className="mt-1 text-[11px] text-red-700/80 dark:text-red-300/70">
+                            {format(new Date(lead.descredenciado_em), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                          </div>
+                        )}
+                      </div>
+                    )}
                     <InfoRow icon={<Phone className="h-4 w-4" />} label="Telefone" value={lead.telefone} />
                     {lead.email && <InfoRow icon={<Mail className="h-4 w-4" />} label="Email" value={lead.email} />}
                     <InfoRow icon={<MapPin className="h-4 w-4" />} label="Região" value={regiaoNome(lead.regiao)} />
