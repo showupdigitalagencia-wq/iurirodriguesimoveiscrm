@@ -1265,6 +1265,41 @@ export type Database = {
         }
         Relationships: []
       }
+      vendas_lead_historico: {
+        Row: {
+          criado_em: string
+          etapa_anterior: Database["public"]["Enums"]["vendas_etapa"] | null
+          etapa_nova: Database["public"]["Enums"]["vendas_etapa"]
+          id: string
+          lead_id: string
+          user_id: string | null
+        }
+        Insert: {
+          criado_em?: string
+          etapa_anterior?: Database["public"]["Enums"]["vendas_etapa"] | null
+          etapa_nova: Database["public"]["Enums"]["vendas_etapa"]
+          id?: string
+          lead_id: string
+          user_id?: string | null
+        }
+        Update: {
+          criado_em?: string
+          etapa_anterior?: Database["public"]["Enums"]["vendas_etapa"] | null
+          etapa_nova?: Database["public"]["Enums"]["vendas_etapa"]
+          id?: string
+          lead_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendas_lead_historico_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "vendas_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vendas_leads: {
         Row: {
           atribuicao_status: string | null
@@ -1548,6 +1583,16 @@ export type Database = {
       current_user_role: {
         Args: never
         Returns: Database["public"]["Enums"]["app_role"]
+      }
+      get_funil_conversao: {
+        Args: {
+          _from: string
+          _pipeline: string
+          _scope?: string
+          _target?: string
+          _to: string
+        }
+        Returns: Json
       }
       get_leads_sem_resposta: { Args: never; Returns: Json }
       get_portfolio_stats: { Args: { _days?: number }; Returns: Json }
