@@ -1573,6 +1573,10 @@ export type Database = {
     }
     Functions: {
       add_lead_canal_value: { Args: { _value: string }; Returns: undefined }
+      buscar_lead_360: {
+        Args: { _cpf?: string; _telefone?: string }
+        Returns: Json
+      }
       can_user_view_reuniao: { Args: { _reuniao_id: string }; Returns: boolean }
       can_view_candidatos: { Args: { _user_id?: string }; Returns: boolean }
       current_corretor_responsavel_id: { Args: never; Returns: string }
@@ -1642,6 +1646,8 @@ export type Database = {
         }
         Returns: string
       }
+      normalize_cpf: { Args: { _cpf: string }; Returns: string }
+      normalize_telefone: { Args: { _tel: string }; Returns: string }
       plantonista_do_dia: { Args: { _data: string }; Returns: string }
     }
     Enums: {

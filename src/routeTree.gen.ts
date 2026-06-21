@@ -57,6 +57,7 @@ import { Route as AuthenticatedExecutivosLandingPageRouteImport } from './routes
 import { Route as AuthenticatedExecutivosIdRouteImport } from './routes/_authenticated/executivos.$id'
 import { Route as AuthenticatedAdminSaudeSistemaRouteImport } from './routes/_authenticated/admin.saude-sistema'
 import { Route as AuthenticatedAdminPagamentosRouteImport } from './routes/_authenticated/admin.pagamentos'
+import { Route as AuthenticatedAdminLead360RouteImport } from './routes/_authenticated/admin.lead-360'
 import { Route as AuthenticatedAdminInadimplentesRouteImport } from './routes/_authenticated/admin.inadimplentes'
 import { Route as AuthenticatedAdminImoveisRouteImport } from './routes/_authenticated/admin.imoveis'
 import { Route as AuthenticatedAdminContratosRouteImport } from './routes/_authenticated/admin.contratos'
@@ -328,6 +329,12 @@ const AuthenticatedAdminPagamentosRoute =
     path: '/pagamentos',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminLead360Route =
+  AuthenticatedAdminLead360RouteImport.update({
+    id: '/lead-360',
+    path: '/lead-360',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminInadimplentesRoute =
   AuthenticatedAdminInadimplentesRouteImport.update({
     id: '/inadimplentes',
@@ -392,6 +399,7 @@ export interface FileRoutesByFullPath {
   '/admin/contratos': typeof AuthenticatedAdminContratosRoute
   '/admin/imoveis': typeof AuthenticatedAdminImoveisRoute
   '/admin/inadimplentes': typeof AuthenticatedAdminInadimplentesRoute
+  '/admin/lead-360': typeof AuthenticatedAdminLead360Route
   '/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
   '/admin/saude-sistema': typeof AuthenticatedAdminSaudeSistemaRoute
   '/executivos/$id': typeof AuthenticatedExecutivosIdRoute
@@ -444,6 +452,7 @@ export interface FileRoutesByTo {
   '/admin/contratos': typeof AuthenticatedAdminContratosRoute
   '/admin/imoveis': typeof AuthenticatedAdminImoveisRoute
   '/admin/inadimplentes': typeof AuthenticatedAdminInadimplentesRoute
+  '/admin/lead-360': typeof AuthenticatedAdminLead360Route
   '/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
   '/admin/saude-sistema': typeof AuthenticatedAdminSaudeSistemaRoute
   '/executivos/$id': typeof AuthenticatedExecutivosIdRoute
@@ -501,6 +510,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/contratos': typeof AuthenticatedAdminContratosRoute
   '/_authenticated/admin/imoveis': typeof AuthenticatedAdminImoveisRoute
   '/_authenticated/admin/inadimplentes': typeof AuthenticatedAdminInadimplentesRoute
+  '/_authenticated/admin/lead-360': typeof AuthenticatedAdminLead360Route
   '/_authenticated/admin/pagamentos': typeof AuthenticatedAdminPagamentosRoute
   '/_authenticated/admin/saude-sistema': typeof AuthenticatedAdminSaudeSistemaRoute
   '/_authenticated/executivos/$id': typeof AuthenticatedExecutivosIdRoute
@@ -558,6 +568,7 @@ export interface FileRouteTypes {
     | '/admin/contratos'
     | '/admin/imoveis'
     | '/admin/inadimplentes'
+    | '/admin/lead-360'
     | '/admin/pagamentos'
     | '/admin/saude-sistema'
     | '/executivos/$id'
@@ -610,6 +621,7 @@ export interface FileRouteTypes {
     | '/admin/contratos'
     | '/admin/imoveis'
     | '/admin/inadimplentes'
+    | '/admin/lead-360'
     | '/admin/pagamentos'
     | '/admin/saude-sistema'
     | '/executivos/$id'
@@ -666,6 +678,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/contratos'
     | '/_authenticated/admin/imoveis'
     | '/_authenticated/admin/inadimplentes'
+    | '/_authenticated/admin/lead-360'
     | '/_authenticated/admin/pagamentos'
     | '/_authenticated/admin/saude-sistema'
     | '/_authenticated/executivos/$id'
@@ -1054,6 +1067,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminPagamentosRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/lead-360': {
+      id: '/_authenticated/admin/lead-360'
+      path: '/lead-360'
+      fullPath: '/admin/lead-360'
+      preLoaderRoute: typeof AuthenticatedAdminLead360RouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/inadimplentes': {
       id: '/_authenticated/admin/inadimplentes'
       path: '/inadimplentes'
@@ -1105,6 +1125,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminContratosRoute: typeof AuthenticatedAdminContratosRoute
   AuthenticatedAdminImoveisRoute: typeof AuthenticatedAdminImoveisRoute
   AuthenticatedAdminInadimplentesRoute: typeof AuthenticatedAdminInadimplentesRoute
+  AuthenticatedAdminLead360Route: typeof AuthenticatedAdminLead360Route
   AuthenticatedAdminPagamentosRoute: typeof AuthenticatedAdminPagamentosRoute
   AuthenticatedAdminSaudeSistemaRoute: typeof AuthenticatedAdminSaudeSistemaRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
@@ -1116,6 +1137,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminContratosRoute: AuthenticatedAdminContratosRoute,
   AuthenticatedAdminImoveisRoute: AuthenticatedAdminImoveisRoute,
   AuthenticatedAdminInadimplentesRoute: AuthenticatedAdminInadimplentesRoute,
+  AuthenticatedAdminLead360Route: AuthenticatedAdminLead360Route,
   AuthenticatedAdminPagamentosRoute: AuthenticatedAdminPagamentosRoute,
   AuthenticatedAdminSaudeSistemaRoute: AuthenticatedAdminSaudeSistemaRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
