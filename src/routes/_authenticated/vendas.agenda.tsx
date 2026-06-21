@@ -151,9 +151,11 @@ function AgendaCorretorPage() {
     const imovel = selectedImovelId ? imoveis.find((i) => i.id === selectedImovelId) ?? null : null;
     const endereco = imovel ? formatImovelEndereco(imovel) : enderecoManual.trim();
     if (!leadId || !endereco || !data || !hora) { toast.error("Selecione um imóvel ou informe o endereço, lead, data e hora"); return; }
+    const iso = new Date(`${data}T${hora}:00`).toISOString();
+    const { confirmNoGoogleConflict } = await import("@/lib/google-conflict");
+    if (!(await confirmNoGoogleConflict(iso, 60))) return;
     setSavingVisita(true);
     try {
-      const iso = new Date(`${data}T${hora}:00`).toISOString();
       const res = await fnCreateVisita({ data: {
         lead_id: leadId,
         endereco,
