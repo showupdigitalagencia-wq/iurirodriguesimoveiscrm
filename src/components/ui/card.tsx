@@ -8,7 +8,7 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
       ref={ref}
       data-slot="card"
       className={cn(
-        "rounded-2xl border border-border/60 bg-card/80 backdrop-blur-md text-card-foreground shadow-sm",
+        "rounded-2xl border border-border/50 bg-card text-card-foreground shadow-xs",
         className,
       )}
       {...props}
@@ -16,6 +16,7 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
   ),
 );
 Card.displayName = "Card";
+
 
 
 const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
