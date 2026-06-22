@@ -96,12 +96,14 @@ function AgendaPage() {
   );
 }
 
-function colorFor(r: Pick<ReuniaoRow, "tipo" | "status">) {
-  if (r.status === "cancelada") return "bg-red-600 text-white border-red-700 line-through";
-  if (r.tipo === "alinhamento") return "bg-purple-600 text-white border-purple-700";
-  if (r.tipo === "institucional") return "bg-gold/90 text-gold-foreground border-gold";
-  if (r.tipo === "mentoria") return "bg-blue-900 text-white border-blue-950";
-  return "bg-blue-500 text-white border-blue-600";
+function colorFor(r: Pick<ReuniaoRow, "tipo" | "status">): React.CSSProperties {
+  if (r.status === "cancelada") {
+    return { background: "var(--meet-cancelada)", color: "#fff", borderColor: "var(--meet-cancelada)", textDecoration: "line-through" };
+  }
+  if (r.tipo === "alinhamento") return { background: "var(--meet-alinhamento)", color: "#fff", borderColor: "var(--meet-alinhamento)" };
+  if (r.tipo === "institucional") return { background: "var(--meet-institucional)", color: "#0A0E1A", borderColor: "var(--meet-institucional)" };
+  if (r.tipo === "mentoria") return { background: "var(--meet-mentoria)", color: "#fff", borderColor: "var(--meet-mentoria)" };
+  return { background: "var(--meet-individual)", color: "#0A0E1A", borderColor: "var(--meet-individual)" };
 }
 
 function MonthGrid({ cursor, from, reunioes, onOpen }: { cursor: Date; from: Date; reunioes: ReuniaoRow[]; onOpen: (id: string) => void }) {
