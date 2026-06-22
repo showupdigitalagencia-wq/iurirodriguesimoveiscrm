@@ -347,11 +347,11 @@ function SejaCorretorPage() {
       <section className="px-6 py-20" style={{ background: "#0F1626" }}>
         <div className="max-w-6xl mx-auto space-y-12">
           <div className="text-center space-y-3">
-            <div className="text-xs uppercase tracking-[0.35em]" style={{ color: GOLD }}>
+            <div className="text-[10px] md:text-xs uppercase tracking-[0.45em]" style={{ color: GOLD }}>
               O time
             </div>
-            <h2 className="text-3xl md:text-5xl" style={{ fontFamily: SERIF, fontWeight: 600 }}>
-              Pessoas que <span style={{ color: GOLD }}>fazem acontecer</span>
+            <h2 className="text-3xl md:text-5xl leading-[1.1]" style={{ fontFamily: SERIF, fontWeight: 500, letterSpacing: "-0.01em" }}>
+              Pessoas que <em style={{ color: GOLD, fontStyle: "italic", fontWeight: 500 }}>fazem acontecer</em>
             </h2>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
