@@ -99,6 +99,11 @@ export const atribuirLead = createServerFn({ method: "POST" })
     const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
     if (!isAdmin) throw new Error("Acesso negado");
 
+    // Captura corretor anterior para registrar transferência
+    const { data: prevRaw } = await supabaseAdmin
+      .from("vendas_leads").select("corretor_id").eq("id", data.lead_id).maybeSingle();
+    const prevCorretorId = (prevRaw as { corretor_id: string | null } | null)?.corretor_id ?? null;
+
     const { data: updated, error } = await supabaseAdmin
       .from("vendas_leads")
       .update({
@@ -111,6 +116,32 @@ export const atribuirLead = createServerFn({ method: "POST" })
       .select("nome, telefone, regiao")
       .single();
     if (error) throw new Error(error.message);
+
+    // Histórico de transferência (apenas quando houve troca real de corretor)
+    if (prevCorretorId && prevCorretorId !== data.corretor_id) {
+      const ids = Array.from(new Set([prevCorretorId, data.corretor_id, context.userId]));
+      const { data: profs } = await supabaseAdmin.from("profiles").select("id, nome").in("id", ids);
+      const map = new Map<string, string>(
+        ((profs ?? []) as { id: string; nome: string | null }[]).map((p) => [p.id, p.nome ?? ""]),
+      );
+      const anteriorNome = map.get(prevCorretorId) ?? "corretor anterior";
+      const novoNome = map.get(data.corretor_id) ?? "novo corretor";
+      const porNome = map.get(context.userId) ?? "administrador";
+      await supabaseAdmin.from("plantao_log" as never).insert({
+        lead_id: data.lead_id,
+        corretor_id: data.corretor_id,
+        motivo: "redirecionamento_demora",
+        origem: "manual",
+        detalhe: {
+          mensagem: `Lead transferido de ${anteriorNome} para ${novoNome} por ${porNome}.`,
+          motivo: "reatribuicao_manual",
+          de: { id: prevCorretorId, nome: anteriorNome },
+          para: { id: data.corretor_id, nome: novoNome },
+          por: { id: context.userId, nome: porNome },
+          atribuido_em: new Date().toISOString(),
+        } as never,
+      } as never);
+    }
 
     // Push DIRECIONADO ao corretor atribuído via external_id (não mais broadcast "All")
     try {
