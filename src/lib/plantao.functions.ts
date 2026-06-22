@@ -33,6 +33,20 @@ async function isProfileExecutivo(
   return first(p.nome) !== "" && first(p.nome) === first(p.responsaveis.nome);
 }
 
+// Verifica se um profile_id tem role admin
+async function isProfileAdmin(
+  admin: { from: (t: string) => { select: (c: string) => { eq: (k: string, v: string) => { eq: (k: string, v: string) => { maybeSingle: () => Promise<{ data: unknown }> } } } } },
+  profileId: string,
+): Promise<boolean> {
+  const { data } = await admin
+    .from("user_roles")
+    .select("user_id")
+    .eq("user_id", profileId)
+    .eq("role", "admin")
+    .maybeSingle();
+  return !!data;
+}
+
 
 export const getEscalaMes = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
