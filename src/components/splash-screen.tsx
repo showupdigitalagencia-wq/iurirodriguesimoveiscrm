@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 
 const SESSION_KEY = "nexus_splash_shown";
 const GOLD = "#D4AF37";
+const GOLD_BRIGHT = "#F0D060";
+const NAVY = "#0A0E1A";
 
 export function SplashScreen() {
   const [show, setShow] = useState(false);
@@ -29,57 +31,98 @@ export function SplashScreen() {
   return (
     <div
       aria-hidden
-      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black transition-opacity duration-700 ${
+      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-opacity duration-700 ${
         hiding ? "opacity-0 pointer-events-none" : "opacity-100"
       }`}
       style={{
+        background: `radial-gradient(ellipse at center, #0F1626 0%, ${NAVY} 70%)`,
         paddingTop: "env(safe-area-inset-top)",
         paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
-      <p
-        className="text-2xl sm:text-3xl font-light tracking-wide text-white animate-fade-in"
-        style={{ animationDelay: "0.2s", animationDuration: "1s", animationFillMode: "both" }}
+      {/* Logo "N" dourado */}
+      <div
+        className="relative flex items-center justify-center w-24 h-24 sm:w-28 sm:h-28 rounded-2xl mb-8 animate-splash-logo"
+        style={{
+          background: `linear-gradient(135deg, rgba(212,175,55,0.08), rgba(212,175,55,0.02))`,
+          border: `1px solid ${GOLD}55`,
+          boxShadow: `0 0 40px ${GOLD}40, inset 0 0 20px ${GOLD}15`,
+        }}
       >
-        Bem vindo ao
-      </p>
+        <span
+          className="text-5xl sm:text-6xl font-display font-bold"
+          style={{
+            background: `linear-gradient(135deg, ${GOLD_BRIGHT}, ${GOLD})`,
+            WebkitBackgroundClip: "text",
+            backgroundClip: "text",
+            color: "transparent",
+            textShadow: `0 0 30px ${GOLD}80`,
+          }}
+        >
+          N
+        </span>
+      </div>
 
       <div
-        className="my-6 h-px w-0 animate-splash-line"
+        className="my-2 h-px w-0 animate-splash-line"
         style={{
           background: `linear-gradient(90deg, transparent, ${GOLD}, transparent)`,
         }}
       />
 
       <h1
-        className="text-5xl sm:text-6xl font-bold tracking-tight text-center px-6 animate-splash-glow"
+        className="text-4xl sm:text-5xl font-light text-center px-6 mt-4 animate-splash-glow"
         style={{
-          color: GOLD,
+          color: "#E8EAF0",
+          letterSpacing: "0.35em",
           animationDelay: "1.2s",
           animationFillMode: "both",
-          textShadow: `0 0 20px ${GOLD}80, 0 0 40px ${GOLD}40`,
         }}
       >
-        Ecossistema Nexus
+        SISTEMA NEXUS
       </h1>
 
+      <p
+        className="mt-5 text-sm sm:text-base tracking-[0.2em] uppercase animate-fade-in"
+        style={{
+          color: GOLD,
+          animationDelay: "1.8s",
+          animationDuration: "1s",
+          animationFillMode: "both",
+          textShadow: `0 0 12px ${GOLD}55`,
+        }}
+      >
+        Iuri Rodrigues Imóveis
+      </p>
+
       <style>{`
+        @keyframes splash-logo {
+          0% { opacity: 0; transform: scale(0.7); }
+          100% { opacity: 1; transform: scale(1); }
+        }
+        .animate-splash-logo {
+          animation: splash-logo 0.9s ease-out 0.1s both;
+        }
         @keyframes splash-line {
           0% { width: 0; opacity: 0; }
-          100% { width: 12rem; opacity: 1; }
+          100% { width: 14rem; opacity: 1; }
         }
         .animate-splash-line {
           animation: splash-line 1s ease-out 0.9s forwards;
         }
         @keyframes splash-glow {
-          0% { opacity: 0; transform: scale(0.96); }
-          30% { opacity: 1; transform: scale(1); }
-          50% { text-shadow: 0 0 30px ${GOLD}, 0 0 60px ${GOLD}80; transform: scale(1.03); }
-          100% { opacity: 1; transform: scale(1); text-shadow: 0 0 20px ${GOLD}80, 0 0 40px ${GOLD}40; }
+          0% { opacity: 0; transform: translateY(8px); }
+          100% { opacity: 1; transform: translateY(0); }
         }
         .animate-splash-glow {
-          opacity: 0;
-          animation: splash-glow 2.6s ease-in-out 1.2s infinite;
+          animation: splash-glow 1s ease-out forwards;
+        }
+        @keyframes fade-in {
+          0% { opacity: 0; transform: translateY(6px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+          animation: fade-in 1s ease-out forwards;
         }
       `}</style>
     </div>
