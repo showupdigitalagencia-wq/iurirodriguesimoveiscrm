@@ -264,7 +264,8 @@ function SejaCorretorPage() {
       </section>
 
       {/* EXECUTIVO(S) */}
-      <section className="px-6 py-20" style={{ background: "#0A0E1A" }}>
+      <section id="executivos" className="px-6 py-20 scroll-mt-20" style={{ background: "#0A0E1A" }}>
+
         <div className="max-w-5xl mx-auto space-y-12">
           <div className="text-center space-y-3">
             <div className="text-xs uppercase tracking-[0.35em]" style={{ color: GOLD }}>
