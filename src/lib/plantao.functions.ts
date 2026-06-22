@@ -15,6 +15,17 @@ async function ensureAdminOrExec(ctx: { supabase: ReturnType<typeof Object>; use
   return { isAdmin: !!isAdmin, isExec: !!isExec };
 }
 
+// Para fluxos onde o corretor pode mexer apenas no PRÓPRIO slot.
+async function getRoleFlags(ctx: { supabase: ReturnType<typeof Object>; userId: string }): Promise<{ isAdmin: boolean; isExec: boolean }> {
+  const [{ data: isAdmin }, { data: isExec }] = await Promise.all([
+    (ctx.supabase as { rpc: (n: string, a: unknown) => Promise<{ data: boolean | null }> })
+      .rpc("has_role", { _user_id: ctx.userId, _role: "admin" }),
+    (ctx.supabase as { rpc: (n: string) => Promise<{ data: boolean | null }> })
+      .rpc("current_user_is_executivo"),
+  ]);
+  return { isAdmin: !!isAdmin, isExec: !!isExec };
+}
+
 // Verifica se um determinado profile_id pertence a um EXECUTIVO ativo
 // (mesma regra do RPC current_user_is_executivo: profile.nome match com responsaveis.nome pelo 1º nome).
 async function isProfileExecutivo(
