@@ -124,6 +124,7 @@ function AuthLayout() {
           { to: "/vendas/agenda", label: "Agenda", icon: CalendarDays },
           { to: "/vendas/plantao", label: "Plantão", icon: CalendarClock },
           { to: "/notificacoes", label: "Notificações", icon: BellRing },
+          { to: "/configuracoes", label: "Configurações", icon: Settings },
         );
       }
       return items;
