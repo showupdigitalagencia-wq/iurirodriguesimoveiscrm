@@ -31,24 +31,21 @@ function MetasPage() {
   const [ano, setAno] = useState(now.getFullYear());
   const [mes, setMes] = useState(now.getMonth() + 1);
 
-  // Detecta papel (admin/exec) — se nenhum, mostra só própria
+  // Detecta papel — somente admin gerencia (executivos perderam o acesso de gestão)
   const role = useQuery({
     queryKey: ["meu-papel-metas"],
     queryFn: async () => {
-      const [{ data: ud }, isAdminRes, execIdRes] = await Promise.all([
-        supabase.auth.getUser(),
-        supabase.rpc("has_role", { _user_id: (await supabase.auth.getUser()).data.user?.id ?? "", _role: "admin" as never }),
-        supabase.rpc("current_user_executivo_id"),
-      ]);
+      const { data: ud } = await supabase.auth.getUser();
+      const uid = ud.user?.id ?? "";
+      const isAdminRes = await supabase.rpc("has_role", { _user_id: uid, _role: "admin" as never });
       return {
-        uid: ud.user?.id ?? null,
+        uid: uid || null,
         isAdmin: isAdminRes.data === true,
-        isExec: !!execIdRes.data,
       };
     },
   });
 
-  const isManager = role.data?.isAdmin || role.data?.isExec;
+  const isManager = role.data?.isAdmin === true;
 
   // Lista (para admin/exec)
   const lista = useQuery({

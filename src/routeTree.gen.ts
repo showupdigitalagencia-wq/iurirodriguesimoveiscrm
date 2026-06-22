@@ -44,14 +44,12 @@ import { Route as ApiPublicCronReunioesInstitucionaisRouteImport } from './route
 import { Route as ApiPublicCronReuniaoLembretesRouteImport } from './routes/api/public/cron-reuniao-lembretes'
 import { Route as ApiPublicCronPlantaoDiarioRouteImport } from './routes/api/public/cron-plantao-diario'
 import { Route as ApiPublicCronLauraResumoDiarioRouteImport } from './routes/api/public/cron-laura-resumo-diario'
-import { Route as AuthenticatedVendasTempoRespostaRouteImport } from './routes/_authenticated/vendas.tempo-resposta'
 import { Route as AuthenticatedVendasRelatoriosRouteImport } from './routes/_authenticated/vendas.relatorios'
 import { Route as AuthenticatedVendasPortfolioRouteImport } from './routes/_authenticated/vendas.portfolio'
 import { Route as AuthenticatedVendasPlantaoRouteImport } from './routes/_authenticated/vendas.plantao'
 import { Route as AuthenticatedVendasPipelineRouteImport } from './routes/_authenticated/vendas.pipeline'
 import { Route as AuthenticatedVendasMetasRouteImport } from './routes/_authenticated/vendas.metas'
 import { Route as AuthenticatedVendasLeadsRouteImport } from './routes/_authenticated/vendas.leads'
-import { Route as AuthenticatedVendasFunilRouteImport } from './routes/_authenticated/vendas.funil'
 import { Route as AuthenticatedVendasAgendaRouteImport } from './routes/_authenticated/vendas.agenda'
 import { Route as AuthenticatedLeadsLeadIdRouteImport } from './routes/_authenticated/leads.$leadId'
 import { Route as AuthenticatedExecutivosLandingPageRouteImport } from './routes/_authenticated/executivos.landing-page'
@@ -256,12 +254,6 @@ const ApiPublicCronLauraResumoDiarioRoute =
     path: '/api/public/cron-laura-resumo-diario',
     getParentRoute: () => rootRouteImport,
   } as any)
-const AuthenticatedVendasTempoRespostaRoute =
-  AuthenticatedVendasTempoRespostaRouteImport.update({
-    id: '/tempo-resposta',
-    path: '/tempo-resposta',
-    getParentRoute: () => AuthenticatedVendasRoute,
-  } as any)
 const AuthenticatedVendasRelatoriosRoute =
   AuthenticatedVendasRelatoriosRouteImport.update({
     id: '/relatorios',
@@ -296,12 +288,6 @@ const AuthenticatedVendasLeadsRoute =
   AuthenticatedVendasLeadsRouteImport.update({
     id: '/leads',
     path: '/leads',
-    getParentRoute: () => AuthenticatedVendasRoute,
-  } as any)
-const AuthenticatedVendasFunilRoute =
-  AuthenticatedVendasFunilRouteImport.update({
-    id: '/funil',
-    path: '/funil',
     getParentRoute: () => AuthenticatedVendasRoute,
   } as any)
 const AuthenticatedVendasAgendaRoute =
@@ -443,14 +429,12 @@ export interface FileRoutesByFullPath {
   '/executivos/landing-page': typeof AuthenticatedExecutivosLandingPageRoute
   '/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
   '/vendas/agenda': typeof AuthenticatedVendasAgendaRoute
-  '/vendas/funil': typeof AuthenticatedVendasFunilRoute
   '/vendas/leads': typeof AuthenticatedVendasLeadsRoute
   '/vendas/metas': typeof AuthenticatedVendasMetasRoute
   '/vendas/pipeline': typeof AuthenticatedVendasPipelineRoute
   '/vendas/plantao': typeof AuthenticatedVendasPlantaoRoute
   '/vendas/portfolio': typeof AuthenticatedVendasPortfolioRoute
   '/vendas/relatorios': typeof AuthenticatedVendasRelatoriosRoute
-  '/vendas/tempo-resposta': typeof AuthenticatedVendasTempoRespostaRoute
   '/api/public/cron-laura-resumo-diario': typeof ApiPublicCronLauraResumoDiarioRoute
   '/api/public/cron-plantao-diario': typeof ApiPublicCronPlantaoDiarioRoute
   '/api/public/cron-reuniao-lembretes': typeof ApiPublicCronReuniaoLembretesRoute
@@ -501,14 +485,12 @@ export interface FileRoutesByTo {
   '/executivos/landing-page': typeof AuthenticatedExecutivosLandingPageRoute
   '/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
   '/vendas/agenda': typeof AuthenticatedVendasAgendaRoute
-  '/vendas/funil': typeof AuthenticatedVendasFunilRoute
   '/vendas/leads': typeof AuthenticatedVendasLeadsRoute
   '/vendas/metas': typeof AuthenticatedVendasMetasRoute
   '/vendas/pipeline': typeof AuthenticatedVendasPipelineRoute
   '/vendas/plantao': typeof AuthenticatedVendasPlantaoRoute
   '/vendas/portfolio': typeof AuthenticatedVendasPortfolioRoute
   '/vendas/relatorios': typeof AuthenticatedVendasRelatoriosRoute
-  '/vendas/tempo-resposta': typeof AuthenticatedVendasTempoRespostaRoute
   '/api/public/cron-laura-resumo-diario': typeof ApiPublicCronLauraResumoDiarioRoute
   '/api/public/cron-plantao-diario': typeof ApiPublicCronPlantaoDiarioRoute
   '/api/public/cron-reuniao-lembretes': typeof ApiPublicCronReuniaoLembretesRoute
@@ -564,14 +546,12 @@ export interface FileRoutesById {
   '/_authenticated/executivos/landing-page': typeof AuthenticatedExecutivosLandingPageRoute
   '/_authenticated/leads/$leadId': typeof AuthenticatedLeadsLeadIdRoute
   '/_authenticated/vendas/agenda': typeof AuthenticatedVendasAgendaRoute
-  '/_authenticated/vendas/funil': typeof AuthenticatedVendasFunilRoute
   '/_authenticated/vendas/leads': typeof AuthenticatedVendasLeadsRoute
   '/_authenticated/vendas/metas': typeof AuthenticatedVendasMetasRoute
   '/_authenticated/vendas/pipeline': typeof AuthenticatedVendasPipelineRoute
   '/_authenticated/vendas/plantao': typeof AuthenticatedVendasPlantaoRoute
   '/_authenticated/vendas/portfolio': typeof AuthenticatedVendasPortfolioRoute
   '/_authenticated/vendas/relatorios': typeof AuthenticatedVendasRelatoriosRoute
-  '/_authenticated/vendas/tempo-resposta': typeof AuthenticatedVendasTempoRespostaRoute
   '/api/public/cron-laura-resumo-diario': typeof ApiPublicCronLauraResumoDiarioRoute
   '/api/public/cron-plantao-diario': typeof ApiPublicCronPlantaoDiarioRoute
   '/api/public/cron-reuniao-lembretes': typeof ApiPublicCronReuniaoLembretesRoute
@@ -627,14 +607,12 @@ export interface FileRouteTypes {
     | '/executivos/landing-page'
     | '/leads/$leadId'
     | '/vendas/agenda'
-    | '/vendas/funil'
     | '/vendas/leads'
     | '/vendas/metas'
     | '/vendas/pipeline'
     | '/vendas/plantao'
     | '/vendas/portfolio'
     | '/vendas/relatorios'
-    | '/vendas/tempo-resposta'
     | '/api/public/cron-laura-resumo-diario'
     | '/api/public/cron-plantao-diario'
     | '/api/public/cron-reuniao-lembretes'
@@ -685,14 +663,12 @@ export interface FileRouteTypes {
     | '/executivos/landing-page'
     | '/leads/$leadId'
     | '/vendas/agenda'
-    | '/vendas/funil'
     | '/vendas/leads'
     | '/vendas/metas'
     | '/vendas/pipeline'
     | '/vendas/plantao'
     | '/vendas/portfolio'
     | '/vendas/relatorios'
-    | '/vendas/tempo-resposta'
     | '/api/public/cron-laura-resumo-diario'
     | '/api/public/cron-plantao-diario'
     | '/api/public/cron-reuniao-lembretes'
@@ -747,14 +723,12 @@ export interface FileRouteTypes {
     | '/_authenticated/executivos/landing-page'
     | '/_authenticated/leads/$leadId'
     | '/_authenticated/vendas/agenda'
-    | '/_authenticated/vendas/funil'
     | '/_authenticated/vendas/leads'
     | '/_authenticated/vendas/metas'
     | '/_authenticated/vendas/pipeline'
     | '/_authenticated/vendas/plantao'
     | '/_authenticated/vendas/portfolio'
     | '/_authenticated/vendas/relatorios'
-    | '/_authenticated/vendas/tempo-resposta'
     | '/api/public/cron-laura-resumo-diario'
     | '/api/public/cron-plantao-diario'
     | '/api/public/cron-reuniao-lembretes'
@@ -1043,13 +1017,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronLauraResumoDiarioRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/vendas/tempo-resposta': {
-      id: '/_authenticated/vendas/tempo-resposta'
-      path: '/tempo-resposta'
-      fullPath: '/vendas/tempo-resposta'
-      preLoaderRoute: typeof AuthenticatedVendasTempoRespostaRouteImport
-      parentRoute: typeof AuthenticatedVendasRoute
-    }
     '/_authenticated/vendas/relatorios': {
       id: '/_authenticated/vendas/relatorios'
       path: '/relatorios'
@@ -1090,13 +1057,6 @@ declare module '@tanstack/react-router' {
       path: '/leads'
       fullPath: '/vendas/leads'
       preLoaderRoute: typeof AuthenticatedVendasLeadsRouteImport
-      parentRoute: typeof AuthenticatedVendasRoute
-    }
-    '/_authenticated/vendas/funil': {
-      id: '/_authenticated/vendas/funil'
-      path: '/funil'
-      fullPath: '/vendas/funil'
-      preLoaderRoute: typeof AuthenticatedVendasFunilRouteImport
       parentRoute: typeof AuthenticatedVendasRoute
     }
     '/_authenticated/vendas/agenda': {
@@ -1284,27 +1244,23 @@ const AuthenticatedLeadsRouteWithChildren =
 
 interface AuthenticatedVendasRouteChildren {
   AuthenticatedVendasAgendaRoute: typeof AuthenticatedVendasAgendaRoute
-  AuthenticatedVendasFunilRoute: typeof AuthenticatedVendasFunilRoute
   AuthenticatedVendasLeadsRoute: typeof AuthenticatedVendasLeadsRoute
   AuthenticatedVendasMetasRoute: typeof AuthenticatedVendasMetasRoute
   AuthenticatedVendasPipelineRoute: typeof AuthenticatedVendasPipelineRoute
   AuthenticatedVendasPlantaoRoute: typeof AuthenticatedVendasPlantaoRoute
   AuthenticatedVendasPortfolioRoute: typeof AuthenticatedVendasPortfolioRoute
   AuthenticatedVendasRelatoriosRoute: typeof AuthenticatedVendasRelatoriosRoute
-  AuthenticatedVendasTempoRespostaRoute: typeof AuthenticatedVendasTempoRespostaRoute
   AuthenticatedVendasIndexRoute: typeof AuthenticatedVendasIndexRoute
 }
 
 const AuthenticatedVendasRouteChildren: AuthenticatedVendasRouteChildren = {
   AuthenticatedVendasAgendaRoute: AuthenticatedVendasAgendaRoute,
-  AuthenticatedVendasFunilRoute: AuthenticatedVendasFunilRoute,
   AuthenticatedVendasLeadsRoute: AuthenticatedVendasLeadsRoute,
   AuthenticatedVendasMetasRoute: AuthenticatedVendasMetasRoute,
   AuthenticatedVendasPipelineRoute: AuthenticatedVendasPipelineRoute,
   AuthenticatedVendasPlantaoRoute: AuthenticatedVendasPlantaoRoute,
   AuthenticatedVendasPortfolioRoute: AuthenticatedVendasPortfolioRoute,
   AuthenticatedVendasRelatoriosRoute: AuthenticatedVendasRelatoriosRoute,
-  AuthenticatedVendasTempoRespostaRoute: AuthenticatedVendasTempoRespostaRoute,
   AuthenticatedVendasIndexRoute: AuthenticatedVendasIndexRoute,
 }
 
@@ -1377,13 +1333,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
