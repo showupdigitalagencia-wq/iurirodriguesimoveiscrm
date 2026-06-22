@@ -4,7 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 type EscalaRow = { id: string; data: string; corretor_id: string; corretor_nome: string | null };
 
-async function ensureAdminOrExec(ctx: { supabase: ReturnType<typeof Object>; userId: string }) {
+async function ensureAdminOrExec(ctx: { supabase: ReturnType<typeof Object>; userId: string }): Promise<{ isAdmin: boolean; isExec: boolean }> {
   const [{ data: isAdmin }, { data: isExec }] = await Promise.all([
     (ctx.supabase as { rpc: (n: string, a: unknown) => Promise<{ data: boolean | null }> })
       .rpc("has_role", { _user_id: ctx.userId, _role: "admin" }),
@@ -12,7 +12,27 @@ async function ensureAdminOrExec(ctx: { supabase: ReturnType<typeof Object>; use
       .rpc("current_user_is_executivo"),
   ]);
   if (!isAdmin && !isExec) throw new Error("Acesso negado");
+  return { isAdmin: !!isAdmin, isExec: !!isExec };
 }
+
+// Verifica se um determinado profile_id pertence a um EXECUTIVO ativo
+// (mesma regra do RPC current_user_is_executivo: profile.nome match com responsaveis.nome pelo 1º nome).
+async function isProfileExecutivo(
+  admin: { from: (t: string) => { select: (c: string) => { eq: (k: string, v: string) => { maybeSingle: () => Promise<{ data: unknown }> } } } },
+  profileId: string,
+): Promise<boolean> {
+  const { data } = await admin
+    .from("profiles")
+    .select("nome, ativo, responsavel_id, responsaveis:responsavel_id(nome, ativo)")
+    .eq("id", profileId)
+    .maybeSingle();
+  const p = data as { nome: string | null; ativo: boolean | null; responsavel_id: string | null; responsaveis: { nome: string | null; ativo: boolean | null } | null } | null;
+  if (!p || p.ativo === false || !p.responsavel_id || !p.responsaveis) return false;
+  if (p.responsaveis.ativo === false) return false;
+  const first = (s: string | null) => (s ?? "").trim().split(/\s+/)[0]?.toLowerCase() ?? "";
+  return first(p.nome) !== "" && first(p.nome) === first(p.responsaveis.nome);
+}
+
 
 export const getEscalaMes = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
