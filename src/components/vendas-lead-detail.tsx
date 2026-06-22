@@ -292,24 +292,8 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
           )}
 
           <div>
-            <Label className="text-xs">Histórico de atividades</Label>
-            <div className="mt-1 space-y-1 text-sm border rounded p-2 max-h-40 overflow-y-auto">
-              <div className="text-xs text-muted-foreground">Lead criado em {new Date(lead.created_at).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}</div>
-              {lead.atribuido_em && (
-                <div className="text-xs text-muted-foreground">Atribuído em {new Date(lead.atribuido_em).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })} ({lead.atribuicao_status})</div>
-              )}
-              {visitas.map((v) => {
-                const compLabel = v.comparecimento === "realizada" ? " ✅ realizada"
-                  : v.comparecimento === "nao_compareceu" ? " ❌ não compareceu"
-                  : "";
-                return (
-                  <div key={v.id} className="text-xs">
-                    🏠 Visita {v.status}{compLabel} — {v.endereco} ({new Date(v.data_inicio).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })})
-                  </div>
-                );
-              })}
-              {visitas.length === 0 && <div className="text-xs text-muted-foreground">Nenhuma visita registrada</div>}
-            </div>
+            <Label className="text-xs mb-2 inline-block">Timeline do lead</Label>
+            <LeadTimeline leadId={lead.id} open={open} />
           </div>
         </div>
 
