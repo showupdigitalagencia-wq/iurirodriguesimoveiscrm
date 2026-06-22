@@ -86,6 +86,18 @@ function PlantaoPage() {
   const escalaByDia = new Map<string, { id: string; corretor_id: string; corretor_nome: string | null }>();
   for (const r of escalaQ.data?.items ?? []) escalaByDia.set(r.data, r);
 
+  // Mapa de flags do plantonista (admin/exec) — vem do listCorretoresElegiveis
+  const flagsById = new Map<string, { is_admin: boolean; is_exec: boolean }>();
+  for (const c of elegQ.data?.items ?? []) flagsById.set(c.id, { is_admin: !!c.is_admin, is_exec: !!c.is_exec });
+  // Se NÃO sou admin, não posso mexer no slot quando o ocupante é outro exec ou um admin
+  function isCellLockedForMe(corretorId: string | undefined | null): boolean {
+    if (!corretorId) return false;
+    if (isAdmin) return false;
+    if (meUid && corretorId === meUid) return false; // pode mexer em si mesmo
+    const f = flagsById.get(corretorId);
+    return !!(f?.is_admin || f?.is_exec);
+  }
+
   // Monta grade do mês
   const firstDay = new Date(ano, mes - 1, 1);
   const startOffset = firstDay.getDay();
