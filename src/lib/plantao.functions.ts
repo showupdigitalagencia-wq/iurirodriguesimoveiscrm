@@ -90,7 +90,11 @@ export const setPlantonista = createServerFn({ method: "POST" })
     z.object({ data: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), corretor_id: z.string().uuid() }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { isAdmin } = await ensureAdminOrExec(context);
+    const { isAdmin, isExec } = await getRoleFlags(context);
+    // Corretor puro: só pode se escalar a si mesmo.
+    if (!isAdmin && !isExec && data.corretor_id !== context.userId) {
+      throw new Error("Você só pode se escalar a si mesmo no plantão.");
+    }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     // Detecta se já existia plantonista diferente para o mesmo dia (troca)
     const { data: prevRaw } = await supabaseAdmin
@@ -99,8 +103,12 @@ export const setPlantonista = createServerFn({ method: "POST" })
       .eq("data", data.data)
       .maybeSingle();
     const prev = prevRaw as { corretor_id: string } | null;
-    // Regra: Executivo NÃO pode sobrescrever um dia escalado para OUTRO executivo ou para um ADMIN.
-    if (!isAdmin && prev && prev.corretor_id !== context.userId && prev.corretor_id !== data.corretor_id) {
+    // Corretor puro: não pode sobrescrever slot de NINGUÉM (só ocupar slot vazio ou trocar o próprio).
+    if (!isAdmin && !isExec && prev && prev.corretor_id !== context.userId) {
+      throw new Error("Você não pode alterar a escala de outra pessoa.");
+    }
+    // Executivo: NÃO pode sobrescrever um dia escalado para OUTRO executivo ou para um ADMIN.
+    if (!isAdmin && isExec && prev && prev.corretor_id !== context.userId && prev.corretor_id !== data.corretor_id) {
       const [prevIsExec, prevIsAdmin] = await Promise.all([
         isProfileExecutivo(supabaseAdmin as never, prev.corretor_id),
         isProfileAdmin(supabaseAdmin as never, prev.corretor_id),
