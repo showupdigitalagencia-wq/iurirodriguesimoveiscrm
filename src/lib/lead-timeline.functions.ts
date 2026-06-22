@@ -20,7 +20,7 @@ export interface TimelineEvent {
   descricao: string | null;
   responsavel: { id: string | null; nome: string | null };
   alvo: { id: string | null; nome: string | null } | null;
-  payload: Record<string, unknown> | null;
+  payload: string | null; // JSON.stringify(...) p/ ser serializable
 }
 
 export const getLeadTimeline = createServerFn({ method: "POST" })
