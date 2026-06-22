@@ -9,21 +9,23 @@ export const Route = createFileRoute("/_authenticated/vendas")({
     const uid = ud.user?.id;
     if (!uid) throw redirect({ to: "/auth" });
 
-    const [{ data: roles }, { data: cfg }, { data: prof }] = await Promise.all([
+    const [{ data: roles }, { data: cfg }, { data: prof }, { data: isExecRpc }] = await Promise.all([
       supabase.from("user_roles").select("role").eq("user_id", uid),
       supabase.from("configuracoes").select("valor").eq("chave", "sistema_corretores_ativo").maybeSingle(),
       supabase.from("profiles").select("vendas_acesso").eq("id", uid).maybeSingle(),
+      supabase.rpc("current_user_is_executivo"),
     ]);
     const isAdmin = roles?.some((r) => r.role === "admin") ?? false;
     const isCorretorVendas = roles?.some((r) => r.role === "corretor_vendas") ?? false;
+    const isExec = isExecRpc === true;
     const ativo = cfg?.valor === true;
     const acessoIndividual = (prof as { vendas_acesso?: boolean } | null)?.vendas_acesso === true;
 
-    // Admin sempre passa. Corretor passa se (toggle global ON) OU (acesso individual liberado).
-    if (!isAdmin && !(isCorretorVendas && (ativo || acessoIndividual))) {
+    // Admin e Executivo sempre passam. Corretor passa se (toggle global ON) OU (acesso individual liberado).
+    if (!isAdmin && !isExec && !(isCorretorVendas && (ativo || acessoIndividual))) {
       throw redirect({ to: "/dashboard" });
     }
-    return { isAdmin, isCorretorVendas, ativo };
+    return { isAdmin, isCorretorVendas, isExec, ativo };
   },
   component: VendasLayout,
 });
