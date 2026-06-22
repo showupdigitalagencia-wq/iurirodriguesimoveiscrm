@@ -80,6 +80,15 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
     queryFn: () => getFinStatus({ data: { leadId: leadId! } }),
   });
 
+  const { data: isExec } = useQuery({
+    queryKey: ["me-is-executivo"],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("current_user_is_executivo");
+      return data === true;
+    },
+  });
+  const canEnviarFinanciamento = isAdmin || !!isExec;
+
   useEffect(() => {
     if (lead && !editing) setForm(lead);
   }, [lead, editing]);
