@@ -15,6 +15,17 @@ async function ensureAdminOrExec(ctx: { supabase: ReturnType<typeof Object>; use
   return { isAdmin: !!isAdmin, isExec: !!isExec };
 }
 
+// Para fluxos onde o corretor pode mexer apenas no PRÓPRIO slot.
+async function getRoleFlags(ctx: { supabase: ReturnType<typeof Object>; userId: string }): Promise<{ isAdmin: boolean; isExec: boolean }> {
+  const [{ data: isAdmin }, { data: isExec }] = await Promise.all([
+    (ctx.supabase as { rpc: (n: string, a: unknown) => Promise<{ data: boolean | null }> })
+      .rpc("has_role", { _user_id: ctx.userId, _role: "admin" }),
+    (ctx.supabase as { rpc: (n: string) => Promise<{ data: boolean | null }> })
+      .rpc("current_user_is_executivo"),
+  ]);
+  return { isAdmin: !!isAdmin, isExec: !!isExec };
+}
+
 // Verifica se um determinado profile_id pertence a um EXECUTIVO ativo
 // (mesma regra do RPC current_user_is_executivo: profile.nome match com responsaveis.nome pelo 1º nome).
 async function isProfileExecutivo(
@@ -79,7 +90,11 @@ export const setPlantonista = createServerFn({ method: "POST" })
     z.object({ data: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), corretor_id: z.string().uuid() }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { isAdmin } = await ensureAdminOrExec(context);
+    const { isAdmin, isExec } = await getRoleFlags(context);
+    // Corretor puro: só pode se escalar a si mesmo.
+    if (!isAdmin && !isExec && data.corretor_id !== context.userId) {
+      throw new Error("Você só pode se escalar a si mesmo no plantão.");
+    }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     // Detecta se já existia plantonista diferente para o mesmo dia (troca)
     const { data: prevRaw } = await supabaseAdmin
@@ -88,8 +103,12 @@ export const setPlantonista = createServerFn({ method: "POST" })
       .eq("data", data.data)
       .maybeSingle();
     const prev = prevRaw as { corretor_id: string } | null;
-    // Regra: Executivo NÃO pode sobrescrever um dia escalado para OUTRO executivo ou para um ADMIN.
-    if (!isAdmin && prev && prev.corretor_id !== context.userId && prev.corretor_id !== data.corretor_id) {
+    // Corretor puro: não pode sobrescrever slot de NINGUÉM (só ocupar slot vazio ou trocar o próprio).
+    if (!isAdmin && !isExec && prev && prev.corretor_id !== context.userId) {
+      throw new Error("Você não pode alterar a escala de outra pessoa.");
+    }
+    // Executivo: NÃO pode sobrescrever um dia escalado para OUTRO executivo ou para um ADMIN.
+    if (!isAdmin && isExec && prev && prev.corretor_id !== context.userId && prev.corretor_id !== data.corretor_id) {
       const [prevIsExec, prevIsAdmin] = await Promise.all([
         isProfileExecutivo(supabaseAdmin as never, prev.corretor_id),
         isProfileAdmin(supabaseAdmin as never, prev.corretor_id),
@@ -147,24 +166,27 @@ export const removerPlantonista = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ data: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) }).parse(d))
   .handler(async ({ data, context }) => {
-    const { isAdmin } = await ensureAdminOrExec(context);
+    const { isAdmin, isExec } = await getRoleFlags(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    // Regra: Executivo NÃO pode remover dia escalado para OUTRO executivo ou para um ADMIN.
-    if (!isAdmin) {
-      const { data: prevRaw } = await supabaseAdmin
-        .from("plantao_escala" as never)
-        .select("corretor_id")
-        .eq("data", data.data)
-        .maybeSingle();
-      const prev = prevRaw as { corretor_id: string } | null;
-      if (prev && prev.corretor_id !== context.userId) {
-        const [prevIsExec, prevIsAdmin] = await Promise.all([
-          isProfileExecutivo(supabaseAdmin as never, prev.corretor_id),
-          isProfileAdmin(supabaseAdmin as never, prev.corretor_id),
-        ]);
-        if (prevIsAdmin) throw new Error("Apenas Admin pode remover a escala de outro Admin.");
-        if (prevIsExec) throw new Error("Apenas Admin pode remover a escala de outro Executivo.");
-      }
+    const { data: prevRaw } = await supabaseAdmin
+      .from("plantao_escala" as never)
+      .select("corretor_id")
+      .eq("data", data.data)
+      .maybeSingle();
+    const prev = prevRaw as { corretor_id: string } | null;
+    if (!prev) return { ok: true };
+    // Corretor puro: só pode remover a si mesmo.
+    if (!isAdmin && !isExec && prev.corretor_id !== context.userId) {
+      throw new Error("Você só pode se remover do plantão.");
+    }
+    // Executivo: NÃO pode remover dia escalado para OUTRO executivo ou para um ADMIN.
+    if (!isAdmin && isExec && prev.corretor_id !== context.userId) {
+      const [prevIsExec, prevIsAdmin] = await Promise.all([
+        isProfileExecutivo(supabaseAdmin as never, prev.corretor_id),
+        isProfileAdmin(supabaseAdmin as never, prev.corretor_id),
+      ]);
+      if (prevIsAdmin) throw new Error("Apenas Admin pode remover a escala de outro Admin.");
+      if (prevIsExec) throw new Error("Apenas Admin pode remover a escala de outro Executivo.");
     }
     const { error } = await supabaseAdmin.from("plantao_escala" as never).delete().eq("data", data.data);
     if (error) throw new Error(error.message);
@@ -174,7 +196,8 @@ export const removerPlantonista = createServerFn({ method: "POST" })
 export const listCorretoresElegiveis = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await ensureAdminOrExec(context);
+    // Acessível também por corretor — ele precisa da lista pra ver/escalar a si mesmo.
+    void context;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     // corretor_vendas + corretor (legado) + executivos + qualquer usuário marcado "Elegível para Plantão"
     const [{ data: roles }, { data: execs }, { data: elegiveis }, { data: adminRoles }] = await Promise.all([

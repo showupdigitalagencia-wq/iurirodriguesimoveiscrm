@@ -45,8 +45,9 @@ function PlantaoPage() {
       return { canEdit: isAdmin || !!isExec, isAdmin, isExec: !!isExec, uid };
     },
   });
-  const canEdit = !!meRole?.canEdit;
+  const canEdit = true; // todos os perfis (admin/exec/corretor) podem ao menos mexer no próprio slot
   const isAdmin = !!meRole?.isAdmin;
+  const isExec = !!meRole?.isExec;
   const meUid = meRole?.uid ?? null;
 
   const escalaQ = useQuery({
@@ -90,10 +91,15 @@ function PlantaoPage() {
   const flagsById = new Map<string, { is_admin: boolean; is_exec: boolean }>();
   for (const c of elegQ.data?.items ?? []) flagsById.set(c.id, { is_admin: !!c.is_admin, is_exec: !!c.is_exec });
   // Se NÃO sou admin, não posso mexer no slot quando o ocupante é outro exec ou um admin
+  // Regra de bloqueio do slot:
+  // - Admin: nada bloqueia.
+  // - Executivo: bloqueia se o ocupante atual for outro exec ou um admin.
+  // - Corretor puro: só pode mexer em si mesmo ou ocupar slot vazio.
   function isCellLockedForMe(corretorId: string | undefined | null): boolean {
-    if (!corretorId) return false;
     if (isAdmin) return false;
-    if (meUid && corretorId === meUid) return false; // pode mexer em si mesmo
+    if (!corretorId) return false; // slot vazio: qualquer um pode ocupar (limitado a si mesmo no backend p/ corretor)
+    if (meUid && corretorId === meUid) return false;
+    if (!isExec) return true; // corretor puro: bloqueia qualquer slot que não seja o próprio
     const f = flagsById.get(corretorId);
     return !!(f?.is_admin || f?.is_exec);
   }
@@ -157,10 +163,13 @@ function PlantaoPage() {
               const isToday = ds === todayStr;
               const ent = escalaByDia.get(ds);
               const locked = isCellLockedForMe(ent?.corretor_id);
+              const lockedFlags = ent ? flagsById.get(ent.corretor_id) : undefined;
               const lockTitle = locked
-                ? (flagsById.get(ent!.corretor_id)?.is_admin
+                ? (lockedFlags?.is_admin
                     ? "Apenas Admin pode alterar a escala de outro Admin"
-                    : "Apenas Admin pode alterar a escala de outro Executivo")
+                    : lockedFlags?.is_exec
+                      ? "Apenas Admin pode alterar a escala de outro Executivo"
+                      : "Você só pode se escalar a si mesmo no plantão")
                 : undefined;
               return (
                 <div
@@ -185,9 +194,11 @@ function PlantaoPage() {
                         <SelectValue placeholder="—" />
                       </SelectTrigger>
                       <SelectContent>
-                        {(elegQ.data?.items ?? []).map((c) => (
-                          <SelectItem key={c.id} value={c.id} className="text-xs">{c.nome}</SelectItem>
-                        ))}
+                        {(elegQ.data?.items ?? [])
+                          .filter((c) => isAdmin || isExec ? true : c.id === meUid)
+                          .map((c) => (
+                            <SelectItem key={c.id} value={c.id} className="text-xs">{c.nome}</SelectItem>
+                          ))}
                       </SelectContent>
                     </Select>
                   ) : (

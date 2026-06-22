@@ -67,7 +67,7 @@ const CONFIG_NAV = [
 ] as const;
 
 // Rotas permitidas para corretor_vendas (puro)
-const CORRETOR_ALLOWED_PREFIXES = ["/vendas", "/notificacoes"];
+const CORRETOR_ALLOWED_PREFIXES = ["/vendas", "/notificacoes", "/configuracoes"];
 // Rotas permitidas para administrativo (puro)
 const ADMINISTRATIVO_ALLOWED_PREFIXES = ["/admin", "/executivos/landing-page", "/notificacoes", "/configuracoes"];
 // Rotas permitidas para correspondente_bancaria (puro)
@@ -124,6 +124,7 @@ function AuthLayout() {
           { to: "/vendas/agenda", label: "Agenda", icon: CalendarDays },
           { to: "/vendas/plantao", label: "Plantão", icon: CalendarClock },
           { to: "/notificacoes", label: "Notificações", icon: BellRing },
+          { to: "/configuracoes", label: "Configurações", icon: Settings },
         );
       }
       return items;
@@ -213,9 +214,7 @@ function AuthLayout() {
     router.navigate({ to: "/auth" });
   }
 
-  const mobileTopItems = isCorretorVendas && !isAdmin
-    ? MOBILE_TOP_ICONS.filter((item) => item.to !== "/configuracoes")
-    : MOBILE_TOP_ICONS;
+  const mobileTopItems = MOBILE_TOP_ICONS;
 
   if (rolesLoaded && hasNoRole) {
     const desativado = accessRevoked;
