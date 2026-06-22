@@ -509,6 +509,16 @@ function VendasRelatoriosPage() {
           )}
         </>
       )}
+        </TabsContent>
+
+        <TabsContent value="funil" className="mt-0">
+          <VendasFunilPanel />
+        </TabsContent>
+
+        <TabsContent value="tempo" className="mt-0">
+          <VendasTempoRespostaPanel />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
