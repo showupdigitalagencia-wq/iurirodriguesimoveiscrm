@@ -170,7 +170,7 @@ function SejaCorretorPage() {
         className="overflow-hidden py-5 border-y"
         style={{ background: "#0F1626", borderColor: `${GOLD}22` }}
       >
-        <div className="flex animate-[marquee_30s_linear_infinite] gap-12 whitespace-nowrap text-sm uppercase tracking-[0.3em] text-white/60">
+        <div className="flex animate-[marquee_30s_linear_infinite] gap-12 whitespace-nowrap text-[10px] md:text-xs uppercase tracking-[0.45em] text-white/55">
           {[...CAPTACAO_REGIOES_MARQUEE, ...CAPTACAO_REGIOES_MARQUEE].map((r, i) => (
             <span key={i} className="flex items-center gap-3">
               <span style={{ color: GOLD }}>◆</span> {r}
@@ -304,12 +304,12 @@ function SejaCorretorPage() {
       <section className="px-6 py-20" style={{ background: "#0F1626" }}>
 
         <div className="max-w-3xl mx-auto text-center space-y-6">
-          <div className="text-xs uppercase tracking-[0.35em]" style={{ color: GOLD }}>
+          <div className="text-[10px] md:text-xs uppercase tracking-[0.45em]" style={{ color: GOLD }}>
             Manifesto
           </div>
           <h2
-            className="text-3xl md:text-5xl leading-tight"
-            style={{ fontFamily: SERIF, fontWeight: 600 }}
+            className="text-3xl md:text-5xl leading-[1.1]"
+            style={{ fontFamily: SERIF, fontWeight: 500, letterSpacing: "-0.01em" }}
           >
             Não recrutamos <span style={{ color: GOLD }}>qualquer um</span>
           </h2>
@@ -332,11 +332,11 @@ function SejaCorretorPage() {
             <div key={s.l} className="space-y-2">
               <div
                 className="text-5xl md:text-6xl"
-                style={{ fontFamily: SERIF, color: GOLD, fontWeight: 700 }}
+                style={{ fontFamily: SERIF, color: GOLD, fontWeight: 500, letterSpacing: "-0.02em" }}
               >
                 {s.n}
               </div>
-              <div className="text-sm uppercase tracking-[0.2em] text-white/60">{s.l}</div>
+              <div className="text-[10px] md:text-xs uppercase tracking-[0.45em] text-white/55">{s.l}</div>
             </div>
           ))}
         </div>
@@ -347,11 +347,11 @@ function SejaCorretorPage() {
       <section className="px-6 py-20" style={{ background: "#0F1626" }}>
         <div className="max-w-6xl mx-auto space-y-12">
           <div className="text-center space-y-3">
-            <div className="text-xs uppercase tracking-[0.35em]" style={{ color: GOLD }}>
+            <div className="text-[10px] md:text-xs uppercase tracking-[0.45em]" style={{ color: GOLD }}>
               O time
             </div>
-            <h2 className="text-3xl md:text-5xl" style={{ fontFamily: SERIF, fontWeight: 600 }}>
-              Pessoas que <span style={{ color: GOLD }}>fazem acontecer</span>
+            <h2 className="text-3xl md:text-5xl leading-[1.1]" style={{ fontFamily: SERIF, fontWeight: 500, letterSpacing: "-0.01em" }}>
+              Pessoas que <em style={{ color: GOLD, fontStyle: "italic", fontWeight: 500 }}>fazem acontecer</em>
             </h2>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
@@ -360,8 +360,8 @@ function SejaCorretorPage() {
               return (
                 <div
                   key={i}
-                  className="rounded-xl overflow-hidden flex flex-col"
-                  style={{ background: "#0A0E1A", border: `1px solid ${GOLD}26` }}
+                  className="rounded-2xl overflow-hidden flex flex-col"
+                  style={{ background: "#0A0E1A", border: `1px solid ${GOLD}33` }}
                 >
                   <div
                     className="aspect-[3/4] w-full flex items-center justify-center text-white/30 text-xs uppercase tracking-widest"
@@ -391,17 +391,17 @@ function SejaCorretorPage() {
 
         <div className="max-w-5xl mx-auto space-y-12">
           <div className="text-center space-y-3">
-            <div className="text-xs uppercase tracking-[0.35em]" style={{ color: GOLD }}>
+            <div className="text-[10px] md:text-xs uppercase tracking-[0.45em]" style={{ color: GOLD }}>
               {filteredExec ? "Fale agora com" : "Liderança"}
             </div>
-            <h2 className="text-3xl md:text-5xl" style={{ fontFamily: SERIF, fontWeight: 600 }}>
+            <h2 className="text-3xl md:text-5xl leading-[1.1]" style={{ fontFamily: SERIF, fontWeight: 500, letterSpacing: "-0.01em" }}>
               {filteredExec ? (
                 <>
-                  Seu próximo passo é com <span style={{ color: GOLD }}>{filteredExec.nome}</span>
+                  Seu próximo passo é com <em style={{ color: GOLD, fontStyle: "italic", fontWeight: 500 }}>{filteredExec.nome}</em>
                 </>
               ) : (
                 <>
-                  Escolha por <span style={{ color: GOLD }}>região</span>
+                  Escolha por <em style={{ color: GOLD, fontStyle: "italic", fontWeight: 500 }}>região</em>
                 </>
               )}
             </h2>
@@ -418,15 +418,15 @@ function SejaCorretorPage() {
               <div
                 key={exec.ref}
                 className="rounded-2xl p-7 space-y-5 flex flex-col"
-                style={{ background: "#0F1626", border: `1px solid ${GOLD}40` }}
+                style={{ background: "#0F1626", border: `1px solid ${GOLD}33` }}
               >
                 <div>
-                  <div className="text-xs uppercase tracking-[0.3em] text-white/50 mb-2">
+                  <div className="text-[10px] md:text-xs uppercase tracking-[0.45em] text-white/50 mb-2">
                     {exec.regiao}
                   </div>
                   <h3
-                    className="text-3xl md:text-4xl leading-tight"
-                    style={{ fontFamily: SERIF, color: GOLD, fontWeight: 600 }}
+                    className="text-3xl md:text-4xl leading-[1.1]"
+                    style={{ fontFamily: SERIF, color: GOLD, fontWeight: 500, letterSpacing: "-0.01em" }}
                   >
                     {exec.nome}
                   </h3>
@@ -438,7 +438,7 @@ function SejaCorretorPage() {
                   href={whatsappLink(exec)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-md font-semibold text-sm uppercase tracking-wider transition-transform hover:scale-[1.02]"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-md font-semibold text-sm uppercase tracking-[0.2em] transition-transform hover:scale-[1.02]"
                   style={{ background: GOLD, color: "#0A0E1A" }}
                 >
                   Falar no WhatsApp →
@@ -452,8 +452,8 @@ function SejaCorretorPage() {
       {/* CTA FINAL */}
       <section className="px-6 py-24" style={{ background: "#0F1626" }}>
         <div className="max-w-3xl mx-auto text-center space-y-6">
-          <h2 className="text-3xl md:text-5xl leading-tight" style={{ fontFamily: SERIF, fontWeight: 600 }}>
-            Pronto para fazer parte do <span style={{ color: GOLD }}>maior ecossistema</span> do Rio?
+          <h2 className="text-3xl md:text-5xl leading-[1.1]" style={{ fontFamily: SERIF, fontWeight: 500, letterSpacing: "-0.01em" }}>
+            Pronto para fazer parte do <em style={{ color: GOLD, fontStyle: "italic", fontWeight: 500 }}>maior ecossistema</em> do Rio?
           </h2>
           <p className="text-white/70 text-base md:text-lg">
             {filteredExec
@@ -465,8 +465,8 @@ function SejaCorretorPage() {
               href={whatsappLink(filteredExec)}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-md font-semibold text-base uppercase tracking-wider transition-transform hover:scale-105"
-              style={{ background: GOLD, color: "#0A0E1A", boxShadow: `0 10px 40px -10px ${GOLD}80` }}
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-md font-semibold text-sm md:text-base uppercase tracking-[0.2em] transition-transform hover:scale-[1.03]"
+              style={{ background: GOLD, color: "#0A0E1A", boxShadow: `0 18px 50px -18px ${GOLD}99` }}
             >
               Quero fazer parte →
             </a>
