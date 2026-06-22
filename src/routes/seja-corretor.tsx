@@ -304,12 +304,12 @@ function SejaCorretorPage() {
       <section className="px-6 py-20" style={{ background: "#0F1626" }}>
 
         <div className="max-w-3xl mx-auto text-center space-y-6">
-          <div className="text-xs uppercase tracking-[0.35em]" style={{ color: GOLD }}>
+          <div className="text-[10px] md:text-xs uppercase tracking-[0.45em]" style={{ color: GOLD }}>
             Manifesto
           </div>
           <h2
-            className="text-3xl md:text-5xl leading-tight"
-            style={{ fontFamily: SERIF, fontWeight: 600 }}
+            className="text-3xl md:text-5xl leading-[1.1]"
+            style={{ fontFamily: SERIF, fontWeight: 500, letterSpacing: "-0.01em" }}
           >
             Não recrutamos <span style={{ color: GOLD }}>qualquer um</span>
           </h2>
