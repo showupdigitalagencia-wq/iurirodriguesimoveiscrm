@@ -144,7 +144,7 @@ function SejaCorretorPage() {
           )}
 
           <p className="text-white/70 max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
-            Não somos uma imobiliária. Somos o time, a tecnologia e a liderança que faltava
+            Não somos apenas uma imobiliária. Somos o time, a tecnologia e a liderança que faltavam
             para você vender mais — com método, respaldo e presença real em cada negociação.
           </p>
 
@@ -397,7 +397,7 @@ function SejaCorretorPage() {
             <h2 className="text-3xl md:text-5xl leading-[1.1]" style={{ fontFamily: SERIF, fontWeight: 500, letterSpacing: "-0.01em" }}>
               {filteredExec ? (
                 <>
-                  Seu próximo passo é com <em style={{ color: GOLD, fontStyle: "italic", fontWeight: 500 }}>{filteredExec.nome}</em>
+                  Seu próximo passo é com o <em style={{ color: GOLD, fontStyle: "italic", fontWeight: 500 }}>{filteredExec.nome}</em>
                 </>
               ) : (
                 <>
