@@ -79,13 +79,30 @@ export const createManualVendasLead = createServerFn({ method: "POST" })
       .single();
     if (vlErr || !vlead) throw new Error(vlErr?.message ?? "Falha ao cadastrar lead");
 
-    // Log de origem da atribuição
-    const detalhe =
+    // Resolve nomes para o histórico (rastreabilidade)
+    const idsParaNome = Array.from(new Set([context.userId, ...(corretorId ? [corretorId] : [])]));
+    const { data: profsRaw } = await supabaseAdmin
+      .from("profiles").select("id, nome").in("id", idsParaNome);
+    const nomes = new Map<string, string>(
+      ((profsRaw ?? []) as { id: string; nome: string | null }[]).map((p) => [p.id, p.nome ?? ""]),
+    );
+    const criadoPorNome = nomes.get(context.userId) ?? null;
+    const atribuidoNome = corretorId ? (nomes.get(corretorId) ?? null) : null;
+
+    const mensagem =
       atribuicaoTipo === "admin_manual"
-        ? { mensagem: "Lead manual atribuído manualmente por administrador", criado_por: context.userId }
+        ? "Lead manual atribuído manualmente por administrador"
         : atribuicaoTipo === "plantao_auto"
-          ? { mensagem: "Lead manual atribuído automaticamente ao plantonista do dia", criado_por: context.userId }
-          : { mensagem: "Lead manual cadastrado sem plantonista do dia", criado_por: context.userId };
+          ? "Lead manual atribuído automaticamente ao plantonista do dia"
+          : "Lead manual criado sem plantonista definido (fallback)";
+
+    const detalhe = {
+      mensagem,
+      motivo: atribuicaoTipo,
+      criado_por: { id: context.userId, nome: criadoPorNome },
+      atribuido_a: corretorId ? { id: corretorId, nome: atribuidoNome } : null,
+      atribuido_em: nowIso,
+    };
 
     await supabaseAdmin.from("plantao_log" as never).insert({
       lead_id: vlead.id,
