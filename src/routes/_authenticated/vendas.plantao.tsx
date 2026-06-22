@@ -45,8 +45,9 @@ function PlantaoPage() {
       return { canEdit: isAdmin || !!isExec, isAdmin, isExec: !!isExec, uid };
     },
   });
-  const canEdit = !!meRole?.canEdit;
+  const canEdit = true; // todos os perfis (admin/exec/corretor) podem ao menos mexer no próprio slot
   const isAdmin = !!meRole?.isAdmin;
+  const isExec = !!meRole?.isExec;
   const meUid = meRole?.uid ?? null;
 
   const escalaQ = useQuery({
