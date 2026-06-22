@@ -163,10 +163,13 @@ function PlantaoPage() {
               const isToday = ds === todayStr;
               const ent = escalaByDia.get(ds);
               const locked = isCellLockedForMe(ent?.corretor_id);
+              const lockedFlags = ent ? flagsById.get(ent.corretor_id) : undefined;
               const lockTitle = locked
-                ? (flagsById.get(ent!.corretor_id)?.is_admin
+                ? (lockedFlags?.is_admin
                     ? "Apenas Admin pode alterar a escala de outro Admin"
-                    : "Apenas Admin pode alterar a escala de outro Executivo")
+                    : lockedFlags?.is_exec
+                      ? "Apenas Admin pode alterar a escala de outro Executivo"
+                      : "Você só pode se escalar a si mesmo no plantão")
                 : undefined;
               return (
                 <div
