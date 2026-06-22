@@ -13,6 +13,8 @@ import { REGIOES } from "@/lib/lead-helpers";
 import { VENDAS_ETAPAS, formatBRL, vendasEtapaInfo, type VendasLead, type VendasEtapa, type VendasTipo } from "@/lib/vendas-helpers";
 import { createVisita, createReuniaoOnlineVenda } from "@/lib/visitas.functions";
 import { listCorretoresDisponibilidade, atribuirLead, aceitarLead, recusarLead, type CorretorAvail } from "@/lib/vendas-distribuicao.functions";
+import { createManualVendasLead } from "@/lib/vendas-manual.functions";
+import { getPlantonistaHoje, listCorretoresElegiveis } from "@/lib/plantao.functions";
 import { toast } from "sonner";
 import { Plus, MapPin, Video, UserPlus, Check, X } from "lucide-react";
 import { VendasLeadDetail } from "@/components/vendas-lead-detail";
