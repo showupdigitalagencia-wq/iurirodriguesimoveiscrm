@@ -65,7 +65,7 @@ export const setPlantonista = createServerFn({ method: "POST" })
     z.object({ data: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), corretor_id: z.string().uuid() }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    await ensureAdminOrExec(context);
+    const { isAdmin } = await ensureAdminOrExec(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     // Detecta se já existia plantonista diferente para o mesmo dia (troca)
     const { data: prevRaw } = await supabaseAdmin
@@ -74,6 +74,11 @@ export const setPlantonista = createServerFn({ method: "POST" })
       .eq("data", data.data)
       .maybeSingle();
     const prev = prevRaw as { corretor_id: string } | null;
+    // Regra: Executivo NÃO pode sobrescrever um dia escalado para OUTRO executivo.
+    if (!isAdmin && prev && prev.corretor_id !== context.userId && prev.corretor_id !== data.corretor_id) {
+      const prevIsExec = await isProfileExecutivo(supabaseAdmin as never, prev.corretor_id);
+      if (prevIsExec) throw new Error("Apenas Admin pode alterar a escala de outro Executivo.");
+    }
     // upsert por data — zera `notificado_em` se trocou de corretor para que o aviso saia
     const changed = !prev || prev.corretor_id !== data.corretor_id;
     const { error } = await supabaseAdmin
