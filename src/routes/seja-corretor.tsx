@@ -326,7 +326,7 @@ function SejaCorretorPage() {
       </section>
 
       {/* STATS */}
-      <section className="px-6 py-14" style={{ background: "#0F1626" }}>
+      <section className="px-6 py-14" style={{ background: "#0A0E1A" }}>
         <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
           {CAPTACAO_STATS.map((s) => (
             <div key={s.l} className="space-y-2">
