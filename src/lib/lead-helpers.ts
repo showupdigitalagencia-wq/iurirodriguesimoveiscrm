@@ -113,3 +113,21 @@ export const ETAPA_COLORS: Record<LeadEtapa, {
 export function etapaColor(id: LeadEtapa) {
   return ETAPA_COLORS[id] ?? ETAPA_COLORS.novos_leads;
 }
+
+// Stage hex (via CSS vars do design system) — pipeline de CAPTAÇÃO
+export const ETAPA_HEX: Record<LeadEtapa, string> = {
+  novos_leads:            "var(--stage-cap-novo)",
+  em_atendimento:         "var(--stage-cap-contato)",
+  reuniao_agendada:       "var(--stage-cap-reuniao)",
+  solicitacao_documentos: "var(--stage-cap-docs-solic)",
+  documentos_enviados:    "var(--stage-cap-docs-enviados)",
+  em_negociacao:          "var(--stage-ven-negociacao)", // rosé (não previsto no spec da captação)
+  follow_up:              "var(--stage-ven-followup)",   // slate
+  fechado:                "var(--stage-cap-fechado)",
+  descartado:             "var(--stage-cap-descartado)",
+  descredenciado:         "var(--stage-cap-descredenciado)",
+};
+
+export function etapaHex(id: LeadEtapa): string {
+  return ETAPA_HEX[id] ?? ETAPA_HEX.novos_leads;
+}

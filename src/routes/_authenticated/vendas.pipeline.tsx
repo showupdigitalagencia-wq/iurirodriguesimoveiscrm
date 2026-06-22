@@ -50,13 +50,27 @@ function VendasPipeline() {
         <div className="flex gap-3 min-w-max">
           {VENDAS_ETAPAS.map((etapa) => {
             const items = leads.filter((l) => l.etapa === etapa.id);
+            const hex = etapa.hex;
             return (
               <div key={etapa.id} className="w-[85vw] sm:w-72 shrink-0 snap-center">
-                <div className={`rounded-t-md px-3 py-2 border ${etapa.color} flex items-center justify-between`}>
-                  <span className="text-sm font-semibold">{etapa.emoji} {etapa.nome}</span>
-                  <span className="text-xs">{items.length}</span>
+                <div
+                  className="relative rounded-t-lg px-3 py-2.5 flex items-center justify-between border border-b-0 border-border/50 backdrop-blur-md"
+                  style={{
+                    background: `linear-gradient(180deg, ${hex}22, transparent)`,
+                  }}
+                >
+                  <span aria-hidden className="absolute left-0 top-0 bottom-0 w-[3px]" style={{ background: hex, boxShadow: `0 0 12px ${hex}` }} />
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground/90">
+                    {etapa.emoji} {etapa.nome}
+                  </span>
+                  <span
+                    className="text-[10px] font-medium rounded-full px-2 py-0.5 border"
+                    style={{ color: hex, borderColor: `${hex}55`, background: `${hex}15` }}
+                  >
+                    {items.length}
+                  </span>
                 </div>
-                <div className="border border-t-0 rounded-b-md bg-card p-2 space-y-2 min-h-[200px]">
+                <div className="border border-t-0 border-border/50 rounded-b-lg bg-card/40 backdrop-blur-sm p-2 space-y-2 min-h-[200px]">
                   {items.length === 0 && (
                     <div className="text-xs text-muted-foreground text-center py-6">Vazio</div>
                   )}
@@ -65,7 +79,8 @@ function VendasPipeline() {
                       key={l.id}
                       type="button"
                       onClick={() => setDetailId(l.id)}
-                      className="w-full text-left rounded-md border p-2.5 bg-background hover:bg-muted/40 transition"
+                      style={{ borderLeftColor: hex }}
+                      className="w-full text-left rounded-md border border-border/60 border-l-[3px] p-2.5 bg-background/60 hover:bg-muted/40 hover:border-primary/40 transition-all"
                     >
                       <div className="text-sm font-medium truncate">{l.nome}</div>
                       <div className="text-xs text-muted-foreground">{l.tipo === "compra" ? "Compra" : "Locação"}</div>
