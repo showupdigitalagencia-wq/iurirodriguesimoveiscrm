@@ -372,6 +372,34 @@ function ReuniaoOnlineButton({ lead, onDone }: { lead: VendasLead; onDone: () =>
 function CreateVendasLeadDialog({ onCreated }: { onCreated: () => void }) {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const createManual = useServerFn(createManualVendasLead);
+  const getPlantonista = useServerFn(getPlantonistaHoje);
+  const listElegiveis = useServerFn(listCorretoresElegiveis);
+
+  const { data: me } = useQuery({
+    queryKey: ["me_create_lead_ctx"],
+    queryFn: async () => {
+      const { data: ud } = await supabase.auth.getUser();
+      const uid = ud.user?.id ?? null;
+      if (!uid) return { uid: null, isAdmin: false };
+      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", uid);
+      return { uid, isAdmin: roles?.some((r) => r.role === "admin") ?? false };
+    },
+  });
+  const isAdmin = me?.isAdmin ?? false;
+
+  const { data: plantonista } = useQuery({
+    queryKey: ["plantonista_hoje_create_lead"],
+    enabled: open,
+    queryFn: async () => getPlantonista(),
+  });
+
+  const { data: elegiveis } = useQuery({
+    queryKey: ["corretores_elegiveis_create_lead"],
+    enabled: open && isAdmin,
+    queryFn: async () => listElegiveis(),
+  });
+
   const [form, setForm] = useState({
     nome: "", telefone: "", email: "",
     tipo: "compra" as VendasTipo,
@@ -379,7 +407,16 @@ function CreateVendasLeadDialog({ onCreated }: { onCreated: () => void }) {
     valor: "",
     observacoes: "",
     etapa: "novo_lead" as VendasEtapa,
+    corretor_id: "" as string, // admin override
   });
+
+  // Pré-preenche o "Atribuir a" com o plantonista do dia
+  const plantonistaId = plantonista?.corretor_id ?? null;
+  const plantonistaNome = plantonista?.corretor_nome ?? null;
+  if (open && plantonistaId && !form.corretor_id && isAdmin) {
+    // set once
+    setTimeout(() => setForm((f) => (f.corretor_id ? f : { ...f, corretor_id: plantonistaId })), 0);
+  }
 
   async function submit() {
     if (!form.nome.trim() || !form.telefone.trim()) {
@@ -388,24 +425,22 @@ function CreateVendasLeadDialog({ onCreated }: { onCreated: () => void }) {
     }
     setSaving(true);
     try {
-      const { data: ud } = await supabase.auth.getUser();
-      const uid = ud.user?.id;
-      const { error } = await supabase.from("vendas_leads").insert({
-        nome: form.nome.trim(),
-        telefone: form.telefone.replace(/\D/g, ""),
-        email: form.email.trim() || null,
-        tipo: form.tipo,
-        regiao: form.regiao as never,
-        valor: form.valor ? Number(form.valor.replace(/[^\d.,]/g, "").replace(",", ".")) : null,
-        observacoes: form.observacoes.trim() || null,
-        etapa: form.etapa,
-        corretor_id: uid ?? null,
-        created_by: uid ?? null,
+      await createManual({
+        data: {
+          nome: form.nome.trim(),
+          telefone: form.telefone,
+          email: form.email.trim() || null,
+          tipo: form.tipo,
+          regiao: form.regiao,
+          valor: form.valor ? Number(form.valor.replace(/[^\d.,]/g, "").replace(",", ".")) : null,
+          observacoes: form.observacoes.trim() || null,
+          etapa: form.etapa,
+          corretor_id_override: isAdmin && form.corretor_id ? form.corretor_id : null,
+        },
       });
-      if (error) throw error;
       toast.success("Lead cadastrado");
       setOpen(false);
-      setForm({ nome: "", telefone: "", email: "", tipo: "compra", regiao: "barra_da_tijuca", valor: "", observacoes: "", etapa: "novo_lead" });
+      setForm({ nome: "", telefone: "", email: "", tipo: "compra", regiao: "barra_da_tijuca", valor: "", observacoes: "", etapa: "novo_lead", corretor_id: "" });
       onCreated();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erro ao cadastrar");
@@ -413,6 +448,10 @@ function CreateVendasLeadDialog({ onCreated }: { onCreated: () => void }) {
       setSaving(false);
     }
   }
+
+  const sugestaoLabel = plantonistaNome
+    ? `${plantonistaNome} (plantonista de hoje)`
+    : "Sem plantonista escalado — será atribuído aos administradores";
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -460,6 +499,36 @@ function CreateVendasLeadDialog({ onCreated }: { onCreated: () => void }) {
               </Select>
             </div>
           </div>
+
+          <div>
+            <Label>Atribuir a</Label>
+            {isAdmin ? (
+              <Select
+                value={form.corretor_id || (plantonistaId ?? "")}
+                onValueChange={(v) => setForm({ ...form, corretor_id: v })}
+              >
+                <SelectTrigger><SelectValue placeholder={sugestaoLabel} /></SelectTrigger>
+                <SelectContent>
+                  {plantonistaId && (
+                    <SelectItem value={plantonistaId}>{plantonistaNome ?? "Plantonista"} (plantão de hoje)</SelectItem>
+                  )}
+                  {(elegiveis?.items ?? [])
+                    .filter((c) => c.id !== plantonistaId)
+                    .map((c) => (
+                      <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <Input value={sugestaoLabel} disabled readOnly />
+            )}
+            <p className="text-xs text-muted-foreground mt-1">
+              {isAdmin
+                ? "Por padrão atribuído ao plantonista do dia. Você pode escolher outro responsável."
+                : "Leads manuais são atribuídos automaticamente ao plantonista do dia."}
+            </p>
+          </div>
+
           <div><Label>Observações</Label><Textarea rows={3} value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} /></div>
         </div>
         <DialogFooter>
@@ -470,3 +539,4 @@ function CreateVendasLeadDialog({ onCreated }: { onCreated: () => void }) {
     </Dialog>
   );
 }
+
