@@ -360,8 +360,8 @@ function SejaCorretorPage() {
               return (
                 <div
                   key={i}
-                  className="rounded-xl overflow-hidden flex flex-col"
-                  style={{ background: "#0A0E1A", border: `1px solid ${GOLD}26` }}
+                  className="rounded-2xl overflow-hidden flex flex-col"
+                  style={{ background: "#0A0E1A", border: `1px solid ${GOLD}33` }}
                 >
                   <div
                     className="aspect-[3/4] w-full flex items-center justify-center text-white/30 text-xs uppercase tracking-widest"
