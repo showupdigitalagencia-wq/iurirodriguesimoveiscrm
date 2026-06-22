@@ -412,13 +412,21 @@ function CreateVendasLeadDialog({ onCreated }: { onCreated: () => void }) {
     corretor_id: "" as string, // admin override
   });
 
-  // Pré-preenche o "Atribuir a" com o plantonista do dia
   const plantonistaId = plantonista?.corretor_id ?? null;
   const plantonistaNome = plantonista?.corretor_nome ?? null;
-  if (open && plantonistaId && !form.corretor_id && isAdmin) {
-    // set once
-    setTimeout(() => setForm((f) => (f.corretor_id ? f : { ...f, corretor_id: plantonistaId })), 0);
-  }
+
+  // Pré-seleciona o plantonista do dia como valor padrão do "Atribuir a"
+  useEffect(() => {
+    if (open && plantonistaId && !form.corretor_id) {
+      setForm((f) => (f.corretor_id ? f : { ...f, corretor_id: plantonistaId }));
+    }
+  }, [open, plantonistaId, form.corretor_id]);
+
+  // Lista final do select: plantonista no topo + demais elegíveis sem duplicar
+  const outrosElegiveis = useMemo(() => {
+    const items = (elegiveis?.items ?? []) as { id: string; nome: string }[];
+    return items.filter((c) => c.id !== plantonistaId);
+  }, [elegiveis, plantonistaId]);
 
   async function submit() {
     if (!form.nome.trim() || !form.telefone.trim()) {
