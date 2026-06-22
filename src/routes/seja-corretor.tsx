@@ -11,6 +11,8 @@ import {
   type CaptacaoExecutivo,
 } from "@/lib/captacao.constants";
 import logoAsset from "@/assets/logo_iuri_rodrigues_v2.png.asset.json";
+import galeria1 from "@/assets/galeria/time-reuniao-1.jpg.asset.json";
+import galeria2 from "@/assets/galeria/time-reuniao-2.jpg.asset.json";
 
 const searchSchema = z.object({
   ref: z.enum(["barra", "recreio", "belford", "mesquita"]).optional(),
