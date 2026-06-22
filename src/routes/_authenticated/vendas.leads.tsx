@@ -514,23 +514,32 @@ function CreateVendasLeadDialog({ onCreated }: { onCreated: () => void }) {
             <Label>Atribuir a</Label>
             {isAdmin ? (
               <Select
-                value={form.corretor_id || (plantonistaId ?? "")}
+                value={form.corretor_id || plantonistaId || ""}
                 onValueChange={(v) => setForm({ ...form, corretor_id: v })}
               >
                 <SelectTrigger><SelectValue placeholder={sugestaoLabel} /></SelectTrigger>
                 <SelectContent>
                   {plantonistaId && (
-                    <SelectItem value={plantonistaId}>{plantonistaNome ?? "Plantonista"} (plantão de hoje)</SelectItem>
+                    <SelectItem value={plantonistaId}>
+                      ⭐ {plantonistaNome ?? "Plantonista"} — Plantonista do dia
+                    </SelectItem>
                   )}
-                  {(elegiveis?.items ?? [])
-                    .filter((c: { id: string }) => c.id !== plantonistaId)
-                    .map((c: { id: string; nome: string }) => (
-                      <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
-                    ))}
+                  {outrosElegiveis.length > 0 && (
+                    <div className="px-2 py-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+                      Outros corretores elegíveis
+                    </div>
+                  )}
+                  {outrosElegiveis.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             ) : (
-              <Input value={sugestaoLabel} disabled readOnly />
+              <Input
+                value={plantonistaNome ? `⭐ ${plantonistaNome} — Plantonista do dia` : sugestaoLabel}
+                disabled
+                readOnly
+              />
             )}
             <p className="text-xs text-muted-foreground mt-1">
               Por padrão, os leads manuais são atribuídos ao plantonista do dia.
@@ -541,6 +550,7 @@ function CreateVendasLeadDialog({ onCreated }: { onCreated: () => void }) {
               </p>
             )}
           </div>
+
 
           <div><Label>Observações</Label><Textarea rows={3} value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} /></div>
         </div>
