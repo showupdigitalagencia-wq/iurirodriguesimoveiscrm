@@ -38,14 +38,16 @@ function PlantaoPage() {
     queryFn: async () => {
       const { data: ud } = await supabase.auth.getUser();
       const uid = ud.user?.id;
-      if (!uid) return { canEdit: false };
+      if (!uid) return { canEdit: false, isAdmin: false, isExec: false, uid: null as string | null };
       const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", uid);
       const isAdmin = roles?.some((r) => r.role === "admin") ?? false;
       const { data: isExec } = await supabase.rpc("current_user_is_executivo");
-      return { canEdit: isAdmin || !!isExec };
+      return { canEdit: isAdmin || !!isExec, isAdmin, isExec: !!isExec, uid };
     },
   });
   const canEdit = !!meRole?.canEdit;
+  const isAdmin = !!meRole?.isAdmin;
+  const meUid = meRole?.uid ?? null;
 
   const escalaQ = useQuery({
     queryKey: ["plantao-escala", ano, mes],
