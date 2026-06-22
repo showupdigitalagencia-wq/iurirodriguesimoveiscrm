@@ -38,14 +38,16 @@ function PlantaoPage() {
     queryFn: async () => {
       const { data: ud } = await supabase.auth.getUser();
       const uid = ud.user?.id;
-      if (!uid) return { canEdit: false };
+      if (!uid) return { canEdit: false, isAdmin: false, isExec: false, uid: null as string | null };
       const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", uid);
       const isAdmin = roles?.some((r) => r.role === "admin") ?? false;
       const { data: isExec } = await supabase.rpc("current_user_is_executivo");
-      return { canEdit: isAdmin || !!isExec };
+      return { canEdit: isAdmin || !!isExec, isAdmin, isExec: !!isExec, uid };
     },
   });
   const canEdit = !!meRole?.canEdit;
+  const isAdmin = !!meRole?.isAdmin;
+  const meUid = meRole?.uid ?? null;
 
   const escalaQ = useQuery({
     queryKey: ["plantao-escala", ano, mes],
@@ -83,6 +85,18 @@ function PlantaoPage() {
 
   const escalaByDia = new Map<string, { id: string; corretor_id: string; corretor_nome: string | null }>();
   for (const r of escalaQ.data?.items ?? []) escalaByDia.set(r.data, r);
+
+  // Mapa de flags do plantonista (admin/exec) — vem do listCorretoresElegiveis
+  const flagsById = new Map<string, { is_admin: boolean; is_exec: boolean }>();
+  for (const c of elegQ.data?.items ?? []) flagsById.set(c.id, { is_admin: !!c.is_admin, is_exec: !!c.is_exec });
+  // Se NÃO sou admin, não posso mexer no slot quando o ocupante é outro exec ou um admin
+  function isCellLockedForMe(corretorId: string | undefined | null): boolean {
+    if (!corretorId) return false;
+    if (isAdmin) return false;
+    if (meUid && corretorId === meUid) return false; // pode mexer em si mesmo
+    const f = flagsById.get(corretorId);
+    return !!(f?.is_admin || f?.is_exec);
+  }
 
   // Monta grade do mês
   const firstDay = new Date(ano, mes - 1, 1);
@@ -142,20 +156,27 @@ function PlantaoPage() {
               const isPast = ds < todayStr;
               const isToday = ds === todayStr;
               const ent = escalaByDia.get(ds);
+              const locked = isCellLockedForMe(ent?.corretor_id);
+              const lockTitle = locked
+                ? (flagsById.get(ent!.corretor_id)?.is_admin
+                    ? "Apenas Admin pode alterar a escala de outro Admin"
+                    : "Apenas Admin pode alterar a escala de outro Executivo")
+                : undefined;
               return (
                 <div
                   key={i}
                   className={`relative aspect-[3/2] md:aspect-[2/1] rounded border p-1 flex flex-col text-xs ${isToday ? "border-gold bg-gold/5" : "border-border"} ${isPast ? "opacity-60" : ""}`}
+                  title={lockTitle}
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-semibold">{d.getDate()}</span>
-                    {ent && canEdit && !isPast && (
+                    {ent && canEdit && !isPast && !locked && (
                       <button onClick={() => delMut.mutate(ds)} className="text-muted-foreground hover:text-destructive">
                         <Trash2 className="h-3 w-3" />
                       </button>
                     )}
                   </div>
-                  {canEdit && !isPast ? (
+                  {canEdit && !isPast && !locked ? (
                     <Select
                       value={ent?.corretor_id ?? ""}
                       onValueChange={(v) => setMut.mutate({ data: ds, corretor_id: v })}

@@ -33,6 +33,20 @@ async function isProfileExecutivo(
   return first(p.nome) !== "" && first(p.nome) === first(p.responsaveis.nome);
 }
 
+// Verifica se um profile_id tem role admin
+async function isProfileAdmin(
+  admin: { from: (t: string) => { select: (c: string) => { eq: (k: string, v: string) => { eq: (k: string, v: string) => { maybeSingle: () => Promise<{ data: unknown }> } } } } },
+  profileId: string,
+): Promise<boolean> {
+  const { data } = await admin
+    .from("user_roles")
+    .select("user_id")
+    .eq("user_id", profileId)
+    .eq("role", "admin")
+    .maybeSingle();
+  return !!data;
+}
+
 
 export const getEscalaMes = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -74,9 +88,13 @@ export const setPlantonista = createServerFn({ method: "POST" })
       .eq("data", data.data)
       .maybeSingle();
     const prev = prevRaw as { corretor_id: string } | null;
-    // Regra: Executivo NÃO pode sobrescrever um dia escalado para OUTRO executivo.
+    // Regra: Executivo NÃO pode sobrescrever um dia escalado para OUTRO executivo ou para um ADMIN.
     if (!isAdmin && prev && prev.corretor_id !== context.userId && prev.corretor_id !== data.corretor_id) {
-      const prevIsExec = await isProfileExecutivo(supabaseAdmin as never, prev.corretor_id);
+      const [prevIsExec, prevIsAdmin] = await Promise.all([
+        isProfileExecutivo(supabaseAdmin as never, prev.corretor_id),
+        isProfileAdmin(supabaseAdmin as never, prev.corretor_id),
+      ]);
+      if (prevIsAdmin) throw new Error("Apenas Admin pode alterar a escala de outro Admin.");
       if (prevIsExec) throw new Error("Apenas Admin pode alterar a escala de outro Executivo.");
     }
     // upsert por data — zera `notificado_em` se trocou de corretor para que o aviso saia
@@ -131,7 +149,7 @@ export const removerPlantonista = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { isAdmin } = await ensureAdminOrExec(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    // Regra: Executivo NÃO pode remover dia escalado para OUTRO executivo.
+    // Regra: Executivo NÃO pode remover dia escalado para OUTRO executivo ou para um ADMIN.
     if (!isAdmin) {
       const { data: prevRaw } = await supabaseAdmin
         .from("plantao_escala" as never)
@@ -140,7 +158,11 @@ export const removerPlantonista = createServerFn({ method: "POST" })
         .maybeSingle();
       const prev = prevRaw as { corretor_id: string } | null;
       if (prev && prev.corretor_id !== context.userId) {
-        const prevIsExec = await isProfileExecutivo(supabaseAdmin as never, prev.corretor_id);
+        const [prevIsExec, prevIsAdmin] = await Promise.all([
+          isProfileExecutivo(supabaseAdmin as never, prev.corretor_id),
+          isProfileAdmin(supabaseAdmin as never, prev.corretor_id),
+        ]);
+        if (prevIsAdmin) throw new Error("Apenas Admin pode remover a escala de outro Admin.");
         if (prevIsExec) throw new Error("Apenas Admin pode remover a escala de outro Executivo.");
       }
     }
@@ -155,29 +177,35 @@ export const listCorretoresElegiveis = createServerFn({ method: "POST" })
     await ensureAdminOrExec(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     // corretor_vendas + corretor (legado) + executivos + qualquer usuário marcado "Elegível para Plantão"
-    const [{ data: roles }, { data: execs }, { data: elegiveis }] = await Promise.all([
+    const [{ data: roles }, { data: execs }, { data: elegiveis }, { data: adminRoles }] = await Promise.all([
       supabaseAdmin.from("user_roles").select("user_id, role").in("role", ["corretor_vendas", "corretor"]),
       supabaseAdmin.from("profiles")
         .select("id, nome, responsavel_id, ativo, responsaveis:responsavel_id(id, nome, ativo)")
         .not("responsavel_id", "is", null),
       supabaseAdmin.from("profiles").select("id, ativo, plantao_elegivel").eq("plantao_elegivel", true),
+      supabaseAdmin.from("user_roles").select("user_id").eq("role", "admin"),
     ]);
     const ids = new Set<string>((roles ?? []).map((r: { user_id: string }) => r.user_id));
+    const execIds = new Set<string>();
     for (const p of (execs ?? []) as { id: string; nome: string; ativo: boolean | null; responsaveis: { nome: string; ativo: boolean | null } | null }[]) {
       const resp = p.responsaveis;
       if (!resp || resp.ativo === false || p.ativo === false) continue;
       if ((resp.nome ?? "").trim().split(/\s+/)[0]?.toLowerCase() === (p.nome ?? "").trim().split(/\s+/)[0]?.toLowerCase()) {
         ids.add(p.id);
+        execIds.add(p.id);
       }
     }
     for (const p of (elegiveis ?? []) as { id: string; ativo: boolean | null }[]) {
       if (p.ativo !== false) ids.add(p.id);
     }
-    if (!ids.size) return { items: [] as { id: string; nome: string }[] };
+    const adminIds = new Set<string>(((adminRoles ?? []) as { user_id: string }[]).map((r) => r.user_id));
+    // garante que admins escalados também apareçam (pra UI conseguir resolver flags pelo id)
+    for (const a of adminIds) ids.add(a);
+    if (!ids.size) return { items: [] as { id: string; nome: string; is_admin: boolean; is_exec: boolean }[] };
     const { data: profs } = await supabaseAdmin.from("profiles").select("id, nome, ativo").in("id", Array.from(ids));
     const items = ((profs ?? []) as { id: string; nome: string; ativo: boolean | null }[])
       .filter((p) => p.ativo !== false)
-      .map((p) => ({ id: p.id, nome: p.nome }))
+      .map((p) => ({ id: p.id, nome: p.nome, is_admin: adminIds.has(p.id), is_exec: execIds.has(p.id) }))
       .sort((a, b) => a.nome.localeCompare(b.nome));
     return { items };
   });
