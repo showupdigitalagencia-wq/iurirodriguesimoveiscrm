@@ -218,10 +218,10 @@
   /* Secundário com mais contraste para legibilidade premium */
   .text-muted-foreground { color: oklch(0.76 0.022 255); }
 
-  /* Focus ring dourado discreto e consistente em toda a UI */
+  /* Focus ring dourado — discreto, presente sem brilhar */
   *:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--background), 0 0 0 4px oklch(0.78 0.13 86 / 0.55);
+    box-shadow: 0 0 0 2px var(--background), 0 0 0 3px oklch(0.78 0.13 86 / 0.38);
     border-radius: inherit;
     transition: box-shadow var(--duration-fast) var(--ease-out-premium);
   }
