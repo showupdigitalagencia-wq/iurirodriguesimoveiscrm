@@ -210,6 +210,14 @@ function VendasRelatoriosPage() {
         </div>
       </header>
 
+      <Tabs defaultValue="geral" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-3 max-w-xl">
+          <TabsTrigger value="geral"><BarChart3 className="h-3.5 w-3.5 mr-1.5" /> Visão Geral</TabsTrigger>
+          <TabsTrigger value="funil"><TrendingDown className="h-3.5 w-3.5 mr-1.5" /> Funil</TabsTrigger>
+          <TabsTrigger value="tempo"><Clock className="h-3.5 w-3.5 mr-1.5" /> Tempo de Resposta</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="geral" className="space-y-6 mt-0">
       {/* Controles: escopo + período */}
       <section className="bg-card border border-border rounded-xl p-4 space-y-3">
         {showScopeSelector && (
