@@ -452,8 +452,8 @@ function SejaCorretorPage() {
       {/* CTA FINAL */}
       <section className="px-6 py-24" style={{ background: "#0F1626" }}>
         <div className="max-w-3xl mx-auto text-center space-y-6">
-          <h2 className="text-3xl md:text-5xl leading-tight" style={{ fontFamily: SERIF, fontWeight: 600 }}>
-            Pronto para fazer parte do <span style={{ color: GOLD }}>maior ecossistema</span> do Rio?
+          <h2 className="text-3xl md:text-5xl leading-[1.1]" style={{ fontFamily: SERIF, fontWeight: 500, letterSpacing: "-0.01em" }}>
+            Pronto para fazer parte do <em style={{ color: GOLD, fontStyle: "italic", fontWeight: 500 }}>maior ecossistema</em> do Rio?
           </h2>
           <p className="text-white/70 text-base md:text-lg">
             {filteredExec
@@ -465,8 +465,8 @@ function SejaCorretorPage() {
               href={whatsappLink(filteredExec)}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-md font-semibold text-base uppercase tracking-wider transition-transform hover:scale-105"
-              style={{ background: GOLD, color: "#0A0E1A", boxShadow: `0 10px 40px -10px ${GOLD}80` }}
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-md font-semibold text-sm md:text-base uppercase tracking-[0.2em] transition-transform hover:scale-[1.03]"
+              style={{ background: GOLD, color: "#0A0E1A", boxShadow: `0 18px 50px -18px ${GOLD}99` }}
             >
               Quero fazer parte →
             </a>
