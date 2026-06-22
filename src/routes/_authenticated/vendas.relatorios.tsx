@@ -408,7 +408,7 @@ function VendasRelatoriosPage() {
                       <th className="px-3 py-2 text-right">Vendas</th>
                       <th className="px-3 py-2 text-right">Locações</th>
                       <th className="px-3 py-2 text-right">Conversão</th>
-                      <th className="px-3 py-2 text-right">Receita</th>
+                      <th className="px-3 py-2 text-right" title="Receita gerada para a imobiliária (não é o repasse do corretor)">Receita p/ imobiliária</th>
                     </tr>
                   </thead>
                   <tbody>
