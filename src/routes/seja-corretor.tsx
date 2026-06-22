@@ -75,32 +75,93 @@ function SejaCorretorPage() {
   return (
     <div className="min-h-screen" style={{ background: "#0A0E1A", color: "white", fontFamily: "var(--font-sans)" }}>
       {/* HERO */}
-      <section className="px-6 pt-12 pb-12 md:pt-20 md:pb-20" style={{ background: "#0A0E1A" }}>
-        <div className="max-w-5xl mx-auto text-center space-y-8">
+      <section
+        className="relative px-6 pt-10 pb-16 md:pt-16 md:pb-24 overflow-hidden"
+        style={{
+          background:
+            "radial-gradient(1200px 600px at 50% -10%, rgba(212,175,55,0.10), transparent 60%), #0A0E1A",
+        }}
+      >
+        <div className="max-w-5xl mx-auto text-center space-y-8 md:space-y-10">
           <img
             src={LOGO_URL}
             alt="Iuri Rodrigues Imóveis"
-            className="w-full max-w-[160px] md:max-w-[220px] mx-auto object-contain"
+            className="w-full max-w-[140px] md:max-w-[180px] mx-auto object-contain"
             style={{ mixBlendMode: "screen" }}
           />
-          <div className="space-y-4">
-            <div className="text-xs md:text-sm uppercase tracking-[0.35em]" style={{ color: GOLD }}>
+
+          <div className="space-y-5">
+            <div
+              className="text-[10px] md:text-xs uppercase tracking-[0.45em]"
+              style={{ color: GOLD }}
+            >
               Ecossistema Nexus
             </div>
             <h1
-              className="text-4xl md:text-6xl lg:text-7xl leading-tight"
-              style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}
+              className="text-5xl md:text-7xl lg:text-[5.5rem] leading-[1.05] tracking-tight"
+              style={{ fontFamily: SERIF, fontWeight: 500, letterSpacing: "-0.01em" }}
             >
               Os melhores corretores do{" "}
-              <span style={{ color: GOLD }}>Rio</span> estão aqui
+              <em style={{ color: GOLD, fontStyle: "italic", fontWeight: 500 }}>Rio</em>
+              <br className="hidden md:block" /> estão aqui
             </h1>
-            <p className="text-white/70 max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
-              Não somos uma imobiliária. Somos o time, a tecnologia e a liderança que faltava para você
-              vender mais, com método e respaldo de quem entende a cidade.
-            </p>
+          </div>
+
+          {/* VÍDEO no hero */}
+          {vslId ? (
+            <div className="relative mx-auto w-full max-w-3xl pt-2">
+              {/* moldura dourada sutil */}
+              <div
+                aria-hidden
+                className="absolute -inset-[1px] rounded-2xl pointer-events-none"
+                style={{
+                  background: `linear-gradient(135deg, ${GOLD}88, transparent 35%, transparent 65%, ${GOLD}55)`,
+                  filter: "blur(0.5px)",
+                }}
+              />
+              <div
+                className="relative aspect-video w-full rounded-2xl overflow-hidden"
+                style={{
+                  border: `1px solid ${GOLD}44`,
+                  boxShadow:
+                    "0 30px 80px -30px rgba(0,0,0,0.8), 0 0 50px -20px rgba(212,175,55,0.25)",
+                  background: "#000",
+                }}
+              >
+                <iframe
+                  className="w-full h-full"
+                  src={`https://www.youtube.com/embed/${vslId}?rel=0&modestbranding=1&playsinline=1`}
+                  title="Uma palavra do Iuri"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="mx-auto w-full max-w-3xl aspect-video rounded-2xl bg-white/[0.02] border border-white/5" />
+          )}
+
+          <p className="text-white/70 max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
+            Não somos uma imobiliária. Somos o time, a tecnologia e a liderança que faltava
+            para você vender mais — com método, respaldo e presença real em cada negociação.
+          </p>
+
+          <div className="pt-2">
+            <a
+              href="#executivos"
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-md font-semibold text-sm md:text-base uppercase tracking-[0.2em] transition-transform hover:scale-[1.03]"
+              style={{
+                background: GOLD,
+                color: "#0A0E1A",
+                boxShadow: `0 18px 50px -18px ${GOLD}99`,
+              }}
+            >
+              Quero fazer parte →
+            </a>
           </div>
         </div>
       </section>
+
 
       {/* MARQUEE de regiões */}
       <section
