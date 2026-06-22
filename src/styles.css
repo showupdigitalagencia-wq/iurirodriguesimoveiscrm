@@ -199,14 +199,55 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     background-image:
       radial-gradient(ellipse 80% 50% at 50% -10%, oklch(0.78 0.13 86 / 0.06), transparent 60%),
       radial-gradient(ellipse 60% 50% at 100% 100%, oklch(0.40 0.10 260 / 0.12), transparent 60%);
     background-attachment: fixed;
   }
-  h1, h2, h3 { letter-spacing: -0.01em; }
+  /* Hierarquia tipográfica refinada — Linear/Stripe */
+  h1 { letter-spacing: -0.022em; font-weight: 600; }
+  h2 { letter-spacing: -0.018em; font-weight: 600; }
+  h3 { letter-spacing: -0.014em; font-weight: 600; }
+  h4, h5, h6 { letter-spacing: -0.01em; font-weight: 600; }
   .uppercase, [class*="tracking-"] { font-feature-settings: "ss01"; }
+
+  /* Secundário com mais contraste para legibilidade premium */
+  .text-muted-foreground { color: oklch(0.76 0.022 255); }
+
+  /* Focus ring dourado discreto e consistente em toda a UI */
+  *:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--background), 0 0 0 4px oklch(0.78 0.13 86 / 0.55);
+    border-radius: inherit;
+    transition: box-shadow var(--duration-fast) var(--ease-out-premium);
+  }
+
+  /* Transições premium globais para superfícies interativas */
+  button, a, [role="button"], [role="menuitem"], [role="option"], [role="tab"],
+  [data-slot="trigger"], [data-radix-collection-item] {
+    transition-property: background-color, border-color, color, box-shadow, transform, opacity;
+    transition-duration: var(--duration-base);
+    transition-timing-function: var(--ease-out-premium);
+  }
+
+  /* Scrollbar refinada */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: oklch(0.32 0.028 260 / 0.5);
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: oklch(0.40 0.030 260 / 0.7); background-clip: padding-box; border: 2px solid transparent; }
+
+  /* Seleção de texto dourada */
+  ::selection { background: oklch(0.78 0.13 86 / 0.28); color: var(--foreground); }
 }
+
 
 @layer utilities {
   /* Glassmorphism — cartão de vidro com borda dourada sutil */
