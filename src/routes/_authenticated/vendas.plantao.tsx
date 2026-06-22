@@ -91,10 +91,15 @@ function PlantaoPage() {
   const flagsById = new Map<string, { is_admin: boolean; is_exec: boolean }>();
   for (const c of elegQ.data?.items ?? []) flagsById.set(c.id, { is_admin: !!c.is_admin, is_exec: !!c.is_exec });
   // Se NÃO sou admin, não posso mexer no slot quando o ocupante é outro exec ou um admin
+  // Regra de bloqueio do slot:
+  // - Admin: nada bloqueia.
+  // - Executivo: bloqueia se o ocupante atual for outro exec ou um admin.
+  // - Corretor puro: só pode mexer em si mesmo ou ocupar slot vazio.
   function isCellLockedForMe(corretorId: string | undefined | null): boolean {
-    if (!corretorId) return false;
     if (isAdmin) return false;
-    if (meUid && corretorId === meUid) return false; // pode mexer em si mesmo
+    if (!corretorId) return false; // slot vazio: qualquer um pode ocupar (limitado a si mesmo no backend p/ corretor)
+    if (meUid && corretorId === meUid) return false;
+    if (!isExec) return true; // corretor puro: bloqueia qualquer slot que não seja o próprio
     const f = flagsById.get(corretorId);
     return !!(f?.is_admin || f?.is_exec);
   }
