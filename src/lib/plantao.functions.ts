@@ -196,7 +196,8 @@ export const removerPlantonista = createServerFn({ method: "POST" })
 export const listCorretoresElegiveis = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await ensureAdminOrExec(context);
+    // Acessível também por corretor — ele precisa da lista pra ver/escalar a si mesmo.
+    void context;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     // corretor_vendas + corretor (legado) + executivos + qualquer usuário marcado "Elegível para Plantão"
     const [{ data: roles }, { data: execs }, { data: elegiveis }, { data: adminRoles }] = await Promise.all([
