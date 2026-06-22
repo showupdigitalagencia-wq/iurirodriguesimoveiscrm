@@ -186,7 +186,7 @@ function SejaCorretorPage() {
           </div>
           <h2
             className="text-3xl md:text-5xl leading-tight"
-            style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}
+            style={{ fontFamily: SERIF, fontWeight: 600 }}
           >
             Não recrutamos <span style={{ color: GOLD }}>qualquer um</span>
           </h2>
@@ -209,7 +209,7 @@ function SejaCorretorPage() {
             <div key={s.l} className="space-y-2">
               <div
                 className="text-5xl md:text-6xl"
-                style={{ fontFamily: "var(--font-display)", color: GOLD, fontWeight: 700 }}
+                style={{ fontFamily: SERIF, color: GOLD, fontWeight: 700 }}
               >
                 {s.n}
               </div>
@@ -227,7 +227,7 @@ function SejaCorretorPage() {
             <div className="text-xs uppercase tracking-[0.35em]" style={{ color: GOLD }}>
               O time
             </div>
-            <h2 className="text-3xl md:text-5xl" style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}>
+            <h2 className="text-3xl md:text-5xl" style={{ fontFamily: SERIF, fontWeight: 600 }}>
               Pessoas que <span style={{ color: GOLD }}>fazem acontecer</span>
             </h2>
           </div>
@@ -271,7 +271,7 @@ function SejaCorretorPage() {
             <div className="text-xs uppercase tracking-[0.35em]" style={{ color: GOLD }}>
               {filteredExec ? "Fale agora com" : "Liderança"}
             </div>
-            <h2 className="text-3xl md:text-5xl" style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}>
+            <h2 className="text-3xl md:text-5xl" style={{ fontFamily: SERIF, fontWeight: 600 }}>
               {filteredExec ? (
                 <>
                   Seu próximo passo é com <span style={{ color: GOLD }}>{filteredExec.nome}</span>
@@ -303,7 +303,7 @@ function SejaCorretorPage() {
                   </div>
                   <h3
                     className="text-3xl md:text-4xl leading-tight"
-                    style={{ fontFamily: "var(--font-display)", color: GOLD, fontWeight: 600 }}
+                    style={{ fontFamily: SERIF, color: GOLD, fontWeight: 600 }}
                   >
                     {exec.nome}
                   </h3>
@@ -329,7 +329,7 @@ function SejaCorretorPage() {
       {/* CTA FINAL */}
       <section className="px-6 py-24" style={{ background: "#0F1626" }}>
         <div className="max-w-3xl mx-auto text-center space-y-6">
-          <h2 className="text-3xl md:text-5xl leading-tight" style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}>
+          <h2 className="text-3xl md:text-5xl leading-tight" style={{ fontFamily: SERIF, fontWeight: 600 }}>
             Pronto para fazer parte do <span style={{ color: GOLD }}>maior ecossistema</span> do Rio?
           </h2>
           <p className="text-white/70 text-base md:text-lg">
