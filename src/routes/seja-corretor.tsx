@@ -170,7 +170,7 @@ function SejaCorretorPage() {
         className="overflow-hidden py-5 border-y"
         style={{ background: "#0F1626", borderColor: `${GOLD}22` }}
       >
-        <div className="flex animate-[marquee_30s_linear_infinite] gap-12 whitespace-nowrap text-sm uppercase tracking-[0.3em] text-white/60">
+        <div className="flex animate-[marquee_30s_linear_infinite] gap-12 whitespace-nowrap text-[10px] md:text-xs uppercase tracking-[0.45em] text-white/55">
           {[...CAPTACAO_REGIOES_MARQUEE, ...CAPTACAO_REGIOES_MARQUEE].map((r, i) => (
             <span key={i} className="flex items-center gap-3">
               <span style={{ color: GOLD }}>◆</span> {r}
