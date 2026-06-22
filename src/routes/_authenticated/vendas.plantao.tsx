@@ -156,20 +156,27 @@ function PlantaoPage() {
               const isPast = ds < todayStr;
               const isToday = ds === todayStr;
               const ent = escalaByDia.get(ds);
+              const locked = isCellLockedForMe(ent?.corretor_id);
+              const lockTitle = locked
+                ? (flagsById.get(ent!.corretor_id)?.is_admin
+                    ? "Apenas Admin pode alterar a escala de outro Admin"
+                    : "Apenas Admin pode alterar a escala de outro Executivo")
+                : undefined;
               return (
                 <div
                   key={i}
                   className={`relative aspect-[3/2] md:aspect-[2/1] rounded border p-1 flex flex-col text-xs ${isToday ? "border-gold bg-gold/5" : "border-border"} ${isPast ? "opacity-60" : ""}`}
+                  title={lockTitle}
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-semibold">{d.getDate()}</span>
-                    {ent && canEdit && !isPast && (
+                    {ent && canEdit && !isPast && !locked && (
                       <button onClick={() => delMut.mutate(ds)} className="text-muted-foreground hover:text-destructive">
                         <Trash2 className="h-3 w-3" />
                       </button>
                     )}
                   </div>
-                  {canEdit && !isPast ? (
+                  {canEdit && !isPast && !locked ? (
                     <Select
                       value={ent?.corretor_id ?? ""}
                       onValueChange={(v) => setMut.mutate({ data: ds, corretor_id: v })}
