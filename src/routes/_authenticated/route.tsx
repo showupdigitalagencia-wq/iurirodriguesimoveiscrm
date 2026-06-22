@@ -214,9 +214,7 @@ function AuthLayout() {
     router.navigate({ to: "/auth" });
   }
 
-  const mobileTopItems = isCorretorVendas && !isAdmin
-    ? MOBILE_TOP_ICONS.filter((item) => item.to !== "/configuracoes")
-    : MOBILE_TOP_ICONS;
+  const mobileTopItems = MOBILE_TOP_ICONS;
 
   if (rolesLoaded && hasNoRole) {
     const desativado = accessRevoked;
