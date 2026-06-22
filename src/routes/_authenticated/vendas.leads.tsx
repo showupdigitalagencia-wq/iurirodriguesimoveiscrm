@@ -445,7 +445,7 @@ function CreateVendasLeadDialog({ onCreated }: { onCreated: () => void }) {
           valor: form.valor ? Number(form.valor.replace(/[^\d.,]/g, "").replace(",", ".")) : null,
           observacoes: form.observacoes.trim() || null,
           etapa: form.etapa,
-          corretor_id_override: isAdmin && form.corretor_id ? form.corretor_id : null,
+          corretor_id_override: isAdmin ? (form.corretor_id || plantonistaId || null) : null,
         },
       });
       toast.success("Lead cadastrado");
