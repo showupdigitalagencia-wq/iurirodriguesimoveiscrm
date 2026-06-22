@@ -383,7 +383,7 @@ function VendasRelatoriosPage() {
                       </div>
                       <div className="text-right">
                         <div className="font-bold text-gold">{brl(Number(c.receita))}</div>
-                        <div className="text-[10px] text-muted-foreground">receita</div>
+                        <div className="text-[10px] text-muted-foreground">receita p/ imobiliária</div>
                       </div>
                     </div>
                   );
