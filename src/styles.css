@@ -9,9 +9,10 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * CRM Iuri Rodrigues Imóveis - Design System
- * Paleta: preto fosco, dourado/champanhe, bege claro.
- * Tipografia: Inter (Google Fonts via link em __root).
+ * Sistema NEXUS — Iuri Rodrigues Imóveis
+ * Design System: Navy quase-preto + Dourado/Champagne.
+ * Direção: moderno/futurista — fintech premium, cockpit digital.
+ * Tipografia: Inter (UI) + Playfair Display (display, raro).
  */
 
 @theme inline {
@@ -62,88 +63,169 @@
 }
 
 :root {
-  --radius: 0.625rem;
-  /* Bege claro de fundo */
-  --background: oklch(0.975 0.012 85);
-  --foreground: oklch(0.18 0.01 60);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.18 0.01 60);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.18 0.01 60);
-  /* Preto fosco */
-  --primary: oklch(0.22 0.008 60);
-  --primary-foreground: oklch(0.97 0.012 85);
-  --secondary: oklch(0.94 0.018 85);
-  --secondary-foreground: oklch(0.22 0.008 60);
-  --muted: oklch(0.94 0.012 85);
-  --muted-foreground: oklch(0.5 0.015 65);
-  --accent: oklch(0.92 0.04 80);
-  --accent-foreground: oklch(0.22 0.008 60);
-  --destructive: oklch(0.58 0.22 27);
+  --radius: 0.75rem;
+
+  /* Navy quase preto */
+  --background: oklch(0.16 0.022 265);              /* #0A0E1A-ish */
+  --foreground: oklch(0.94 0.012 250);              /* #E8EAF0 */
+
+  --card: oklch(0.20 0.024 265);                    /* navy elevado */
+  --card-foreground: oklch(0.94 0.012 250);
+  --popover: oklch(0.22 0.024 265);
+  --popover-foreground: oklch(0.94 0.012 250);
+
+  /* Dourado como cor primária / destaque */
+  --primary: oklch(0.78 0.13 86);                   /* #D4AF37 */
+  --primary-foreground: oklch(0.16 0.022 265);
+
+  --secondary: oklch(0.24 0.024 265);
+  --secondary-foreground: oklch(0.94 0.012 250);
+  --muted: oklch(0.24 0.022 265);
+  --muted-foreground: oklch(0.70 0.024 255);        /* #9AA1B8 */
+
+  --accent: oklch(0.30 0.05 80);
+  --accent-foreground: oklch(0.96 0.02 90);
+
+  --destructive: oklch(0.60 0.18 18);
   --destructive-foreground: oklch(0.98 0.01 85);
-  --border: oklch(0.88 0.02 80);
-  --input: oklch(0.9 0.018 80);
-  --ring: oklch(0.72 0.13 80);
-  /* Dourado / champanhe */
-  --gold: oklch(0.78 0.13 82);
-  --gold-foreground: oklch(0.18 0.01 60);
-  --gold-muted: oklch(0.88 0.07 85);
 
-  --chart-1: oklch(0.78 0.13 82);
-  --chart-2: oklch(0.55 0.1 60);
-  --chart-3: oklch(0.68 0.15 45);
-  --chart-4: oklch(0.5 0.08 90);
-  --chart-5: oklch(0.35 0.04 70);
+  --border: oklch(0.32 0.028 260 / 0.55);
+  --input: oklch(0.28 0.026 260);
+  --ring: oklch(0.78 0.13 86);
 
-  --sidebar: oklch(0.16 0.008 60);
-  --sidebar-foreground: oklch(0.92 0.02 85);
-  --sidebar-primary: oklch(0.78 0.13 82);
-  --sidebar-primary-foreground: oklch(0.18 0.01 60);
-  --sidebar-accent: oklch(0.22 0.01 60);
-  --sidebar-accent-foreground: oklch(0.92 0.02 85);
-  --sidebar-border: oklch(0.28 0.01 60);
-  --sidebar-ring: oklch(0.78 0.13 82);
+  /* Dourado / champagne tokens */
+  --gold: oklch(0.78 0.13 86);                      /* #D4AF37 base */
+  --gold-foreground: oklch(0.16 0.022 265);
+  --gold-muted: oklch(0.62 0.10 84);                /* #C9A356 */
+  --gold-bright: oklch(0.86 0.14 92);               /* #F0D060 brilho */
+  --gradient-gold: linear-gradient(135deg, oklch(0.78 0.13 86), oklch(0.86 0.14 92));
+  --gradient-divider: linear-gradient(90deg, transparent, oklch(0.78 0.13 86 / 0.65), transparent);
+  --shadow-elegant: 0 24px 60px -28px oklch(0.10 0.02 265 / 0.85);
+  --shadow-glow: 0 0 24px -4px oklch(0.78 0.13 86 / 0.45);
+
+  /* Charts (dourado, cobre, teal, ametista, esmeralda) */
+  --chart-1: oklch(0.78 0.13 86);
+  --chart-2: oklch(0.66 0.12 50);
+  --chart-3: oklch(0.70 0.09 195);
+  --chart-4: oklch(0.66 0.11 305);
+  --chart-5: oklch(0.68 0.12 160);
+
+  /* Sidebar — navy mais profundo */
+  --sidebar: oklch(0.14 0.020 265);
+  --sidebar-foreground: oklch(0.90 0.014 250);
+  --sidebar-primary: oklch(0.78 0.13 86);
+  --sidebar-primary-foreground: oklch(0.16 0.022 265);
+  --sidebar-accent: oklch(0.22 0.024 265);
+  --sidebar-accent-foreground: oklch(0.94 0.012 250);
+  --sidebar-border: oklch(0.30 0.024 260 / 0.5);
+  --sidebar-ring: oklch(0.78 0.13 86);
+
+  /* ==== Stage tokens — PIPELINE CAPTAÇÃO ==== */
+  --stage-cap-novo: #6FA8C9;          /* azul gelo */
+  --stage-cap-contato: #C9824A;       /* cobre */
+  --stage-cap-reuniao: #D4AF37;       /* dourado */
+  --stage-cap-docs-solic: #C9A356;    /* âmbar/mel */
+  --stage-cap-docs-enviados: #5FA8A0; /* teal suave */
+  --stage-cap-fechado: #4FA987;       /* esmeralda */
+  --stage-cap-descartado: #B05868;    /* vinho */
+  --stage-cap-descredenciado: #7A2F3D;/* vinho escuro/grave */
+
+  /* ==== Stage tokens — PIPELINE VENDAS ==== */
+  --stage-ven-novo: #6FA8C9;
+  --stage-ven-contato: #C9824A;
+  --stage-ven-visita: #D4AF37;
+  --stage-ven-proposta: #9B85C4;      /* ametista */
+  --stage-ven-negociacao: #C97B98;    /* rosé */
+  --stage-ven-followup: #8B96A8;      /* slate */
+  --stage-ven-fechado: #4FA987;
+  --stage-ven-perdido: #B05868;
+
+  /* ==== Agenda — tipo de reunião ==== */
+  --meet-institucional: #D4AF37;
+  --meet-individual: #6FA8C9;
+  --meet-alinhamento: #9B85C4;
+  --meet-mentoria: #4B8B8B;
+  --meet-cancelada: #B05868;
 }
 
+/* Compatibilidade com .dark — mesmo tema (já é dark por padrão) */
 .dark {
-  --background: oklch(0.14 0.008 60);
-  --foreground: oklch(0.95 0.015 85);
-  --card: oklch(0.2 0.01 60);
-  --card-foreground: oklch(0.95 0.015 85);
-  --popover: oklch(0.2 0.01 60);
-  --popover-foreground: oklch(0.95 0.015 85);
-  --primary: oklch(0.78 0.13 82);
-  --primary-foreground: oklch(0.18 0.01 60);
-  --secondary: oklch(0.25 0.012 60);
-  --secondary-foreground: oklch(0.95 0.015 85);
-  --muted: oklch(0.25 0.012 60);
-  --muted-foreground: oklch(0.7 0.02 75);
-  --accent: oklch(0.3 0.04 75);
-  --accent-foreground: oklch(0.95 0.015 85);
-  --destructive: oklch(0.65 0.2 25);
+  --background: oklch(0.16 0.022 265);
+  --foreground: oklch(0.94 0.012 250);
+  --card: oklch(0.20 0.024 265);
+  --card-foreground: oklch(0.94 0.012 250);
+  --popover: oklch(0.22 0.024 265);
+  --popover-foreground: oklch(0.94 0.012 250);
+  --primary: oklch(0.78 0.13 86);
+  --primary-foreground: oklch(0.16 0.022 265);
+  --secondary: oklch(0.24 0.024 265);
+  --secondary-foreground: oklch(0.94 0.012 250);
+  --muted: oklch(0.24 0.022 265);
+  --muted-foreground: oklch(0.70 0.024 255);
+  --accent: oklch(0.30 0.05 80);
+  --accent-foreground: oklch(0.96 0.02 90);
+  --destructive: oklch(0.60 0.18 18);
   --destructive-foreground: oklch(0.98 0.01 85);
-  --border: oklch(0.28 0.012 60);
-  --input: oklch(0.3 0.012 60);
-  --ring: oklch(0.78 0.13 82);
-  --gold: oklch(0.82 0.14 82);
-  --gold-foreground: oklch(0.18 0.01 60);
-  --gold-muted: oklch(0.4 0.08 80);
+  --border: oklch(0.32 0.028 260 / 0.55);
+  --input: oklch(0.28 0.026 260);
+  --ring: oklch(0.78 0.13 86);
+  --gold: oklch(0.78 0.13 86);
+  --gold-foreground: oklch(0.16 0.022 265);
+  --gold-muted: oklch(0.62 0.10 84);
 }
 
 @layer base {
   * { border-color: var(--color-border); }
+  html { background-color: var(--color-background); }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -10%, oklch(0.78 0.13 86 / 0.06), transparent 60%),
+      radial-gradient(ellipse 60% 50% at 100% 100%, oklch(0.40 0.10 260 / 0.12), transparent 60%);
+    background-attachment: fixed;
   }
+  h1, h2, h3 { letter-spacing: -0.01em; }
+  .uppercase, [class*="tracking-"] { font-feature-settings: "ss01"; }
 }
 
 @layer utilities {
+  /* Glassmorphism — cartão de vidro com borda dourada sutil */
+  .glass {
+    background-color: oklch(0.22 0.024 265 / 0.55);
+    backdrop-filter: blur(18px) saturate(140%);
+    border: 1px solid oklch(0.78 0.13 86 / 0.18);
+    box-shadow: var(--shadow-elegant);
+  }
+  .glass-strong {
+    background-color: oklch(0.20 0.024 265 / 0.75);
+    backdrop-filter: blur(22px) saturate(150%);
+    border: 1px solid oklch(0.78 0.13 86 / 0.25);
+    box-shadow: var(--shadow-elegant);
+  }
+  .gold-border {
+    border: 1px solid oklch(0.78 0.13 86 / 0.35);
+  }
+  .gold-divider {
+    height: 1px;
+    background: var(--gradient-divider);
+    border: 0;
+  }
+  .gold-glow {
+    box-shadow: var(--shadow-glow);
+  }
+  .text-gradient-gold {
+    background: var(--gradient-gold);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
   @keyframes pulse-gold {
-    0%, 100% { box-shadow: 0 0 0 0 oklch(0.78 0.13 82 / 0.55); }
-    50%      { box-shadow: 0 0 0 6px oklch(0.78 0.13 82 / 0); }
+    0%, 100% { box-shadow: 0 0 0 0 oklch(0.78 0.13 86 / 0.55); }
+    50%      { box-shadow: 0 0 0 6px oklch(0.78 0.13 86 / 0); }
   }
   .animate-pulse-gold { animation: pulse-gold 2s ease-out infinite; }
 
@@ -152,9 +234,7 @@
     50%      { box-shadow: 0 0 0 6px oklch(0.65 0.22 25 / 0); }
   }
   .animate-pulse-red { animation: pulse-red 1.4s ease-out infinite; }
-}
 
-@layer utilities {
   /* Mobile: garantir botões com no mínimo 44px de altura (Apple HIG) dentro de /vendas */
   @media (max-width: 767px) {
     [data-vendas-root] button,
@@ -166,7 +246,7 @@
     [data-vendas-root] select,
     [data-vendas-root] textarea {
       min-height: 44px;
-      font-size: 16px; /* evita zoom no iOS */
+      font-size: 16px;
     }
   }
 }
