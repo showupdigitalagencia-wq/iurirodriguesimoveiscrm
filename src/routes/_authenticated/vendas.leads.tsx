@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -412,13 +412,21 @@ function CreateVendasLeadDialog({ onCreated }: { onCreated: () => void }) {
     corretor_id: "" as string, // admin override
   });
 
-  // Pré-preenche o "Atribuir a" com o plantonista do dia
   const plantonistaId = plantonista?.corretor_id ?? null;
   const plantonistaNome = plantonista?.corretor_nome ?? null;
-  if (open && plantonistaId && !form.corretor_id && isAdmin) {
-    // set once
-    setTimeout(() => setForm((f) => (f.corretor_id ? f : { ...f, corretor_id: plantonistaId })), 0);
-  }
+
+  // Pré-seleciona o plantonista do dia como valor padrão do "Atribuir a"
+  useEffect(() => {
+    if (open && plantonistaId && !form.corretor_id) {
+      setForm((f) => (f.corretor_id ? f : { ...f, corretor_id: plantonistaId }));
+    }
+  }, [open, plantonistaId, form.corretor_id]);
+
+  // Lista final do select: plantonista no topo + demais elegíveis sem duplicar
+  const outrosElegiveis = useMemo(() => {
+    const items = (elegiveis?.items ?? []) as { id: string; nome: string }[];
+    return items.filter((c) => c.id !== plantonistaId);
+  }, [elegiveis, plantonistaId]);
 
   async function submit() {
     if (!form.nome.trim() || !form.telefone.trim()) {
@@ -437,7 +445,7 @@ function CreateVendasLeadDialog({ onCreated }: { onCreated: () => void }) {
           valor: form.valor ? Number(form.valor.replace(/[^\d.,]/g, "").replace(",", ".")) : null,
           observacoes: form.observacoes.trim() || null,
           etapa: form.etapa,
-          corretor_id_override: isAdmin && form.corretor_id ? form.corretor_id : null,
+          corretor_id_override: isAdmin ? (form.corretor_id || plantonistaId || null) : null,
         },
       });
       toast.success("Lead cadastrado");
@@ -506,23 +514,32 @@ function CreateVendasLeadDialog({ onCreated }: { onCreated: () => void }) {
             <Label>Atribuir a</Label>
             {isAdmin ? (
               <Select
-                value={form.corretor_id || (plantonistaId ?? "")}
+                value={form.corretor_id || plantonistaId || ""}
                 onValueChange={(v) => setForm({ ...form, corretor_id: v })}
               >
                 <SelectTrigger><SelectValue placeholder={sugestaoLabel} /></SelectTrigger>
                 <SelectContent>
                   {plantonistaId && (
-                    <SelectItem value={plantonistaId}>{plantonistaNome ?? "Plantonista"} (plantão de hoje)</SelectItem>
+                    <SelectItem value={plantonistaId}>
+                      ⭐ {plantonistaNome ?? "Plantonista"} — Plantonista do dia
+                    </SelectItem>
                   )}
-                  {(elegiveis?.items ?? [])
-                    .filter((c: { id: string }) => c.id !== plantonistaId)
-                    .map((c: { id: string; nome: string }) => (
-                      <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
-                    ))}
+                  {outrosElegiveis.length > 0 && (
+                    <div className="px-2 py-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+                      Outros corretores elegíveis
+                    </div>
+                  )}
+                  {outrosElegiveis.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             ) : (
-              <Input value={sugestaoLabel} disabled readOnly />
+              <Input
+                value={plantonistaNome ? `⭐ ${plantonistaNome} — Plantonista do dia` : sugestaoLabel}
+                disabled
+                readOnly
+              />
             )}
             <p className="text-xs text-muted-foreground mt-1">
               Por padrão, os leads manuais são atribuídos ao plantonista do dia.
@@ -533,6 +550,7 @@ function CreateVendasLeadDialog({ onCreated }: { onCreated: () => void }) {
               </p>
             )}
           </div>
+
 
           <div><Label>Observações</Label><Textarea rows={3} value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} /></div>
         </div>
