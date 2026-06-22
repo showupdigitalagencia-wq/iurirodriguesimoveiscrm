@@ -438,7 +438,7 @@ function SejaCorretorPage() {
                   href={whatsappLink(exec)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-md font-semibold text-sm uppercase tracking-wider transition-transform hover:scale-[1.02]"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-md font-semibold text-sm uppercase tracking-[0.2em] transition-transform hover:scale-[1.02]"
                   style={{ background: GOLD, color: "#0A0E1A" }}
                 >
                   Falar no WhatsApp →
