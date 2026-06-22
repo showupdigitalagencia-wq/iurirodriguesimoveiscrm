@@ -80,6 +80,15 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
     queryFn: () => getFinStatus({ data: { leadId: leadId! } }),
   });
 
+  const { data: isExec } = useQuery({
+    queryKey: ["me-is-executivo"],
+    queryFn: async () => {
+      const { data } = await supabase.rpc("current_user_is_executivo");
+      return data === true;
+    },
+  });
+  const canEnviarFinanciamento = isAdmin || !!isExec;
+
   useEffect(() => {
     if (lead && !editing) setForm(lead);
   }, [lead, editing]);
@@ -315,7 +324,7 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
               <Button variant="outline" size="sm" className="gap-1" onClick={openWhatsApp}><MessageCircle className="h-3.5 w-3.5" />WhatsApp</Button>
               <AgendarVisitaInline lead={lead} onDone={() => { invalidate(); refetch(); }} />
               <ReuniaoOnlineInline lead={lead} onDone={() => { invalidate(); refetch(); }} />
-              {lead.tipo === "compra" && <EnviarFinanciamentoInline lead={lead} />}
+              {lead.tipo === "compra" && canEnviarFinanciamento && <EnviarFinanciamentoInline lead={lead} />}
               <Button variant="outline" size="sm" className="gap-1" onClick={() => setEditing(true)}><Pencil className="h-3.5 w-3.5" />Editar</Button>
               {isAdmin && <Button variant="destructive" size="sm" className="gap-1" onClick={deleteLead}><Trash2 className="h-3.5 w-3.5" />Excluir</Button>}
             </>
