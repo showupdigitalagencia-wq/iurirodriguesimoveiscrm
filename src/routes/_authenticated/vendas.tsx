@@ -28,7 +28,8 @@ export const Route = createFileRoute("/_authenticated/vendas")({
   component: VendasLayout,
 });
 
-const TABS = [
+type TabDef = { to: string; label: string; icon: typeof LayoutDashboard; exact: boolean; adminOnly?: boolean };
+const TABS: readonly TabDef[] = [
   { to: "/vendas", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/vendas/leads", label: "Leads", icon: Users, exact: false },
   { to: "/vendas/pipeline", label: "Pipeline", icon: Kanban, exact: false },
@@ -36,13 +37,13 @@ const TABS = [
   { to: "/vendas/portfolio", label: "Portfólio", icon: Building2, exact: false },
   { to: "/vendas/plantao", label: "Plantão", icon: CalendarClock, exact: false },
   { to: "/vendas/relatorios", label: "Relatórios", icon: BarChart3, exact: false },
-  { to: "/vendas/funil", label: "Funil", icon: TrendingDown, exact: false },
-  { to: "/vendas/tempo-resposta", label: "Resposta", icon: Clock, exact: false },
-  { to: "/vendas/metas", label: "Metas", icon: Target, exact: false },
+  { to: "/vendas/metas", label: "Metas", icon: Target, exact: false, adminOnly: true },
   { to: "/notificacoes", label: "Notificações", icon: BellRing, exact: false },
-] as const;
+];
 
 function VendasLayout() {
+  const { isAdmin } = Route.useRouteContext();
+  const tabs = TABS.filter((t) => !t.adminOnly || isAdmin);
   return (
     <div data-vendas-root className="p-3 md:p-6 space-y-4 pb-24 md:pb-6">
       <div className="flex items-center justify-between">
@@ -53,7 +54,7 @@ function VendasLayout() {
       </div>
       {/* Tabs mobile — scroll horizontal, sempre acessíveis */}
       <nav className="md:hidden -mx-3 px-3 flex gap-1 border-b overflow-x-auto scrollbar-none">
-        {TABS.map((t) => {
+        {tabs.map((t) => {
           const Icon = t.icon;
           return (
             <Link
@@ -70,7 +71,7 @@ function VendasLayout() {
       </nav>
       {/* Tabs desktop */}
       <nav className="hidden md:flex gap-1 border-b overflow-x-auto">
-        {TABS.map((t) => {
+        {tabs.map((t) => {
           const Icon = t.icon;
           return (
             <Link
@@ -86,7 +87,6 @@ function VendasLayout() {
         })}
       </nav>
       <Outlet />
-      {/* Bottom nav mobile removida — usa a barra global do _authenticated layout para evitar duplicação */}
     </div>
   );
 }
