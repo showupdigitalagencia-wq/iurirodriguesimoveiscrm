@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FotosThumbs, useFotosUrls } from "@/components/admin/FotosManager";
-import { Bed, Bath, Car, Maximize2, MapPin, Building2, X } from "lucide-react";
+import { Bed, Bath, Car, Maximize2, MapPin, Building2, X, ExternalLink } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
 type Imovel = Database["public"]["Views"]["imoveis_portfolio"]["Row"];
@@ -308,9 +308,17 @@ function ImovelDialog({ imovel, onClose }: { imovel: Imovel | null; onClose: () 
             </div>
           )}
           {imovel.vitrine_url && (
-            <a href={imovel.vitrine_url} target="_blank" rel="noopener noreferrer" className="text-sm text-primary underline">
-              Ver vitrine pública
-            </a>
+            <Button
+              asChild
+              size="sm"
+              variant="outline"
+              className="h-7 px-2 gap-1 text-xs border-gold/40 text-gold hover:bg-gold/10 hover:text-gold w-fit"
+            >
+              <a href={imovel.vitrine_url} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="h-3 w-3" />
+                Vitrine
+              </a>
+            </Button>
           )}
         </div>
       </DialogContent>
