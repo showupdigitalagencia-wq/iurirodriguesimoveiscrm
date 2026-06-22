@@ -166,24 +166,27 @@ export const removerPlantonista = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ data: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) }).parse(d))
   .handler(async ({ data, context }) => {
-    const { isAdmin } = await ensureAdminOrExec(context);
+    const { isAdmin, isExec } = await getRoleFlags(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    // Regra: Executivo NÃO pode remover dia escalado para OUTRO executivo ou para um ADMIN.
-    if (!isAdmin) {
-      const { data: prevRaw } = await supabaseAdmin
-        .from("plantao_escala" as never)
-        .select("corretor_id")
-        .eq("data", data.data)
-        .maybeSingle();
-      const prev = prevRaw as { corretor_id: string } | null;
-      if (prev && prev.corretor_id !== context.userId) {
-        const [prevIsExec, prevIsAdmin] = await Promise.all([
-          isProfileExecutivo(supabaseAdmin as never, prev.corretor_id),
-          isProfileAdmin(supabaseAdmin as never, prev.corretor_id),
-        ]);
-        if (prevIsAdmin) throw new Error("Apenas Admin pode remover a escala de outro Admin.");
-        if (prevIsExec) throw new Error("Apenas Admin pode remover a escala de outro Executivo.");
-      }
+    const { data: prevRaw } = await supabaseAdmin
+      .from("plantao_escala" as never)
+      .select("corretor_id")
+      .eq("data", data.data)
+      .maybeSingle();
+    const prev = prevRaw as { corretor_id: string } | null;
+    if (!prev) return { ok: true };
+    // Corretor puro: só pode remover a si mesmo.
+    if (!isAdmin && !isExec && prev.corretor_id !== context.userId) {
+      throw new Error("Você só pode se remover do plantão.");
+    }
+    // Executivo: NÃO pode remover dia escalado para OUTRO executivo ou para um ADMIN.
+    if (!isAdmin && isExec && prev.corretor_id !== context.userId) {
+      const [prevIsExec, prevIsAdmin] = await Promise.all([
+        isProfileExecutivo(supabaseAdmin as never, prev.corretor_id),
+        isProfileAdmin(supabaseAdmin as never, prev.corretor_id),
+      ]);
+      if (prevIsAdmin) throw new Error("Apenas Admin pode remover a escala de outro Admin.");
+      if (prevIsExec) throw new Error("Apenas Admin pode remover a escala de outro Executivo.");
     }
     const { error } = await supabaseAdmin.from("plantao_escala" as never).delete().eq("data", data.data);
     if (error) throw new Error(error.message);
