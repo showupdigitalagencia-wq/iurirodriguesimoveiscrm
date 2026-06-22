@@ -126,9 +126,10 @@
   --stage-cap-reuniao: #D4AF37;       /* dourado */
   --stage-cap-docs-solic: #8E97C9;    /* periwinkle/lavanda azulado */
   --stage-cap-docs-enviados: #5FA8A0; /* teal suave */
+  --stage-cap-negociacao: #B561C9;    /* violeta/magenta vibrante */
   --stage-cap-fechado: #4FA987;       /* esmeralda */
   --stage-cap-descartado: #B05868;    /* vinho */
-  --stage-cap-descredenciado: #7A2F3D;/* vinho escuro/grave */
+  --stage-cap-descredenciado: #3F4654;/* grafite/chumbo */
 
   /* ==== Stage tokens — PIPELINE VENDAS ==== */
   --stage-ven-novo: #6FA8C9;
