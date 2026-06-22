@@ -418,15 +418,15 @@ function SejaCorretorPage() {
               <div
                 key={exec.ref}
                 className="rounded-2xl p-7 space-y-5 flex flex-col"
-                style={{ background: "#0F1626", border: `1px solid ${GOLD}40` }}
+                style={{ background: "#0F1626", border: `1px solid ${GOLD}33` }}
               >
                 <div>
-                  <div className="text-xs uppercase tracking-[0.3em] text-white/50 mb-2">
+                  <div className="text-[10px] md:text-xs uppercase tracking-[0.45em] text-white/50 mb-2">
                     {exec.regiao}
                   </div>
                   <h3
-                    className="text-3xl md:text-4xl leading-tight"
-                    style={{ fontFamily: SERIF, color: GOLD, fontWeight: 600 }}
+                    className="text-3xl md:text-4xl leading-[1.1]"
+                    style={{ fontFamily: SERIF, color: GOLD, fontWeight: 500, letterSpacing: "-0.01em" }}
                   >
                     {exec.nome}
                   </h3>
