@@ -219,33 +219,6 @@ function SejaCorretorPage() {
         </div>
       </section>
 
-      {/* VÍDEO */}
-      {vslId && (
-        <section className="px-6 py-20" style={{ background: "#0A0E1A" }}>
-          <div className="max-w-4xl mx-auto text-center space-y-8">
-            <div className="space-y-3">
-              <div className="text-xs uppercase tracking-[0.35em]" style={{ color: GOLD }}>
-                Uma palavra do Iuri
-              </div>
-              <h2 className="text-3xl md:text-4xl" style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}>
-                Por que existimos
-              </h2>
-            </div>
-            <div
-              className="aspect-video w-full rounded-2xl overflow-hidden"
-              style={{ border: `1px solid ${GOLD}66`, boxShadow: `0 0 60px -10px ${GOLD}55` }}
-            >
-              <iframe
-                className="w-full h-full"
-                src={`https://www.youtube.com/embed/${vslId}?rel=0&modestbranding=1&playsinline=1`}
-                title="VSL — Captação de Corretores"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* GALERIA DO TIME */}
       <section className="px-6 py-20" style={{ background: "#0F1626" }}>
