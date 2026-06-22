@@ -1,4 +1,3 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,10 +37,6 @@ type Resp = {
   aguardando: Aguardando[];
 };
 
-export const Route = createFileRoute("/_authenticated/vendas/tempo-resposta")({
-  component: TempoRespostaPage,
-});
-
 function defaultRange() {
   const to = new Date();
   const from = new Date();
@@ -61,7 +56,7 @@ function fmtSeg(seg: number | null | undefined): string {
   return `${d}d ${h % 24}h`;
 }
 
-function TempoRespostaPage() {
+export function VendasTempoRespostaPanel() {
   const initial = defaultRange();
   const [from, setFrom] = useState(initial.from);
   const [to, setTo] = useState(initial.to);
