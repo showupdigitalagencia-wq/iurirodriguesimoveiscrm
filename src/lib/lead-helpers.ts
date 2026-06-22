@@ -121,7 +121,7 @@ export const ETAPA_HEX: Record<LeadEtapa, string> = {
   reuniao_agendada:       "var(--stage-cap-reuniao)",
   solicitacao_documentos: "var(--stage-cap-docs-solic)",
   documentos_enviados:    "var(--stage-cap-docs-enviados)",
-  em_negociacao:          "var(--stage-ven-negociacao)", // rosé (não previsto no spec da captação)
+  em_negociacao:          "var(--stage-cap-negociacao)", // violeta/magenta — distinto de descartado/descredenciado
   follow_up:              "var(--stage-ven-followup)",   // slate
   fechado:                "var(--stage-cap-fechado)",
   descartado:             "var(--stage-cap-descartado)",
