@@ -304,11 +304,14 @@ function VendasRelatoriosPage() {
           {/* Receita destacada */}
           <section className="rounded-2xl border border-gold/30 bg-gradient-to-r from-gold/5 via-card to-card p-5 flex items-center justify-between gap-3 flex-wrap">
             <div>
-              <div className="text-xs uppercase tracking-wider text-muted-foreground">Receita gerada no período (comissão)</div>
+              <div className="text-xs uppercase tracking-wider text-muted-foreground">Receita gerada para a imobiliária no período</div>
               <div className="text-3xl md:text-4xl font-bold mt-1 text-gold">{brl(Number(data.comparacao.atual.receita))}</div>
+              <div className="text-[11px] mt-1 text-muted-foreground">
+                Valor que o corretor/equipe trouxe para o negócio (6% sobre venda · 1 aluguel cheio na locação). Não é o repasse pessoal do corretor.
+              </div>
               {Number(data.comparacao.atual.fechados_sem_comissao || 0) > 0 && (
                 <div className="text-[11px] mt-1 text-amber-600 dark:text-amber-400">
-                  ⚠ {data.comparacao.atual.fechados_sem_comissao} fechado(s) sem comissão calculada — preencha o imóvel no lead.
+                  ⚠ {data.comparacao.atual.fechados_sem_comissao} fechado(s) sem receita calculada — preencha o imóvel no lead.
                 </div>
               )}
             </div>
@@ -380,7 +383,7 @@ function VendasRelatoriosPage() {
                       </div>
                       <div className="text-right">
                         <div className="font-bold text-gold">{brl(Number(c.receita))}</div>
-                        <div className="text-[10px] text-muted-foreground">receita</div>
+                        <div className="text-[10px] text-muted-foreground">receita p/ imobiliária</div>
                       </div>
                     </div>
                   );
@@ -405,7 +408,7 @@ function VendasRelatoriosPage() {
                       <th className="px-3 py-2 text-right">Vendas</th>
                       <th className="px-3 py-2 text-right">Locações</th>
                       <th className="px-3 py-2 text-right">Conversão</th>
-                      <th className="px-3 py-2 text-right">Receita</th>
+                      <th className="px-3 py-2 text-right" title="Receita gerada para a imobiliária (não é o repasse do corretor)">Receita p/ imobiliária</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -439,7 +442,7 @@ function VendasRelatoriosPage() {
                       <th className="px-3 py-2 text-right">Vendas</th>
                       <th className="px-3 py-2 text-right">Locações</th>
                       <th className="px-3 py-2 text-right">Conversão</th>
-                      <th className="px-3 py-2 text-right">Receita</th>
+                      <th className="px-3 py-2 text-right" title="Receita gerada para a imobiliária (não é o repasse dos corretores)">Receita p/ imobiliária</th>
                     </tr>
                   </thead>
                   <tbody>
