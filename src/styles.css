@@ -204,8 +204,8 @@
     text-rendering: optimizeLegibility;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     background-image:
-      radial-gradient(ellipse 80% 50% at 50% -10%, oklch(0.78 0.13 86 / 0.06), transparent 60%),
-      radial-gradient(ellipse 60% 50% at 100% 100%, oklch(0.40 0.10 260 / 0.12), transparent 60%);
+      radial-gradient(ellipse 80% 50% at 50% -10%, oklch(0.78 0.13 86 / 0.035), transparent 60%),
+      radial-gradient(ellipse 60% 50% at 100% 100%, oklch(0.40 0.10 260 / 0.06), transparent 60%);
     background-attachment: fixed;
   }
   /* Hierarquia tipográfica refinada — Linear/Stripe */
