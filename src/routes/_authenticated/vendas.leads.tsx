@@ -515,8 +515,8 @@ function CreateVendasLeadDialog({ onCreated }: { onCreated: () => void }) {
                     <SelectItem value={plantonistaId}>{plantonistaNome ?? "Plantonista"} (plantão de hoje)</SelectItem>
                   )}
                   {(elegiveis?.items ?? [])
-                    .filter((c) => c.id !== plantonistaId)
-                    .map((c) => (
+                    .filter((c: { id: string }) => c.id !== plantonistaId)
+                    .map((c: { id: string; nome: string }) => (
                       <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
                     ))}
                 </SelectContent>
