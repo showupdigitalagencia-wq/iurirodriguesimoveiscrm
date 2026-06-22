@@ -134,7 +134,7 @@ function FinanciamentoPage() {
 
   if (done) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6" style={{ background: "#0a0a0a", color: "white" }}>
+      <div className="min-h-screen flex items-center justify-center p-6" style={{ background: "#0A0E1A", color: "white" }}>
         <Toaster richColors position="top-center" />
         <div className="max-w-lg text-center space-y-6">
           <div className="text-6xl">🎉</div>
@@ -152,9 +152,9 @@ function FinanciamentoPage() {
   const inputCls = "bg-black/60 border-white/15 text-white h-11 focus-visible:ring-0";
 
   return (
-    <div className="min-h-screen" style={{ background: "#0a0a0a", color: "white", fontFamily: "var(--font-sans)" }}>
+    <div className="min-h-screen" style={{ background: "#0A0E1A", color: "white", fontFamily: "var(--font-sans)" }}>
       <Toaster richColors position="top-center" />
-      <section className="px-6 pt-12 pb-10 md:pt-16 md:pb-12" style={{ background: "#0a0a0a" }}>
+      <section className="px-6 pt-12 pb-10 md:pt-16 md:pb-12" style={{ background: "#0A0E1A" }}>
         <div className="max-w-3xl mx-auto text-center space-y-6">
           <img src={LOGO_URL} alt="Iuri Rodrigues Imóveis" className="w-full max-w-[160px] md:max-w-[200px] mx-auto object-contain" style={{ mixBlendMode: "screen" }} />
           <div className="space-y-3">
@@ -173,13 +173,13 @@ function FinanciamentoPage() {
         </div>
       </section>
 
-      <section className="px-6 pb-20" style={{ background: "#0a0a0a" }}>
+      <section className="px-6 pb-20" style={{ background: "#0A0E1A" }}>
         <div className="max-w-2xl mx-auto">
           <form
             ref={formRef}
             onSubmit={handleSubmit}
             className="rounded-2xl p-6 md:p-10 space-y-6"
-            style={{ background: "#111111", border: `1px solid ${GOLD}33` }}
+            style={{ background: "#0F1626", border: `1px solid ${GOLD}33` }}
           >
             {/* Dados pessoais */}
             <div className="space-y-4">
@@ -256,7 +256,7 @@ function FinanciamentoPage() {
                 <label
                   key={k}
                   className="flex items-center gap-3 cursor-pointer rounded-lg px-4 py-4 transition-colors"
-                  style={{ border: `2px dashed ${GOLD}40`, background: "#0a0a0a" }}
+                  style={{ border: `2px dashed ${GOLD}40`, background: "#0A0E1A" }}
                   onMouseEnter={(e) => (e.currentTarget.style.borderColor = GOLD)}
                   onMouseLeave={(e) => (e.currentTarget.style.borderColor = `${GOLD}40`)}
                 >
@@ -284,7 +284,7 @@ function FinanciamentoPage() {
               type="submit"
               disabled={loading}
               className="w-full h-14 text-base font-bold uppercase tracking-wider transition-transform hover:scale-[1.01]"
-              style={{ background: GOLD, color: "#0a0a0a", boxShadow: `0 10px 40px -10px ${GOLD}80` }}
+              style={{ background: GOLD, color: "#0A0E1A", boxShadow: `0 10px 40px -10px ${GOLD}80` }}
             >
               {loading ? (<><Loader2 className="h-5 w-5 mr-2 animate-spin" /> Enviando...</>) : "Enviar documentação"}
             </Button>

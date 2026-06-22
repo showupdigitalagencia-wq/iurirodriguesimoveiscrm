@@ -193,7 +193,7 @@ function IngressoPage() {
 
   if (done) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6" style={{ background: "#0a0a0a", color: "white" }}>
+      <div className="min-h-screen flex items-center justify-center p-6" style={{ background: "#0A0E1A", color: "white" }}>
         <div className="max-w-lg text-center space-y-6">
           <div className="text-6xl">🎉</div>
           <h1 className="text-4xl md:text-5xl" style={{ fontFamily: "var(--font-display)", color: GOLD }}>
@@ -208,9 +208,9 @@ function IngressoPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: "#0a0a0a", color: "white", fontFamily: "var(--font-sans)" }}>
+    <div className="min-h-screen" style={{ background: "#0A0E1A", color: "white", fontFamily: "var(--font-sans)" }}>
       {/* HERO */}
-      <section className="px-6 pt-12 pb-16 md:pt-20 md:pb-24" style={{ background: "#0a0a0a" }}>
+      <section className="px-6 pt-12 pb-16 md:pt-20 md:pb-24" style={{ background: "#0A0E1A" }}>
         <div className="max-w-4xl mx-auto text-center space-y-8">
           <img src={LOGO_URL} alt="Iuri Rodrigues Imóveis" className="w-full max-w-[180px] md:max-w-[220px] lg:max-w-[260px] mx-auto object-contain" style={{ background: "transparent", mixBlendMode: "screen" }} />
           <div className="space-y-4">
@@ -257,7 +257,7 @@ function IngressoPage() {
               <button
                 onClick={() => formRef.current?.scrollIntoView({ behavior: "smooth" })}
                 className="inline-flex items-center gap-2 px-8 py-4 rounded-md font-semibold text-base transition-transform hover:scale-105"
-                style={{ background: GOLD, color: "#0a0a0a", boxShadow: `0 10px 40px -10px ${GOLD}80` }}
+                style={{ background: GOLD, color: "#0A0E1A", boxShadow: `0 10px 40px -10px ${GOLD}80` }}
               >
                 Quero fazer parte →
               </button>
@@ -269,7 +269,7 @@ function IngressoPage() {
 
       {unlocked && (<>
       {/* BENEFÍCIOS */}
-      <section className="px-6 py-20 animate-in fade-in duration-700" style={{ background: "#0a0a0a" }}>
+      <section className="px-6 py-20 animate-in fade-in duration-700" style={{ background: "#0A0E1A" }}>
         <div className="max-w-6xl mx-auto space-y-12">
           <div className="text-center space-y-3">
             <div className="text-xs uppercase tracking-[0.35em]" style={{ color: GOLD }}>Por que Nexus</div>
@@ -282,7 +282,7 @@ function IngressoPage() {
               <div
                 key={b.t}
                 className="rounded-xl p-6 h-auto self-start transition-all hover:-translate-y-1"
-                style={{ background: "#1a1a1a", border: `1px solid ${GOLD}26` }}
+                style={{ background: "#141B2E", border: `1px solid ${GOLD}26` }}
               >
                 <div className="text-4xl mb-2 leading-none">{b.e}</div>
                 <div className="text-lg font-semibold mb-2 leading-snug" style={{ color: GOLD }}>{b.t}</div>
@@ -294,7 +294,7 @@ function IngressoPage() {
       </section>
 
       {/* ESTATÍSTICAS */}
-      <section className="px-6 py-16" style={{ background: "#111111" }}>
+      <section className="px-6 py-16" style={{ background: "#0F1626" }}>
         <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
           {[
             { n: "40+", l: "Corretores ativos" },
@@ -312,7 +312,7 @@ function IngressoPage() {
       </section>
 
       {/* FORMULÁRIO */}
-      <section className="px-6 py-20" style={{ background: "#0a0a0a" }}>
+      <section className="px-6 py-20" style={{ background: "#0A0E1A" }}>
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-10 space-y-3">
             <div className="text-xs uppercase tracking-[0.35em]" style={{ color: GOLD }}>Documentação</div>
@@ -325,7 +325,7 @@ function IngressoPage() {
             ref={formRef}
             onSubmit={handleSubmit}
             className="rounded-2xl p-6 md:p-10 space-y-6"
-            style={{ background: "#111111", border: `1px solid ${GOLD}33` }}
+            style={{ background: "#0F1626", border: `1px solid ${GOLD}33` }}
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {[
@@ -374,7 +374,7 @@ function IngressoPage() {
                 <label
                   key={k}
                   className="flex items-center gap-3 cursor-pointer rounded-lg px-4 py-4 transition-colors"
-                  style={{ border: `2px dashed ${GOLD}40`, background: "#0a0a0a" }}
+                  style={{ border: `2px dashed ${GOLD}40`, background: "#0A0E1A" }}
                   onMouseEnter={(e) => (e.currentTarget.style.borderColor = GOLD)}
                   onMouseLeave={(e) => (e.currentTarget.style.borderColor = `${GOLD}40`)}
                 >
@@ -402,7 +402,7 @@ function IngressoPage() {
               type="submit"
               disabled={loading}
               className="w-full h-14 text-base font-bold uppercase tracking-wider transition-transform hover:scale-[1.01]"
-              style={{ background: GOLD, color: "#0a0a0a", boxShadow: `0 10px 40px -10px ${GOLD}80` }}
+              style={{ background: GOLD, color: "#0A0E1A", boxShadow: `0 10px 40px -10px ${GOLD}80` }}
             >
               {loading ? (<><Loader2 className="h-5 w-5 mr-2 animate-spin" /> Enviando...</>) : "Enviar documentação"}
             </Button>
@@ -413,7 +413,7 @@ function IngressoPage() {
 
 
 
-      <footer className="px-6 py-8 text-center text-white/50 text-xs space-y-1" style={{ background: "#0a0a0a", borderTop: `1px solid ${GOLD}33` }}>
+      <footer className="px-6 py-8 text-center text-white/50 text-xs space-y-1" style={{ background: "#0A0E1A", borderTop: `1px solid ${GOLD}33` }}>
         <div>© Iuri Rodrigues Imóveis — Ecossistema Nexus</div>
         <div className="text-[11px] text-white/40">
           Iuri Rodrigues Imóveis — <span style={{ color: GOLD }}>CRECI 11379J</span> — CNPJ 33.587.804/0001-98
