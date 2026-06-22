@@ -31,9 +31,9 @@ export const getLeadTimeline = createServerFn({ method: "POST" })
 
     // Autorização: admin OR exec OR corretor dono do lead
     const [{ data: isAdmin }, { data: isExec }, { data: leadRaw }] = await Promise.all([
-      (context.supabase as { rpc: (n: string, a: unknown) => Promise<{ data: boolean | null }> })
+      (context.supabase as unknown as { rpc: (n: string, a: unknown) => Promise<{ data: boolean | null }> })
         .rpc("has_role", { _user_id: context.userId, _role: "admin" }),
-      (context.supabase as { rpc: (n: string) => Promise<{ data: boolean | null }> })
+      (context.supabase as unknown as { rpc: (n: string) => Promise<{ data: boolean | null }> })
         .rpc("current_user_is_executivo"),
       supabaseAdmin.from("vendas_leads")
         .select("id, nome, created_at, corretor_id, created_by, origem, origem_detalhe, fechado_em, etapa, comissao, atribuido_em, atribuido_por")
@@ -110,7 +110,7 @@ export const getLeadTimeline = createServerFn({ method: "POST" })
         : null,
       responsavel: { id: lead.created_by, nome: nome(lead.created_by) },
       alvo: null,
-      payload: { origem: lead.origem, origem_detalhe: lead.origem_detalhe },
+      payload: JSON.stringify({ origem: lead.origem, origem_detalhe: lead.origem_detalhe }),
     });
 
     // 2) plantao_log → atribuições / transferências / admin
@@ -143,7 +143,7 @@ export const getLeadTimeline = createServerFn({ method: "POST" })
         descricao: det.mensagem ?? null,
         responsavel: { id: responsavelId, nome: responsavelId ? (det.por?.nome ?? det.criado_por?.nome ?? nome(responsavelId)) : null },
         alvo: alvoId ? { id: alvoId, nome: det.para?.nome ?? det.atribuido_a?.nome ?? nome(alvoId) } : null,
-        payload: p.detalhe,
+        payload: p.detalhe ? JSON.stringify(p.detalhe) : null,
       });
     }
 
@@ -157,7 +157,7 @@ export const getLeadTimeline = createServerFn({ method: "POST" })
         descricao: `${(h.etapa_anterior ?? "—").replace(/_/g, " ")} → ${h.etapa_nova.replace(/_/g, " ")}`,
         responsavel: { id: h.user_id, nome: nome(h.user_id) },
         alvo: null,
-        payload: { etapa_anterior: h.etapa_anterior, etapa_nova: h.etapa_nova },
+        payload: JSON.stringify({ etapa_anterior: h.etapa_anterior, etapa_nova: h.etapa_nova }),
       });
     }
 
@@ -171,7 +171,7 @@ export const getLeadTimeline = createServerFn({ method: "POST" })
         descricao: `${v.endereco} · ${new Date(v.data_inicio).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}`,
         responsavel: { id: v.corretor_id, nome: nome(v.corretor_id) },
         alvo: null,
-        payload: { visita_id: v.id, data_inicio: v.data_inicio, endereco: v.endereco, status: v.status },
+        payload: JSON.stringify({ visita_id: v.id, data_inicio: v.data_inicio, endereco: v.endereco, status: v.status }),
       });
       if (v.status === "cancelada") {
         events.push({
@@ -182,7 +182,7 @@ export const getLeadTimeline = createServerFn({ method: "POST" })
           descricao: v.endereco,
           responsavel: { id: v.corretor_id, nome: nome(v.corretor_id) },
           alvo: null,
-          payload: { visita_id: v.id },
+          payload: JSON.stringify({ visita_id: v.id }),
         });
       }
       if (v.comparecimento) {
@@ -194,7 +194,7 @@ export const getLeadTimeline = createServerFn({ method: "POST" })
           descricao: v.endereco,
           responsavel: { id: v.confirmada_por, nome: nome(v.confirmada_por) },
           alvo: null,
-          payload: { visita_id: v.id, comparecimento: v.comparecimento },
+          payload: JSON.stringify({ visita_id: v.id, comparecimento: v.comparecimento }),
         });
       }
     }
@@ -209,7 +209,7 @@ export const getLeadTimeline = createServerFn({ method: "POST" })
         descricao: lead.comissao != null ? `Comissão: R$ ${Number(lead.comissao).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : null,
         responsavel: { id: null, nome: null },
         alvo: null,
-        payload: { comissao: lead.comissao },
+        payload: JSON.stringify({ comissao: lead.comissao }),
       });
     }
 
