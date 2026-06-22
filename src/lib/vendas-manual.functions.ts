@@ -27,7 +27,7 @@ export const createManualVendasLead = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     // Role do solicitante
-    const { data: isAdminRaw } = await (context.supabase as {
+    const { data: isAdminRaw } = await (context.supabase as unknown as {
       rpc: (n: string, a: unknown) => Promise<{ data: boolean | null }>;
     }).rpc("has_role", { _user_id: context.userId, _role: "admin" });
     const isAdmin = !!isAdminRaw;
