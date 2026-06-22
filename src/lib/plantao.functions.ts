@@ -88,9 +88,13 @@ export const setPlantonista = createServerFn({ method: "POST" })
       .eq("data", data.data)
       .maybeSingle();
     const prev = prevRaw as { corretor_id: string } | null;
-    // Regra: Executivo NÃO pode sobrescrever um dia escalado para OUTRO executivo.
+    // Regra: Executivo NÃO pode sobrescrever um dia escalado para OUTRO executivo ou para um ADMIN.
     if (!isAdmin && prev && prev.corretor_id !== context.userId && prev.corretor_id !== data.corretor_id) {
-      const prevIsExec = await isProfileExecutivo(supabaseAdmin as never, prev.corretor_id);
+      const [prevIsExec, prevIsAdmin] = await Promise.all([
+        isProfileExecutivo(supabaseAdmin as never, prev.corretor_id),
+        isProfileAdmin(supabaseAdmin as never, prev.corretor_id),
+      ]);
+      if (prevIsAdmin) throw new Error("Apenas Admin pode alterar a escala de outro Admin.");
       if (prevIsExec) throw new Error("Apenas Admin pode alterar a escala de outro Executivo.");
     }
     // upsert por data — zera `notificado_em` se trocou de corretor para que o aviso saia
