@@ -525,10 +525,13 @@ function CreateVendasLeadDialog({ onCreated }: { onCreated: () => void }) {
               <Input value={sugestaoLabel} disabled readOnly />
             )}
             <p className="text-xs text-muted-foreground mt-1">
-              {isAdmin
-                ? "Por padrão atribuído ao plantonista do dia. Você pode escolher outro responsável."
-                : "Leads manuais são atribuídos automaticamente ao plantonista do dia."}
+              Por padrão, os leads manuais são atribuídos ao plantonista do dia.
             </p>
+            {isAdmin && plantonistaId && form.corretor_id && form.corretor_id !== plantonistaId && (
+              <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                Responsável alterado manualmente por administrador.
+              </p>
+            )}
           </div>
 
           <div><Label>Observações</Label><Textarea rows={3} value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} /></div>
