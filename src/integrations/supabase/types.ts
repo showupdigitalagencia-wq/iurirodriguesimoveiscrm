@@ -1807,6 +1807,10 @@ export type Database = {
         Args: { _uid?: string }
         Returns: boolean
       }
+      link_corretor_to_executivo: {
+        Args: { _profile_id: string }
+        Returns: string
+      }
       log_audit: {
         Args: {
           _acao: string
