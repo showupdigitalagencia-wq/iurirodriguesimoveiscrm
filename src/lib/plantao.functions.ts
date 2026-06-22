@@ -4,7 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 type EscalaRow = { id: string; data: string; corretor_id: string; corretor_nome: string | null };
 
-async function ensureAdminOrExec(ctx: { supabase: ReturnType<typeof Object>; userId: string }) {
+async function ensureAdminOrExec(ctx: { supabase: ReturnType<typeof Object>; userId: string }): Promise<{ isAdmin: boolean; isExec: boolean }> {
   const [{ data: isAdmin }, { data: isExec }] = await Promise.all([
     (ctx.supabase as { rpc: (n: string, a: unknown) => Promise<{ data: boolean | null }> })
       .rpc("has_role", { _user_id: ctx.userId, _role: "admin" }),
@@ -12,7 +12,27 @@ async function ensureAdminOrExec(ctx: { supabase: ReturnType<typeof Object>; use
       .rpc("current_user_is_executivo"),
   ]);
   if (!isAdmin && !isExec) throw new Error("Acesso negado");
+  return { isAdmin: !!isAdmin, isExec: !!isExec };
 }
+
+// Verifica se um determinado profile_id pertence a um EXECUTIVO ativo
+// (mesma regra do RPC current_user_is_executivo: profile.nome match com responsaveis.nome pelo 1º nome).
+async function isProfileExecutivo(
+  admin: { from: (t: string) => { select: (c: string) => { eq: (k: string, v: string) => { maybeSingle: () => Promise<{ data: unknown }> } } } },
+  profileId: string,
+): Promise<boolean> {
+  const { data } = await admin
+    .from("profiles")
+    .select("nome, ativo, responsavel_id, responsaveis:responsavel_id(nome, ativo)")
+    .eq("id", profileId)
+    .maybeSingle();
+  const p = data as { nome: string | null; ativo: boolean | null; responsavel_id: string | null; responsaveis: { nome: string | null; ativo: boolean | null } | null } | null;
+  if (!p || p.ativo === false || !p.responsavel_id || !p.responsaveis) return false;
+  if (p.responsaveis.ativo === false) return false;
+  const first = (s: string | null) => (s ?? "").trim().split(/\s+/)[0]?.toLowerCase() ?? "";
+  return first(p.nome) !== "" && first(p.nome) === first(p.responsaveis.nome);
+}
+
 
 export const getEscalaMes = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -45,7 +65,7 @@ export const setPlantonista = createServerFn({ method: "POST" })
     z.object({ data: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), corretor_id: z.string().uuid() }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    await ensureAdminOrExec(context);
+    const { isAdmin } = await ensureAdminOrExec(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     // Detecta se já existia plantonista diferente para o mesmo dia (troca)
     const { data: prevRaw } = await supabaseAdmin
@@ -54,6 +74,11 @@ export const setPlantonista = createServerFn({ method: "POST" })
       .eq("data", data.data)
       .maybeSingle();
     const prev = prevRaw as { corretor_id: string } | null;
+    // Regra: Executivo NÃO pode sobrescrever um dia escalado para OUTRO executivo.
+    if (!isAdmin && prev && prev.corretor_id !== context.userId && prev.corretor_id !== data.corretor_id) {
+      const prevIsExec = await isProfileExecutivo(supabaseAdmin as never, prev.corretor_id);
+      if (prevIsExec) throw new Error("Apenas Admin pode alterar a escala de outro Executivo.");
+    }
     // upsert por data — zera `notificado_em` se trocou de corretor para que o aviso saia
     const changed = !prev || prev.corretor_id !== data.corretor_id;
     const { error } = await supabaseAdmin
@@ -104,8 +129,21 @@ export const removerPlantonista = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ data: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) }).parse(d))
   .handler(async ({ data, context }) => {
-    await ensureAdminOrExec(context);
+    const { isAdmin } = await ensureAdminOrExec(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // Regra: Executivo NÃO pode remover dia escalado para OUTRO executivo.
+    if (!isAdmin) {
+      const { data: prevRaw } = await supabaseAdmin
+        .from("plantao_escala" as never)
+        .select("corretor_id")
+        .eq("data", data.data)
+        .maybeSingle();
+      const prev = prevRaw as { corretor_id: string } | null;
+      if (prev && prev.corretor_id !== context.userId) {
+        const prevIsExec = await isProfileExecutivo(supabaseAdmin as never, prev.corretor_id);
+        if (prevIsExec) throw new Error("Apenas Admin pode remover a escala de outro Executivo.");
+      }
+    }
     const { error } = await supabaseAdmin.from("plantao_escala" as never).delete().eq("data", data.data);
     if (error) throw new Error(error.message);
     return { ok: true };
