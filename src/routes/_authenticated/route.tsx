@@ -67,7 +67,7 @@ const CONFIG_NAV = [
 ] as const;
 
 // Rotas permitidas para corretor_vendas (puro)
-const CORRETOR_ALLOWED_PREFIXES = ["/vendas", "/notificacoes"];
+const CORRETOR_ALLOWED_PREFIXES = ["/vendas", "/notificacoes", "/configuracoes"];
 // Rotas permitidas para administrativo (puro)
 const ADMINISTRATIVO_ALLOWED_PREFIXES = ["/admin", "/executivos/landing-page", "/notificacoes", "/configuracoes"];
 // Rotas permitidas para correspondente_bancaria (puro)
