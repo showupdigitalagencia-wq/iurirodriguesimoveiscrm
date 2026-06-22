@@ -332,11 +332,11 @@ function SejaCorretorPage() {
             <div key={s.l} className="space-y-2">
               <div
                 className="text-5xl md:text-6xl"
-                style={{ fontFamily: SERIF, color: GOLD, fontWeight: 700 }}
+                style={{ fontFamily: SERIF, color: GOLD, fontWeight: 500, letterSpacing: "-0.02em" }}
               >
                 {s.n}
               </div>
-              <div className="text-sm uppercase tracking-[0.2em] text-white/60">{s.l}</div>
+              <div className="text-[10px] md:text-xs uppercase tracking-[0.45em] text-white/55">{s.l}</div>
             </div>
           ))}
         </div>
