@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { DndContext, type DragEndEvent, PointerSensor, useSensor, useSensors, useDraggable, useDroppable } from "@dnd-kit/core";
-import { ETAPAS, canalNome, etapaColor, type LeadRow } from "@/lib/lead-helpers";
+import { ETAPAS, canalNome, etapaHex, type LeadRow } from "@/lib/lead-helpers";
 import { updateLeadEtapa, markFirstResponse } from "@/lib/leads.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -75,12 +75,28 @@ function PipelinePage() {
 
 function Column({ id, title, leads, onOpen }: { id: string; title: string; leads: LeadRow[]; onOpen: (id: string) => void }) {
   const { setNodeRef, isOver } = useDroppable({ id });
-  const colors = etapaColor(id as LeadRow["etapa"]);
+  const hex = etapaHex(id as LeadRow["etapa"]);
   return (
-    <div ref={setNodeRef} className={`shrink-0 w-[85vw] sm:w-[300px] md:w-[280px] snap-center bg-muted/40 rounded-xl overflow-hidden ${isOver ? "ring-2 ring-gold" : ""}`}>
-      <div className={`flex items-center justify-between px-3 py-2 ${colors.bar} text-white`}>
-        <h3 className="text-sm font-semibold">{title}</h3>
-        <span className="text-xs bg-white/20 rounded-full px-2 py-0.5">{leads.length}</span>
+    <div
+      ref={setNodeRef}
+      className={`shrink-0 w-[85vw] sm:w-[300px] md:w-[280px] snap-center glass rounded-xl overflow-hidden transition-shadow ${isOver ? "ring-1 ring-primary/60 gold-glow" : ""}`}
+    >
+      <div
+        className="relative flex items-center justify-between px-3 py-2.5 border-b border-border/40"
+        style={{
+          background: `linear-gradient(180deg, ${hex}22, transparent)`,
+        }}
+      >
+        <span aria-hidden className="absolute left-0 top-0 bottom-0 w-[3px]" style={{ background: hex, boxShadow: `0 0 12px ${hex}` }} />
+        <h3 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground/90">
+          {title}
+        </h3>
+        <span
+          className="text-[10px] font-medium rounded-full px-2 py-0.5 border"
+          style={{ color: hex, borderColor: `${hex}55`, background: `${hex}15` }}
+        >
+          {leads.length}
+        </span>
       </div>
       <div className="space-y-2 p-3">
         {leads.map((lead) => <Card key={lead.id} lead={lead} onOpen={onOpen} />)}
@@ -92,11 +108,16 @@ function Column({ id, title, leads, onOpen }: { id: string; title: string; leads
 function Card({ lead, onOpen }: { lead: LeadRow; onOpen: (id: string) => void }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: lead.id });
   const style = transform ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` } : undefined;
-  const colors = etapaColor(lead.etapa);
+  const hex = etapaHex(lead.etapa);
   return (
-    <div ref={setNodeRef} style={style} {...listeners} {...attributes}
+    <div
+      ref={setNodeRef}
+      style={{ ...style, borderLeftColor: hex }}
+      {...listeners}
+      {...attributes}
       onClick={(e) => { if (!isDragging) { e.stopPropagation(); onOpen(lead.id); } }}
-      className={`bg-card border border-border border-l-4 ${colors.border} rounded-lg p-3 cursor-pointer hover:border-gold/40 transition-colors ${isDragging ? "opacity-50 cursor-grabbing" : ""}`}>
+      className={`relative bg-card/70 backdrop-blur-sm border border-border/60 border-l-[3px] rounded-lg p-3 cursor-pointer hover:border-primary/40 hover:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.6)] transition-all ${isDragging ? "opacity-50 cursor-grabbing" : ""}`}
+    >
       <div className="flex items-start justify-between gap-2">
         <div className="font-medium text-sm truncate">{lead.nome}</div>
       </div>
