@@ -1,4 +1,3 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,10 +15,6 @@ type FunilResult = {
   escopo: { is_admin: boolean; is_exec: boolean; scope: string; usuarios: number };
 };
 
-export const Route = createFileRoute("/_authenticated/vendas/funil")({
-  component: FunilPage,
-});
-
 function defaultRange() {
   const to = new Date();
   const from = new Date();
@@ -32,7 +27,7 @@ function nomeEtapa(pipeline: "captacao" | "vendas", id: string): string {
   return VENDAS_ETAPAS.find((e) => e.id === id)?.nome ?? id;
 }
 
-function FunilPage() {
+export function VendasFunilPanel() {
   const initial = defaultRange();
   const [pipeline, setPipeline] = useState<"captacao" | "vendas">("vendas");
   const [from, setFrom] = useState(initial.from);
