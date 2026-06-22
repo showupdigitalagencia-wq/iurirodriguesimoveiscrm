@@ -128,7 +128,8 @@ function MonthGrid({ cursor, from, reunioes, onOpen }: { cursor: Date; from: Dat
                   <button
                     key={r.id}
                     onClick={() => onOpen(r.id)}
-                    className={`block w-full text-left text-[10px] sm:text-xs px-1.5 py-1 rounded border ${colorFor(r)} truncate`}
+                    style={colorFor(r)}
+                    className="block w-full text-left text-[10px] sm:text-xs px-1.5 py-1 rounded border truncate"
                   >
                     {format(new Date(r.data_inicio), "HH:mm")} {r.titulo}
                   </button>
