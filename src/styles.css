@@ -63,7 +63,15 @@
 }
 
 :root {
-  --radius: 0.75rem;
+  --radius: 1rem; /* 16px — premium, consistente em todos os componentes */
+
+  /* Easings premium (Apple/Linear/Stripe) */
+  --ease-out-premium: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out-premium: cubic-bezier(0.65, 0, 0.35, 1);
+  --duration-fast: 150ms;
+  --duration-base: 200ms;
+  --duration-slow: 280ms;
+
 
   /* Navy quase preto */
   --background: oklch(0.16 0.022 265);              /* #0A0E1A-ish */
@@ -100,8 +108,16 @@
   --gold-bright: oklch(0.86 0.14 92);               /* #F0D060 brilho */
   --gradient-gold: linear-gradient(135deg, oklch(0.78 0.13 86), oklch(0.86 0.14 92));
   --gradient-divider: linear-gradient(90deg, transparent, oklch(0.78 0.13 86 / 0.65), transparent);
-  --shadow-elegant: 0 24px 60px -28px oklch(0.10 0.02 265 / 0.85);
+  /* Sistema de sombras em camadas — profundidade premium */
+  --shadow-xs: 0 1px 2px 0 oklch(0.08 0.02 265 / 0.4);
+  --shadow-sm: 0 2px 4px -1px oklch(0.08 0.02 265 / 0.45), 0 1px 2px -1px oklch(0.08 0.02 265 / 0.3);
+  --shadow-md: 0 6px 16px -4px oklch(0.08 0.02 265 / 0.55), 0 2px 6px -2px oklch(0.08 0.02 265 / 0.4);
+  --shadow-lg: 0 16px 36px -10px oklch(0.06 0.02 265 / 0.6), 0 6px 14px -6px oklch(0.06 0.02 265 / 0.45);
+  --shadow-xl: 0 32px 64px -16px oklch(0.04 0.02 265 / 0.7), 0 12px 24px -8px oklch(0.04 0.02 265 / 0.5);
+  --shadow-elegant: var(--shadow-lg);
   --shadow-glow: 0 0 24px -4px oklch(0.78 0.13 86 / 0.45);
+  --shadow-glow-soft: 0 0 0 1px oklch(0.78 0.13 86 / 0.22), 0 0 20px -6px oklch(0.78 0.13 86 / 0.35);
+
 
   /* Charts (dourado, cobre, teal, ametista, esmeralda) */
   --chart-1: oklch(0.78 0.13 86);
@@ -183,14 +199,55 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     background-image:
       radial-gradient(ellipse 80% 50% at 50% -10%, oklch(0.78 0.13 86 / 0.06), transparent 60%),
       radial-gradient(ellipse 60% 50% at 100% 100%, oklch(0.40 0.10 260 / 0.12), transparent 60%);
     background-attachment: fixed;
   }
-  h1, h2, h3 { letter-spacing: -0.01em; }
+  /* Hierarquia tipográfica refinada — Linear/Stripe */
+  h1 { letter-spacing: -0.022em; font-weight: 600; }
+  h2 { letter-spacing: -0.018em; font-weight: 600; }
+  h3 { letter-spacing: -0.014em; font-weight: 600; }
+  h4, h5, h6 { letter-spacing: -0.01em; font-weight: 600; }
   .uppercase, [class*="tracking-"] { font-feature-settings: "ss01"; }
+
+  /* Secundário com mais contraste para legibilidade premium */
+  .text-muted-foreground { color: oklch(0.76 0.022 255); }
+
+  /* Focus ring dourado discreto e consistente em toda a UI */
+  *:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--background), 0 0 0 4px oklch(0.78 0.13 86 / 0.55);
+    border-radius: inherit;
+    transition: box-shadow var(--duration-fast) var(--ease-out-premium);
+  }
+
+  /* Transições premium globais para superfícies interativas */
+  button, a, [role="button"], [role="menuitem"], [role="option"], [role="tab"],
+  [data-slot="trigger"], [data-radix-collection-item] {
+    transition-property: background-color, border-color, color, box-shadow, transform, opacity;
+    transition-duration: var(--duration-base);
+    transition-timing-function: var(--ease-out-premium);
+  }
+
+  /* Scrollbar refinada */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: oklch(0.32 0.028 260 / 0.5);
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: oklch(0.40 0.030 260 / 0.7); background-clip: padding-box; border: 2px solid transparent; }
+
+  /* Seleção de texto dourada */
+  ::selection { background: oklch(0.78 0.13 86 / 0.28); color: var(--foreground); }
 }
+
 
 @layer utilities {
   /* Glassmorphism — cartão de vidro com borda dourada sutil */
@@ -250,4 +307,135 @@
       font-size: 16px;
     }
   }
+
+  /* ========== REFINAMENTO PREMIUM ========== */
+
+  /* Elevação suave em cards/superfícies (use .lift) */
+  .lift {
+    transition: transform var(--duration-base) var(--ease-out-premium),
+                box-shadow var(--duration-base) var(--ease-out-premium),
+                border-color var(--duration-base) var(--ease-out-premium);
+  }
+  .lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    border-color: oklch(0.78 0.13 86 / 0.28);
+  }
+
+  /* Cards do shadcn ganham elevação suave automática (somente quando dentro de elementos interativos por padrão NÃO — mantemos opt-in via classes existentes) */
+  [data-slot="card"],
+  .rounded-xl.border.bg-card {
+    transition: transform var(--duration-base) var(--ease-out-premium),
+                box-shadow var(--duration-base) var(--ease-out-premium),
+                border-color var(--duration-base) var(--ease-out-premium);
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* Skeleton shimmer elegante */
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  [data-slot="skeleton"],
+  .animate-pulse {
+    background: linear-gradient(
+      90deg,
+      oklch(0.24 0.022 265 / 0.6) 0%,
+      oklch(0.32 0.028 260 / 0.9) 50%,
+      oklch(0.24 0.022 265 / 0.6) 100%
+    ) !important;
+    background-size: 200% 100% !important;
+    animation: shimmer 1.8s var(--ease-in-out-premium) infinite !important;
+  }
+
+  /* Superfícies flutuantes (Popover, Dropdown, Select, Tooltip, Dialog, Sheet) — glassmorphism + sombra premium */
+  [data-radix-popper-content-wrapper] > * {
+    border-radius: var(--radius) !important;
+  }
+  [role="menu"],
+  [role="listbox"],
+  [data-radix-popover-content],
+  [data-radix-dropdown-menu-content],
+  [data-radix-select-content],
+  [data-radix-hover-card-content],
+  [data-radix-menubar-content],
+  [data-radix-context-menu-content] {
+    background-color: oklch(0.20 0.024 265 / 0.92) !important;
+    backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid oklch(0.78 0.13 86 / 0.18) !important;
+    box-shadow: var(--shadow-xl) !important;
+    border-radius: calc(var(--radius) - 4px) !important;
+  }
+
+  /* Tooltip — mais discreto e refinado */
+  [data-radix-tooltip-content] {
+    background-color: oklch(0.12 0.020 265 / 0.96) !important;
+    backdrop-filter: blur(12px);
+    color: var(--foreground) !important;
+    border: 1px solid oklch(0.78 0.13 86 / 0.20);
+    box-shadow: var(--shadow-md);
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    letter-spacing: -0.005em;
+  }
+
+  /* Itens de menu/dropdown — hover suave */
+  [role="menuitem"],
+  [role="option"] {
+    border-radius: 8px !important;
+    margin: 2px 4px;
+    transition: background-color var(--duration-fast) var(--ease-out-premium),
+                color var(--duration-fast) var(--ease-out-premium);
+  }
+  [role="menuitem"][data-highlighted],
+  [role="option"][data-highlighted],
+  [role="menuitem"]:hover,
+  [role="option"]:hover {
+    background-color: oklch(0.78 0.13 86 / 0.10) !important;
+  }
+
+  /* Dialog / Sheet content — glass elevado, animação suave */
+  [data-radix-dialog-content],
+  [data-radix-alert-dialog-content] {
+    background-color: oklch(0.20 0.024 265 / 0.94) !important;
+    backdrop-filter: blur(24px) saturate(150%);
+    border: 1px solid oklch(0.78 0.13 86 / 0.20) !important;
+    box-shadow: var(--shadow-xl), 0 0 0 1px oklch(0.78 0.13 86 / 0.06) inset !important;
+    border-radius: var(--radius) !important;
+  }
+  [data-radix-dialog-overlay],
+  [data-radix-alert-dialog-overlay] {
+    background-color: oklch(0.06 0.015 265 / 0.78) !important;
+    backdrop-filter: blur(6px);
+  }
+
+  /* Inputs/Textareas — refinamento sutil */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  textarea,
+  select {
+    transition: border-color var(--duration-base) var(--ease-out-premium),
+                box-shadow var(--duration-base) var(--ease-out-premium),
+                background-color var(--duration-base) var(--ease-out-premium);
+  }
+
+  /* Botões — profundidade + lift sutil no hover */
+  button:not(:disabled):not([data-state="open"]):active {
+    transform: translateY(0.5px) scale(0.995);
+    transition-duration: 80ms;
+  }
+
+  /* Tabs — indicador ativo com sombra suave */
+  [role="tab"][data-state="active"] {
+    box-shadow: var(--shadow-sm), 0 0 0 1px oklch(0.78 0.13 86 / 0.15) inset;
+  }
+
+  /* Toast (sonner) — refinamento */
+  [data-sonner-toast] {
+    border-radius: 14px !important;
+    backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid oklch(0.78 0.13 86 / 0.20) !important;
+    box-shadow: var(--shadow-lg) !important;
+  }
 }
+
