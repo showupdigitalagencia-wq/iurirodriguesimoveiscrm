@@ -191,9 +191,11 @@ function PlantaoPage() {
                         <SelectValue placeholder="—" />
                       </SelectTrigger>
                       <SelectContent>
-                        {(elegQ.data?.items ?? []).map((c) => (
-                          <SelectItem key={c.id} value={c.id} className="text-xs">{c.nome}</SelectItem>
-                        ))}
+                        {(elegQ.data?.items ?? [])
+                          .filter((c) => isAdmin || isExec ? true : c.id === meUid)
+                          .map((c) => (
+                            <SelectItem key={c.id} value={c.id} className="text-xs">{c.nome}</SelectItem>
+                          ))}
                       </SelectContent>
                     </Select>
                   ) : (
