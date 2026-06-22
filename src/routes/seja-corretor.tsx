@@ -391,17 +391,17 @@ function SejaCorretorPage() {
 
         <div className="max-w-5xl mx-auto space-y-12">
           <div className="text-center space-y-3">
-            <div className="text-xs uppercase tracking-[0.35em]" style={{ color: GOLD }}>
+            <div className="text-[10px] md:text-xs uppercase tracking-[0.45em]" style={{ color: GOLD }}>
               {filteredExec ? "Fale agora com" : "Liderança"}
             </div>
-            <h2 className="text-3xl md:text-5xl" style={{ fontFamily: SERIF, fontWeight: 600 }}>
+            <h2 className="text-3xl md:text-5xl leading-[1.1]" style={{ fontFamily: SERIF, fontWeight: 500, letterSpacing: "-0.01em" }}>
               {filteredExec ? (
                 <>
-                  Seu próximo passo é com <span style={{ color: GOLD }}>{filteredExec.nome}</span>
+                  Seu próximo passo é com <em style={{ color: GOLD, fontStyle: "italic", fontWeight: 500 }}>{filteredExec.nome}</em>
                 </>
               ) : (
                 <>
-                  Escolha por <span style={{ color: GOLD }}>região</span>
+                  Escolha por <em style={{ color: GOLD, fontStyle: "italic", fontWeight: 500 }}>região</em>
                 </>
               )}
             </h2>
