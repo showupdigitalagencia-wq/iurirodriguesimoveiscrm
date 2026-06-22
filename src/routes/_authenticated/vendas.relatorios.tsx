@@ -13,7 +13,11 @@ import {
 import {
   TrendingUp, TrendingDown, Users, Trophy, Timer, Target,
   Handshake, KeyRound, Crown, User, UsersRound, CalendarCheck,
+  BarChart3, Clock,
 } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { VendasFunilPanel } from "@/components/vendas-funil-panel";
+import { VendasTempoRespostaPanel } from "@/components/vendas-tempo-resposta-panel";
 
 export const Route = createFileRoute("/_authenticated/vendas/relatorios")({
   head: () => ({ meta: [{ title: "Relatórios — Vendas" }] }),
