@@ -72,9 +72,9 @@ function SejaCorretorPage() {
   const execsToShow = filteredExec ? [filteredExec] : CAPTACAO_EXECUTIVOS;
 
   return (
-    <div className="min-h-screen" style={{ background: "#0a0a0a", color: "white", fontFamily: "var(--font-sans)" }}>
+    <div className="min-h-screen" style={{ background: "#0A0E1A", color: "white", fontFamily: "var(--font-sans)" }}>
       {/* HERO */}
-      <section className="px-6 pt-12 pb-12 md:pt-20 md:pb-20" style={{ background: "#0a0a0a" }}>
+      <section className="px-6 pt-12 pb-12 md:pt-20 md:pb-20" style={{ background: "#0A0E1A" }}>
         <div className="max-w-5xl mx-auto text-center space-y-8">
           <img
             src={LOGO_URL}
@@ -104,7 +104,7 @@ function SejaCorretorPage() {
       {/* MARQUEE de regiões */}
       <section
         className="overflow-hidden py-5 border-y"
-        style={{ background: "#111111", borderColor: `${GOLD}22` }}
+        style={{ background: "#0F1626", borderColor: `${GOLD}22` }}
       >
         <div className="flex animate-[marquee_30s_linear_infinite] gap-12 whitespace-nowrap text-sm uppercase tracking-[0.3em] text-white/60">
           {[...CAPTACAO_REGIOES_MARQUEE, ...CAPTACAO_REGIOES_MARQUEE].map((r, i) => (
@@ -117,7 +117,7 @@ function SejaCorretorPage() {
       </section>
 
       {/* MANIFESTO */}
-      <section className="px-6 py-20" style={{ background: "#0a0a0a" }}>
+      <section className="px-6 py-20" style={{ background: "#0A0E1A" }}>
         <div className="max-w-3xl mx-auto text-center space-y-6">
           <div className="text-xs uppercase tracking-[0.35em]" style={{ color: GOLD }}>
             Manifesto
@@ -141,7 +141,7 @@ function SejaCorretorPage() {
       </section>
 
       {/* STATS */}
-      <section className="px-6 py-14" style={{ background: "#111111" }}>
+      <section className="px-6 py-14" style={{ background: "#0F1626" }}>
         <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
           {CAPTACAO_STATS.map((s) => (
             <div key={s.l} className="space-y-2">
@@ -159,7 +159,7 @@ function SejaCorretorPage() {
 
       {/* VÍDEO */}
       {vslId && (
-        <section className="px-6 py-20" style={{ background: "#0a0a0a" }}>
+        <section className="px-6 py-20" style={{ background: "#0A0E1A" }}>
           <div className="max-w-4xl mx-auto text-center space-y-8">
             <div className="space-y-3">
               <div className="text-xs uppercase tracking-[0.35em]" style={{ color: GOLD }}>
@@ -186,7 +186,7 @@ function SejaCorretorPage() {
       )}
 
       {/* GALERIA DO TIME */}
-      <section className="px-6 py-20" style={{ background: "#111111" }}>
+      <section className="px-6 py-20" style={{ background: "#0F1626" }}>
         <div className="max-w-6xl mx-auto space-y-12">
           <div className="text-center space-y-3">
             <div className="text-xs uppercase tracking-[0.35em]" style={{ color: GOLD }}>
@@ -203,11 +203,11 @@ function SejaCorretorPage() {
                 <div
                   key={i}
                   className="rounded-xl overflow-hidden flex flex-col"
-                  style={{ background: "#0a0a0a", border: `1px solid ${GOLD}26` }}
+                  style={{ background: "#0A0E1A", border: `1px solid ${GOLD}26` }}
                 >
                   <div
                     className="aspect-[3/4] w-full flex items-center justify-center text-white/30 text-xs uppercase tracking-widest"
-                    style={{ background: "#1a1a1a" }}
+                    style={{ background: "#141B2E" }}
                   >
                     {p?.url ? (
                       <img src={p.url} alt={p.nome || "Time"} className="w-full h-full object-cover" />
@@ -229,7 +229,7 @@ function SejaCorretorPage() {
       </section>
 
       {/* EXECUTIVO(S) */}
-      <section className="px-6 py-20" style={{ background: "#0a0a0a" }}>
+      <section className="px-6 py-20" style={{ background: "#0A0E1A" }}>
         <div className="max-w-5xl mx-auto space-y-12">
           <div className="text-center space-y-3">
             <div className="text-xs uppercase tracking-[0.35em]" style={{ color: GOLD }}>
@@ -259,7 +259,7 @@ function SejaCorretorPage() {
               <div
                 key={exec.ref}
                 className="rounded-2xl p-7 space-y-5 flex flex-col"
-                style={{ background: "#111111", border: `1px solid ${GOLD}40` }}
+                style={{ background: "#0F1626", border: `1px solid ${GOLD}40` }}
               >
                 <div>
                   <div className="text-xs uppercase tracking-[0.3em] text-white/50 mb-2">
@@ -280,7 +280,7 @@ function SejaCorretorPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-md font-semibold text-sm uppercase tracking-wider transition-transform hover:scale-[1.02]"
-                  style={{ background: GOLD, color: "#0a0a0a" }}
+                  style={{ background: GOLD, color: "#0A0E1A" }}
                 >
                   Falar no WhatsApp →
                 </a>
@@ -291,7 +291,7 @@ function SejaCorretorPage() {
       </section>
 
       {/* CTA FINAL */}
-      <section className="px-6 py-24" style={{ background: "#111111" }}>
+      <section className="px-6 py-24" style={{ background: "#0F1626" }}>
         <div className="max-w-3xl mx-auto text-center space-y-6">
           <h2 className="text-3xl md:text-5xl leading-tight" style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}>
             Pronto para fazer parte do <span style={{ color: GOLD }}>maior ecossistema</span> do Rio?
@@ -307,7 +307,7 @@ function SejaCorretorPage() {
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-md font-semibold text-base uppercase tracking-wider transition-transform hover:scale-105"
-              style={{ background: GOLD, color: "#0a0a0a", boxShadow: `0 10px 40px -10px ${GOLD}80` }}
+              style={{ background: GOLD, color: "#0A0E1A", boxShadow: `0 10px 40px -10px ${GOLD}80` }}
             >
               Quero fazer parte →
             </a>
@@ -315,7 +315,7 @@ function SejaCorretorPage() {
         </div>
       </section>
 
-      <footer className="px-6 py-8 text-center text-xs text-white/50 space-y-1" style={{ background: "#0a0a0a", borderTop: `1px solid ${GOLD}33` }}>
+      <footer className="px-6 py-8 text-center text-xs text-white/50 space-y-1" style={{ background: "#0A0E1A", borderTop: `1px solid ${GOLD}33` }}>
         <div>© Iuri Rodrigues Imóveis · Ecossistema Nexus</div>
         <div className="text-[11px] text-white/40">
           Iuri Rodrigues Imóveis — <span style={{ color: GOLD }}>CRECI 11379J</span> — CNPJ 33.587.804/0001-98
