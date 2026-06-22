@@ -29,6 +29,15 @@ import { FileText, ExternalLink, CheckCircle2, XCircle, Clock, Loader2, Trash2 }
 
 
 export const Route = createFileRoute("/_authenticated/correspondente")({
+  beforeLoad: async () => {
+    const { data: ud } = await supabase.auth.getUser();
+    const uid = ud.user?.id;
+    if (!uid) throw redirect({ to: "/auth" });
+    const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", uid);
+    const isAdmin = roles?.some((r) => r.role === "admin") ?? false;
+    const isCorrespondente = roles?.some((r) => r.role === "correspondente_bancaria") ?? false;
+    if (!isAdmin && !isCorrespondente) throw redirect({ to: "/dashboard" });
+  },
   component: FinanciamentoAdminPage,
 });
 
