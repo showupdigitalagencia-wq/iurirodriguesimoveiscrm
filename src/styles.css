@@ -108,15 +108,16 @@
   --gold-bright: oklch(0.86 0.14 92);               /* #F0D060 brilho */
   --gradient-gold: linear-gradient(135deg, oklch(0.78 0.13 86), oklch(0.86 0.14 92));
   --gradient-divider: linear-gradient(90deg, transparent, oklch(0.78 0.13 86 / 0.65), transparent);
-  /* Sistema de sombras em camadas — profundidade premium */
-  --shadow-xs: 0 1px 2px 0 oklch(0.08 0.02 265 / 0.4);
-  --shadow-sm: 0 2px 4px -1px oklch(0.08 0.02 265 / 0.45), 0 1px 2px -1px oklch(0.08 0.02 265 / 0.3);
-  --shadow-md: 0 6px 16px -4px oklch(0.08 0.02 265 / 0.55), 0 2px 6px -2px oklch(0.08 0.02 265 / 0.4);
-  --shadow-lg: 0 16px 36px -10px oklch(0.06 0.02 265 / 0.6), 0 6px 14px -6px oklch(0.06 0.02 265 / 0.45);
-  --shadow-xl: 0 32px 64px -16px oklch(0.04 0.02 265 / 0.7), 0 12px 24px -8px oklch(0.04 0.02 265 / 0.5);
+  /* Sistema de sombras em camadas — silencioso, percebido sem gritar */
+  --shadow-xs: 0 1px 2px 0 oklch(0.08 0.02 265 / 0.25);
+  --shadow-sm: 0 1px 3px -1px oklch(0.08 0.02 265 / 0.30), 0 1px 2px -1px oklch(0.08 0.02 265 / 0.20);
+  --shadow-md: 0 4px 12px -4px oklch(0.08 0.02 265 / 0.35), 0 2px 4px -2px oklch(0.08 0.02 265 / 0.25);
+  --shadow-lg: 0 10px 24px -10px oklch(0.06 0.02 265 / 0.40), 0 4px 10px -6px oklch(0.06 0.02 265 / 0.30);
+  --shadow-xl: 0 20px 44px -14px oklch(0.04 0.02 265 / 0.50), 0 8px 18px -8px oklch(0.04 0.02 265 / 0.35);
   --shadow-elegant: var(--shadow-lg);
-  --shadow-glow: 0 0 24px -4px oklch(0.78 0.13 86 / 0.45);
-  --shadow-glow-soft: 0 0 0 1px oklch(0.78 0.13 86 / 0.22), 0 0 20px -6px oklch(0.78 0.13 86 / 0.35);
+  --shadow-glow: 0 0 18px -6px oklch(0.78 0.13 86 / 0.28);
+  --shadow-glow-soft: 0 0 0 1px oklch(0.78 0.13 86 / 0.14), 0 0 14px -8px oklch(0.78 0.13 86 / 0.22);
+
 
 
   /* Charts (dourado, cobre, teal, ametista, esmeralda) */
@@ -203,8 +204,8 @@
     text-rendering: optimizeLegibility;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     background-image:
-      radial-gradient(ellipse 80% 50% at 50% -10%, oklch(0.78 0.13 86 / 0.06), transparent 60%),
-      radial-gradient(ellipse 60% 50% at 100% 100%, oklch(0.40 0.10 260 / 0.12), transparent 60%);
+      radial-gradient(ellipse 80% 50% at 50% -10%, oklch(0.78 0.13 86 / 0.035), transparent 60%),
+      radial-gradient(ellipse 60% 50% at 100% 100%, oklch(0.40 0.10 260 / 0.06), transparent 60%);
     background-attachment: fixed;
   }
   /* Hierarquia tipográfica refinada — Linear/Stripe */
@@ -217,10 +218,10 @@
   /* Secundário com mais contraste para legibilidade premium */
   .text-muted-foreground { color: oklch(0.76 0.022 255); }
 
-  /* Focus ring dourado discreto e consistente em toda a UI */
+  /* Focus ring dourado — discreto, presente sem brilhar */
   *:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px var(--background), 0 0 0 4px oklch(0.78 0.13 86 / 0.55);
+    box-shadow: 0 0 0 2px var(--background), 0 0 0 3px oklch(0.78 0.13 86 / 0.38);
     border-radius: inherit;
     transition: box-shadow var(--duration-fast) var(--ease-out-premium);
   }
@@ -308,30 +309,31 @@
     }
   }
 
-  /* ========== REFINAMENTO PREMIUM ========== */
+  /* ========== POLISH SILENCIOSO ========== */
 
-  /* Elevação suave em cards/superfícies (use .lift) */
+  /* Elevação suave em cards/superfícies (use .lift opt-in) */
   .lift {
     transition: transform var(--duration-base) var(--ease-out-premium),
                 box-shadow var(--duration-base) var(--ease-out-premium),
                 border-color var(--duration-base) var(--ease-out-premium);
   }
   .lift:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-    border-color: oklch(0.78 0.13 86 / 0.28);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+    border-color: oklch(0.78 0.13 86 / 0.18);
   }
 
-  /* Cards do shadcn ganham elevação suave automática (somente quando dentro de elementos interativos por padrão NÃO — mantemos opt-in via classes existentes) */
+  /* Cards do shadcn — transição suave, sem hover automático */
   [data-slot="card"],
+  .rounded-2xl.border.bg-card,
   .rounded-xl.border.bg-card {
     transition: transform var(--duration-base) var(--ease-out-premium),
                 box-shadow var(--duration-base) var(--ease-out-premium),
                 border-color var(--duration-base) var(--ease-out-premium);
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--shadow-xs);
   }
 
-  /* Skeleton shimmer elegante */
+  /* Skeleton — shimmer silencioso, sem dourado */
   @keyframes shimmer {
     0% { background-position: -200% 0; }
     100% { background-position: 200% 0; }
@@ -340,18 +342,15 @@
   .animate-pulse {
     background: linear-gradient(
       90deg,
-      oklch(0.24 0.022 265 / 0.6) 0%,
-      oklch(0.32 0.028 260 / 0.9) 50%,
-      oklch(0.24 0.022 265 / 0.6) 100%
+      oklch(0.22 0.022 265 / 0.55) 0%,
+      oklch(0.28 0.024 260 / 0.75) 50%,
+      oklch(0.22 0.022 265 / 0.55) 100%
     ) !important;
     background-size: 200% 100% !important;
-    animation: shimmer 1.8s var(--ease-in-out-premium) infinite !important;
+    animation: shimmer 2.2s var(--ease-in-out-premium) infinite !important;
   }
 
-  /* Superfícies flutuantes (Popover, Dropdown, Select, Tooltip, Dialog, Sheet) — glassmorphism + sombra premium */
-  [data-radix-popper-content-wrapper] > * {
-    border-radius: var(--radius) !important;
-  }
+  /* Superfícies flutuantes (Popover, Dropdown, Select, HoverCard, Menubar, ContextMenu) */
   [role="menu"],
   [role="listbox"],
   [data-radix-popover-content],
@@ -360,19 +359,19 @@
   [data-radix-hover-card-content],
   [data-radix-menubar-content],
   [data-radix-context-menu-content] {
-    background-color: oklch(0.20 0.024 265 / 0.92) !important;
-    backdrop-filter: blur(20px) saturate(160%);
-    border: 1px solid oklch(0.78 0.13 86 / 0.18) !important;
-    box-shadow: var(--shadow-xl) !important;
+    background-color: oklch(0.20 0.024 265 / 0.94) !important;
+    backdrop-filter: blur(14px) saturate(140%);
+    border: 1px solid oklch(0.32 0.028 260 / 0.55) !important;
+    box-shadow: var(--shadow-lg) !important;
     border-radius: calc(var(--radius) - 4px) !important;
   }
 
-  /* Tooltip — mais discreto e refinado */
+  /* Tooltip — discreto, sem dourado */
   [data-radix-tooltip-content] {
     background-color: oklch(0.12 0.020 265 / 0.96) !important;
-    backdrop-filter: blur(12px);
+    backdrop-filter: blur(10px);
     color: var(--foreground) !important;
-    border: 1px solid oklch(0.78 0.13 86 / 0.20);
+    border: 1px solid oklch(0.32 0.028 260 / 0.55);
     box-shadow: var(--shadow-md);
     font-size: 12px;
     padding: 6px 10px;
@@ -380,7 +379,7 @@
     letter-spacing: -0.005em;
   }
 
-  /* Itens de menu/dropdown — hover suave */
+  /* Itens de menu/dropdown — hover neutro silencioso */
   [role="menuitem"],
   [role="option"] {
     border-radius: 8px !important;
@@ -392,25 +391,25 @@
   [role="option"][data-highlighted],
   [role="menuitem"]:hover,
   [role="option"]:hover {
-    background-color: oklch(0.78 0.13 86 / 0.10) !important;
+    background-color: oklch(0.30 0.026 260 / 0.55) !important;
   }
 
-  /* Dialog / Sheet content — glass elevado, animação suave */
+  /* Dialog / Sheet — superfície elevada, sem inset dourado */
   [data-radix-dialog-content],
   [data-radix-alert-dialog-content] {
-    background-color: oklch(0.20 0.024 265 / 0.94) !important;
-    backdrop-filter: blur(24px) saturate(150%);
-    border: 1px solid oklch(0.78 0.13 86 / 0.20) !important;
-    box-shadow: var(--shadow-xl), 0 0 0 1px oklch(0.78 0.13 86 / 0.06) inset !important;
+    background-color: oklch(0.20 0.024 265 / 0.96) !important;
+    backdrop-filter: blur(16px) saturate(140%);
+    border: 1px solid oklch(0.32 0.028 260 / 0.6) !important;
+    box-shadow: var(--shadow-xl) !important;
     border-radius: var(--radius) !important;
   }
   [data-radix-dialog-overlay],
   [data-radix-alert-dialog-overlay] {
-    background-color: oklch(0.06 0.015 265 / 0.78) !important;
-    backdrop-filter: blur(6px);
+    background-color: oklch(0.06 0.015 265 / 0.70) !important;
+    backdrop-filter: blur(4px);
   }
 
-  /* Inputs/Textareas — refinamento sutil */
+  /* Inputs / Textareas — transição uniforme */
   input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
   textarea,
   select {
@@ -419,23 +418,45 @@
                 background-color var(--duration-base) var(--ease-out-premium);
   }
 
-  /* Botões — profundidade + lift sutil no hover */
+  /* Botões — feedback de press silencioso */
   button:not(:disabled):not([data-state="open"]):active {
-    transform: translateY(0.5px) scale(0.995);
+    transform: translateY(0.5px);
     transition-duration: 80ms;
   }
 
-  /* Tabs — indicador ativo com sombra suave */
+  /* Tabs — aba ativa sem brilho dourado */
   [role="tab"][data-state="active"] {
-    box-shadow: var(--shadow-sm), 0 0 0 1px oklch(0.78 0.13 86 / 0.15) inset;
+    box-shadow: var(--shadow-xs);
   }
 
-  /* Toast (sonner) — refinamento */
+  /* Toast (sonner) — borda neutra */
   [data-sonner-toast] {
     border-radius: 14px !important;
-    backdrop-filter: blur(20px) saturate(160%);
-    border: 1px solid oklch(0.78 0.13 86 / 0.20) !important;
+    backdrop-filter: blur(14px) saturate(140%);
+    border: 1px solid oklch(0.32 0.028 260 / 0.55) !important;
     box-shadow: var(--shadow-lg) !important;
   }
+
+  /* Tabelas — densidade e legibilidade premium */
+  table thead th {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: oklch(0.70 0.022 255);
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+  table tbody tr {
+    transition: background-color var(--duration-fast) var(--ease-out-premium);
+  }
+  table tbody tr:hover {
+    background-color: oklch(0.24 0.022 265 / 0.5) !important;
+  }
+  table tbody td {
+    padding-top: 14px;
+    padding-bottom: 14px;
+  }
 }
+
 

@@ -9,14 +9,14 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 hover:shadow-md hover:-translate-y-px",
-        destructive: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90 hover:shadow-md hover:-translate-y-px",
+        default: "bg-primary text-primary-foreground shadow-xs hover:bg-primary/90",
+        destructive: "bg-destructive text-destructive-foreground shadow-xs hover:bg-destructive/90",
         outline:
-          "border border-input bg-background/40 backdrop-blur-sm shadow-xs hover:bg-accent/60 hover:text-accent-foreground hover:border-primary/30 hover:-translate-y-px",
-        secondary: "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80 hover:-translate-y-px",
-        ghost: "hover:bg-accent/60 hover:text-accent-foreground",
+          "border border-input bg-background/40 shadow-xs hover:bg-accent/40 hover:text-accent-foreground hover:border-input/80",
+        secondary: "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
+        ghost: "hover:bg-accent/50 hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        gold: "bg-gold text-gold-foreground shadow-sm hover:bg-gold/90 hover:shadow-[0_0_24px_-4px_oklch(0.78_0.13_86/0.5)] hover:-translate-y-px font-semibold tracking-wide",
+        gold: "bg-gold text-gold-foreground shadow-xs hover:bg-gold/90 font-semibold tracking-wide",
       },
       size: {
         default: "h-9 px-4 py-2",
@@ -31,6 +31,7 @@ const buttonVariants = cva(
     },
   },
 );
+
 
 
 export interface ButtonProps
