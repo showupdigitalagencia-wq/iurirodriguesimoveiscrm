@@ -397,7 +397,7 @@ function SejaCorretorPage() {
             <h2 className="text-3xl md:text-5xl leading-[1.1]" style={{ fontFamily: SERIF, fontWeight: 500, letterSpacing: "-0.01em" }}>
               {filteredExec ? (
                 <>
-                  Seu próximo passo é com <em style={{ color: GOLD, fontStyle: "italic", fontWeight: 500 }}>{filteredExec.nome}</em>
+                  Seu próximo passo é com o <em style={{ color: GOLD, fontStyle: "italic", fontWeight: 500 }}>{filteredExec.nome}</em>
                 </>
               ) : (
                 <>
