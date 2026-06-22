@@ -108,8 +108,16 @@
   --gold-bright: oklch(0.86 0.14 92);               /* #F0D060 brilho */
   --gradient-gold: linear-gradient(135deg, oklch(0.78 0.13 86), oklch(0.86 0.14 92));
   --gradient-divider: linear-gradient(90deg, transparent, oklch(0.78 0.13 86 / 0.65), transparent);
-  --shadow-elegant: 0 24px 60px -28px oklch(0.10 0.02 265 / 0.85);
+  /* Sistema de sombras em camadas — profundidade premium */
+  --shadow-xs: 0 1px 2px 0 oklch(0.08 0.02 265 / 0.4);
+  --shadow-sm: 0 2px 4px -1px oklch(0.08 0.02 265 / 0.45), 0 1px 2px -1px oklch(0.08 0.02 265 / 0.3);
+  --shadow-md: 0 6px 16px -4px oklch(0.08 0.02 265 / 0.55), 0 2px 6px -2px oklch(0.08 0.02 265 / 0.4);
+  --shadow-lg: 0 16px 36px -10px oklch(0.06 0.02 265 / 0.6), 0 6px 14px -6px oklch(0.06 0.02 265 / 0.45);
+  --shadow-xl: 0 32px 64px -16px oklch(0.04 0.02 265 / 0.7), 0 12px 24px -8px oklch(0.04 0.02 265 / 0.5);
+  --shadow-elegant: var(--shadow-lg);
   --shadow-glow: 0 0 24px -4px oklch(0.78 0.13 86 / 0.45);
+  --shadow-glow-soft: 0 0 0 1px oklch(0.78 0.13 86 / 0.22), 0 0 20px -6px oklch(0.78 0.13 86 / 0.35);
+
 
   /* Charts (dourado, cobre, teal, ametista, esmeralda) */
   --chart-1: oklch(0.78 0.13 86);
