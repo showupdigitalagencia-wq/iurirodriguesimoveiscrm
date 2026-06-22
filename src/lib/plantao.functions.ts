@@ -177,29 +177,35 @@ export const listCorretoresElegiveis = createServerFn({ method: "POST" })
     await ensureAdminOrExec(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     // corretor_vendas + corretor (legado) + executivos + qualquer usuário marcado "Elegível para Plantão"
-    const [{ data: roles }, { data: execs }, { data: elegiveis }] = await Promise.all([
+    const [{ data: roles }, { data: execs }, { data: elegiveis }, { data: adminRoles }] = await Promise.all([
       supabaseAdmin.from("user_roles").select("user_id, role").in("role", ["corretor_vendas", "corretor"]),
       supabaseAdmin.from("profiles")
         .select("id, nome, responsavel_id, ativo, responsaveis:responsavel_id(id, nome, ativo)")
         .not("responsavel_id", "is", null),
       supabaseAdmin.from("profiles").select("id, ativo, plantao_elegivel").eq("plantao_elegivel", true),
+      supabaseAdmin.from("user_roles").select("user_id").eq("role", "admin"),
     ]);
     const ids = new Set<string>((roles ?? []).map((r: { user_id: string }) => r.user_id));
+    const execIds = new Set<string>();
     for (const p of (execs ?? []) as { id: string; nome: string; ativo: boolean | null; responsaveis: { nome: string; ativo: boolean | null } | null }[]) {
       const resp = p.responsaveis;
       if (!resp || resp.ativo === false || p.ativo === false) continue;
       if ((resp.nome ?? "").trim().split(/\s+/)[0]?.toLowerCase() === (p.nome ?? "").trim().split(/\s+/)[0]?.toLowerCase()) {
         ids.add(p.id);
+        execIds.add(p.id);
       }
     }
     for (const p of (elegiveis ?? []) as { id: string; ativo: boolean | null }[]) {
       if (p.ativo !== false) ids.add(p.id);
     }
-    if (!ids.size) return { items: [] as { id: string; nome: string }[] };
+    const adminIds = new Set<string>(((adminRoles ?? []) as { user_id: string }[]).map((r) => r.user_id));
+    // garante que admins escalados também apareçam (pra UI conseguir resolver flags pelo id)
+    for (const a of adminIds) ids.add(a);
+    if (!ids.size) return { items: [] as { id: string; nome: string; is_admin: boolean; is_exec: boolean }[] };
     const { data: profs } = await supabaseAdmin.from("profiles").select("id, nome, ativo").in("id", Array.from(ids));
     const items = ((profs ?? []) as { id: string; nome: string; ativo: boolean | null }[])
       .filter((p) => p.ativo !== false)
-      .map((p) => ({ id: p.id, nome: p.nome }))
+      .map((p) => ({ id: p.id, nome: p.nome, is_admin: adminIds.has(p.id), is_exec: execIds.has(p.id) }))
       .sort((a, b) => a.nome.localeCompare(b.nome));
     return { items };
   });
