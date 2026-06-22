@@ -38,6 +38,7 @@ export const Route = createFileRoute("/seja-corretor")({
 });
 
 const GOLD = "#D4AF37";
+const SERIF = "'Cormorant Garamond', 'Playfair Display', Georgia, serif";
 const LOGO_URL = logoAsset.url;
 
 function youtubeId(url: string): string | null {
