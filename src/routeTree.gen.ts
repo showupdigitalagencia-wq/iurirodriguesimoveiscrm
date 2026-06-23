@@ -70,6 +70,7 @@ import { Route as ApiPublicHooksZapiIncomingRouteImport } from './routes/api/pub
 import { Route as ApiPublicHooksVisitasChaveLembreteRouteImport } from './routes/api/public/hooks/visitas-chave-lembrete'
 import { Route as ApiPublicHooksReativacaoLeadsPerdidosRouteImport } from './routes/api/public/hooks/reativacao-leads-perdidos'
 import { Route as ApiPublicHooksPlantaoEscalationRouteImport } from './routes/api/public/hooks/plantao-escalation'
+import { Route as ApiPublicHooksFollowupLeadsRouteImport } from './routes/api/public/hooks/followup-leads'
 import { Route as ApiPublicHooksChavesAtrasoRouteImport } from './routes/api/public/hooks/chaves-atraso'
 import { Route as ApiPublicHooksBackupSemanalRouteImport } from './routes/api/public/hooks/backup-semanal'
 
@@ -414,6 +415,12 @@ const ApiPublicHooksPlantaoEscalationRoute =
     path: '/api/public/hooks/plantao-escalation',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksFollowupLeadsRoute =
+  ApiPublicHooksFollowupLeadsRouteImport.update({
+    id: '/api/public/hooks/followup-leads',
+    path: '/api/public/hooks/followup-leads',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksChavesAtrasoRoute =
   ApiPublicHooksChavesAtrasoRouteImport.update({
     id: '/api/public/hooks/chaves-atraso',
@@ -486,6 +493,7 @@ export interface FileRoutesByFullPath {
   '/vendas/': typeof AuthenticatedVendasIndexRoute
   '/api/public/hooks/backup-semanal': typeof ApiPublicHooksBackupSemanalRoute
   '/api/public/hooks/chaves-atraso': typeof ApiPublicHooksChavesAtrasoRoute
+  '/api/public/hooks/followup-leads': typeof ApiPublicHooksFollowupLeadsRoute
   '/api/public/hooks/plantao-escalation': typeof ApiPublicHooksPlantaoEscalationRoute
   '/api/public/hooks/reativacao-leads-perdidos': typeof ApiPublicHooksReativacaoLeadsPerdidosRoute
   '/api/public/hooks/visitas-chave-lembrete': typeof ApiPublicHooksVisitasChaveLembreteRoute
@@ -547,6 +555,7 @@ export interface FileRoutesByTo {
   '/vendas': typeof AuthenticatedVendasIndexRoute
   '/api/public/hooks/backup-semanal': typeof ApiPublicHooksBackupSemanalRoute
   '/api/public/hooks/chaves-atraso': typeof ApiPublicHooksChavesAtrasoRoute
+  '/api/public/hooks/followup-leads': typeof ApiPublicHooksFollowupLeadsRoute
   '/api/public/hooks/plantao-escalation': typeof ApiPublicHooksPlantaoEscalationRoute
   '/api/public/hooks/reativacao-leads-perdidos': typeof ApiPublicHooksReativacaoLeadsPerdidosRoute
   '/api/public/hooks/visitas-chave-lembrete': typeof ApiPublicHooksVisitasChaveLembreteRoute
@@ -613,6 +622,7 @@ export interface FileRoutesById {
   '/_authenticated/vendas/': typeof AuthenticatedVendasIndexRoute
   '/api/public/hooks/backup-semanal': typeof ApiPublicHooksBackupSemanalRoute
   '/api/public/hooks/chaves-atraso': typeof ApiPublicHooksChavesAtrasoRoute
+  '/api/public/hooks/followup-leads': typeof ApiPublicHooksFollowupLeadsRoute
   '/api/public/hooks/plantao-escalation': typeof ApiPublicHooksPlantaoEscalationRoute
   '/api/public/hooks/reativacao-leads-perdidos': typeof ApiPublicHooksReativacaoLeadsPerdidosRoute
   '/api/public/hooks/visitas-chave-lembrete': typeof ApiPublicHooksVisitasChaveLembreteRoute
@@ -679,6 +689,7 @@ export interface FileRouteTypes {
     | '/vendas/'
     | '/api/public/hooks/backup-semanal'
     | '/api/public/hooks/chaves-atraso'
+    | '/api/public/hooks/followup-leads'
     | '/api/public/hooks/plantao-escalation'
     | '/api/public/hooks/reativacao-leads-perdidos'
     | '/api/public/hooks/visitas-chave-lembrete'
@@ -740,6 +751,7 @@ export interface FileRouteTypes {
     | '/vendas'
     | '/api/public/hooks/backup-semanal'
     | '/api/public/hooks/chaves-atraso'
+    | '/api/public/hooks/followup-leads'
     | '/api/public/hooks/plantao-escalation'
     | '/api/public/hooks/reativacao-leads-perdidos'
     | '/api/public/hooks/visitas-chave-lembrete'
@@ -805,6 +817,7 @@ export interface FileRouteTypes {
     | '/_authenticated/vendas/'
     | '/api/public/hooks/backup-semanal'
     | '/api/public/hooks/chaves-atraso'
+    | '/api/public/hooks/followup-leads'
     | '/api/public/hooks/plantao-escalation'
     | '/api/public/hooks/reativacao-leads-perdidos'
     | '/api/public/hooks/visitas-chave-lembrete'
@@ -831,6 +844,7 @@ export interface RootRouteChildren {
   ApiPublicWebhookRoute: typeof ApiPublicWebhookRoute
   ApiPublicHooksBackupSemanalRoute: typeof ApiPublicHooksBackupSemanalRoute
   ApiPublicHooksChavesAtrasoRoute: typeof ApiPublicHooksChavesAtrasoRoute
+  ApiPublicHooksFollowupLeadsRoute: typeof ApiPublicHooksFollowupLeadsRoute
   ApiPublicHooksPlantaoEscalationRoute: typeof ApiPublicHooksPlantaoEscalationRoute
   ApiPublicHooksReativacaoLeadsPerdidosRoute: typeof ApiPublicHooksReativacaoLeadsPerdidosRoute
   ApiPublicHooksVisitasChaveLembreteRoute: typeof ApiPublicHooksVisitasChaveLembreteRoute
@@ -1266,6 +1280,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksPlantaoEscalationRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/followup-leads': {
+      id: '/api/public/hooks/followup-leads'
+      path: '/api/public/hooks/followup-leads'
+      fullPath: '/api/public/hooks/followup-leads'
+      preLoaderRoute: typeof ApiPublicHooksFollowupLeadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/chaves-atraso': {
       id: '/api/public/hooks/chaves-atraso'
       path: '/api/public/hooks/chaves-atraso'
@@ -1433,6 +1454,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicWebhookRoute: ApiPublicWebhookRoute,
   ApiPublicHooksBackupSemanalRoute: ApiPublicHooksBackupSemanalRoute,
   ApiPublicHooksChavesAtrasoRoute: ApiPublicHooksChavesAtrasoRoute,
+  ApiPublicHooksFollowupLeadsRoute: ApiPublicHooksFollowupLeadsRoute,
   ApiPublicHooksPlantaoEscalationRoute: ApiPublicHooksPlantaoEscalationRoute,
   ApiPublicHooksReativacaoLeadsPerdidosRoute:
     ApiPublicHooksReativacaoLeadsPerdidosRoute,
