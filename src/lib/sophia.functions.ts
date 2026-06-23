@@ -637,6 +637,80 @@ export const sophiaChat = createServerFn({ method: "POST" })
           return { total: data?.length ?? 0, imoveis: data ?? [], aviso_privacidade: "Dados do proprietário não são compartilhados." };
         },
       }),
+
+      // ============ GESTÃO DE CHAVES (AÇÕES MUTATIVAS) ============
+      // Usa o supabase do USUÁRIO AUTENTICADO (RLS + auth.uid()), nunca supabaseAdmin.
+      // Os RPCs retirar_chave/devolver_chave já validam que quem devolve é quem retirou (ou admin).
+      chave_buscar_imovel: tool({
+        description: "Busca um imóvel por código (ex.: IM-0123), endereço ou bairro para identificar antes de retirar/devolver a chave. Retorna candidatos com o status atual da chave. SEMPRE use esta ferramenta antes de chamar chave_retirar/chave_devolver, e CONFIRME com o usuário qual imóvel é o correto antes de prosseguir.",
+        inputSchema: z.object({
+          codigo: z.string().optional().describe("Código do imóvel (ex.: IM-0123) — match exato ou parcial"),
+          endereco: z.string().optional().describe("Trecho do endereço, rua, número ou bairro"),
+          limite: z.number().int().min(1).max(10).default(5),
+        }),
+        execute: async ({ codigo, endereco, limite }) => {
+          if (!codigo && !endereco) return { erro: "informe codigo ou endereco", imoveis: [] };
+          let q = (context.supabase as unknown as SupabaseClient)
+            .from("imoveis")
+            .select("id, codigo, tipo, rua, numero, bairro, cidade, chave_com_id, chave_retirada_em");
+          if (codigo) q = q.ilike("codigo", `%${codigo.trim()}%`);
+          if (endereco) q = q.or(`rua.ilike.%${endereco}%,bairro.ilike.%${endereco}%,cidade.ilike.%${endereco}%`);
+          const { data, error } = await q.limit(limite);
+          if (error) return { erro: error.message, imoveis: [] };
+          const ids = Array.from(new Set((data ?? []).map((d) => d.chave_com_id).filter((x): x is string => !!x)));
+          const nomes = new Map<string, string>();
+          if (ids.length) {
+            const { data: profs } = await supabaseAdmin.from("profiles").select("id, nome").in("id", ids);
+            (profs ?? []).forEach((p) => nomes.set(p.id, p.nome ?? ""));
+          }
+          return {
+            total: data?.length ?? 0,
+            imoveis: (data ?? []).map((d) => ({
+              id: d.id,
+              codigo: d.codigo,
+              tipo: d.tipo,
+              endereco: [d.rua, d.numero, d.bairro, d.cidade].filter(Boolean).join(", "),
+              chave_disponivel: !d.chave_com_id,
+              chave_com: d.chave_com_id ? (nomes.get(d.chave_com_id) || "outro corretor") : null,
+              chave_retirada_em: d.chave_retirada_em,
+            })),
+          };
+        },
+      }),
+
+      chave_retirar: tool({
+        description: "Retira a chave de um imóvel em nome do USUÁRIO AUTENTICADO. Requer foto anexada na mensagem atual (a foto é obrigatória — sem foto, retorna erro). SEMPRE confirme o imóvel com o usuário ANTES de chamar.",
+        inputSchema: z.object({
+          imovel_id: z.string().uuid().describe("UUID do imóvel obtido via chave_buscar_imovel"),
+          observacao: z.string().max(500).optional(),
+          confirmado: z.literal(true).describe("Só passe true depois que o usuário confirmou explicitamente o imóvel."),
+        }),
+        execute: async ({ imovel_id, observacao }) => {
+          if (!chavesAcoesHabilitado) return { erro: "Ações de chave estão desativadas nas Configurações." };
+          if (!lastFotoPath) return { erro: "Anexe a foto da chave na mensagem antes de retirar." };
+          const { data, error } = await (context.supabase as unknown as SupabaseClient)
+            .rpc("retirar_chave", { _imovel_id: imovel_id, _foto_url: lastFotoPath, _observacao: observacao ?? null });
+          if (error) return { erro: error.message };
+          return { ok: true, log_id: data, mensagem: "Chave retirada com sucesso. Lembre-se de devolver depois da visita." };
+        },
+      }),
+
+      chave_devolver: tool({
+        description: "Devolve a chave de um imóvel. Só quem retirou (ou um admin) pode devolver. Requer foto anexada na mensagem atual. SEMPRE confirme o imóvel ANTES de chamar.",
+        inputSchema: z.object({
+          imovel_id: z.string().uuid(),
+          observacao: z.string().max(500).optional(),
+          confirmado: z.literal(true),
+        }),
+        execute: async ({ imovel_id, observacao }) => {
+          if (!chavesAcoesHabilitado) return { erro: "Ações de chave estão desativadas nas Configurações." };
+          if (!lastFotoPath) return { erro: "Anexe a foto da chave devolvida antes de prosseguir." };
+          const { data, error } = await (context.supabase as unknown as SupabaseClient)
+            .rpc("devolver_chave", { _imovel_id: imovel_id, _foto_url: lastFotoPath, _observacao: observacao ?? null });
+          if (error) return { erro: error.message };
+          return { ok: true, log_id: data, mensagem: "Chave devolvida com sucesso." };
+        },
+      }),
     };
 
     const escopoTexto =
