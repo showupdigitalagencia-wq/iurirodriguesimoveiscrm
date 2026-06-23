@@ -12,7 +12,7 @@ import { listInstitucionalCandidatos, type InstitucionalReuniaoInfo } from "@/li
 
 export const Route = createFileRoute("/_authenticated/executivos/landing-page")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Landing Page — Sistema NEXUS" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Central de Conversão — Sistema NEXUS" }, { name: "robots", content: "noindex" }] }),
   component: LPPage,
 });
 
