@@ -36,7 +36,7 @@ type Post = {
   id: string;
   author_id: string;
   caption: string | null;
-  image_path: string;
+  image_path: string | null;
   source: string;
   hidden_at: string | null;
   created_at: string;
@@ -83,7 +83,7 @@ function InicioPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [profiles, setProfiles] = useState<Record<string, ProfileLite>>({});
-  const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
+  const [imageUrls, setImageUrls] = useState<Record<string, string | null>>({});
   const [avatarUrls, setAvatarUrls] = useState<Record<string, string>>({});
 
   const [likes, setLikes] = useState<Record<string, { count: number; mine: boolean }>>({});
@@ -158,9 +158,9 @@ function InicioPage() {
     const signed = await signAvatarMap(allProfiles.map((p) => ({ id: p.id, path: p.avatar_url })));
     setAvatarUrls(signed);
 
-    // resolve image urls
+    // resolve image urls (posts sem image_path — ex.: conquistas — são pulados)
     const urlEntries = await Promise.all(
-      list.map(async (p) => [p.id, await signedUrl(p.image_path)] as const),
+      list.map(async (p) => [p.id, p.image_path ? await signedUrl(p.image_path) : null] as const),
     );
     setImageUrls(Object.fromEntries(urlEntries));
   }, [userId]);
@@ -245,7 +245,7 @@ function InicioPage() {
     const { error } = await supabase.from("feed_posts").delete().eq("id", post.id);
     if (error) return toast.error("Falha: " + error.message);
     // remove storage best-effort
-    if (!/^https?:\/\//i.test(post.image_path)) {
+    if (post.image_path && !/^https?:\/\//i.test(post.image_path)) {
       supabase.storage.from(BUCKET).remove([post.image_path]).catch(() => null);
     }
     toast.success("Post excluído");
@@ -344,7 +344,17 @@ function InicioPage() {
                   )}
                 </div>
 
-                {url ? (
+                {p.source === "conquista" && !p.image_path ? (
+                  <div
+                    className="px-6 py-10 bg-gradient-to-br from-amber-500/15 via-amber-400/10 to-amber-600/15 text-center cursor-pointer"
+                    onDoubleClick={() => !lk.mine && toggleLike(p.id)}
+                  >
+                    <div className="text-5xl mb-2">🏆</div>
+                    <div className="text-base font-semibold text-amber-700 dark:text-amber-400">
+                      Nova conquista desbloqueada!
+                    </div>
+                  </div>
+                ) : url ? (
                   p.media_type === "video" ? (
                     <FeedVideo src={url} onDoubleClick={() => !lk.mine && toggleLike(p.id)} />
                   ) : (

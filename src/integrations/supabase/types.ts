@@ -544,7 +544,7 @@ export type Database = {
           hidden_at: string | null
           hidden_by: string | null
           id: string
-          image_path: string
+          image_path: string | null
           media_type: string
           source: string
           source_ref: string | null
@@ -556,7 +556,7 @@ export type Database = {
           hidden_at?: string | null
           hidden_by?: string | null
           id?: string
-          image_path: string
+          image_path?: string | null
           media_type?: string
           source?: string
           source_ref?: string | null
@@ -568,7 +568,7 @@ export type Database = {
           hidden_at?: string | null
           hidden_by?: string | null
           id?: string
-          image_path?: string
+          image_path?: string | null
           media_type?: string
           source?: string
           source_ref?: string | null
