@@ -129,6 +129,7 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const router = useRouter();
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -136,8 +137,17 @@ function RootComponent() {
       window.location.replace(
         `https://sistemanexus.app${window.location.pathname}${window.location.search}${window.location.hash}`,
       );
+      return;
     }
-  }, []);
+
+    const launchedAsInstalledApp =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
+
+    if (launchedAsInstalledApp && window.location.pathname === "/dashboard") {
+      router.navigate({ to: "/inicio", replace: true });
+    }
+  }, [router]);
 
   return (
     <QueryClientProvider client={queryClient}>
