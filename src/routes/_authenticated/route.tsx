@@ -2,7 +2,7 @@ import { createFileRoute, Outlet, redirect, Link, useRouter, useRouterState } fr
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useMemo, useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
-import { LayoutDashboard, Kanban, Users, BarChart3, Settings, LogOut, BadgeCheck, UserCog, BellRing, Clock, CalendarDays, MoreHorizontal, Briefcase, Users2, Building2, Megaphone, Banknote, Share2, CalendarClock, Home } from "lucide-react";
+import { LayoutDashboard, Kanban, Users, BarChart3, Settings, LogOut, BadgeCheck, UserCog, BellRing, Clock, CalendarDays, MoreHorizontal, Briefcase, Users2, Building2, Megaphone, Banknote, Share2, CalendarClock, Home, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { toast } from "sonner";
@@ -30,6 +30,7 @@ const NAV = [
   { to: "/agenda", label: "Agenda", icon: CalendarDays },
   { to: "/corretores", label: "Corretores", icon: BadgeCheck },
   { to: "/relatorio", label: "Relatórios", icon: BarChart3 },
+  { to: "/conquistas", label: "Conquistas", icon: Trophy },
   { to: "/notificacoes", label: "Notificações", icon: BellRing },
 ] as const;
 
@@ -68,11 +69,11 @@ const CONFIG_NAV = [
 ] as const;
 
 // Rotas permitidas para corretor_vendas (puro)
-const CORRETOR_ALLOWED_PREFIXES = ["/inicio", "/vendas", "/notificacoes", "/configuracoes"];
+const CORRETOR_ALLOWED_PREFIXES = ["/inicio", "/vendas", "/conquistas", "/notificacoes", "/configuracoes"];
 // Rotas permitidas para administrativo (puro)
-const ADMINISTRATIVO_ALLOWED_PREFIXES = ["/inicio", "/admin", "/executivos/landing-page", "/notificacoes", "/configuracoes"];
+const ADMINISTRATIVO_ALLOWED_PREFIXES = ["/inicio", "/admin", "/executivos/landing-page", "/conquistas", "/notificacoes", "/configuracoes"];
 // Rotas permitidas para correspondente_bancaria (puro)
-const CORRESPONDENTE_ALLOWED_PREFIXES = ["/inicio", "/correspondente", "/notificacoes", "/configuracoes"];
+const CORRESPONDENTE_ALLOWED_PREFIXES = ["/inicio", "/correspondente", "/conquistas", "/notificacoes", "/configuracoes"];
 
 
 function AuthLayout() {
@@ -129,6 +130,7 @@ function AuthLayout() {
           { to: "/vendas/pipeline", label: "Negócios", icon: Kanban },
           { to: "/vendas/agenda", label: "Agenda", icon: CalendarDays },
           { to: "/vendas/plantao", label: "Plantão", icon: CalendarClock },
+          { to: "/conquistas", label: "Conquistas", icon: Trophy },
           { to: "/notificacoes", label: "Notificações", icon: BellRing },
           { to: "/configuracoes", label: "Configurações", icon: Settings },
         );
