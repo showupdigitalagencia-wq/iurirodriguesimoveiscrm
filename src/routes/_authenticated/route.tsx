@@ -130,6 +130,7 @@ function AuthLayout() {
           { to: "/vendas/pipeline", label: "Negócios", icon: Kanban },
           { to: "/vendas/agenda", label: "Agenda", icon: CalendarDays },
           { to: "/vendas/plantao", label: "Plantão", icon: CalendarClock },
+          { to: "/conquistas", label: "Conquistas", icon: Trophy },
           { to: "/notificacoes", label: "Notificações", icon: BellRing },
           { to: "/configuracoes", label: "Configurações", icon: Settings },
         );
