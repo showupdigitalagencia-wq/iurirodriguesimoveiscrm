@@ -521,7 +521,7 @@ function ComposeButton({
     const ext = file.name.split(".").pop() || (mediaType === "video" ? "mp4" : "jpg");
     const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
     const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, file, {
-      upsert: false, contentType: file.type,
+      upsert: false, contentType: file.type || undefined,
     });
     if (upErr) { setSubmitting(false); return toast.error("Falha no upload: " + upErr.message); }
     const { error } = await supabase.from("feed_posts").insert({

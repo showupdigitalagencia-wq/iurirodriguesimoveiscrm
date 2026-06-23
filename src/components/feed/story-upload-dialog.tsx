@@ -71,9 +71,9 @@ export function StoryUploadDialog({
     setBusy(true);
     try {
       const ext = file.name.split(".").pop() || (mediaType === "video" ? "mp4" : "jpg");
-      const path = `stories/${userId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const path = `${userId}/story-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
       const up = await supabase.storage.from(BUCKET).upload(path, file, {
-        cacheControl: "3600", upsert: false, contentType: file.type,
+        cacheControl: "3600", upsert: false, contentType: file.type || undefined,
       });
       if (up.error) throw up.error;
       const ins = await supabase.from("feed_stories").insert({
