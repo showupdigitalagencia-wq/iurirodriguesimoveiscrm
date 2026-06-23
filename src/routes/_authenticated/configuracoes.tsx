@@ -87,6 +87,7 @@ function ConfigPage() {
           <TabsTrigger value="admin">Admin</TabsTrigger>
         </TabsList>
         <TabsContent value="conta" className="mt-6 space-y-6">
+          <FotoPerfilSection />
           <MinhaContaSection />
           <GoogleConnectSection />
         </TabsContent>
