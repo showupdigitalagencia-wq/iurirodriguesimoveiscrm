@@ -1,0 +1,1 @@
+ALTER TABLE public.feed_posts ALTER COLUMN image_path DROP NOT NULL;
