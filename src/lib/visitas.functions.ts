@@ -149,20 +149,30 @@ export const deleteVisita = createServerFn({ method: "POST" })
 
 export const confirmarVisita = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { visita_id: string; comparecimento: "realizada" | "nao_compareceu" }) => input)
+  .inputValidator((input: {
+    visita_id: string;
+    comparecimento: "realizada" | "nao_compareceu";
+    checklist?: { item: string; ok: boolean }[];
+  }) => input)
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     if (data.comparecimento !== "realizada" && data.comparecimento !== "nao_compareceu") {
       throw new Error("comparecimento inválido");
     }
+    const update: Record<string, unknown> = {
+      comparecimento: data.comparecimento,
+      confirmada_em: new Date().toISOString(),
+      confirmada_por: userId,
+      status: data.comparecimento === "realizada" ? "realizada" : "nao_compareceu",
+    };
+    if (Array.isArray(data.checklist)) {
+      update.checklist = data.checklist
+        .filter((c) => c && typeof c.item === "string")
+        .map((c) => ({ item: c.item, ok: !!c.ok }));
+    }
     const { error } = await supabase
       .from("vendas_visitas" as never)
-      .update({
-        comparecimento: data.comparecimento,
-        confirmada_em: new Date().toISOString(),
-        confirmada_por: userId,
-        status: data.comparecimento === "realizada" ? "realizada" : "nao_compareceu",
-      } as never)
+      .update(update as never)
       .eq("id", data.visita_id);
     if (error) throw new Error(error.message);
     return { ok: true };

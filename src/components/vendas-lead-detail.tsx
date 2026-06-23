@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { MessageCircle, Trash2, Pencil, MapPin, Video, Banknote, Copy, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
 import { FecharLeadDialog } from "@/components/fechar-lead-dialog";
 import { LeadTimeline } from "@/components/lead-timeline";
+import { ChecklistVisitaDialog } from "@/components/checklist-visita-dialog";
 
 function toLocalInputValue(d: Date) {
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -64,10 +65,11 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
 
   const confirmarVisitaFn = useServerFn(confirmarVisita);
   const visitasPendentes = visitas.filter((v) => v.comparecimento == null && new Date(v.data_inicio) < new Date());
-  async function handleConfirmar(visitaId: string, comparecimento: "realizada" | "nao_compareceu") {
+  const [checklistVisitaId, setChecklistVisitaId] = useState<string | null>(null);
+  async function handleNaoCompareceu(visitaId: string) {
     try {
-      await confirmarVisitaFn({ data: { visita_id: visitaId, comparecimento } });
-      toast.success(comparecimento === "realizada" ? "Visita marcada como realizada" : "Visita marcada como não compareceu");
+      await confirmarVisitaFn({ data: { visita_id: visitaId, comparecimento: "nao_compareceu" } });
+      toast.success("Visita marcada como não compareceu");
       refetchVisitas();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erro ao confirmar visita");
@@ -280,10 +282,10 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
                   </div>
                   <div className="text-[11px] text-muted-foreground mb-2 truncate">{v.endereco}</div>
                   <div className="flex gap-2">
-                    <Button size="sm" variant="gold" className="gap-1 h-7 text-xs" onClick={() => handleConfirmar(v.id, "realizada")}>
+                    <Button size="sm" variant="gold" className="gap-1 h-7 text-xs" onClick={() => setChecklistVisitaId(v.id)}>
                       <CheckCircle2 className="h-3.5 w-3.5" /> Realizada
                     </Button>
-                    <Button size="sm" variant="outline" className="gap-1 h-7 text-xs" onClick={() => handleConfirmar(v.id, "nao_compareceu")}>
+                    <Button size="sm" variant="outline" className="gap-1 h-7 text-xs" onClick={() => handleNaoCompareceu(v.id)}>
                       <XCircle className="h-3.5 w-3.5" /> Não compareceu
                     </Button>
                   </div>
@@ -323,6 +325,12 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
         leadNome={lead.nome}
         tipo={lead.tipo as VendasTipo}
         onFechado={() => { invalidate(); refetch(); }}
+      />
+      <ChecklistVisitaDialog
+        open={!!checklistVisitaId}
+        visitaId={checklistVisitaId}
+        onClose={() => setChecklistVisitaId(null)}
+        onConfirmed={() => refetchVisitas()}
       />
     </Dialog>
   );

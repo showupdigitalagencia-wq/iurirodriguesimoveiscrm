@@ -109,6 +109,7 @@ function ConfigPage() {
           <ReativacaoLeadsConfig />
           <ExportSistemaSection />
           <BackupsSection />
+          <VisitaChecklistConfig />
           <SophiaToggle chave="sophia_executivos_acesso" titulo="Liberar Laura para Executivos" descricao="Quando ativado, executivos podem usar a assistente Laura." />
           <SophiaToggle chave="sophia_corretores_acesso" titulo="Liberar Laura para Corretores" descricao="Quando ativado, corretores podem usar a assistente Laura." />
         </TabsContent>
@@ -1099,5 +1100,89 @@ function TeamPhotosSection() {
         </div>
       )}
     </div>
+  );
+}
+
+function VisitaChecklistConfig() {
+  const [items, setItems] = useState<string[]>([]);
+  const [novo, setNovo] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    supabase
+      .from("configuracoes")
+      .select("valor")
+      .eq("chave", "visita_checklist_items")
+      .maybeSingle()
+      .then(({ data }) => {
+        const valor = (data?.valor ?? {}) as { items?: string[] };
+        setItems(Array.isArray(valor.items) ? valor.items : []);
+        setLoading(false);
+      });
+  }, []);
+
+  async function persist(next: string[]) {
+    setSaving(true);
+    const { error } = await supabase
+      .from("configuracoes")
+      .upsert({ chave: "visita_checklist_items", valor: { items: next } }, { onConflict: "chave" });
+    setSaving(false);
+    if (error) { toast.error(error.message); return false; }
+    setItems(next);
+    return true;
+  }
+
+  function addItem() {
+    const v = novo.trim();
+    if (!v) return;
+    if (items.includes(v)) { toast.warning("Item já existe"); return; }
+    persist([...items, v]).then((ok) => { if (ok) setNovo(""); });
+  }
+
+  function removeItem(idx: number) {
+    const next = items.filter((_, i) => i !== idx);
+    persist(next);
+  }
+
+  return (
+    <section className="rounded-2xl border bg-card p-4 md:p-6 space-y-3">
+      <header>
+        <h2 className="text-lg font-semibold">Checklist de Visita</h2>
+        <p className="text-sm text-muted-foreground">
+          Itens que o corretor marca ao confirmar uma visita como realizada.
+        </p>
+      </header>
+      {loading ? (
+        <div className="text-sm text-muted-foreground">Carregando...</div>
+      ) : (
+        <>
+          <div className="flex gap-2">
+            <Input
+              value={novo}
+              onChange={(e) => setNovo(e.target.value)}
+              placeholder="Ex.: Cliente assinou ficha de visita"
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addItem(); } }}
+              disabled={saving}
+            />
+            <Button onClick={addItem} disabled={saving || !novo.trim()}>Adicionar</Button>
+          </div>
+          {items.length === 0 ? (
+            <p className="text-xs text-muted-foreground">Nenhum item configurado.</p>
+          ) : (
+            <ul className="space-y-1">
+              {items.map((it, idx) => (
+                <li key={idx} className="flex items-center justify-between gap-2 rounded-md border px-3 py-2">
+                  <span className="text-sm">{it}</span>
+                  <Button size="icon" variant="ghost" onClick={() => removeItem(idx)} disabled={saving} aria-label="Remover">
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
+      )}
+    </section>
   );
 }
