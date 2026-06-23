@@ -676,6 +676,30 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
               </SelectContent>
             </Select>
           </div>
+          <div className="md:col-span-2 border-t pt-3 mt-2"><h3 className="font-semibold text-sm">Captação e gestão</h3></div>
+          <div>
+            <Label>Captador (quem captou este imóvel)</Label>
+            <Select
+              value={(form as { captador_id?: string | null }).captador_id ?? "__none__"}
+              onValueChange={(v) => set("captador_id" as never, (v === "__none__" ? null : v) as never)}
+            >
+              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">— Não definido —</SelectItem>
+                {captadores.map((c) => <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-end gap-3">
+            <div className="flex-1">
+              <Label className="block">Este imóvel está com Gestão de Patrimônio?</Label>
+              <p className="text-xs text-muted-foreground">Marque caso a imobiliária administre o patrimônio.</p>
+            </div>
+            <Switch
+              checked={Boolean((form as { gestao_patrimonio?: boolean }).gestao_patrimonio)}
+              onCheckedChange={(v) => set("gestao_patrimonio" as never, v as never)}
+            />
+          </div>
           <div className="md:col-span-2 border-t pt-3 mt-2">
             <Label className="text-sm font-semibold">Link da Vitrine (Bom Corretor)</Label>
             <p className="text-xs text-muted-foreground mb-2">Cole o link público do imóvel no Bom Corretor (ou outro portal).</p>
