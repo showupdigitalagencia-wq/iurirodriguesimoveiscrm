@@ -727,6 +727,17 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
         </div>
         {imovel && (
           <div className="border-t pt-4 mt-2 space-y-3">
+            <h3 className="font-semibold text-sm">Gestão de Chave</h3>
+            <ChaveActions imovel={{
+              id: imovel.id,
+              chave_com_id: (imovel as any).chave_com_id ?? null,
+              chave_retirada_em: (imovel as any).chave_retirada_em ?? null,
+              chave_foto_atual: (imovel as any).chave_foto_atual ?? null,
+            }} onChanged={onSaved} />
+          </div>
+        )}
+        {imovel && (
+          <div className="border-t pt-4 mt-2 space-y-3">
             <h3 className="font-semibold text-sm">Documentos do imóvel (Google Drive)</h3>
             <DocumentosManager imovelId={imovel.id} />
           </div>
