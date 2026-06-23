@@ -45,7 +45,7 @@ export function StoriesBar({
     const nowIso = new Date().toISOString();
     const { data } = await supabase
       .from("feed_stories")
-      .select("id, author_id, image_path, caption, created_at, expires_at, hidden_at")
+      .select("id, author_id, image_path, caption, created_at, expires_at, hidden_at, media_type, duration_ms")
       .gt("expires_at", nowIso)
       .is("hidden_at", null)
       .order("created_at", { ascending: true });
