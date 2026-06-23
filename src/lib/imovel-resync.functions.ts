@@ -5,9 +5,10 @@ import { runImovelImport, type ImovelImportResult } from "./imovel-import.functi
 
 export type ResyncFieldChange = {
   field: string;
-  oldValue: unknown;
-  newValue: unknown;
+  oldValue: string | number | null;
+  newValue: string | number | null;
 };
+
 
 export type ResyncImovelReport = {
   id: string;
