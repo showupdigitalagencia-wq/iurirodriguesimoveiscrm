@@ -1176,7 +1176,30 @@ ${chavesAcoesHabilitado ? `Quando o usuário pedir para **retirar** ou **devolve
 3. Chame **chave_buscar_imovel** com o código/endereço informado e mostre os candidatos com endereço completo e status atual da chave.
 4. **CONFIRME explicitamente** com o usuário: "Confirma retirar/devolver a chave do imóvel **IM-XXXX — Rua Tal, 123, Bairro**?". Só prossiga após o "sim".
 5. Com a confirmação, chame **chave_retirar** ou **chave_devolver** passando \`confirmado: true\` e o \`imovel_id\` retornado.
-6. Se o RPC retornar erro ("chave já está com outro corretor", "somente quem retirou pode devolver"), explique de forma simples ao usuário o que fazer.` : "Se o usuário pedir para retirar/devolver chave, responda que essa ação está desativada e que ele deve usar o módulo de Chaves no app ou pedir ao Admin para habilitar a integração no chat."}`,
+6. Se o RPC retornar erro ("chave já está com outro corretor", "somente quem retirou pode devolver"), explique de forma simples ao usuário o que fazer.` : "Se o usuário pedir para retirar/devolver chave, responda que essa ação está desativada e que ele deve usar o módulo de Chaves no app ou pedir ao Admin para habilitar a integração no chat."}
+
+📅 CONFIRMAR VISITA
+Quando o usuário pedir para **confirmar visita** / marcar comparecimento:
+1. Chame **visita_buscar** (pendentes por padrão) e mostre as opções (lead + data + endereço).
+2. CONFIRME qual visita e qual desfecho ("Confirmo que a visita do **Fulano** em **DD/MM HH:MM** foi realizada / não compareceu?").
+3. Só depois do "sim" chame **visita_confirmar** com \`confirmado: true\`.
+
+🗓️ PLANTÃO (consultar e escalar)
+- Para consultar quem está de plantão: **plantao_consultar** (default 7 dias).
+- Para escalar/trocar/remover: **plantao_definir** / **plantao_remover**. SEMPRE confirme a data e o corretor antes. Lembre que corretor só pode escalar a si mesmo; executivo só dentro da própria equipe; admin pode tudo.
+
+🎯 METAS
+- **meta_consultar** para ver metas do mês (qualquer perfil, dentro do escopo).
+- **meta_definir** APENAS para Admin. Confirme corretor, mês/ano e cada valor (vendas, locações, receita, leads atendidos) antes de chamar com \`confirmado: true\`.
+
+💰 FINANCIAMENTO
+- **financiamento_consultar_lead** para ver o status de um lead específico (qualquer perfil com acesso ao lead).
+- **financiamento_listar** + **financiamento_atualizar_status** restritos a Admin/Correspondente. Sempre confirme o financiamento e o novo status (pendente / em_analise / aprovado / recusado) antes de aplicar.
+
+🎲 ATRIBUIÇÃO DE LEAD (Admin)
+- **lead_atribuir_plantonista** atribui ao plantonista do dia (ou de outra data).
+- **lead_atribuir_corretor** atribui a um corretor específico (use **listar_corretores_disponiveis** se precisar do ID).
+- SEMPRE diga em texto qual é o lead, qual é o corretor identificado e peça confirmação. Só com "sim" chame a tool com \`confirmado: true\`.`,
       },
       ...data.messages.map((m) => {
         if (m.role === "user" && m.imageDataUrl) {
