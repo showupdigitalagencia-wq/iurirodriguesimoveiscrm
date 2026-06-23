@@ -1,65 +1,75 @@
 
-Não identifiquei nenhum erro na mensagem — interpretei como pedido de implementação. Abaixo o plano para a **Fase 1** do Feed (estrutura básica, sem gatilhos automáticos ainda).
+# Stories no Feed + Polimento Instagram
 
-## Escopo Fase 1
+Vou entregar em **3 fases sequenciais**, começando pela estrutura de Stories como você pediu. Nada do feed atual (postar, curtir, comentar, moderação) é alterado — Stories é uma camada nova em paralelo.
 
-- Nova aba **Início** vira tela padrão pós-login (Dashboard mantido intacto, só deixa de ser default).
-- Feed cronológico (mais recentes primeiro), visível a todos os perfis logados.
-- Post manual: foto + legenda + aviso de protocolo.
-- Curtir (toggle, contador) e Comentar.
-- Moderação: Admin oculta/remove qualquer post, ação registrada em `audit_log`.
-- Mostra autor (nome + avatar) e data/hora.
+---
 
-## Fora desta fase (Fase 2)
+## Fase 1 — Backend de Stories (estrutura + expiração 24h)
 
-- Gatilhos automáticos: Retirada/Devolução de Chave, Lead Fechado com foto, Pós-reunião com foto. Serão plugados quando esses módulos existirem (basta inserir em `feed_posts` com `source` = 'chave' | 'entrega' | 'reuniao').
+**Tabelas novas** (`public`, com GRANTs + RLS):
+- `feed_stories` — story de cada usuário
+  - `author_id`, `image_path` (Storage), `caption?`, `created_at`, `expires_at` (default `now() + 24h`), `hidden_at`, `hidden_by`
+- `feed_story_views` — quem viu cada story
+  - `story_id`, `viewer_id`, `viewed_at` — único por (story, viewer)
 
-## Backend (migration)
+**RLS:**
+- SELECT: qualquer autenticado vê stories **não expirados e não ocultos** (admin vê tudo).
+- INSERT: autor = `auth.uid()`.
+- DELETE/UPDATE (ocultar): autor OU admin (`has_role`).
+- `feed_story_views`: INSERT pelo próprio viewer; SELECT do autor do story + admin (para a lista "visto por").
 
-```
-feed_posts
-  id uuid pk
-  author_id uuid → auth.users
-  caption text
-  image_path text         -- storage path em bucket "feed"
-  source text default 'manual'    -- manual|chave|entrega|reuniao
-  source_ref uuid null            -- referência opcional ao registro origem
-  hidden_at timestamptz null
-  hidden_by uuid null
-  created_at timestamptz default now()
+**Storage:** reutiliza o bucket `feed` já existente, em pasta `stories/{user_id}/...`.
 
-feed_likes (post_id, user_id) pk composto
-feed_comments (id, post_id, author_id, body, created_at)
-```
+**Expiração:** filtro `expires_at > now()` em toda leitura. Limpeza física opcional via cron (não-bloqueante; pode ficar para depois).
 
-- Bucket Storage `feed` (privado), policies: authenticated read; insert do próprio user; admin update/delete.
-- RLS:
-  - `feed_posts` SELECT authenticated WHERE `hidden_at IS NULL` OR `has_role(uid,'admin')`.
-  - INSERT authenticated com `author_id = auth.uid()`.
-  - UPDATE/DELETE: autor ou admin.
-  - Likes/comments: SELECT authenticated; INSERT próprio user; DELETE próprio user ou admin.
-- GRANTs padrão para `authenticated` + `service_role` em todas as tabelas novas.
-- Trigger em UPDATE de `feed_posts.hidden_at`: insere linha em `audit_log` com ação `feed_post_hidden`.
+---
 
-## Frontend
+## Fase 2 — UI de Stories (barra + viewer fullscreen + visualizações)
 
-- Rota: `src/routes/_authenticated/inicio.tsx` (novo) — componente `FeedPage`.
-- Após login, redirect default → `/inicio` (ajusta `_authenticated/index.tsx` ou ponto de entrada equivalente). Dashboard segue acessível em sua rota atual.
-- Adiciona item "Início" no menu lateral, no topo, antes de "Dashboard".
-- Componentes em `src/components/feed/`:
-  - `FeedList.tsx` — lista paginada (react-query, ordem desc por `created_at`).
-  - `FeedPostCard.tsx` — avatar, nome, data, imagem, legenda, botões Curtir/Comentar, menu "..." (autor: excluir; admin: ocultar).
-  - `NewPostDialog.tsx` — botão "+ Postar", upload de foto, textarea de legenda, banner amarelo com o protocolo exato pedido.
-  - `CommentsSheet.tsx` — lista comentários + input.
-- Imagens: upload direto via supabase-js do client para bucket `feed` em path `${user.id}/${uuid}.jpg`; salva path no post; renderiza via `createSignedUrl` ou public URL conforme bucket.
-- Curtir: optimistic update.
+**Componentes novos** em `src/components/feed/`:
+- `stories-bar.tsx` — barra horizontal no topo do Feed
+  - Primeiro item: avatar do usuário logado com botão **+** (abre uploader)
+  - Demais: avatares de quem tem story ativo nas últimas 24h, agrupados por autor
+  - Anel **dourado** (gradiente navy→gold) quando há story **não visto**; anel **cinza** quando tudo já foi visto pelo usuário
+  - Realtime: subscribe em `feed_stories` e `feed_story_views`
+- `story-viewer.tsx` — overlay fullscreen estilo Instagram
+  - Barras de progresso no topo (uma por story do autor atual)
+  - Auto-avanço a cada **6s**; tap avança, tap-segurar pausa, swipe down/left fecha
+  - Ao terminar o último story do autor, pula para o próximo autor da fila
+  - Marca visualização (`feed_story_views` upsert) quando o story entra em foco
+  - Botão "visto por N" (só autor/admin) abre lista de nomes
+  - Menu `…`: excluir (autor/admin) + aviso de protocolo
+- `story-upload-dialog.tsx` — selecionar foto + legenda curta opcional; mesmo banner de protocolo do feed
+- `story-views-sheet.tsx` — sheet com lista "Visto por: Robson, Ana, Carlos…"
 
-## Regras visuais
+Integração em `src/routes/_authenticated/inicio.tsx`: monta `<StoriesBar />` logo abaixo do header, antes do composer e da lista de posts. Nada mais do arquivo é tocado nesta fase.
 
-- Reaproveita tokens existentes do sistema (não é a LP `/seja-corretor`); mantém estética atual do app autenticado, sem variações novas.
+---
 
-## Não toca
+## Fase 3 — Polimento visual do Feed (sem mudar lógica)
 
-- Dashboard, webhooks Meta/Evolution, pipeline de vendas, RPCs, RLS existentes, lógica de criação de lead, plantão.
+Apenas em `inicio.tsx`, camada visual:
+- Avatares circulares maiores, com anel sutil; nome em destaque + "há 2h" discreto
+- Foto do post sem padding lateral (`-mx-` no card), aspect mais cinematográfico (até `aspect-[4/5]`)
+- Ações: ícones maiores (coração preenche em dourado/rose ao curtir, balão de fala), contadores abaixo no estilo "23 curtidas"
+- Legenda com prefixo do nome do autor inline (estilo IG)
+- Comentários colapsados com "Ver todos os N comentários"
+- Tudo dentro da paleta navy + dourado já vigente
 
-Confirma para eu executar a Fase 1?
+Lógica de curtir/comentar/moderação/excluir/ocultar permanece **idêntica**.
+
+---
+
+## Detalhes técnicos
+
+- **Migração** roda primeiro (Fase 1), aprovada por você, e regenera `types.ts`. Só depois escrevo a Fase 2.
+- **Realtime:** `ALTER PUBLICATION supabase_realtime ADD TABLE feed_stories, feed_story_views`.
+- **Viewer fullscreen:** componente client-only com `requestAnimationFrame` para a barra de progresso (não usa timer drift).
+- **Acessibilidade:** botões com `aria-label`, foco visível, ESC fecha o viewer.
+- **Moderação admin:** mesmo padrão do feed — `has_role` + dropdown no story.
+- **Protocolo:** banner reaproveitando o aviso já existente do composer do feed.
+
+---
+
+Confirme a Fase 1 para eu disparar a migração; ao aprovar a migração, sigo direto para Fase 2 e depois Fase 3.

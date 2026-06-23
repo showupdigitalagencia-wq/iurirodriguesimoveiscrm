@@ -18,6 +18,8 @@ import {
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { StoriesBar } from "@/components/feed/stories-bar";
+
 
 export const Route = createFileRoute("/_authenticated/inicio")({
   head: () => ({ meta: [{ title: "Início — Sistema NEXUS" }] }),
@@ -71,6 +73,7 @@ function formatRelative(iso: string) {
 
 function InicioPage() {
   const [userId, setUserId] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string>("Você");
   const [isAdmin, setIsAdmin] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -154,9 +157,13 @@ function InicioPage() {
         supabase.rpc("has_role", { _user_id: uid, _role: "admin" }).then(({ data }) => {
           setIsAdmin(data === true);
         });
+        supabase.from("profiles").select("nome").eq("id", uid).maybeSingle().then(({ data }) => {
+          if (data?.nome) setUserName(data.nome);
+        });
       }
     });
   }, []);
+
 
   useEffect(() => { loadAll(); }, [loadAll]);
 
@@ -240,6 +247,10 @@ function InicioPage() {
         <ComposeButton open={showCompose} setOpen={setShowCompose} userId={userId} onPosted={loadAll} />
       </header>
 
+      <StoriesBar userId={userId} userName={userName} isAdmin={isAdmin} />
+
+
+
       {loading ? (
         <div className="space-y-4">
           {[0, 1].map((i) => (
@@ -270,20 +281,20 @@ function InicioPage() {
               >
                 <div className="flex items-center justify-between gap-3 px-4 py-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="h-9 w-9 rounded-full bg-gradient-to-br from-gold/30 to-gold/10 border border-gold/30 grid place-items-center text-xs font-semibold text-gold">
+                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-gold/30 to-gold/10 border border-gold/30 grid place-items-center text-sm font-semibold text-gold ring-2 ring-background">
                       {initials(author?.nome ?? "?")}
                     </div>
                     <div className="min-w-0">
-                      <div className="text-sm font-medium truncate">{author?.nome ?? "—"}</div>
-                      <div className="text-[11px] text-muted-foreground">
-                        {formatRelative(p.created_at)}
+                      <div className="text-sm font-semibold truncate">{author?.nome ?? "—"}</div>
+                      <div className="text-[11px] text-muted-foreground flex items-center gap-2">
+                        <span>há {formatRelative(p.created_at)}</span>
                         {p.source !== "manual" && (
-                          <span className="ml-2 px-1.5 py-0.5 rounded bg-muted text-[10px] uppercase tracking-wider">
+                          <span className="px-1.5 py-0.5 rounded bg-muted text-[10px] uppercase tracking-wider">
                             auto · {p.source}
                           </span>
                         )}
                         {p.hidden_at && (
-                          <span className="ml-2 px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-600 text-[10px] uppercase tracking-wider">
+                          <span className="px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-600 text-[10px] uppercase tracking-wider">
                             oculto
                           </span>
                         )}
@@ -314,35 +325,64 @@ function InicioPage() {
                 </div>
 
                 {url ? (
-                  <img src={url} alt="" className="w-full max-h-[640px] object-cover bg-muted" />
+                  <div className="bg-black">
+                    <img
+                      src={url}
+                      alt=""
+                      className="w-full max-h-[720px] object-contain mx-auto"
+                      onDoubleClick={() => !lk.mine && toggleLike(p.id)}
+                    />
+                  </div>
                 ) : (
-                  <div className="w-full h-64 bg-muted animate-pulse" />
+                  <div className="w-full aspect-[4/5] bg-muted animate-pulse" />
+                )}
+
+                <div className="flex items-center gap-1 px-3 pt-3">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className={`h-10 w-10 ${lk.mine ? "text-rose-500" : ""}`}
+                    onClick={() => toggleLike(p.id)}
+                    aria-label="Curtir"
+                  >
+                    <Heart className={`h-6 w-6 transition ${lk.mine ? "fill-current scale-110" : ""}`} />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-10 w-10"
+                    onClick={() => setOpenComments((s) => ({ ...s, [p.id]: !s[p.id] }))}
+                    aria-label="Comentar"
+                  >
+                    <MessageCircle className="h-6 w-6" />
+                  </Button>
+                </div>
+
+                {lk.count > 0 && (
+                  <div className="px-4 text-sm font-semibold">
+                    {lk.count} {lk.count === 1 ? "curtida" : "curtidas"}
+                  </div>
                 )}
 
                 {p.caption && (
-                  <div className="px-4 pt-3 text-sm whitespace-pre-wrap">{p.caption}</div>
+                  <div className="px-4 pt-1 text-sm whitespace-pre-wrap">
+                    <span className="font-semibold mr-2">{author?.nome?.split(" ")[0] ?? ""}</span>
+                    {p.caption}
+                  </div>
                 )}
 
-                <div className="flex items-center gap-2 px-2 py-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className={`gap-2 ${lk.mine ? "text-rose-500" : ""}`}
-                    onClick={() => toggleLike(p.id)}
+                {cs.length > 0 && !openComments[p.id] && (
+                  <button
+                    onClick={() => setOpenComments((s) => ({ ...s, [p.id]: true }))}
+                    className="px-4 pt-2 text-xs text-muted-foreground hover:text-foreground text-left"
                   >
-                    <Heart className={`h-4 w-4 ${lk.mine ? "fill-current" : ""}`} />
-                    <span className="tabular-nums">{lk.count}</span>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="gap-2"
-                    onClick={() => setOpenComments((s) => ({ ...s, [p.id]: !s[p.id] }))}
-                  >
-                    <MessageCircle className="h-4 w-4" />
-                    <span className="tabular-nums">{cs.length}</span>
-                  </Button>
-                </div>
+                    Ver {cs.length === 1 ? "1 comentário" : `todos os ${cs.length} comentários`}
+                  </button>
+                )}
+
+                <div className="h-3" />
+
+
 
                 {openComments[p.id] && (
                   <div className="border-t border-border px-4 py-3 space-y-3 bg-muted/20">

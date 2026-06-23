@@ -484,6 +484,87 @@ export type Database = {
         }
         Relationships: []
       }
+      feed_stories: {
+        Row: {
+          author_id: string
+          caption: string | null
+          created_at: string
+          expires_at: string
+          hidden_at: string | null
+          hidden_by: string | null
+          id: string
+          image_path: string
+        }
+        Insert: {
+          author_id: string
+          caption?: string | null
+          created_at?: string
+          expires_at?: string
+          hidden_at?: string | null
+          hidden_by?: string | null
+          id?: string
+          image_path: string
+        }
+        Update: {
+          author_id?: string
+          caption?: string | null
+          created_at?: string
+          expires_at?: string
+          hidden_at?: string | null
+          hidden_by?: string | null
+          id?: string
+          image_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feed_stories_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feed_stories_hidden_by_fkey"
+            columns: ["hidden_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feed_story_views: {
+        Row: {
+          story_id: string
+          viewed_at: string
+          viewer_id: string
+        }
+        Insert: {
+          story_id: string
+          viewed_at?: string
+          viewer_id: string
+        }
+        Update: {
+          story_id?: string
+          viewed_at?: string
+          viewer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feed_story_views_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "feed_stories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feed_story_views_viewer_id_fkey"
+            columns: ["viewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       financiamentos: {
         Row: {
           comp_renda_path: string | null
