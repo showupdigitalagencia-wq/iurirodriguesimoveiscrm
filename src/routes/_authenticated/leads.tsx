@@ -19,7 +19,7 @@ import { toast } from "sonner";
 type Resp = { id: string; nome: string; canal: string };
 
 export const Route = createFileRoute("/_authenticated/leads")({
-  head: () => ({ meta: [{ title: "Leads — Sistema NEXUS" }] }),
+  head: () => ({ meta: [{ title: "Oportunidades — Sistema NEXUS" }] }),
   validateSearch: (s: Record<string, unknown>) => ({ open: typeof s.open === "string" ? s.open : undefined }),
   component: LeadsPage,
 });
