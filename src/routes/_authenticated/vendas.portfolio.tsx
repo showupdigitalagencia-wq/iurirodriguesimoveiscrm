@@ -352,19 +352,33 @@ function ImovelDialog({ imovel, onClose }: { imovel: Imovel | null; onClose: () 
               <div className="whitespace-pre-wrap">{imovel.observacoes}</div>
             </div>
           )}
-          {imovel.vitrine_url && (
+          <div className="flex flex-wrap gap-2">
+            {imovel.vitrine_url && (
+              <Button
+                asChild
+                size="sm"
+                variant="outline"
+                className="h-7 px-2 gap-1 text-xs border-gold/40 text-gold hover:bg-gold/10 hover:text-gold"
+              >
+                <a href={imovel.vitrine_url} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="h-3 w-3" />
+                  Vitrine
+                </a>
+              </Button>
+            )}
             <Button
-              asChild
               size="sm"
               variant="outline"
-              className="h-7 px-2 gap-1 text-xs border-gold/40 text-gold hover:bg-gold/10 hover:text-gold w-fit"
+              className="h-7 px-2 gap-1 text-xs border-emerald-500/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10"
+              onClick={() => {
+                const msg = buildImovelShareMessage(imovel as never, urls);
+                openWhatsAppShare(msg);
+              }}
             >
-              <a href={imovel.vitrine_url} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="h-3 w-3" />
-                Vitrine
-              </a>
+              <Share2 className="h-3 w-3" />
+              Compartilhar
             </Button>
-          )}
+          </div>
         </div>
       </DialogContent>
     </Dialog>
