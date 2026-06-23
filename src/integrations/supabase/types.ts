@@ -972,6 +972,7 @@ export type Database = {
           faixa_valor: string | null
           fechado_em: string | null
           first_response_at: string | null
+          followup_alerta_em: string | null
           id: string
           is_corretor: boolean
           motivo_descredenciamento: string | null
@@ -998,6 +999,7 @@ export type Database = {
           faixa_valor?: string | null
           fechado_em?: string | null
           first_response_at?: string | null
+          followup_alerta_em?: string | null
           id?: string
           is_corretor?: boolean
           motivo_descredenciamento?: string | null
@@ -1024,6 +1026,7 @@ export type Database = {
           faixa_valor?: string | null
           fechado_em?: string | null
           first_response_at?: string | null
+          followup_alerta_em?: string | null
           id?: string
           is_corretor?: boolean
           motivo_descredenciamento?: string | null
@@ -1738,6 +1741,7 @@ export type Database = {
           executivo_canal: Database["public"]["Enums"]["lead_canal"] | null
           fechado_em: string | null
           first_response_at: string | null
+          followup_alerta_em: string | null
           id: string
           imovel_id: string | null
           nome: string
@@ -1767,6 +1771,7 @@ export type Database = {
           executivo_canal?: Database["public"]["Enums"]["lead_canal"] | null
           fechado_em?: string | null
           first_response_at?: string | null
+          followup_alerta_em?: string | null
           id?: string
           imovel_id?: string | null
           nome: string
@@ -1796,6 +1801,7 @@ export type Database = {
           executivo_canal?: Database["public"]["Enums"]["lead_canal"] | null
           fechado_em?: string | null
           first_response_at?: string | null
+          followup_alerta_em?: string | null
           id?: string
           imovel_id?: string | null
           nome?: string

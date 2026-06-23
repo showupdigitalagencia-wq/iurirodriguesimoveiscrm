@@ -108,6 +108,7 @@ function ConfigPage() {
           <VslCaptacaoSection />
           <TeamPhotosSection />
           <ReativacaoLeadsConfig />
+          <FollowupLeadsConfig />
           <ExportSistemaSection />
           <BackupsSection />
           <VisitaChecklistConfig />
@@ -276,6 +277,66 @@ function ReativacaoLeadsConfig() {
     </div>
   );
 }
+
+
+function FollowupLeadsConfig() {
+  const [dias, setDias] = useState<number | "">("");
+  const [loaded, setLoaded] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    supabase.from("configuracoes").select("valor").eq("chave", "lead_followup_dias").maybeSingle()
+      .then(({ data }) => {
+        const v = data?.valor;
+        const n = typeof v === "number" ? v : typeof v === "string" ? Number(v) : 5;
+        setDias(Number.isFinite(n) && n > 0 ? n : 5);
+        setLoaded(true);
+      });
+  }, []);
+
+  async function salvar() {
+    if (typeof dias !== "number" || !Number.isFinite(dias) || dias < 1 || dias > 90) {
+      toast.error("Informe entre 1 e 90 dias");
+      return;
+    }
+    setSaving(true);
+    const { error } = await supabase.from("configuracoes")
+      .upsert({ chave: "lead_followup_dias", valor: dias as never, updated_at: new Date().toISOString() }, { onConflict: "chave" });
+    setSaving(false);
+    if (error) { toast.error("Erro ao salvar"); return; }
+    toast.success(`Alerta de follow-up configurado para ${dias} dias`);
+  }
+
+  return (
+    <div className="rounded-lg border p-5 space-y-3">
+      <div>
+        <h3 className="font-semibold">⏰ Alerta de follow-up esquecido</h3>
+        <p className="text-sm text-muted-foreground mt-1">
+          Define quantos dias sem interação em um lead <strong>ativo</strong> disparam um push ao corretor responsável. O alerta só repete depois que o lead receber uma nova atualização. A varredura roda automaticamente todo dia às 10h.
+        </p>
+      </div>
+      <div className="flex items-end gap-3">
+        <div className="flex-1 max-w-[180px]">
+          <Label className="text-xs">Dias sem interação</Label>
+          <Input
+            type="number" min={1} max={90}
+            value={dias}
+            disabled={!loaded || saving}
+            onChange={(e) => {
+              const n = Number(e.target.value);
+              setDias(Number.isFinite(n) ? n : "");
+            }}
+          />
+        </div>
+        <Button onClick={salvar} disabled={!loaded || saving}>
+          {saving ? "Salvando..." : "Salvar"}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+
 
 
 function ExportSistemaSection() {
