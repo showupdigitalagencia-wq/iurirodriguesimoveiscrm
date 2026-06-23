@@ -20,6 +20,8 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { StoriesBar } from "@/components/feed/stories-bar";
+import { UserAvatar } from "@/components/user-avatar";
+import { signAvatarMap } from "@/lib/avatar-url";
 
 
 export const Route = createFileRoute("/_authenticated/inicio")({
