@@ -230,13 +230,18 @@ async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs: numbe
   }
 }
 
-export const importImovelFromUrl = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((input: { url: string }) =>
-    z.object({ url: z.string().url() }).parse(input)
-  )
-  .handler(async ({ data }): Promise<ImovelImportResult> => {
-    const url = data.url.trim();
+/**
+ * Núcleo do importador — reutilizável (server-only).
+ * Quando `opts.skipFotoBaseStems` é informado, pula o download/upload de fotos
+ * cujo baseName sanitizado já está no conjunto (usado pelo re-sync para não
+ * re-baixar fotos que já existem no bucket).
+ */
+export async function runImovelImport(
+  rawUrl: string,
+  opts?: { skipFotoBaseStems?: Set<string> }
+): Promise<ImovelImportResult> {
+    const url = rawUrl.trim();
+    const skipStems = opts?.skipFotoBaseStems;
     const res = await fetch(url, {
       headers: {
         "User-Agent":
@@ -247,6 +252,7 @@ export const importImovelFromUrl = createServerFn({ method: "POST" })
     if (!res.ok) {
       throw new Error(`Falha ao buscar página (HTTP ${res.status})`);
     }
+
     const html = await res.text();
 
     // ---------- META & OG ----------
