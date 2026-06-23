@@ -174,6 +174,26 @@ export const Route = createFileRoute("/api/public/webhook")({
             .from("plantao_escala" as never).select("corretor_id").eq("data", hoje).maybeSingle();
           const plantonista = (escala as { corretor_id: string } | null)?.corretor_id ?? null;
 
+          // === NOVO: verifica se o plantonista está em compromisso AGORA ===
+          let plantonistaOcupado = false;
+          if (plantonista) {
+            const { data: occ } = await supabaseAdmin.rpc("corretor_ocupado_agora" as never, { _corretor_id: plantonista } as never);
+            plantonistaOcupado = occ === true;
+          }
+          // Identifica próximo da escala (primeira data futura com corretor distinto)
+          let proximoId: string | null = null;
+          if (plantonista) {
+            const { data: prox } = await supabaseAdmin
+              .from("plantao_escala" as never)
+              .select("corretor_id, data")
+              .gt("data", hoje)
+              .neq("corretor_id", plantonista)
+              .order("data", { ascending: true })
+              .limit(1)
+              .maybeSingle();
+            proximoId = (prox as { corretor_id: string } | null)?.corretor_id ?? null;
+          }
+
           const { data: vlead, error: vlErr } = await supabaseAdmin
             .from("vendas_leads").insert({
               nome,
@@ -189,6 +209,9 @@ export const Route = createFileRoute("/api/public/webhook")({
               corretor_id: plantonista,
               atribuicao_status: plantonista ? "pendente" : null,
               atribuido_em: plantonista ? new Date().toISOString() : null,
+              plantao_ocupado_no_atribuir: plantonistaOcupado,
+              plantao_proximo_id: plantonistaOcupado ? proximoId : null,
+              plantao_proximo_avisado_em: plantonistaOcupado && proximoId ? new Date().toISOString() : null,
             } as never).select("id").single();
           if (vlErr || !vlead) {
             return new Response(JSON.stringify({ error: vlErr?.message ?? "Erro" }), {
@@ -198,7 +221,12 @@ export const Route = createFileRoute("/api/public/webhook")({
           await supabaseAdmin.from("plantao_log" as never).insert({
             lead_id: vlead.id, corretor_id: plantonista,
             motivo: plantonista ? "novo_lead" : "sem_plantonista",
-            origem, detalhe: { telefone, regiao, form_id: form_id ?? null } as never,
+            origem,
+            detalhe: {
+              telefone, regiao, form_id: form_id ?? null,
+              plantonista_status: plantonistaOcupado ? "ocupado" : "livre",
+              proximo_avisado: plantonistaOcupado && !!proximoId,
+            } as never,
           } as never);
 
           // Push direcionado ao plantonista (ou admins se sem escala)
@@ -211,11 +239,26 @@ export const Route = createFileRoute("/api/public/webhook")({
               if (ext) {
                 await sendOneSignalPush({
                   externalId: ext,
-                  title: "🏠 Novo lead de plantão",
+                  title: plantonistaOcupado ? "🏠 Novo lead de plantão (você está em compromisso)" : "🏠 Novo lead de plantão",
                   message: `${nome} · ${telefone} · ${origem.replace(/_/g, " ")}`,
                   url: "https://sistemanexus.app/vendas/leads",
-                  data: { lead_id: vlead.id, origem },
+                  data: { lead_id: vlead.id, origem, ocupado: plantonistaOcupado },
                 });
+              }
+              // Pré-aviso ao próximo da escala quando plantonista está ocupado
+              if (plantonistaOcupado && proximoId) {
+                const { data: profProx } = await supabaseAdmin
+                  .from("profiles").select("onesignal_external_id").eq("id", proximoId).maybeSingle();
+                const extProx = (profProx as { onesignal_external_id: string | null } | null)?.onesignal_external_id;
+                if (extProx) {
+                  await sendOneSignalPush({
+                    externalId: extProx,
+                    title: "⏳ Plantonista em compromisso",
+                    message: `Fique atento: o lead ${nome} pode vir pra você em breve se ele não responder.`,
+                    url: "https://sistemanexus.app/vendas/leads",
+                    data: { lead_id: vlead.id, tipo: "pre_aviso_proximo" },
+                  });
+                }
               }
             } else {
               const { data: roles } = await supabaseAdmin.from("user_roles").select("user_id").eq("role", "admin");
@@ -237,10 +280,11 @@ export const Route = createFileRoute("/api/public/webhook")({
             }
           } catch (e) { console.warn("[webhook plantão] push falhou", e); }
 
-          return new Response(JSON.stringify({ ok: true, id: vlead.id, fluxo: "plantao", plantonista }), {
+          return new Response(JSON.stringify({ ok: true, id: vlead.id, fluxo: "plantao", plantonista, ocupado: plantonistaOcupado }), {
             status: 201, headers: { "Content-Type": "application/json" },
           });
         }
+
 
 
         const { data: responsavel } = await supabaseAdmin

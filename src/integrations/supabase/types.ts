@@ -2030,6 +2030,10 @@ export type Database = {
       }
       can_user_view_reuniao: { Args: { _reuniao_id: string }; Returns: boolean }
       can_view_candidatos: { Args: { _user_id?: string }; Returns: boolean }
+      corretor_ocupado_agora: {
+        Args: { _at?: string; _corretor_id: string }
+        Returns: boolean
+      }
       current_corretor_responsavel_id: { Args: never; Returns: string }
       current_user_executivo_id: { Args: never; Returns: string }
       current_user_is_active: { Args: never; Returns: boolean }
