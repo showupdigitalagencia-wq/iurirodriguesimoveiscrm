@@ -410,8 +410,8 @@ function UsuariosPage() {
           </form>
         </DialogContent>
       </Dialog>
-    </div>
-  );
+
+
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <DialogContent>
           <DialogHeader><DialogTitle>Editar funcionário</DialogTitle></DialogHeader>
