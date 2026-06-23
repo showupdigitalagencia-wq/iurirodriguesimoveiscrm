@@ -493,6 +493,20 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
       toast.error(error.message || "Erro ao salvar imóvel");
       return;
     }
+    // Notificação: imóvel de locação voltou a estar disponível
+    const finForm = ((form as { finalidade?: string }).finalidade) ?? "locacao";
+    const novoStatus = (form.status ?? "") as string;
+    const statusAntigo = (imovel?.status ?? "") as string;
+    if (
+      imovel &&
+      (finForm === "locacao" || finForm === "ambos") &&
+      statusAntigo === "locado" &&
+      novoStatus === "disponivel_locacao"
+    ) {
+      notifyDisponivel({ data: { imovelId: imovel.id } })
+        .then((r) => { if (!r.ok) console.warn("[notifyDisponivel]", r.error); })
+        .catch((e) => console.warn("[notifyDisponivel]", e));
+    }
     toast.success(imovel ? "Imóvel atualizado" : "Imóvel cadastrado");
     onOpenChange(false);
     setForm({});
