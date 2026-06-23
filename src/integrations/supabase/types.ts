@@ -1802,6 +1802,7 @@ export type Database = {
       vendas_visitas: {
         Row: {
           chave_lembrete_enviado_em: string | null
+          checklist: Json
           comparecimento: string | null
           confirmada_em: string | null
           confirmada_por: string | null
@@ -1820,6 +1821,7 @@ export type Database = {
         }
         Insert: {
           chave_lembrete_enviado_em?: string | null
+          checklist?: Json
           comparecimento?: string | null
           confirmada_em?: string | null
           confirmada_por?: string | null
@@ -1838,6 +1840,7 @@ export type Database = {
         }
         Update: {
           chave_lembrete_enviado_em?: string | null
+          checklist?: Json
           comparecimento?: string | null
           confirmada_em?: string | null
           confirmada_por?: string | null
