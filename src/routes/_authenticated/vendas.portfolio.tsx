@@ -371,8 +371,7 @@ function ImovelDialog({ imovel, onClose }: { imovel: Imovel | null; onClose: () 
               variant="outline"
               className="h-7 px-2 gap-1 text-xs border-emerald-500/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10"
               onClick={() => {
-                const msg = buildImovelShareMessage(imovel as never, urls);
-                openWhatsAppShare(msg);
+                void shareImovelNative(imovel as never, urls);
               }}
             >
               <Share2 className="h-3 w-3" />
