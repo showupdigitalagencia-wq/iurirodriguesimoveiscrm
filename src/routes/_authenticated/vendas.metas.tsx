@@ -18,6 +18,7 @@ export const Route = createFileRoute("/_authenticated/vendas/metas")({
 
 type Corretor = {
   id: string; nome: string; equipe: string | null;
+  is_executivo?: boolean;
   meta: { definida: boolean; vendas: number; locacoes: number; receita: number; leads_atendidos: number };
   realizado: { vendas: number; locacoes: number; receita: number; leads_atendidos: number };
 };
