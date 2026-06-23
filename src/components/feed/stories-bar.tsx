@@ -36,7 +36,9 @@ export function StoriesBar({
   isAdmin: boolean;
 }) {
   const [stories, setStories] = useState<StoryRow[]>([]);
-  const [profiles, setProfiles] = useState<Record<string, string>>({});
+  const [profiles, setProfiles] = useState<Record<string, { nome: string; avatar_url: string | null }>>({});
+  const [avatarUrls, setAvatarUrls] = useState<Record<string, string>>({});
+  const [ownAvatar, setOwnAvatar] = useState<string | null>(null);
   const [seen, setSeen] = useState<Set<string>>(new Set());
   const [openUpload, setOpenUpload] = useState(false);
   const [viewerAuthorIndex, setViewerAuthorIndex] = useState<number | null>(null);
@@ -52,11 +54,16 @@ export function StoriesBar({
     const list = (data ?? []) as (StoryRow & { hidden_at: string | null })[];
     setStories(list.map(({ hidden_at: _h, ...rest }) => rest));
     const authorIds = Array.from(new Set(list.map((s) => s.author_id)));
+    if (userId && !authorIds.includes(userId)) authorIds.push(userId);
     if (authorIds.length) {
-      const { data: profs } = await supabase.from("profiles").select("id, nome").in("id", authorIds);
-      const map: Record<string, string> = {};
-      for (const p of (profs ?? []) as { id: string; nome: string }[]) map[p.id] = p.nome;
+      const { data: profs } = await supabase.from("profiles").select("id, nome, avatar_url").in("id", authorIds);
+      const rows = (profs ?? []) as { id: string; nome: string; avatar_url: string | null }[];
+      const map: Record<string, { nome: string; avatar_url: string | null }> = {};
+      for (const p of rows) map[p.id] = { nome: p.nome, avatar_url: p.avatar_url };
       setProfiles(map);
+      const signed = await signAvatarMap(rows.map((r) => ({ id: r.id, path: r.avatar_url })));
+      setAvatarUrls(signed);
+      if (userId) setOwnAvatar(signed[userId] ?? null);
     }
     if (userId && list.length) {
       const { data: views } = await supabase
@@ -90,7 +97,8 @@ export function StoriesBar({
       const hasUnseen = items.some((s) => !seen.has(s.id));
       arr.push({
         authorId,
-        authorName: profiles[authorId] ?? "—",
+        authorName: profiles[authorId]?.nome ?? "—",
+        authorAvatarUrl: avatarUrls[authorId] ?? null,
         stories: items,
         hasUnseen,
       });
@@ -108,7 +116,8 @@ export function StoriesBar({
       if (idx > 0) { const [me] = arr.splice(idx, 1); arr.unshift(me); }
     }
     return arr;
-  }, [stories, profiles, seen, userId]);
+  }, [stories, profiles, avatarUrls, seen, userId]);
+
 
   function openViewer(authorId: string) {
     const i = groups.findIndex((g) => g.authorId === authorId);
