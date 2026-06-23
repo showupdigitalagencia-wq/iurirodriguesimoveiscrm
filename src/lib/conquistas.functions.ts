@@ -58,8 +58,10 @@ export const listarMinhasConquistas = createServerFn({ method: "POST" })
       if (pendentes.length) {
         const { sendOneSignalPush } = await import("@/lib/onesignal.server");
         const { data: profRaw } = await supabase
-          .from("profiles").select("onesignal_external_id").eq("id", userId).maybeSingle();
-        const extId = (profRaw as { onesignal_external_id: string | null } | null)?.onesignal_external_id;
+          .from("profiles").select("nome, onesignal_external_id").eq("id", userId).maybeSingle();
+        const prof = profRaw as { nome: string | null; onesignal_external_id: string | null } | null;
+        const extId = prof?.onesignal_external_id;
+        const userNome = prof?.nome ?? "Alguém";
         for (const p of pendentes) {
           if (extId) {
             await sendOneSignalPush({
@@ -69,6 +71,15 @@ export const listarMinhasConquistas = createServerFn({ method: "POST" })
               data: { tipo: "conquista", conquista_id: p.conquista_id },
             });
           }
+          // Post automático no Feed (sem foto). RLS exige author_id = auth.uid().
+          await supabase.from("feed_posts").insert({
+            author_id: userId,
+            caption: `🏆 ${userNome} conquistou: ${p.nome}!`,
+            image_path: null,
+            source: "conquista",
+            source_ref: p.conquista_id,
+            media_type: "image",
+          } as never);
           await supabase.from("user_conquistas")
             .update({ notificada: true } as never)
             .eq("user_id", userId).eq("conquista_id", p.conquista_id);
