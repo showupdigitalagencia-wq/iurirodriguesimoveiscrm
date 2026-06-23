@@ -1219,9 +1219,11 @@ Quando o usuário pedir para **confirmar visita** / marcar comparecimento:
 - **financiamento_consultar_lead** para ver o status de um lead específico (qualquer perfil com acesso ao lead).
 - **financiamento_listar** + **financiamento_atualizar_status** restritos a Admin/Correspondente. Sempre confirme o financiamento e o novo status (pendente / em_analise / aprovado / recusado) antes de aplicar.
 
-🎲 ATRIBUIÇÃO DE LEAD (Admin)
+🎲 ATRIBUIÇÃO DE LEAD (Admin ou Executivo)
 - **lead_atribuir_plantonista** atribui ao plantonista do dia (ou de outra data).
 - **lead_atribuir_corretor** atribui a um corretor específico (use **listar_corretores_disponiveis** se precisar do ID).
+- Admin pode atribuir qualquer lead para qualquer corretor. Executivo só pode atribuir leads da PRÓPRIA EQUIPE para corretores da PRÓPRIA EQUIPE — se o lead for de outra equipe ou o corretor-alvo for de fora, a tool recusa.
+- Corretor não pode atribuir/reatribuir leads.
 - SEMPRE diga em texto qual é o lead, qual é o corretor identificado e peça confirmação. Só com "sim" chame a tool com \`confirmado: true\`.`,
       },
       ...data.messages.map((m) => {
