@@ -281,10 +281,10 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
                   </div>
                   <div className="text-[11px] text-muted-foreground mb-2 truncate">{v.endereco}</div>
                   <div className="flex gap-2">
-                    <Button size="sm" variant="gold" className="gap-1 h-7 text-xs" onClick={() => handleConfirmar(v.id, "realizada")}>
+                    <Button size="sm" variant="gold" className="gap-1 h-7 text-xs" onClick={() => setChecklistVisitaId(v.id)}>
                       <CheckCircle2 className="h-3.5 w-3.5" /> Realizada
                     </Button>
-                    <Button size="sm" variant="outline" className="gap-1 h-7 text-xs" onClick={() => handleConfirmar(v.id, "nao_compareceu")}>
+                    <Button size="sm" variant="outline" className="gap-1 h-7 text-xs" onClick={() => handleNaoCompareceu(v.id)}>
                       <XCircle className="h-3.5 w-3.5" /> Não compareceu
                     </Button>
                   </div>
