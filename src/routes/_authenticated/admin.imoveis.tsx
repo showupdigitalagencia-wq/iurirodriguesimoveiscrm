@@ -420,7 +420,7 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
       const { data: roles } = await supabase
         .from("user_roles")
         .select("user_id, role")
-        .in("role", ["corretor", "corretor_vendas", "executivo", "admin"]);
+        .in("role", ["corretor", "corretor_vendas", "admin"]);
       const ids = Array.from(new Set((roles ?? []).map((r) => r.user_id)));
       if (!ids.length) return [] as Array<{ id: string; nome: string }>;
       const { data: profs } = await supabase
