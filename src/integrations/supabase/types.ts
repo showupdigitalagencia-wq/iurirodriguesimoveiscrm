@@ -1048,6 +1048,36 @@ export type Database = {
           },
         ]
       }
+      mensagem_templates: {
+        Row: {
+          conteudo: string
+          created_at: string
+          escopo: string
+          id: string
+          owner_id: string | null
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          conteudo: string
+          created_at?: string
+          escopo?: string
+          id?: string
+          owner_id?: string | null
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          conteudo?: string
+          created_at?: string
+          escopo?: string
+          id?: string
+          owner_id?: string | null
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       meta_form_mapping: {
         Row: {
           ativo: boolean
