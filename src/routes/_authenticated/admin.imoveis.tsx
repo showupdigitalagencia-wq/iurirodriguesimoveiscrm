@@ -25,6 +25,7 @@ import { importImovelFromUrl } from "@/lib/imovel-import.functions";
 import { notifyImovelDisponivelNovamente } from "@/lib/imoveis-notify.functions";
 import { ChaveActions } from "@/components/admin/ChaveActions";
 import { resyncImovelFromSite, resyncTodosImoveisDoSite, type ResyncImovelReport, type ResyncBatchReport } from "@/lib/imovel-resync.functions";
+import { auditarMetragemImoveis, type MetragemAuditReport } from "@/lib/imovel-metragem-audit.functions";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 
