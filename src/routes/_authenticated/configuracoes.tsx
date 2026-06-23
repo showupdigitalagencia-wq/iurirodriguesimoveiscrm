@@ -279,59 +279,122 @@ function ReativacaoLeadsConfig() {
 }
 
 
-function FollowupLeadsConfig() {
-  const [dias, setDias] = useState<number | "">("");
+const VENDAS_ETAPAS: Array<{ key: string; label: string; def: number }> = [
+  { key: "novo_lead", label: "Novo Lead", def: 1 },
+  { key: "contato_realizado", label: "Contato Realizado", def: 3 },
+  { key: "visita_agendada", label: "Visita Agendada", def: 2 },
+  { key: "proposta_enviada", label: "Proposta Enviada", def: 4 },
+  { key: "em_negociacao", label: "Negociação", def: 5 },
+  { key: "follow_up", label: "Follow Up", def: 3 },
+];
+
+const CAPTACAO_ETAPAS: Array<{ key: string; label: string; def: number }> = [
+  { key: "novos_leads", label: "Novo Lead", def: 1 },
+  { key: "em_atendimento", label: "Contato Realizado", def: 3 },
+  { key: "reuniao_agendada", label: "Reunião Agendada", def: 2 },
+  { key: "solicitacao_documentos", label: "Solicitação de Documentos", def: 5 },
+  { key: "documentos_enviados", label: "Documentos Enviados", def: 4 },
+  { key: "em_negociacao", label: "Em Negociação", def: 5 },
+  { key: "follow_up", label: "Follow Up", def: 3 },
+];
+
+function parseDiasMap(raw: unknown, etapas: Array<{ key: string; def: number }>): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const e of etapas) out[e.key] = e.def;
+  if (raw && typeof raw === "object" && !Array.isArray(raw)) {
+    for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+      const n = typeof v === "number" ? v : typeof v === "string" ? Number(v) : NaN;
+      if (Number.isFinite(n) && n > 0) out[k] = Math.floor(n);
+    }
+  }
+  return out;
+}
+
+function FollowupPipelineConfig({
+  titulo,
+  descricao,
+  chave,
+  etapas,
+}: {
+  titulo: string;
+  descricao: string;
+  chave: string;
+  etapas: Array<{ key: string; label: string; def: number }>;
+}) {
+  const [valores, setValores] = useState<Record<string, number>>(() =>
+    Object.fromEntries(etapas.map((e) => [e.key, e.def])),
+  );
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    supabase.from("configuracoes").select("valor").eq("chave", "lead_followup_dias").maybeSingle()
+    supabase.from("configuracoes").select("valor").eq("chave", chave).maybeSingle()
       .then(({ data }) => {
-        const v = data?.valor;
-        const n = typeof v === "number" ? v : typeof v === "string" ? Number(v) : 5;
-        setDias(Number.isFinite(n) && n > 0 ? n : 5);
+        setValores(parseDiasMap(data?.valor, etapas));
         setLoaded(true);
       });
-  }, []);
+  }, [chave]);
 
   async function salvar() {
-    if (typeof dias !== "number" || !Number.isFinite(dias) || dias < 1 || dias > 90) {
-      toast.error("Informe entre 1 e 90 dias");
-      return;
+    for (const e of etapas) {
+      const v = valores[e.key];
+      if (!Number.isFinite(v) || v < 1 || v > 90) {
+        toast.error(`"${e.label}" deve estar entre 1 e 90 dias`);
+        return;
+      }
     }
     setSaving(true);
     const { error } = await supabase.from("configuracoes")
-      .upsert({ chave: "lead_followup_dias", valor: dias as never, updated_at: new Date().toISOString() }, { onConflict: "chave" });
+      .upsert({ chave, valor: valores as never, updated_at: new Date().toISOString() }, { onConflict: "chave" });
     setSaving(false);
     if (error) { toast.error("Erro ao salvar"); return; }
-    toast.success(`Alerta de follow-up configurado para ${dias} dias`);
+    toast.success("Configuração salva");
   }
 
   return (
     <div className="rounded-lg border p-5 space-y-3">
       <div>
-        <h3 className="font-semibold">⏰ Alerta de follow-up esquecido</h3>
-        <p className="text-sm text-muted-foreground mt-1">
-          Define quantos dias sem interação em um lead <strong>ativo</strong> disparam um push ao corretor responsável. O alerta só repete depois que o lead receber uma nova atualização. A varredura roda automaticamente todo dia às 10h.
-        </p>
+        <h3 className="font-semibold">{titulo}</h3>
+        <p className="text-sm text-muted-foreground mt-1">{descricao}</p>
       </div>
-      <div className="flex items-end gap-3">
-        <div className="flex-1 max-w-[180px]">
-          <Label className="text-xs">Dias sem interação</Label>
-          <Input
-            type="number" min={1} max={90}
-            value={dias}
-            disabled={!loaded || saving}
-            onChange={(e) => {
-              const n = Number(e.target.value);
-              setDias(Number.isFinite(n) ? n : "");
-            }}
-          />
-        </div>
-        <Button onClick={salvar} disabled={!loaded || saving}>
-          {saving ? "Salvando..." : "Salvar"}
-        </Button>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        {etapas.map((e) => (
+          <div key={e.key}>
+            <Label className="text-xs">{e.label}</Label>
+            <Input
+              type="number" min={1} max={90}
+              value={valores[e.key] ?? ""}
+              disabled={!loaded || saving}
+              onChange={(ev) => {
+                const n = Number(ev.target.value);
+                setValores((prev) => ({ ...prev, [e.key]: Number.isFinite(n) ? n : 0 }));
+              }}
+            />
+          </div>
+        ))}
       </div>
+      <Button onClick={salvar} disabled={!loaded || saving}>
+        {saving ? "Salvando..." : "Salvar"}
+      </Button>
+    </div>
+  );
+}
+
+function FollowupLeadsConfig() {
+  return (
+    <div className="space-y-4">
+      <FollowupPipelineConfig
+        titulo="⏰ Alerta de follow-up — Pipeline de Vendas"
+        descricao="Dias sem interação por etapa que disparam push ao corretor/executivo responsável pelo lead. Não repete até o lead receber nova atualização. Varredura diária às 10h."
+        chave="lead_followup_dias_vendas"
+        etapas={VENDAS_ETAPAS}
+      />
+      <FollowupPipelineConfig
+        titulo="⏰ Alerta de follow-up — Pipeline de Captação"
+        descricao="Dias sem interação por etapa que disparam push ao Executivo responsável pela região do lead. Não se aplica a Fechado, Descartado ou Descredenciado."
+        chave="lead_followup_dias_captacao"
+        etapas={CAPTACAO_ETAPAS}
+      />
     </div>
   );
 }
