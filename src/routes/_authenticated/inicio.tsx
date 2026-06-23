@@ -48,7 +48,7 @@ type Comment = {
   created_at: string;
 };
 
-type ProfileLite = { id: string; nome: string };
+type ProfileLite = { id: string; nome: string; avatar_url: string | null };
 
 async function signedUrl(path: string): Promise<string> {
   if (/^https?:\/\//i.test(path)) return path;
