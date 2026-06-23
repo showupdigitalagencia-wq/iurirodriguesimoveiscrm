@@ -83,7 +83,7 @@ function InicioPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [profiles, setProfiles] = useState<Record<string, ProfileLite>>({});
-  const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
+  const [imageUrls, setImageUrls] = useState<Record<string, string | null>>({});
   const [avatarUrls, setAvatarUrls] = useState<Record<string, string>>({});
 
   const [likes, setLikes] = useState<Record<string, { count: number; mine: boolean }>>({});
