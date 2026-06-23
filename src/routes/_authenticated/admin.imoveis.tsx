@@ -765,3 +765,22 @@ function ExecutivoLabel({ id }: { id: string | null }) {
   });
   return <Input readOnly value={id ? (data ?? "Carregando...") : "—"} placeholder="Preenchido automaticamente" />;
 }
+
+function ShareImovelButton({ imovel }: { imovel: Imovel }) {
+  const urls = useFotosUrls(imovel.fotos ?? []);
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      className="h-7 px-2 gap-1 text-xs border-emerald-500/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10"
+      onClick={(e) => {
+        e.stopPropagation();
+        const msg = buildImovelShareMessage(imovel as never, urls);
+        openWhatsAppShare(msg);
+      }}
+    >
+      <Share2 className="h-3 w-3" />
+      Compartilhar
+    </Button>
+  );
+}
