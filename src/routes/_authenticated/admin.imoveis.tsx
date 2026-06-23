@@ -11,10 +11,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Download, Loader2, ExternalLink } from "lucide-react";
+import { Plus, Pencil, Trash2, Download, Loader2, ExternalLink, Share2 } from "lucide-react";
+import { buildImovelShareMessage, openWhatsAppShare } from "@/lib/imovel-share";
+import { FotosManager, FotosThumbs, useFotosUrls } from "@/components/admin/FotosManager";
 import type { Database } from "@/integrations/supabase/types";
 import { DocumentosManager } from "@/components/admin/DocumentosManager";
-import { FotosManager, FotosThumbs } from "@/components/admin/FotosManager";
+
 import { ImoveisImportExport } from "@/components/admin/ImoveisImportExport";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
@@ -224,6 +226,12 @@ function ImoveisPage() {
                   </a>
                 </Button>
               )}
+
+              <div onClick={(e) => e.stopPropagation()}>
+                <ShareImovelButton imovel={i} />
+              </div>
+
+
 
               <div onClick={(e) => e.stopPropagation()}>
                 <ChaveActions imovel={{ id: i.id, chave_com_id: (i as any).chave_com_id ?? null, chave_retirada_em: (i as any).chave_retirada_em ?? null, chave_foto_atual: (i as any).chave_foto_atual ?? null }} />
@@ -762,4 +770,23 @@ function ExecutivoLabel({ id }: { id: string | null }) {
     enabled: !!id,
   });
   return <Input readOnly value={id ? (data ?? "Carregando...") : "—"} placeholder="Preenchido automaticamente" />;
+}
+
+function ShareImovelButton({ imovel }: { imovel: Imovel }) {
+  const urls = useFotosUrls(imovel.fotos ?? []);
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      className="h-7 px-2 gap-1 text-xs border-emerald-500/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10"
+      onClick={(e) => {
+        e.stopPropagation();
+        const msg = buildImovelShareMessage(imovel as never, urls);
+        openWhatsAppShare(msg);
+      }}
+    >
+      <Share2 className="h-3 w-3" />
+      Compartilhar
+    </Button>
+  );
 }

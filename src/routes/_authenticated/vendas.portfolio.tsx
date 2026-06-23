@@ -11,7 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FotosThumbs, useFotosUrls } from "@/components/admin/FotosManager";
 import { ChaveActions, ChaveStatusBadge, useAtrasoHoras } from "@/components/admin/ChaveActions";
-import { Bed, Bath, Car, Maximize2, MapPin, Building2, X, ExternalLink } from "lucide-react";
+import { Bed, Bath, Car, Maximize2, MapPin, Building2, X, ExternalLink, Share2 } from "lucide-react";
+import { buildImovelShareMessage, openWhatsAppShare } from "@/lib/imovel-share";
 import type { Database } from "@/integrations/supabase/types";
 
 type Imovel = Database["public"]["Views"]["imoveis_portfolio"]["Row"];
@@ -351,19 +352,33 @@ function ImovelDialog({ imovel, onClose }: { imovel: Imovel | null; onClose: () 
               <div className="whitespace-pre-wrap">{imovel.observacoes}</div>
             </div>
           )}
-          {imovel.vitrine_url && (
+          <div className="flex flex-wrap gap-2">
+            {imovel.vitrine_url && (
+              <Button
+                asChild
+                size="sm"
+                variant="outline"
+                className="h-7 px-2 gap-1 text-xs border-gold/40 text-gold hover:bg-gold/10 hover:text-gold"
+              >
+                <a href={imovel.vitrine_url} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="h-3 w-3" />
+                  Vitrine
+                </a>
+              </Button>
+            )}
             <Button
-              asChild
               size="sm"
               variant="outline"
-              className="h-7 px-2 gap-1 text-xs border-gold/40 text-gold hover:bg-gold/10 hover:text-gold w-fit"
+              className="h-7 px-2 gap-1 text-xs border-emerald-500/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10"
+              onClick={() => {
+                const msg = buildImovelShareMessage(imovel as never, urls);
+                openWhatsAppShare(msg);
+              }}
             >
-              <a href={imovel.vitrine_url} target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="h-3 w-3" />
-                Vitrine
-              </a>
+              <Share2 className="h-3 w-3" />
+              Compartilhar
             </Button>
-          )}
+          </div>
         </div>
       </DialogContent>
     </Dialog>
