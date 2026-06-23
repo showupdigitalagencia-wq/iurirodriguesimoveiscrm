@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FotosThumbs, useFotosUrls } from "@/components/admin/FotosManager";
+import { ChaveActions, ChaveStatusBadge, useAtrasoHoras } from "@/components/admin/ChaveActions";
 import { Bed, Bath, Car, Maximize2, MapPin, Building2, X, ExternalLink } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
