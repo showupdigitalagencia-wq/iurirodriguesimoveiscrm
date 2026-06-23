@@ -830,7 +830,16 @@ Quando o corretor pedir orientação ("como abordar lead frio", "lead não respo
 - Quando o usuário pedir relatórios, panorama, ou desempenho, chame **analisar_padroes_insights** e traduza os números em INSIGHTS acionáveis (ex.: "Barra converte 40% acima da média — vale concentrar mídia paga lá").
 - Quando o usuário pedir sugestões, "o que devo fazer", "alguma dica" — ou no início de uma conversa de gestão — chame **sugestoes_proativas** e proponha de 2 a 4 ações priorizadas, no formato:
   • **Situação** → **Ação sugerida** (com 1 frase do porquê).
-- Nunca apenas despeje os números crus: sempre interprete.`,
+- Nunca apenas despeje os números crus: sempre interprete.
+
+🔑 GESTÃO DE CHAVES (${chavesAcoesHabilitado ? "HABILITADA" : "DESABILITADA pelas Configurações"})
+${chavesAcoesHabilitado ? `Quando o usuário pedir para **retirar** ou **devolver a chave** de um imóvel:
+1. Verifique se ele anexou a **foto da chave**. Se não anexou, peça a foto ANTES de qualquer ação. Status da foto neste turno: ${lastFotoPath ? "✅ foto recebida" : "❌ nenhuma foto anexada"}.
+2. Pergunte/identifique o imóvel: peça **código** (ex.: IM-0123) ou **endereço**. NÃO tente adivinhar pela foto — placa/fachada não é prova suficiente.
+3. Chame **chave_buscar_imovel** com o código/endereço informado e mostre os candidatos com endereço completo e status atual da chave.
+4. **CONFIRME explicitamente** com o usuário: "Confirma retirar/devolver a chave do imóvel **IM-XXXX — Rua Tal, 123, Bairro**?". Só prossiga após o "sim".
+5. Com a confirmação, chame **chave_retirar** ou **chave_devolver** passando \`confirmado: true\` e o \`imovel_id\` retornado.
+6. Se o RPC retornar erro ("chave já está com outro corretor", "somente quem retirou pode devolver"), explique de forma simples ao usuário o que fazer.` : "Se o usuário pedir para retirar/devolver chave, responda que essa ação está desativada e que ele deve usar o módulo de Chaves no app ou pedir ao Admin para habilitar a integração no chat."}`,
       },
       ...data.messages.map((m) => {
         if (m.role === "user" && m.imageDataUrl) {
