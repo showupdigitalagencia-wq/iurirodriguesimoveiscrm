@@ -73,25 +73,32 @@ async function applyResync(
   const update: Record<string, unknown> = {};
   const d = result.data as unknown as Record<string, unknown>;
 
+  const asScalar = (v: unknown): string | number | null => {
+    if (v == null) return null;
+    if (typeof v === "number" || typeof v === "string") return v;
+    return String(v);
+  };
+
   for (const field of OVERWRITE_FIELDS) {
     const newV = d[field];
     if (typeof newV === "number" && Number.isFinite(newV) && newV > 0 && imovel[field] !== newV) {
       update[field] = newV;
-      changes.push({ field, oldValue: imovel[field], newValue: newV });
+      changes.push({ field, oldValue: asScalar(imovel[field]), newValue: newV });
     }
   }
   for (const field of FILL_IF_EMPTY) {
     const newV = d[field];
     if (newV != null && newV !== "" && isEmpty(imovel[field])) {
       update[field] = newV;
-      changes.push({ field, oldValue: imovel[field], newValue: newV });
+      changes.push({ field, oldValue: asScalar(imovel[field]), newValue: asScalar(newV) });
     }
   }
   // descrição → grava em "observacoes" se vazio (mesmo destino do importador original)
   if (typeof d.descricao === "string" && d.descricao && isEmpty(imovel.observacoes)) {
     update.observacoes = d.descricao;
-    changes.push({ field: "observacoes", oldValue: imovel.observacoes, newValue: d.descricao });
+    changes.push({ field: "observacoes", oldValue: asScalar(imovel.observacoes), newValue: d.descricao });
   }
+
 
   // Fotos: anexa as novas (já filtradas pelo skipStems no runImovelImport)
   const novasFotos = (result.data.fotos ?? []).filter((p) => !(imovel.fotos ?? []).includes(p));
