@@ -13,8 +13,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import {
-  Heart, MessageCircle, ImagePlus, Send, MoreVertical, EyeOff, Eye, Trash2, Loader2, Info, ShieldAlert,
+  Heart, MessageCircle, ImagePlus, Send, MoreVertical, EyeOff, Eye, Trash2, Loader2, Info, ShieldAlert, Film,
 } from "lucide-react";
+import { FeedVideo } from "@/components/feed/feed-video";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
