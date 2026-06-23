@@ -6,14 +6,12 @@ import { Button } from "@/components/ui/button";
 import { X, Eye, Trash2, ChevronLeft, ChevronRight, Volume2, VolumeX } from "lucide-react";
 import { toast } from "sonner";
 import { StoryViewsSheet } from "./story-views-sheet";
+import { UserAvatar } from "@/components/user-avatar";
 
 const BUCKET = "feed";
 const IMAGE_DURATION_MS = 6000;
 const FALLBACK_VIDEO_DURATION_MS = 15000;
 
-function initials(name: string) {
-  return name.trim().split(/\s+/).slice(0, 2).map((p) => p[0]?.toUpperCase() ?? "").join("") || "?";
-}
 
 function formatRelative(iso: string) {
   const diff = Date.now() - new Date(iso).getTime();
