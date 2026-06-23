@@ -381,6 +381,9 @@ function UsuariosPage() {
                   </div>
                 </td>
                 <td className="px-4 py-3 text-right">
+                  <Button size="sm" variant="ghost" onClick={() => setEditing(u)} title="Editar">
+                    <Pencil className="h-4 w-4" />
+                  </Button>
                   <Button size="sm" variant="ghost" onClick={() => setResetting(u)} title="Redefinir senha">
                     <KeyRound className="h-4 w-4" />
                   </Button>
@@ -388,6 +391,7 @@ function UsuariosPage() {
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </td>
+
               </tr>
             ))}
             {users.length === 0 && (
