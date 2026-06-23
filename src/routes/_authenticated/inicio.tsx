@@ -327,14 +327,18 @@ function InicioPage() {
                 </div>
 
                 {url ? (
-                  <div className="bg-black">
-                    <img
-                      src={url}
-                      alt=""
-                      className="w-full max-h-[720px] object-contain mx-auto"
-                      onDoubleClick={() => !lk.mine && toggleLike(p.id)}
-                    />
-                  </div>
+                  p.media_type === "video" ? (
+                    <FeedVideo src={url} onDoubleClick={() => !lk.mine && toggleLike(p.id)} />
+                  ) : (
+                    <div className="bg-black">
+                      <img
+                        src={url}
+                        alt=""
+                        className="w-full max-h-[720px] object-contain mx-auto"
+                        onDoubleClick={() => !lk.mine && toggleLike(p.id)}
+                      />
+                    </div>
+                  )
                 ) : (
                   <div className="w-full aspect-[4/5] bg-muted animate-pulse" />
                 )}
