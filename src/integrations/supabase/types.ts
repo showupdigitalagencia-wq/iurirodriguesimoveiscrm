@@ -134,6 +134,58 @@ export type Database = {
           },
         ]
       }
+      chaves_log: {
+        Row: {
+          corretor_id: string
+          criado_em: string
+          foto_url: string
+          id: string
+          imovel_id: string
+          observacao: string | null
+          tipo: string
+        }
+        Insert: {
+          corretor_id: string
+          criado_em?: string
+          foto_url: string
+          id?: string
+          imovel_id: string
+          observacao?: string | null
+          tipo: string
+        }
+        Update: {
+          corretor_id?: string
+          criado_em?: string
+          foto_url?: string
+          id?: string
+          imovel_id?: string
+          observacao?: string | null
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chaves_log_corretor_id_fkey"
+            columns: ["corretor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chaves_log_imovel_id_fkey"
+            columns: ["imovel_id"]
+            isOneToOne: false
+            referencedRelation: "imoveis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chaves_log_imovel_id_fkey"
+            columns: ["imovel_id"]
+            isOneToOne: false
+            referencedRelation: "imoveis_portfolio"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cobrancas: {
         Row: {
           canal: string
@@ -697,6 +749,9 @@ export type Database = {
           banheiros: number | null
           captador_id: string | null
           cep: string | null
+          chave_com_id: string | null
+          chave_foto_atual: string | null
+          chave_retirada_em: string | null
           cidade: string | null
           codigo: string | null
           complemento: string | null
@@ -743,6 +798,9 @@ export type Database = {
           banheiros?: number | null
           captador_id?: string | null
           cep?: string | null
+          chave_com_id?: string | null
+          chave_foto_atual?: string | null
+          chave_retirada_em?: string | null
           cidade?: string | null
           codigo?: string | null
           complemento?: string | null
@@ -789,6 +847,9 @@ export type Database = {
           banheiros?: number | null
           captador_id?: string | null
           cep?: string | null
+          chave_com_id?: string | null
+          chave_foto_atual?: string | null
+          chave_retirada_em?: string | null
           cidade?: string | null
           codigo?: string | null
           complemento?: string | null
@@ -833,6 +894,13 @@ export type Database = {
           {
             foreignKeyName: "imoveis_captador_id_fkey"
             columns: ["captador_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "imoveis_chave_com_id_fkey"
+            columns: ["chave_com_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -1949,6 +2017,10 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      devolver_chave: {
+        Args: { _foto_url: string; _imovel_id: string; _observacao?: string }
+        Returns: string
+      }
       expirar_pesquisas_satisfacao: { Args: never; Returns: number }
       fechar_lead_vendas: {
         Args: { _imovel_id: string; _lead_id: string }
@@ -2042,6 +2114,10 @@ export type Database = {
       registrar_resposta_satisfacao: {
         Args: { _mensagem: string; _telefone: string }
         Returns: Json
+      }
+      retirar_chave: {
+        Args: { _foto_url: string; _imovel_id: string; _observacao?: string }
+        Returns: string
       }
     }
     Enums: {

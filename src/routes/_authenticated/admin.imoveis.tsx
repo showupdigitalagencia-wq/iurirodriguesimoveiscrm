@@ -21,6 +21,7 @@ import { Switch } from "@/components/ui/switch";
 import { useServerFn } from "@tanstack/react-start";
 import { importImovelFromUrl } from "@/lib/imovel-import.functions";
 import { notifyImovelDisponivelNovamente } from "@/lib/imoveis-notify.functions";
+import { ChaveActions } from "@/components/admin/ChaveActions";
 
 type Imovel = Database["public"]["Tables"]["imoveis"]["Row"];
 type ImovelInsert = Database["public"]["Tables"]["imoveis"]["Insert"];
@@ -224,6 +225,9 @@ function ImoveisPage() {
                 </Button>
               )}
 
+              <div onClick={(e) => e.stopPropagation()}>
+                <ChaveActions imovel={{ id: i.id, chave_com_id: (i as any).chave_com_id ?? null, chave_retirada_em: (i as any).chave_retirada_em ?? null, chave_foto_atual: (i as any).chave_foto_atual ?? null }} />
+              </div>
 
               <div className="flex justify-between items-center pt-2 border-t">
                 <div className="flex flex-col">
@@ -721,6 +725,17 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
           </div>
           <div className="md:col-span-2"><Label>Observações</Label><Textarea value={form.observacoes ?? ""} onChange={(e) => set("observacoes", e.target.value)} /></div>
         </div>
+        {imovel && (
+          <div className="border-t pt-4 mt-2 space-y-3">
+            <h3 className="font-semibold text-sm">Gestão de Chave</h3>
+            <ChaveActions imovel={{
+              id: imovel.id,
+              chave_com_id: (imovel as any).chave_com_id ?? null,
+              chave_retirada_em: (imovel as any).chave_retirada_em ?? null,
+              chave_foto_atual: (imovel as any).chave_foto_atual ?? null,
+            }} onChanged={onSaved} />
+          </div>
+        )}
         {imovel && (
           <div className="border-t pt-4 mt-2 space-y-3">
             <h3 className="font-semibold text-sm">Documentos do imóvel (Google Drive)</h3>

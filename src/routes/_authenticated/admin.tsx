@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, Link, redirect } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { LayoutDashboard, Building2, FileText, DollarSign, AlertOctagon, UserPlus, Activity, ScrollText, Search, Star, MapPin } from "lucide-react";
+import { LayoutDashboard, Building2, FileText, DollarSign, AlertOctagon, UserPlus, Activity, ScrollText, Search, Star, MapPin, Key } from "lucide-react";
 
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -27,6 +27,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
 const BASE_TABS = [
   { to: "/admin", label: "Centro de Comando", icon: LayoutDashboard, exact: true },
   { to: "/admin/imoveis", label: "Imóveis", icon: Building2, exact: false },
+  { to: "/admin/chaves", label: "Chaves", icon: Key, exact: false },
   { to: "/admin/contratos", label: "Contratos", icon: FileText, exact: false },
   { to: "/admin/pagamentos", label: "Pagamentos", icon: DollarSign, exact: false },
   { to: "/admin/inadimplentes", label: "Inadimplentes", icon: AlertOctagon, exact: false },

@@ -63,6 +63,7 @@ import { Route as AuthenticatedAdminLead360RouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminInadimplentesRouteImport } from './routes/_authenticated/admin.inadimplentes'
 import { Route as AuthenticatedAdminImoveisRouteImport } from './routes/_authenticated/admin.imoveis'
 import { Route as AuthenticatedAdminContratosRouteImport } from './routes/_authenticated/admin.contratos'
+import { Route as AuthenticatedAdminChavesRouteImport } from './routes/_authenticated/admin.chaves'
 import { Route as AuthenticatedAdminCandidatosRouteImport } from './routes/_authenticated/admin.candidatos'
 import { Route as AuthenticatedAdminAuditoriaRouteImport } from './routes/_authenticated/admin.auditoria'
 import { Route as ApiPublicHooksZapiIncomingRouteImport } from './routes/api/public/hooks/zapi-incoming'
@@ -368,6 +369,12 @@ const AuthenticatedAdminContratosRoute =
     path: '/contratos',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminChavesRoute =
+  AuthenticatedAdminChavesRouteImport.update({
+    id: '/chaves',
+    path: '/chaves',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminCandidatosRoute =
   AuthenticatedAdminCandidatosRouteImport.update({
     id: '/candidatos',
@@ -424,6 +431,7 @@ export interface FileRoutesByFullPath {
   '/vendas': typeof AuthenticatedVendasRouteWithChildren
   '/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
   '/admin/candidatos': typeof AuthenticatedAdminCandidatosRoute
+  '/admin/chaves': typeof AuthenticatedAdminChavesRoute
   '/admin/contratos': typeof AuthenticatedAdminContratosRoute
   '/admin/imoveis': typeof AuthenticatedAdminImoveisRoute
   '/admin/inadimplentes': typeof AuthenticatedAdminInadimplentesRoute
@@ -481,6 +489,7 @@ export interface FileRoutesByTo {
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
   '/admin/candidatos': typeof AuthenticatedAdminCandidatosRoute
+  '/admin/chaves': typeof AuthenticatedAdminChavesRoute
   '/admin/contratos': typeof AuthenticatedAdminContratosRoute
   '/admin/imoveis': typeof AuthenticatedAdminImoveisRoute
   '/admin/inadimplentes': typeof AuthenticatedAdminInadimplentesRoute
@@ -543,6 +552,7 @@ export interface FileRoutesById {
   '/_authenticated/vendas': typeof AuthenticatedVendasRouteWithChildren
   '/_authenticated/admin/auditoria': typeof AuthenticatedAdminAuditoriaRoute
   '/_authenticated/admin/candidatos': typeof AuthenticatedAdminCandidatosRoute
+  '/_authenticated/admin/chaves': typeof AuthenticatedAdminChavesRoute
   '/_authenticated/admin/contratos': typeof AuthenticatedAdminContratosRoute
   '/_authenticated/admin/imoveis': typeof AuthenticatedAdminImoveisRoute
   '/_authenticated/admin/inadimplentes': typeof AuthenticatedAdminInadimplentesRoute
@@ -605,6 +615,7 @@ export interface FileRouteTypes {
     | '/vendas'
     | '/admin/auditoria'
     | '/admin/candidatos'
+    | '/admin/chaves'
     | '/admin/contratos'
     | '/admin/imoveis'
     | '/admin/inadimplentes'
@@ -662,6 +673,7 @@ export interface FileRouteTypes {
     | '/usuarios'
     | '/admin/auditoria'
     | '/admin/candidatos'
+    | '/admin/chaves'
     | '/admin/contratos'
     | '/admin/imoveis'
     | '/admin/inadimplentes'
@@ -723,6 +735,7 @@ export interface FileRouteTypes {
     | '/_authenticated/vendas'
     | '/_authenticated/admin/auditoria'
     | '/_authenticated/admin/candidatos'
+    | '/_authenticated/admin/chaves'
     | '/_authenticated/admin/contratos'
     | '/_authenticated/admin/imoveis'
     | '/_authenticated/admin/inadimplentes'
@@ -1162,6 +1175,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminContratosRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/chaves': {
+      id: '/_authenticated/admin/chaves'
+      path: '/chaves'
+      fullPath: '/admin/chaves'
+      preLoaderRoute: typeof AuthenticatedAdminChavesRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/candidatos': {
       id: '/_authenticated/admin/candidatos'
       path: '/candidatos'
@@ -1203,6 +1223,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminAuditoriaRoute: typeof AuthenticatedAdminAuditoriaRoute
   AuthenticatedAdminCandidatosRoute: typeof AuthenticatedAdminCandidatosRoute
+  AuthenticatedAdminChavesRoute: typeof AuthenticatedAdminChavesRoute
   AuthenticatedAdminContratosRoute: typeof AuthenticatedAdminContratosRoute
   AuthenticatedAdminImoveisRoute: typeof AuthenticatedAdminImoveisRoute
   AuthenticatedAdminInadimplentesRoute: typeof AuthenticatedAdminInadimplentesRoute
@@ -1217,6 +1238,7 @@ interface AuthenticatedAdminRouteChildren {
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminAuditoriaRoute: AuthenticatedAdminAuditoriaRoute,
   AuthenticatedAdminCandidatosRoute: AuthenticatedAdminCandidatosRoute,
+  AuthenticatedAdminChavesRoute: AuthenticatedAdminChavesRoute,
   AuthenticatedAdminContratosRoute: AuthenticatedAdminContratosRoute,
   AuthenticatedAdminImoveisRoute: AuthenticatedAdminImoveisRoute,
   AuthenticatedAdminInadimplentesRoute: AuthenticatedAdminInadimplentesRoute,
