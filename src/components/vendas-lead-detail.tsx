@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { MessageCircle, Trash2, Pencil, MapPin, Video, Banknote, Copy, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
 import { FecharLeadDialog } from "@/components/fechar-lead-dialog";
 import { LeadTimeline } from "@/components/lead-timeline";
+import { ChecklistVisitaDialog } from "@/components/checklist-visita-dialog";
 
 function toLocalInputValue(d: Date) {
   const pad = (n: number) => String(n).padStart(2, "0");
