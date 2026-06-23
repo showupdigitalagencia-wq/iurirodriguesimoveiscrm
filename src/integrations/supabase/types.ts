@@ -249,6 +249,42 @@ export type Database = {
         }
         Relationships: []
       }
+      conquistas: {
+        Row: {
+          ativo: boolean
+          categoria: string
+          created_at: string
+          descricao: string
+          icone: string
+          id: string
+          meta_valor: number
+          nome: string
+          ordem: number
+        }
+        Insert: {
+          ativo?: boolean
+          categoria: string
+          created_at?: string
+          descricao: string
+          icone: string
+          id: string
+          meta_valor?: number
+          nome: string
+          ordem?: number
+        }
+        Update: {
+          ativo?: boolean
+          categoria?: string
+          created_at?: string
+          descricao?: string
+          icone?: string
+          id?: string
+          meta_valor?: number
+          nome?: string
+          ordem?: number
+        }
+        Relationships: []
+      }
       contratos: {
         Row: {
           created_at: string
@@ -1641,6 +1677,47 @@ export type Database = {
         }
         Relationships: []
       }
+      user_conquistas: {
+        Row: {
+          conquista_id: string
+          created_at: string
+          desbloqueada_em: string | null
+          id: string
+          notificada: boolean
+          progresso: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          conquista_id: string
+          created_at?: string
+          desbloqueada_em?: string | null
+          id?: string
+          notificada?: boolean
+          progresso?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          conquista_id?: string
+          created_at?: string
+          desbloqueada_em?: string | null
+          id?: string
+          notificada?: boolean
+          progresso?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_conquistas_conquista_id_fkey"
+            columns: ["conquista_id"]
+            isOneToOne: false
+            referencedRelation: "conquistas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -2176,6 +2253,15 @@ export type Database = {
       normalize_cpf: { Args: { _cpf: string }; Returns: string }
       normalize_telefone: { Args: { _tel: string }; Returns: string }
       plantonista_do_dia: { Args: { _data: string }; Returns: string }
+      recalcular_conquistas_todos: { Args: never; Returns: number }
+      recalcular_conquistas_usuario: {
+        Args: { _user_id: string }
+        Returns: {
+          conquista_id: string
+          icone: string
+          nome: string
+        }[]
+      }
       registrar_resposta_satisfacao: {
         Args: { _mensagem: string; _telefone: string }
         Returns: Json
