@@ -412,4 +412,23 @@ function UsuariosPage() {
       </Dialog>
     </div>
   );
+      <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Editar funcionário</DialogTitle></DialogHeader>
+          {editing && (
+            <form onSubmit={handleEdit} className="space-y-3">
+              <div><Label>Nome completo</Label><Input name="nome" defaultValue={editing.nome} required maxLength={120} className="mt-1.5" /></div>
+              <div>
+                <Label>Email (login)</Label>
+                <Input name="email" type="email" defaultValue={editing.email} required maxLength={255} className="mt-1.5" />
+                <p className="text-xs text-muted-foreground mt-1">Alterar o email muda o login do usuário.</p>
+              </div>
+              <DialogFooter><Button type="submit" variant="gold">Salvar</Button></DialogFooter>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
 }
+
