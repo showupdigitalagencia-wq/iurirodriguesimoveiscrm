@@ -405,6 +405,16 @@ export async function runImovelImport(
     const tituloBase = jld?.name ?? ogTitle ?? "";
     const fullText = `${tituloBase}\n${descricao}`;
 
+    // Texto do corpo da página (sem scripts/styles/tags) — usado como
+    // fallback quando JSON-LD/descrição não trazem o dado (cards de
+    // características, tabelas de atributos, listas "Área: 65 m²" etc.).
+    const bodyText = html
+      .replace(/<script[\s\S]*?<\/script>/gi, " ")
+      .replace(/<style[\s\S]*?<\/style>/gi, " ")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/&nbsp;/gi, " ")
+      .replace(/\s+/g, " ");
+
     // ---------- CAMPOS ----------
     const codigo = extractCodigoFromUrl(url);
 
@@ -412,21 +422,24 @@ export async function runImovelImport(
     const finalidade = inferFinalidade(tituloBase) ?? inferFinalidade(descricao);
 
     // JSON-LD do Voa Corretor publica 0 quando o campo está em branco no painel,
-    // então tratamos 0 como ausente e caímos para o regex na descrição.
+    // então tratamos 0 como ausente e caímos para o regex na descrição/corpo.
     const positive = (v: number | null | undefined): number | null =>
       typeof v === "number" && Number.isFinite(v) && v > 0 ? v : null;
+    const findNum = (re: RegExp): number | null =>
+      pickFirstNumber(re, fullText) ?? pickFirstNumber(re, bodyText);
     const quartos =
-      positive(jld?.numberOfBedrooms) ?? pickFirstNumber(/(\d+)\s*quartos?/i, fullText);
+      positive(jld?.numberOfBedrooms) ?? findNum(/(\d+)\s*quartos?/i);
     const banheiros =
-      positive(jld?.numberOfBathroomsTotal) ?? pickFirstNumber(/(\d+)\s*banheiros?/i, fullText);
-    const suites = pickFirstNumber(/(\d+)\s*su[íi]tes?/i, fullText);
+      positive(jld?.numberOfBathroomsTotal) ?? findNum(/(\d+)\s*banheiros?/i);
+    const suites = findNum(/(\d+)\s*su[íi]tes?/i);
     const vagas =
-      pickFirstNumber(/(\d+)\s*vagas?\s+de\s+garagem/i, fullText) ??
-      pickFirstNumber(/(\d+)\s*vagas?/i, fullText);
+      findNum(/(\d+)\s*vagas?\s+de\s+garagem/i) ??
+      findNum(/(\d+)\s*vagas?/i);
     const area_m2 =
       positive(jld?.floorSize?.value) ??
-      pickFirstNumber(/área\s*(?:total)?\s*(?:de)?\s*(\d+(?:[.,]\d+)?)\s*m/i, fullText) ??
-      pickFirstNumber(/(\d+(?:[.,]\d+)?)\s*m²/i, fullText);
+      findNum(/área\s*(?:[úu]til|privativa|constru[íi]da|total)?\s*(?:de)?\s*:?\s*(\d+(?:[.,]\d+)?)\s*m/i) ??
+      findNum(/(\d+(?:[.,]\d+)?)\s*m²/i) ??
+      findNum(/(\d+(?:[.,]\d+)?)\s*m2\b/i);
 
     // Valores monetários — tenta JSON-LD primeiro
     let valor_venda: number | null = null;
