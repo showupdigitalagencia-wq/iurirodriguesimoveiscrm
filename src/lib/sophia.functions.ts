@@ -993,36 +993,59 @@ export const sophiaChat = createServerFn({ method: "POST" })
       }),
 
       // ============ ATRIBUIÇÃO DE LEAD ============
+      // Admin: qualquer lead → qualquer corretor.
+      // Executivo: apenas leads da própria equipe → corretores da própria equipe (mesma regra do pipeline de Vendas).
+      // Corretor: sem acesso.
       lead_atribuir_plantonista: tool({
-        description: "Atribui um lead de vendas ao plantonista de uma data (default = hoje). APENAS ADMIN. CONFIRME antes. Dispara push para o corretor.",
+        description: "Atribui um lead de vendas ao plantonista de uma data (default = hoje). Admin (qualquer lead) ou Executivo (apenas dentro da própria equipe). CONFIRME antes. Dispara push para o corretor.",
         inputSchema: z.object({
           lead_id: z.string().uuid(),
           data: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
           confirmado: z.literal(true),
         }),
         execute: async ({ lead_id, data: dataStr }) => {
-          if (scope.tipo !== "admin") return { erro: "Apenas Admin pode atribuir leads." };
+          if (scope.tipo !== "admin" && scope.tipo !== "executivo") return { erro: "Apenas Admin ou Executivo podem atribuir leads." };
           const hoje = dataStr ?? new Date().toISOString().slice(0, 10);
           const { data: esc } = await supabaseAdmin.from("plantao_escala" as never).select("corretor_id").eq("data", hoje).maybeSingle();
           const corretorId = (esc as { corretor_id: string } | null)?.corretor_id;
           if (!corretorId) return { erro: `Não há plantonista escalado em ${hoje}.` };
+          const guard = await validarEscopoAtribuicao(lead_id, corretorId);
+          if (guard) return guard;
           return await atribuirLeadInline(lead_id, corretorId);
         },
       }),
 
       lead_atribuir_corretor: tool({
-        description: "Atribui um lead de vendas a um corretor específico. APENAS ADMIN. Use listar_corretores_disponiveis para descobrir IDs. CONFIRME antes.",
+        description: "Atribui um lead de vendas a um corretor específico. Admin (qualquer lead → qualquer corretor) ou Executivo (apenas leads da própria equipe → corretores da própria equipe). Use listar_corretores_disponiveis para descobrir IDs. CONFIRME antes.",
         inputSchema: z.object({
           lead_id: z.string().uuid(),
           corretor_id: z.string().uuid(),
           confirmado: z.literal(true),
         }),
         execute: async ({ lead_id, corretor_id }) => {
-          if (scope.tipo !== "admin") return { erro: "Apenas Admin pode atribuir leads." };
+          if (scope.tipo !== "admin" && scope.tipo !== "executivo") return { erro: "Apenas Admin ou Executivo podem atribuir leads." };
+          const guard = await validarEscopoAtribuicao(lead_id, corretor_id);
+          if (guard) return guard;
           return await atribuirLeadInline(lead_id, corretor_id);
         },
       }),
     };
+
+    // Executivo só atribui leads da própria equipe para corretores da própria equipe (inclui ele mesmo).
+    async function validarEscopoAtribuicao(leadId: string, corretorId: string): Promise<{ erro: string } | null> {
+      if (scope.tipo !== "executivo") return null;
+      const equipe = new Set<string>([scope.userId, ...scope.corretorIds]);
+      if (!equipe.has(corretorId)) {
+        return { erro: "Como Executivo, você só pode atribuir leads a corretores da sua equipe." };
+      }
+      const { data: leadRaw } = await supabaseAdmin
+        .from("vendas_leads").select("corretor_id").eq("id", leadId).maybeSingle();
+      const atual = (leadRaw as { corretor_id: string | null } | null)?.corretor_id ?? null;
+      if (atual && !equipe.has(atual)) {
+        return { erro: "Esse lead pertence a outra equipe. Apenas Admin pode reatribuí-lo." };
+      }
+      return null;
+    }
 
     // Helper para as duas tools de atribuição (mesma lógica de atribuirLead em vendas-distribuicao)
     async function atribuirLeadInline(leadId: string, corretorId: string) {
@@ -1196,9 +1219,11 @@ Quando o usuário pedir para **confirmar visita** / marcar comparecimento:
 - **financiamento_consultar_lead** para ver o status de um lead específico (qualquer perfil com acesso ao lead).
 - **financiamento_listar** + **financiamento_atualizar_status** restritos a Admin/Correspondente. Sempre confirme o financiamento e o novo status (pendente / em_analise / aprovado / recusado) antes de aplicar.
 
-🎲 ATRIBUIÇÃO DE LEAD (Admin)
+🎲 ATRIBUIÇÃO DE LEAD (Admin ou Executivo)
 - **lead_atribuir_plantonista** atribui ao plantonista do dia (ou de outra data).
 - **lead_atribuir_corretor** atribui a um corretor específico (use **listar_corretores_disponiveis** se precisar do ID).
+- Admin pode atribuir qualquer lead para qualquer corretor. Executivo só pode atribuir leads da PRÓPRIA EQUIPE para corretores da PRÓPRIA EQUIPE — se o lead for de outra equipe ou o corretor-alvo for de fora, a tool recusa.
+- Corretor não pode atribuir/reatribuir leads.
 - SEMPRE diga em texto qual é o lead, qual é o corretor identificado e peça confirmação. Só com "sim" chame a tool com \`confirmado: true\`.`,
       },
       ...data.messages.map((m) => {
