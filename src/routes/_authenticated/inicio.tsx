@@ -37,6 +37,7 @@ type Post = {
   source: string;
   hidden_at: string | null;
   created_at: string;
+  media_type: "image" | "video";
 };
 
 type Comment = {
