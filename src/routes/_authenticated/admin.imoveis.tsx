@@ -212,23 +212,26 @@ function ImoveisPage() {
                 <div className="text-xs text-muted-foreground">Vencimento: dia {(i as unknown as { dia_vencimento?: number | null }).dia_vencimento}</div>
               )}
               {(i as unknown as { vitrine_url?: string | null }).vitrine_url && (
-                <Button
-                  asChild
-                  size="sm"
-                  variant="outline"
-                  className="h-7 px-2 gap-1 text-xs border-gold/40 text-gold hover:bg-gold/10 hover:text-gold"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <a
-                    href={(i as unknown as { vitrine_url?: string | null }).vitrine_url ?? "#"}
-                    target="_blank"
-                    rel="noreferrer"
+                <div className="flex gap-1 flex-wrap" onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    asChild
+                    size="sm"
+                    variant="outline"
+                    className="h-7 px-2 gap-1 text-xs border-gold/40 text-gold hover:bg-gold/10 hover:text-gold"
                   >
-                    <ExternalLink className="h-3 w-3" />
-                    Vitrine
-                  </a>
-                </Button>
+                    <a
+                      href={(i as unknown as { vitrine_url?: string | null }).vitrine_url ?? "#"}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      Vitrine
+                    </a>
+                  </Button>
+                  <ResyncImovelButton id={i.id} onDone={() => qc.invalidateQueries({ queryKey: ["imoveis"] })} />
+                </div>
               )}
+
 
               <div onClick={(e) => e.stopPropagation()}>
                 <ShareImovelButton imovel={i} />
