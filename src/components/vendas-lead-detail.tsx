@@ -326,6 +326,12 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
         tipo={lead.tipo as VendasTipo}
         onFechado={() => { invalidate(); refetch(); }}
       />
+      <ChecklistVisitaDialog
+        open={!!checklistVisitaId}
+        visitaId={checklistVisitaId}
+        onClose={() => setChecklistVisitaId(null)}
+        onConfirmed={() => refetchVisitas()}
+      />
     </Dialog>
   );
 }
