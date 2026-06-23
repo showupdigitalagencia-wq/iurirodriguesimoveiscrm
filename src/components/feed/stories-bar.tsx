@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Plus } from "lucide-react";
 import { StoryViewer } from "./story-viewer";
 import { StoryUploadDialog } from "./story-upload-dialog";
+import { signAvatarMap } from "@/lib/avatar-url";
+import { UserAvatar } from "@/components/user-avatar";
 
 export type StoryRow = {
   id: string;
@@ -18,13 +20,11 @@ export type StoryRow = {
 export type AuthorGroup = {
   authorId: string;
   authorName: string;
+  authorAvatarUrl: string | null;
   stories: StoryRow[];
   hasUnseen: boolean;
 };
 
-function initials(name: string) {
-  return name.trim().split(/\s+/).slice(0, 2).map((p) => p[0]?.toUpperCase() ?? "").join("") || "?";
-}
 
 export function StoriesBar({
   userId,
