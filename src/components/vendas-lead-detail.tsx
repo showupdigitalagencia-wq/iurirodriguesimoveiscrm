@@ -312,6 +312,7 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
           ) : (
             <>
               <Button variant="outline" size="sm" className="gap-1" onClick={openWhatsApp}><MessageCircle className="h-3.5 w-3.5" />WhatsApp</Button>
+              <Button variant="outline" size="sm" className="gap-1" onClick={() => setTemplatesOpen(true)}><MessagesSquare className="h-3.5 w-3.5" />Templates</Button>
               <AgendarVisitaInline lead={lead} onDone={() => { invalidate(); refetch(); }} />
               <ReuniaoOnlineInline lead={lead} onDone={() => { invalidate(); refetch(); }} />
               {lead.tipo === "compra" && canEnviarFinanciamento && <EnviarFinanciamentoInline lead={lead} />}
