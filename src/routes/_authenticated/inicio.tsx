@@ -296,9 +296,12 @@ function InicioPage() {
               >
                 <div className="flex items-center justify-between gap-3 px-4 py-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-gold/30 to-gold/10 border border-gold/30 grid place-items-center text-sm font-semibold text-gold ring-2 ring-background">
-                      {initials(author?.nome ?? "?")}
-                    </div>
+                    <UserAvatar
+                      name={author?.nome ?? "?"}
+                      url={avatarUrls[p.author_id] ?? null}
+                      className="h-10 w-10 text-sm ring-2 ring-background"
+                      fallbackClassName="text-sm"
+                    />
                     <div className="min-w-0">
                       <div className="text-sm font-semibold truncate">{author?.nome ?? "—"}</div>
                       <div className="text-[11px] text-muted-foreground flex items-center gap-2">
