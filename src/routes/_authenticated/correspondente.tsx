@@ -83,7 +83,7 @@ function FinanciamentoAdminPage() {
     <div className="p-4 md:p-6 space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Financiamento</h1>
+          <h1 className="text-2xl font-bold">Crédito Nexus</h1>
           <p className="text-sm text-muted-foreground">Pedidos de financiamento recebidos pela landing page</p>
         </div>
       </div>
