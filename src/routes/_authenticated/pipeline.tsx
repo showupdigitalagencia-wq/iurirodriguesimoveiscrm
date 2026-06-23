@@ -55,7 +55,7 @@ function PipelinePage() {
   return (
     <div className="p-4 md:p-6">
       <header className="mb-4 md:mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Pipeline</h1>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Negócios</h1>
         <p className="text-muted-foreground text-sm md:text-base mt-1 hidden md:block">Arraste os leads entre as etapas.</p>
         <p className="text-muted-foreground text-xs mt-1 md:hidden">Deslize as colunas para o lado. Toque em um card para abrir.</p>
       </header>
