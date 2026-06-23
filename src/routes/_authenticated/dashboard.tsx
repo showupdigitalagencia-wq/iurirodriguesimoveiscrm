@@ -38,7 +38,7 @@ function DashboardPage() {
   return (
     <div className="p-4 md:p-8 space-y-6 md:space-y-8">
       <header>
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Dashboard</h1>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Centro de Comando</h1>
         <p className="text-muted-foreground text-sm md:text-base mt-1">Visão geral do funil de vendas.</p>
       </header>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
