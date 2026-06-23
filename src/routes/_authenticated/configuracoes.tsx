@@ -23,6 +23,7 @@ import {
 import { exportSistemaZip } from "@/lib/export-sistema.functions";
 import { listarBackups, gerarUrlBackup, rodarBackupManual } from "@/lib/backups.functions";
 import { Download, Archive, RefreshCcw } from "lucide-react";
+import { FotoPerfilSection } from "@/components/foto-perfil-section";
 
 type Resp = { id: string; canal: string; nome: string; whatsapp: string };
 type Mapping = {
