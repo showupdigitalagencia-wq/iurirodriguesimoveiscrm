@@ -91,6 +91,7 @@ function InicioPage() {
   const [openComments, setOpenComments] = useState<Record<string, boolean>>({});
   const [newComment, setNewComment] = useState<Record<string, string>>({});
   const [showCompose, setShowCompose] = useState(false);
+  const [likesDialogPost, setLikesDialogPost] = useState<string | null>(null);
 
   const loadAll = useCallback(async () => {
     setLoading(true);
