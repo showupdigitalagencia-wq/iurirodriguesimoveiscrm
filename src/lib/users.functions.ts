@@ -83,6 +83,7 @@ export const updateUser = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({
     id: z.string().uuid(),
     nome: z.string().trim().min(1).max(120).optional(),
+    email: z.string().trim().email().max(255).optional(),
     role: Role.optional(),
     responsavel_id: z.string().uuid().nullable().optional(),
     ativo: z.boolean().optional(),
@@ -108,12 +109,21 @@ export const updateUser = createServerFn({ method: "POST" })
       await supabaseAdmin.from("user_roles").insert({ user_id: data.id, role: data.role });
     }
 
+    if (data.email) {
+      const { error: emailErr } = await supabaseAdmin.auth.admin.updateUserById(data.id, {
+        email: data.email,
+        email_confirm: true,
+      });
+      if (emailErr) throw new Error(emailErr.message);
+    }
+
     // Desativar = banir login no Auth; reativar = remover ban
     if (data.ativo !== undefined) {
       await supabaseAdmin.auth.admin.updateUserById(data.id, {
         ban_duration: data.ativo ? "none" : "876000h",
       });
     }
+
 
     return { ok: true };
   });
