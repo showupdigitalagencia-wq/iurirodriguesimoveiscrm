@@ -8,6 +8,7 @@ const MessageSchema = z.object({
   role: z.enum(["user", "assistant", "system"]),
   content: z.string().min(1).max(4000),
   imageDataUrl: z.string().startsWith("data:image/").max(8_000_000).optional(),
+  imageStoragePath: z.string().min(1).max(500).optional(),
 });
 
 const InputSchema = z.object({
