@@ -100,7 +100,7 @@ export const Route = createFileRoute("/api/public/hooks/plantao-escalation")({
               plantao_proximo_id: null,
             } as never)
             .eq("id", lead.id)
-            .eq("corretor_id", lead.corretor_id) // guarda otimista
+            .eq("corretor_id", lead.corretor_id as string) // guarda otimista
             .eq("atribuicao_status", "pendente");
           if (upErr) { erros.push(upErr.message); continue; }
 
