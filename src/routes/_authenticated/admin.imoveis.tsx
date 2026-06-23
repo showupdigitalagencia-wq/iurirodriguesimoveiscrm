@@ -21,6 +21,7 @@ import { Switch } from "@/components/ui/switch";
 import { useServerFn } from "@tanstack/react-start";
 import { importImovelFromUrl } from "@/lib/imovel-import.functions";
 import { notifyImovelDisponivelNovamente } from "@/lib/imoveis-notify.functions";
+import { ChaveActions, ChaveHistoryDialog } from "@/components/admin/ChaveActions";
 
 type Imovel = Database["public"]["Tables"]["imoveis"]["Row"];
 type ImovelInsert = Database["public"]["Tables"]["imoveis"]["Insert"];
