@@ -531,8 +531,8 @@ export async function runImovelImport(
         map_query: mapQuery,
       },
     };
-  };
 }
+
 
 export const importImovelFromUrl = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
