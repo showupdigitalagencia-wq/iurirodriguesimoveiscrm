@@ -64,10 +64,11 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
 
   const confirmarVisitaFn = useServerFn(confirmarVisita);
   const visitasPendentes = visitas.filter((v) => v.comparecimento == null && new Date(v.data_inicio) < new Date());
-  async function handleConfirmar(visitaId: string, comparecimento: "realizada" | "nao_compareceu") {
+  const [checklistVisitaId, setChecklistVisitaId] = useState<string | null>(null);
+  async function handleNaoCompareceu(visitaId: string) {
     try {
-      await confirmarVisitaFn({ data: { visita_id: visitaId, comparecimento } });
-      toast.success(comparecimento === "realizada" ? "Visita marcada como realizada" : "Visita marcada como não compareceu");
+      await confirmarVisitaFn({ data: { visita_id: visitaId, comparecimento: "nao_compareceu" } });
+      toast.success("Visita marcada como não compareceu");
       refetchVisitas();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erro ao confirmar visita");
