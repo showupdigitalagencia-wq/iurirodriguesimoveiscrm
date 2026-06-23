@@ -416,9 +416,12 @@ function InicioPage() {
                       const canDelete = isAdmin || userId === c.author_id;
                       return (
                         <div key={c.id} className="flex items-start gap-2">
-                          <div className="h-7 w-7 rounded-full bg-muted border border-border grid place-items-center text-[10px] font-semibold shrink-0">
-                            {initials(ca?.nome ?? "?")}
-                          </div>
+                          <UserAvatar
+                            name={ca?.nome ?? "?"}
+                            url={avatarUrls[c.author_id] ?? null}
+                            className="h-7 w-7 text-[10px]"
+                            fallbackClassName="text-[10px]"
+                          />
                           <div className="flex-1 min-w-0">
                             <div className="text-xs">
                               <span className="font-medium">{ca?.nome ?? "—"}</span>
