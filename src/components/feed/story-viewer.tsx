@@ -259,7 +259,7 @@ export function StoryViewer({
         ))}
       </div>
 
-      <div className="absolute top-6 inset-x-3 flex items-center gap-3 pt-2 z-20">
+      <div className="absolute top-6 inset-x-3 pr-14 flex items-center gap-3 pt-2 z-20">
         <UserAvatar
           name={group.authorName}
           url={group.authorAvatarUrl}
