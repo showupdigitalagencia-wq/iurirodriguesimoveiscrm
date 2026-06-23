@@ -140,14 +140,21 @@ function InicioPage() {
     const commentAuthors = Array.from(
       new Set((commentsRes.data ?? []).map((c: Comment) => c.author_id).filter((id) => !profMap[id])),
     );
+    let allProfiles: ProfileLite[] = Object.values(profMap);
     if (commentAuthors.length) {
-      const { data } = await supabase.from("profiles").select("id, nome").in("id", commentAuthors);
+      const { data } = await supabase.from("profiles").select("id, nome, avatar_url").in("id", commentAuthors);
+      const extra = (data ?? []) as ProfileLite[];
       setProfiles((prev) => {
         const next = { ...prev };
-        for (const p of (data ?? []) as ProfileLite[]) next[p.id] = p;
+        for (const p of extra) next[p.id] = p;
         return next;
       });
+      allProfiles = allProfiles.concat(extra);
     }
+
+    // assina avatars de todos os autores envolvidos
+    const signed = await signAvatarMap(allProfiles.map((p) => ({ id: p.id, path: p.avatar_url })));
+    setAvatarUrls(signed);
 
     // resolve image urls
     const urlEntries = await Promise.all(
@@ -155,6 +162,7 @@ function InicioPage() {
     );
     setImageUrls(Object.fromEntries(urlEntries));
   }, [userId]);
+
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
