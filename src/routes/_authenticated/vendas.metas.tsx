@@ -155,17 +155,26 @@ function LinhaCorretor({ corretor, ano, mes, readonly, onSaved }: {
   const [locacoes, setLocacoes] = useState(corretor.meta.locacoes);
   const [receita, setReceita] = useState(corretor.meta.receita);
   const [leadsAt, setLeadsAt] = useState(corretor.meta.leads_atendidos);
+  const salvarFn = useServerFn(salvarMetaCorretor);
 
   const salvar = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("metas_mensais").upsert({
-        corretor_id: corretor.id, ano, mes,
-        meta_vendas: vendas, meta_locacoes: locacoes,
-        meta_receita: receita, meta_leads_atendidos: leadsAt,
-      }, { onConflict: "corretor_id,ano,mes" });
-      if (error) throw error;
+      return await salvarFn({
+        data: {
+          corretor_id: corretor.id, ano, mes,
+          meta_vendas: vendas, meta_locacoes: locacoes,
+          meta_receita: receita, meta_leads_atendidos: leadsAt,
+        },
+      });
     },
-    onSuccess: () => { toast.success(`Meta de ${corretor.nome} atualizada.`); onSaved(); },
+    onSuccess: (res) => {
+      toast.success(
+        res.isUpdate
+          ? `Meta de ${corretor.nome} atualizada. Notificação enviada.`
+          : `Meta de ${corretor.nome} definida. Notificação enviada.`,
+      );
+      onSaved();
+    },
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -173,9 +182,18 @@ function LinhaCorretor({ corretor, ano, mes, readonly, onSaved }: {
     <Card>
       <CardContent className="pt-4 space-y-3">
         <div className="flex items-center justify-between gap-2 flex-wrap">
-          <div>
-            <div className="font-medium text-sm">{corretor.nome}</div>
-            {corretor.equipe && <div className="text-xs text-muted-foreground">Equipe: {corretor.equipe}</div>}
+          <div className="flex items-center gap-2">
+            <div>
+              <div className="font-medium text-sm flex items-center gap-1.5">
+                {corretor.nome}
+                {corretor.is_executivo && (
+                  <Badge variant="default" className="text-[10px] gap-1 bg-gold/15 text-gold border border-gold/30 hover:bg-gold/20">
+                    <Crown className="h-3 w-3" /> Executivo
+                  </Badge>
+                )}
+              </div>
+              {corretor.equipe && <div className="text-xs text-muted-foreground">Equipe: {corretor.equipe}</div>}
+            </div>
           </div>
           {corretor.meta.definida ? (
             <Badge variant="outline" className="text-[10px]">Meta definida</Badge>
@@ -185,10 +203,10 @@ function LinhaCorretor({ corretor, ano, mes, readonly, onSaved }: {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <CampoMeta label="Vendas (qtd)" value={vendas} onChange={setVendas} readonly={readonly} />
-          <CampoMeta label="Locações (qtd)" value={locacoes} onChange={setLocacoes} readonly={readonly} />
-          <CampoMeta label="Receita (R$)" value={receita} onChange={setReceita} readonly={readonly} step={1000} />
-          <CampoMeta label="Leads atendidos" value={leadsAt} onChange={setLeadsAt} readonly={readonly} />
+          <CampoMeta label="Vendas" suffix="vendas" value={vendas} onChange={setVendas} readonly={readonly} />
+          <CampoMeta label="Locações" suffix="locações" value={locacoes} onChange={setLocacoes} readonly={readonly} />
+          <CampoMeta label="Receita" suffix="R$" value={receita} onChange={setReceita} readonly={readonly} step={1000} />
+          <CampoMeta label="Leads atendidos" suffix="leads" value={leadsAt} onChange={setLeadsAt} readonly={readonly} />
         </div>
 
         <ProgressoBlock realizado={corretor.realizado} meta={{ ...corretor.meta, vendas, locacoes, receita, leads_atendidos: leadsAt, definida: true }} />
@@ -206,18 +224,49 @@ function LinhaCorretor({ corretor, ano, mes, readonly, onSaved }: {
   );
 }
 
-function CampoMeta({ label, value, onChange, readonly, step = 1 }: {
-  label: string; value: number; onChange: (v: number) => void; readonly: boolean; step?: number;
+function CampoMeta({ label, suffix, value, onChange, readonly, step = 1 }: {
+  label: string; suffix?: string; value: number; onChange: (v: number) => void; readonly: boolean; step?: number;
 }) {
+  const dec = () => onChange(Math.max(0, value - step));
+  const inc = () => onChange(value + step);
   return (
     <div className="space-y-1">
       <label className="text-xs text-muted-foreground">{label}</label>
-      <Input
-        type="number" min={0} step={step}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value) || 0)}
-        disabled={readonly}
-      />
+      <div className="flex items-stretch gap-1">
+        <Button
+          type="button" size="icon" variant="outline"
+          className="h-9 w-9 shrink-0"
+          onClick={dec} disabled={readonly || value <= 0}
+          aria-label={`Diminuir ${label}`}
+        >
+          <Minus className="h-3.5 w-3.5" />
+        </Button>
+        <Input
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9]*"
+          value={value}
+          onChange={(e) => {
+            const onlyDigits = e.target.value.replace(/[^0-9]/g, "");
+            onChange(onlyDigits === "" ? 0 : Number(onlyDigits));
+          }}
+          disabled={readonly}
+          className="text-center tabular-nums font-medium"
+        />
+        <Button
+          type="button" size="icon" variant="outline"
+          className="h-9 w-9 shrink-0"
+          onClick={inc} disabled={readonly}
+          aria-label={`Aumentar ${label}`}
+        >
+          <Plus className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+      {suffix && (
+        <div className="text-[10px] text-muted-foreground text-center">
+          {suffix === "R$" ? brl(value) : `${value} ${suffix}`}
+        </div>
+      )}
     </div>
   );
 }
