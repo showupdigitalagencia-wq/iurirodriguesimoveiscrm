@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Loader2, Plus, KeyRound, Trash2, ShieldCheck, ShieldOff, CalendarClock } from "lucide-react";
+import { Loader2, Plus, KeyRound, Trash2, ShieldCheck, ShieldOff, CalendarClock, Pencil } from "lucide-react";
 import { listUsers, createUser, updateUser, resetUserPassword, deleteUser, getMyRole } from "@/lib/users.functions";
 import { supabase } from "@/integrations/supabase/client";
 
