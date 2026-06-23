@@ -18,7 +18,19 @@ function AuthPage() {
   const { redirect: redirectTo } = Route.useSearch();
   const [loading, setLoading] = useState(false);
 
+  function isInstalledAppDashboardRedirect() {
+    if (typeof window === "undefined") return false;
+    const launchedAsInstalledApp =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
+    return launchedAsInstalledApp && redirectTo === "/dashboard";
+  }
+
   function goAfterAuth() {
+    if (isInstalledAppDashboardRedirect()) {
+      navigate({ to: "/inicio", replace: true });
+      return;
+    }
     if (redirectTo && redirectTo.startsWith("/")) {
       window.location.assign(redirectTo);
     } else {
