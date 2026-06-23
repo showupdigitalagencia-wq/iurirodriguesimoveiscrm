@@ -24,6 +24,9 @@ import { useServerFn } from "@tanstack/react-start";
 import { importImovelFromUrl } from "@/lib/imovel-import.functions";
 import { notifyImovelDisponivelNovamente } from "@/lib/imoveis-notify.functions";
 import { ChaveActions } from "@/components/admin/ChaveActions";
+import { resyncImovelFromSite, resyncTodosImoveisDoSite, type ResyncImovelReport, type ResyncBatchReport } from "@/lib/imovel-resync.functions";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
 
 type Imovel = Database["public"]["Tables"]["imoveis"]["Row"];
 type ImovelInsert = Database["public"]["Tables"]["imoveis"]["Insert"];
