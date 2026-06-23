@@ -383,9 +383,13 @@ function InicioPage() {
                 </div>
 
                 {lk.count > 0 && (
-                  <div className="px-4 text-sm font-semibold">
+                  <button
+                    type="button"
+                    onClick={() => setLikesDialogPost(p.id)}
+                    className="px-4 text-sm font-semibold text-left hover:underline underline-offset-2"
+                  >
                     {lk.count} {lk.count === 1 ? "curtida" : "curtidas"}
-                  </div>
+                  </button>
                 )}
 
                 {p.caption && (
