@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { FotosThumbs, useFotosUrls } from "@/components/admin/FotosManager";
 import { ChaveActions, ChaveStatusBadge, useAtrasoHoras } from "@/components/admin/ChaveActions";
 import { Bed, Bath, Car, Maximize2, MapPin, Building2, X, ExternalLink, Share2 } from "lucide-react";
-import { buildImovelShareMessage, openWhatsAppShare } from "@/lib/imovel-share";
+import { shareImovelNative } from "@/lib/imovel-share";
 import type { Database } from "@/integrations/supabase/types";
 
 type Imovel = Database["public"]["Views"]["imoveis_portfolio"]["Row"];
