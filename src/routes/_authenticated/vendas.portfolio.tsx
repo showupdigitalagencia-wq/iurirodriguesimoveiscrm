@@ -334,6 +334,17 @@ function ImovelDialog({ imovel, onClose }: { imovel: Imovel | null; onClose: () 
               <div>{imovel.gestao_patrimonio ? "Sim" : "Não"}</div>
             </div>
           </div>
+          <div className="border-t pt-3">
+            <div className="text-xs text-muted-foreground mb-2">Chave do imóvel</div>
+            <ChaveActions
+              imovel={{
+                id: imovel.id as string,
+                chave_com_id: (imovel.chave_com_id as string | null) ?? null,
+                chave_retirada_em: (imovel.chave_retirada_em as string | null) ?? null,
+                chave_foto_atual: (imovel.chave_foto_atual as string | null) ?? null,
+              }}
+            />
+          </div>
           {imovel.observacoes && (
             <div className="text-sm">
               <div className="text-xs text-muted-foreground mb-1">Observações</div>
