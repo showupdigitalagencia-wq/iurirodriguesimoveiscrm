@@ -96,6 +96,7 @@ function AuthLayout() {
     // Correspondente bancária pura: só Financiamento
     if (isCorrespondente && !isAdmin && !isCorretorVendas && !isAdministrativo) {
       return [
+        { to: "/inicio", label: "Início", icon: Home },
         { to: "/correspondente", label: "Financiamento", icon: Banknote },
         { to: "/notificacoes", label: "Notificações", icon: BellRing },
         { to: "/configuracoes", label: "Configurações", icon: Settings },
@@ -103,7 +104,9 @@ function AuthLayout() {
     }
     // Administrativo puro: só módulo Administração
     if (isAdministrativo && !isAdmin && !isCorretorVendas) {
-      const items: Array<{ to: string; label: string; icon: typeof LayoutDashboard }> = [];
+      const items: Array<{ to: string; label: string; icon: typeof LayoutDashboard }> = [
+        { to: "/inicio", label: "Início", icon: Home },
+      ];
       if (adminModuloAtivo) {
         items.push(
           { to: "/admin", label: "Administração", icon: Building2 },
@@ -116,7 +119,9 @@ function AuthLayout() {
     }
     // Corretor de vendas: vê apenas as funções do sistema de vendas
     if (isCorretorVendas && !isAdmin) {
-      const items: Array<{ to: string; label: string; icon: typeof LayoutDashboard }> = [];
+      const items: Array<{ to: string; label: string; icon: typeof LayoutDashboard }> = [
+        { to: "/inicio", label: "Início", icon: Home },
+      ];
       if (corretorPodeVer) {
         items.push(
           { to: "/vendas", label: "Dashboard", icon: LayoutDashboard },
