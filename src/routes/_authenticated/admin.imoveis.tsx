@@ -112,6 +112,16 @@ function ImoveisPage() {
     },
   });
 
+  const { data: profilesMap = {} } = useQuery({
+    queryKey: ["profiles-nomes"],
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("id, nome").eq("ativo", true);
+      const map: Record<string, string> = {};
+      (data ?? []).forEach((p) => { map[p.id] = p.nome ?? "—"; });
+      return map;
+    },
+  });
+
   const byFinalidade = imoveis.filter((i) => {
     if (finalidadeFiltro === "todos") return true;
     const fin = ((i as unknown as { finalidade?: string }).finalidade) ?? "locacao";
