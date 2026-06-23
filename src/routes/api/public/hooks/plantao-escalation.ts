@@ -37,7 +37,7 @@ export const Route = createFileRoute("/api/public/hooks/plantao-escalation")({
 
         const hoje = new Date().toISOString().slice(0, 10);
         const { data: rows } = await supabaseAdmin
-          .from("vendas_leads")
+          .from("vendas_leads" as never)
           .select("id, nome, telefone, origem, corretor_id, atribuido_em, plantao_dia, plantao_ocupado_no_atribuir, plantao_escalonado_em, plantao_proximo_id")
           .eq("plantao_dia", hoje)
           .eq("atribuicao_status", "pendente")
@@ -45,7 +45,8 @@ export const Route = createFileRoute("/api/public/hooks/plantao-escalation")({
           .is("first_response_at", null)
           .not("corretor_id", "is", null)
           .not("atribuido_em", "is", null);
-        const leads = (rows ?? []) as LeadRow[];
+        const leads = (rows ?? []) as unknown as LeadRow[];
+
         if (!leads.length) {
           return new Response(JSON.stringify({ ok: true, processados: 0 }), {
             status: 200, headers: { "Content-Type": "application/json" },
