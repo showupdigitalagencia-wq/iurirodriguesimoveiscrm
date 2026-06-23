@@ -17,8 +17,10 @@ import { DocumentosManager } from "@/components/admin/DocumentosManager";
 import { FotosManager, FotosThumbs } from "@/components/admin/FotosManager";
 import { ImoveisImportExport } from "@/components/admin/ImoveisImportExport";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 import { useServerFn } from "@tanstack/react-start";
 import { importImovelFromUrl } from "@/lib/imovel-import.functions";
+import { notifyImovelDisponivelNovamente } from "@/lib/imoveis-notify.functions";
 
 type Imovel = Database["public"]["Tables"]["imoveis"]["Row"];
 type ImovelInsert = Database["public"]["Tables"]["imoveis"]["Insert"];
