@@ -292,6 +292,9 @@ function UsuariosPage() {
               </div>
             </div>
             <div className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={() => setEditing(u)} className="flex-1">
+                <Pencil className="h-4 w-4 mr-1" /> Editar
+              </Button>
               <Button size="sm" variant="outline" onClick={() => setResetting(u)} className="flex-1">
                 <KeyRound className="h-4 w-4 mr-1" /> Senha
               </Button>
@@ -299,6 +302,7 @@ function UsuariosPage() {
                 <Trash2 className="h-4 w-4 mr-1" /> Excluir
               </Button>
             </div>
+
           </div>
         ))}
         {users.length === 0 && (
