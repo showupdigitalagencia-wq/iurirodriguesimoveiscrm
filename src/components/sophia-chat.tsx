@@ -149,11 +149,39 @@ export function LauraChat() {
     setPendingImage(null);
     setLoading(true);
     try {
+      // Se o usuário anexou uma foto neste turno, sobe pro bucket privado de chaves
+      // ANTES de chamar o servidor. Assim a tool de chaves recebe um path válido
+      // e a Laura pode confirmar + executar a retirada/devolução com a foto correta.
+      let uploadedPath: string | null = null;
+      if (opts?.imageDataUrl) {
+        try {
+          const { data: u } = await supabase.auth.getUser();
+          const uid = u.user?.id;
+          if (uid) {
+            const m = opts.imageDataUrl.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
+            if (m) {
+              const mime = m[1];
+              const bin = atob(m[2]);
+              const arr = new Uint8Array(bin.length);
+              for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+              const ext = mime.split("/")[1]?.split("+")[0] || "jpg";
+              const path = `${uid}/laura/${Date.now()}.${ext}`;
+              const up = await supabase.storage
+                .from("chaves-fotos")
+                .upload(path, new Blob([arr], { type: mime }), { contentType: mime, upsert: false });
+              if (!up.error) uploadedPath = path;
+            }
+          }
+        } catch {
+          // upload falhou: segue sem path, a Laura pedirá foto de novo se for ação de chave
+        }
+      }
       // Server only sees text + optional image. Audio was already transcribed into `content`.
-      const payload = next.slice(-20).map((m) => ({
+      const payload = next.slice(-20).map((m, idx) => ({
         role: m.role,
         content: m.content,
         ...(m.imageDataUrl ? { imageDataUrl: m.imageDataUrl } : {}),
+        ...(idx === next.length - 1 && uploadedPath ? { imageStoragePath: uploadedPath } : {}),
       }));
       const res = await fn({ data: { messages: payload } });
       setMessages((m) => [...m, { role: "assistant", content: (res as { reply: string }).reply || "..." }]);
