@@ -18,6 +18,8 @@ import {
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { StoriesBar } from "@/components/feed/stories-bar";
+
 
 export const Route = createFileRoute("/_authenticated/inicio")({
   head: () => ({ meta: [{ title: "Início — Sistema NEXUS" }] }),
@@ -71,6 +73,7 @@ function formatRelative(iso: string) {
 
 function InicioPage() {
   const [userId, setUserId] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string>("Você");
   const [isAdmin, setIsAdmin] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -154,9 +157,13 @@ function InicioPage() {
         supabase.rpc("has_role", { _user_id: uid, _role: "admin" }).then(({ data }) => {
           setIsAdmin(data === true);
         });
+        supabase.from("profiles").select("nome").eq("id", uid).maybeSingle().then(({ data }) => {
+          if (data?.nome) setUserName(data.nome);
+        });
       }
     });
   }, []);
+
 
   useEffect(() => { loadAll(); }, [loadAll]);
 
@@ -239,6 +246,10 @@ function InicioPage() {
         </div>
         <ComposeButton open={showCompose} setOpen={setShowCompose} userId={userId} onPosted={loadAll} />
       </header>
+
+      <StoriesBar userId={userId} userName={userName} isAdmin={isAdmin} />
+
+
 
       {loading ? (
         <div className="space-y-4">
