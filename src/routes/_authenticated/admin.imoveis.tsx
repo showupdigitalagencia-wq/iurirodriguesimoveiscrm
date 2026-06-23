@@ -16,7 +16,7 @@ import { buildImovelShareMessage, openWhatsAppShare } from "@/lib/imovel-share";
 import { FotosManager, FotosThumbs, useFotosUrls } from "@/components/admin/FotosManager";
 import type { Database } from "@/integrations/supabase/types";
 import { DocumentosManager } from "@/components/admin/DocumentosManager";
-import { FotosManager, FotosThumbs } from "@/components/admin/FotosManager";
+
 import { ImoveisImportExport } from "@/components/admin/ImoveisImportExport";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
