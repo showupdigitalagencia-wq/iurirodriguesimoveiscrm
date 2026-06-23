@@ -204,6 +204,15 @@ export function StoryViewer({
 
   const node = (
     <div className="fixed inset-0 z-[100] bg-black text-white select-none" role="dialog" aria-modal>
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Fechar"
+        className="fixed top-3 right-3 z-[60] grid place-items-center h-11 w-11 rounded-full bg-black/55 hover:bg-black/75 backdrop-blur ring-1 ring-white/20 text-white shadow-lg"
+        style={{ top: "max(0.75rem, env(safe-area-inset-top))", right: "max(0.75rem, env(safe-area-inset-right))" }}
+      >
+        <X className="h-6 w-6" />
+      </button>
       <div
         className="absolute inset-0"
         onTouchStart={onTouchStart}
