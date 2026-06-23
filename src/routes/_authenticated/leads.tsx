@@ -197,7 +197,7 @@ function LeadsPage() {
     <div className="p-4 md:p-8 space-y-4 md:space-y-6">
       <header className="grid grid-cols-1 gap-3 md:flex md:flex-wrap md:items-end md:gap-4 md:justify-between">
         <div className="min-w-0">
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Leads</h1>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Oportunidades</h1>
           <p className="text-muted-foreground text-sm mt-1">
             {respFilterName
               ? `${filtered.length} leads de ${respFilterName}`
