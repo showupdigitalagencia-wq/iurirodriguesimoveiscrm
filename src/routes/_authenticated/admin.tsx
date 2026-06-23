@@ -25,7 +25,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
 });
 
 const BASE_TABS = [
-  { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { to: "/admin", label: "Centro de Comando", icon: LayoutDashboard, exact: true },
   { to: "/admin/imoveis", label: "Imóveis", icon: Building2, exact: false },
   { to: "/admin/contratos", label: "Contratos", icon: FileText, exact: false },
   { to: "/admin/pagamentos", label: "Pagamentos", icon: DollarSign, exact: false },
@@ -52,7 +52,7 @@ function AdminLayout() {
   return (
     <div className="p-3 md:p-6 space-y-4 pb-24 md:pb-6">
       <div>
-        <h1 className="text-xl md:text-2xl font-bold">Administração Imobiliária</h1>
+        <h1 className="text-xl md:text-2xl font-bold">Gestão Patrimonial</h1>
         <p className="text-xs md:text-sm text-muted-foreground">Imóveis, contratos e gestão de locação</p>
       </div>
       <nav className="flex gap-1 border-b overflow-x-auto">

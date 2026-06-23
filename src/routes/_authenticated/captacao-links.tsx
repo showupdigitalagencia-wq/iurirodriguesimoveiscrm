@@ -11,7 +11,7 @@ import {
 } from "@/lib/captacao.constants";
 
 export const Route = createFileRoute("/_authenticated/captacao-links")({
-  head: () => ({ meta: [{ title: "Links de Captação — Sistema NEXUS" }] }),
+  head: () => ({ meta: [{ title: "Hub de Captação — Sistema NEXUS" }] }),
   component: CaptacaoLinksPage,
 });
 
@@ -118,7 +118,7 @@ function CaptacaoLinksPage() {
   return (
     <div className="p-4 md:p-8 space-y-6 max-w-5xl">
       <header className="space-y-1">
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Links de Captação de Corretores</h1>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Hub de Captação de Corretores</h1>
         <p className="text-muted-foreground text-sm md:text-base">
           Compartilhe seu link exclusivo para atrair novos corretores para sua região. Cada link é
           rastreado pelo parâmetro <code className="text-xs">?ref=</code>.

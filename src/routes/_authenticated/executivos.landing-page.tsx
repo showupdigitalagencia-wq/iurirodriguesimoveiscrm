@@ -12,7 +12,7 @@ import { listInstitucionalCandidatos, type InstitucionalReuniaoInfo } from "@/li
 
 export const Route = createFileRoute("/_authenticated/executivos/landing-page")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Landing Page — Sistema NEXUS" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Central de Conversão — Sistema NEXUS" }, { name: "robots", content: "noindex" }] }),
   component: LPPage,
 });
 
@@ -105,7 +105,7 @@ function LPPage() {
   return (
     <div className="p-4 md:p-8 space-y-6 max-w-5xl mx-auto">
       <header>
-        <h1 className="text-2xl md:text-3xl font-bold">Landing Page de Captação</h1>
+        <h1 className="text-2xl md:text-3xl font-bold">Central de Conversão</h1>
         <p className="text-sm text-muted-foreground mt-1">Envie o link aos candidatos da reunião institucional para receber a documentação.</p>
       </header>
 

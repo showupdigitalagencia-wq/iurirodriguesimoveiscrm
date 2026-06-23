@@ -14,7 +14,7 @@ import { listUsers, createUser, updateUser, resetUserPassword, deleteUser, getMy
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/usuarios")({
-  head: () => ({ meta: [{ title: "Usuários — Sistema NEXUS" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Equipe Nexus — Sistema NEXUS" }, { name: "robots", content: "noindex" }] }),
   component: UsuariosPage,
 });
 
@@ -161,7 +161,7 @@ function UsuariosPage() {
     <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-6">
       <header className="grid grid-cols-1 gap-3 sm:flex sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <h1 className="text-2xl font-bold">Usuários</h1>
+          <h1 className="text-2xl font-bold">Equipe Nexus</h1>
           <p className="text-sm text-muted-foreground">Gerencie funcionários, papéis e acessos ao sistema.</p>
         </div>
         <Dialog open={openNew} onOpenChange={setOpenNew}>
