@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Loader2, Plus, KeyRound, Trash2, ShieldCheck, ShieldOff, CalendarClock } from "lucide-react";
+import { Loader2, Plus, KeyRound, Trash2, ShieldCheck, ShieldOff, CalendarClock, Pencil } from "lucide-react";
 import { listUsers, createUser, updateUser, resetUserPassword, deleteUser, getMyRole } from "@/lib/users.functions";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -44,6 +44,8 @@ function UsuariosPage() {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [openNew, setOpenNew] = useState(false);
   const [resetting, setResetting] = useState<UserRow | null>(null);
+  const [editing, setEditing] = useState<UserRow | null>(null);
+
 
   const refresh = useCallback(async () => {
     try {
@@ -145,7 +147,28 @@ function UsuariosPage() {
     } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
   }
 
+  async function handleEdit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!editing) return;
+    const fd = new FormData(e.currentTarget);
+    const nome = String(fd.get("nome") || "").trim();
+    const email = String(fd.get("email") || "").trim();
+    if (!nome) { toast.error("Nome obrigatório"); return; }
+    if (!email) { toast.error("Email obrigatório"); return; }
+    try {
+      const payload: { id: string; nome?: string; email?: string } = { id: editing.id };
+      if (nome !== editing.nome) payload.nome = nome;
+      if (email !== editing.email) payload.email = email;
+      if (!payload.nome && !payload.email) { setEditing(null); return; }
+      await fnUpdate({ data: payload });
+      toast.success("Dados atualizados");
+      setEditing(null);
+      refresh();
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
+  }
+
   async function handleDelete(u: UserRow) {
+
     if (!confirm(`Excluir ${u.email}? Esta ação não pode ser desfeita.`)) return;
     try {
       await fnDelete({ data: { id: u.id } });
@@ -269,6 +292,9 @@ function UsuariosPage() {
               </div>
             </div>
             <div className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={() => setEditing(u)} className="flex-1">
+                <Pencil className="h-4 w-4 mr-1" /> Editar
+              </Button>
               <Button size="sm" variant="outline" onClick={() => setResetting(u)} className="flex-1">
                 <KeyRound className="h-4 w-4 mr-1" /> Senha
               </Button>
@@ -276,6 +302,7 @@ function UsuariosPage() {
                 <Trash2 className="h-4 w-4 mr-1" /> Excluir
               </Button>
             </div>
+
           </div>
         ))}
         {users.length === 0 && (
@@ -354,6 +381,9 @@ function UsuariosPage() {
                   </div>
                 </td>
                 <td className="px-4 py-3 text-right">
+                  <Button size="sm" variant="ghost" onClick={() => setEditing(u)} title="Editar">
+                    <Pencil className="h-4 w-4" />
+                  </Button>
                   <Button size="sm" variant="ghost" onClick={() => setResetting(u)} title="Redefinir senha">
                     <KeyRound className="h-4 w-4" />
                   </Button>
@@ -361,6 +391,7 @@ function UsuariosPage() {
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </td>
+
               </tr>
             ))}
             {users.length === 0 && (
@@ -379,6 +410,25 @@ function UsuariosPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+
+      <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Editar funcionário</DialogTitle></DialogHeader>
+          {editing && (
+            <form onSubmit={handleEdit} className="space-y-3">
+              <div><Label>Nome completo</Label><Input name="nome" defaultValue={editing.nome} required maxLength={120} className="mt-1.5" /></div>
+              <div>
+                <Label>Email (login)</Label>
+                <Input name="email" type="email" defaultValue={editing.email} required maxLength={255} className="mt-1.5" />
+                <p className="text-xs text-muted-foreground mt-1">Alterar o email muda o login do usuário.</p>
+              </div>
+              <DialogFooter><Button type="submit" variant="gold">Salvar</Button></DialogFooter>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+
