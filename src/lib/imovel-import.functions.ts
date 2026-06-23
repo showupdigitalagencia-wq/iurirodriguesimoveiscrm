@@ -394,16 +394,20 @@ export const importImovelFromUrl = createServerFn({ method: "POST" })
     const tipo = inferTipoFromText(tituloBase) ?? inferTipoFromText(descricao);
     const finalidade = inferFinalidade(tituloBase) ?? inferFinalidade(descricao);
 
+    // JSON-LD do Voa Corretor publica 0 quando o campo está em branco no painel,
+    // então tratamos 0 como ausente e caímos para o regex na descrição.
+    const positive = (v: number | null | undefined): number | null =>
+      typeof v === "number" && Number.isFinite(v) && v > 0 ? v : null;
     const quartos =
-      jld?.numberOfBedrooms ?? pickFirstNumber(/(\d+)\s*quartos?/i, fullText);
+      positive(jld?.numberOfBedrooms) ?? pickFirstNumber(/(\d+)\s*quartos?/i, fullText);
     const banheiros =
-      jld?.numberOfBathroomsTotal ?? pickFirstNumber(/(\d+)\s*banheiros?/i, fullText);
+      positive(jld?.numberOfBathroomsTotal) ?? pickFirstNumber(/(\d+)\s*banheiros?/i, fullText);
     const suites = pickFirstNumber(/(\d+)\s*su[íi]tes?/i, fullText);
     const vagas =
       pickFirstNumber(/(\d+)\s*vagas?\s+de\s+garagem/i, fullText) ??
       pickFirstNumber(/(\d+)\s*vagas?/i, fullText);
     const area_m2 =
-      jld?.floorSize?.value ??
+      positive(jld?.floorSize?.value) ??
       pickFirstNumber(/área\s*(?:total)?\s*(?:de)?\s*(\d+(?:[.,]\d+)?)\s*m/i, fullText) ??
       pickFirstNumber(/(\d+(?:[.,]\d+)?)\s*m²/i, fullText);
 
