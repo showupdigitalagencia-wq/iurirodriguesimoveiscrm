@@ -205,8 +205,11 @@ function ImovelCard({ imovel, onClick }: { imovel: Imovel; onClick: () => void }
             <Building2 className="h-12 w-12" />
           </div>
         )}
-        <div className="absolute top-2 left-2 flex gap-1">
+        <div className="absolute top-2 left-2 flex gap-1 flex-wrap">
           <Badge variant="secondary" className="text-[10px]">{STATUS_LABEL[imovel.status ?? ""] ?? imovel.status}</Badge>
+          {imovel.gestao_patrimonio && (
+            <Badge className="text-[10px] bg-gold/90 text-black hover:bg-gold">Gestão de Patrimônio</Badge>
+          )}
         </div>
         {imovel.codigo && (
           <div className="absolute top-2 right-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded">
