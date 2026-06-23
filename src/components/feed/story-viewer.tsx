@@ -231,10 +231,24 @@ export function StoryViewer({
         )}
       </div>
 
+      {/* Tap zones: esquerdo volta, direito avança. Ficam sob a barra de topo/rodapé. */}
+      <button
+        type="button"
+        aria-label="Story anterior"
+        onClick={goPrev}
+        className="absolute left-0 top-16 bottom-20 w-1/3 z-10 bg-transparent focus:outline-none"
+      />
+      <button
+        type="button"
+        aria-label="Próximo story"
+        onClick={goNext}
+        className="absolute right-0 top-16 bottom-20 w-1/3 z-10 bg-transparent focus:outline-none"
+      />
+
       <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/70 to-transparent" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/70 to-transparent" />
 
-      <div className="absolute top-3 inset-x-3 flex gap-1">
+      <div className="absolute top-3 inset-x-3 flex gap-1 z-20">
         {group.stories.map((_, i) => (
           <div key={i} className="flex-1 h-0.5 rounded-full bg-white/30 overflow-hidden">
             <div
@@ -245,10 +259,14 @@ export function StoryViewer({
         ))}
       </div>
 
-      <div className="absolute top-6 inset-x-3 flex items-center gap-3 pt-2">
-        <span className="h-9 w-9 rounded-full bg-gradient-to-br from-gold/40 to-gold/10 border border-gold/30 grid place-items-center text-xs font-semibold text-gold">
-          {initials(group.authorName)}
-        </span>
+      <div className="absolute top-6 inset-x-3 flex items-center gap-3 pt-2 z-20">
+        <UserAvatar
+          name={group.authorName}
+          url={group.authorAvatarUrl}
+          className="h-9 w-9 text-xs"
+          fallbackClassName="text-xs"
+        />
+
         <div className="min-w-0">
           <div className="text-sm font-medium truncate">{group.authorName}</div>
           <div className="text-[11px] text-white/70">{formatRelative(story.created_at)}</div>
