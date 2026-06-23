@@ -60,7 +60,7 @@ const MOBILE_TOP_ICONS = [
 const ADMIN_NAV = [
   { to: "/executivos", label: "Executivos", icon: Users2 },
   { to: "/tempo-acesso", label: "Tempo de Acesso", icon: Clock },
-  { to: "/usuarios", label: "Usuários", icon: UserCog },
+  { to: "/usuarios", label: "Equipe Nexus", icon: UserCog },
 ] as const;
 
 const CONFIG_NAV = [
