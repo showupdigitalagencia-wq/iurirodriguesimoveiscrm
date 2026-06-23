@@ -414,6 +414,26 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
     enabled: open,
   });
 
+  const { data: captadores = [] } = useQuery({
+    queryKey: ["captadores"],
+    queryFn: async () => {
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("user_id, role")
+        .in("role", ["corretor", "corretor_vendas", "executivo", "admin"]);
+      const ids = Array.from(new Set((roles ?? []).map((r) => r.user_id)));
+      if (!ids.length) return [] as Array<{ id: string; nome: string }>;
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("id, nome")
+        .in("id", ids)
+        .eq("ativo", true)
+        .order("nome");
+      return (profs ?? []) as Array<{ id: string; nome: string }>;
+    },
+    enabled: open,
+  });
+
   useEffect(() => {
     if (!open) return;
     if (imovel) {
