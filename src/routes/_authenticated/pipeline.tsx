@@ -10,7 +10,7 @@ import { Phone, MessageCircle } from "lucide-react";
 import { LeadDetailSheet } from "@/components/lead-detail-sheet";
 
 export const Route = createFileRoute("/_authenticated/pipeline")({
-  head: () => ({ meta: [{ title: "Pipeline — Sistema NEXUS" }] }),
+  head: () => ({ meta: [{ title: "Negócios — Sistema NEXUS" }] }),
   component: PipelinePage,
 });
 
