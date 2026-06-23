@@ -344,7 +344,17 @@ function InicioPage() {
                   )}
                 </div>
 
-                {url ? (
+                {p.source === "conquista" && !p.image_path ? (
+                  <div
+                    className="px-6 py-10 bg-gradient-to-br from-amber-500/15 via-amber-400/10 to-amber-600/15 text-center cursor-pointer"
+                    onDoubleClick={() => !lk.mine && toggleLike(p.id)}
+                  >
+                    <div className="text-5xl mb-2">🏆</div>
+                    <div className="text-base font-semibold text-amber-700 dark:text-amber-400">
+                      Nova conquista desbloqueada!
+                    </div>
+                  </div>
+                ) : url ? (
                   p.media_type === "video" ? (
                     <FeedVideo src={url} onDoubleClick={() => !lk.mine && toggleLike(p.id)} />
                   ) : (
