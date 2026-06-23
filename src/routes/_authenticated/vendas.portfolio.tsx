@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { FotosThumbs, useFotosUrls } from "@/components/admin/FotosManager";
 import { ChaveActions, ChaveStatusBadge, useAtrasoHoras } from "@/components/admin/ChaveActions";
 import { Bed, Bath, Car, Maximize2, MapPin, Building2, X, ExternalLink, Share2 } from "lucide-react";
-import { buildImovelShareMessage, openWhatsAppShare } from "@/lib/imovel-share";
+import { shareImovelNative } from "@/lib/imovel-share";
 import type { Database } from "@/integrations/supabase/types";
 
 type Imovel = Database["public"]["Views"]["imoveis_portfolio"]["Row"];
@@ -371,8 +371,7 @@ function ImovelDialog({ imovel, onClose }: { imovel: Imovel | null; onClose: () 
               variant="outline"
               className="h-7 px-2 gap-1 text-xs border-emerald-500/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10"
               onClick={() => {
-                const msg = buildImovelShareMessage(imovel as never, urls);
-                openWhatsAppShare(msg);
+                void shareImovelNative(imovel as never, urls);
               }}
             >
               <Share2 className="h-3 w-3" />
