@@ -144,7 +144,7 @@ async function applyResync(
 }
 
 async function ensureAdmin(context: { supabase: ReturnType<typeof import("@supabase/supabase-js").createClient>; userId: string }) {
-  const { data } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+  const { data } = await (context.supabase.rpc as unknown as (fn: string, args: Record<string, unknown>) => Promise<{ data: boolean | null }>)("has_role", { _user_id: context.userId, _role: "admin" });
   if (!data) throw new Error("Apenas administradores podem re-sincronizar imóveis.");
 }
 
