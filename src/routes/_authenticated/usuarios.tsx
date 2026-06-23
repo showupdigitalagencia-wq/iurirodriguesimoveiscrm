@@ -44,6 +44,8 @@ function UsuariosPage() {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [openNew, setOpenNew] = useState(false);
   const [resetting, setResetting] = useState<UserRow | null>(null);
+  const [editing, setEditing] = useState<UserRow | null>(null);
+
 
   const refresh = useCallback(async () => {
     try {
