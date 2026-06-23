@@ -313,6 +313,16 @@ function ImovelDialog({ imovel, onClose }: { imovel: Imovel | null; onClose: () 
               {imovel.cep ? ` · CEP ${imovel.cep}` : ""}
             </div>
           </div>
+          <div className="flex flex-wrap gap-3 text-sm">
+            <div>
+              <div className="text-xs text-muted-foreground">Captador</div>
+              <div>{captadorNome ?? "—"}</div>
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">Gestão de Patrimônio</div>
+              <div>{imovel.gestao_patrimonio ? "Sim" : "Não"}</div>
+            </div>
+          </div>
           {imovel.observacoes && (
             <div className="text-sm">
               <div className="text-xs text-muted-foreground mb-1">Observações</div>
