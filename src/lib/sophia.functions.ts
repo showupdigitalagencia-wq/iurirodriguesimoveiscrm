@@ -718,7 +718,344 @@ export const sophiaChat = createServerFn({ method: "POST" })
           return { ok: true, log_id: data, mensagem: "Chave devolvida com sucesso." };
         },
       }),
+
+      // ============ CONFIRMAR VISITA ============
+      visita_buscar: tool({
+        description: "Lista visitas (pendentes de confirmação por padrão; futuras ou todas se pedido). Use para o usuário escolher qual confirmar. RLS limita ao escopo do usuário.",
+        inputSchema: z.object({
+          status: z.enum(["pendentes", "futuras", "todas"]).default("pendentes").describe("pendentes = passadas sem comparecimento; futuras = ainda não aconteceram"),
+          limite: z.number().int().min(1).max(20).default(10),
+        }),
+        execute: async ({ status, limite }) => {
+          const sup = context.supabase as unknown as SupabaseClient;
+          let q = sup.from("vendas_visitas")
+            .select("id, data_inicio, endereco, status, comparecimento, lead_id")
+            .order("data_inicio", { ascending: false })
+            .limit(limite);
+          const now = new Date().toISOString();
+          if (status === "pendentes") q = q.lt("data_inicio", now).is("comparecimento", null);
+          else if (status === "futuras") q = q.gte("data_inicio", now);
+          const { data, error } = await q;
+          if (error) return { erro: error.message, visitas: [] };
+          const leadIds = Array.from(new Set((data ?? []).map((v) => v.lead_id).filter((x): x is string => !!x)));
+          const leadsMap = new Map<string, string>();
+          if (leadIds.length) {
+            const { data: ls } = await supabaseAdmin.from("vendas_leads").select("id, nome").in("id", leadIds);
+            (ls ?? []).forEach((l) => leadsMap.set(l.id, l.nome ?? ""));
+          }
+          return {
+            total: data?.length ?? 0,
+            visitas: (data ?? []).map((v) => ({
+              id: v.id, data_inicio: v.data_inicio, endereco: v.endereco,
+              status: v.status, comparecimento: v.comparecimento,
+              lead_nome: v.lead_id ? leadsMap.get(v.lead_id) ?? null : null,
+            })),
+          };
+        },
+      }),
+
+      visita_confirmar: tool({
+        description: "Marca uma visita como REALIZADA ou NAO_COMPARECEU. CONFIRME explicitamente (lead + data) antes de chamar. Só o corretor dono (ou admin) consegue — RLS valida.",
+        inputSchema: z.object({
+          visita_id: z.string().uuid(),
+          comparecimento: z.enum(["realizada", "nao_compareceu"]),
+          confirmado: z.literal(true),
+        }),
+        execute: async ({ visita_id, comparecimento }) => {
+          const sup = context.supabase as unknown as SupabaseClient;
+          const { error } = await sup
+            .from("vendas_visitas")
+            .update({
+              comparecimento,
+              confirmada_em: new Date().toISOString(),
+              confirmada_por: context.userId,
+              status: comparecimento === "realizada" ? "realizada" : "nao_compareceu",
+            } as never)
+            .eq("id", visita_id);
+          if (error) return { erro: error.message };
+          return { ok: true, mensagem: comparecimento === "realizada" ? "Visita marcada como realizada." : "Visita marcada como não comparecida." };
+        },
+      }),
+
+      // ============ PLANTÃO (consulta + escala) ============
+      plantao_consultar: tool({
+        description: "Consulta a escala de plantão (próximos N dias, default 7; ou uma data específica). Retorna corretor escalado por dia.",
+        inputSchema: z.object({
+          data: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+          dias: z.number().int().min(1).max(31).default(7),
+        }),
+        execute: async ({ data: dataStr, dias }) => {
+          const from = dataStr ?? new Date().toISOString().slice(0, 10);
+          const fromDate = new Date(`${from}T00:00:00`);
+          const toDate = new Date(fromDate);
+          toDate.setDate(toDate.getDate() + (dataStr ? 1 : dias));
+          const { data, error } = await supabaseAdmin
+            .from("plantao_escala" as never)
+            .select("data, corretor_id")
+            .gte("data", from)
+            .lt("data", toDate.toISOString().slice(0, 10));
+          if (error) return { erro: error.message, escala: [] };
+          const rows = (data ?? []) as { data: string; corretor_id: string }[];
+          const ids = Array.from(new Set(rows.map((d) => d.corretor_id)));
+          const nomes = new Map<string, string>();
+          if (ids.length) {
+            const { data: profs } = await supabaseAdmin.from("profiles").select("id, nome").in("id", ids);
+            (profs ?? []).forEach((p) => nomes.set(p.id, p.nome ?? ""));
+          }
+          return { escala: rows.map((d) => ({ data: d.data, corretor_id: d.corretor_id, corretor_nome: nomes.get(d.corretor_id) ?? null })) };
+        },
+      }),
+
+      plantao_definir: tool({
+        description: "Escala um corretor como plantonista em uma data. Corretor só pode escalar a si mesmo em slot vazio; executivo, apenas dentro da própria equipe; admin pode tudo. Sempre CONFIRME (data + corretor) antes.",
+        inputSchema: z.object({
+          data: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+          corretor_id: z.string().uuid(),
+          confirmado: z.literal(true),
+        }),
+        execute: async ({ data: dataStr, corretor_id }) => {
+          if (scope.tipo === "corretor" && corretor_id !== scope.userId) return { erro: "Você só pode se escalar a si mesmo." };
+          const { data: prevRaw } = await supabaseAdmin.from("plantao_escala" as never).select("corretor_id").eq("data", dataStr).maybeSingle();
+          const prev = prevRaw as { corretor_id: string } | null;
+          if (scope.tipo === "corretor" && prev && prev.corretor_id !== scope.userId) return { erro: "Você não pode alterar a escala de outra pessoa." };
+          if (scope.tipo === "executivo" && prev && prev.corretor_id !== scope.userId && prev.corretor_id !== corretor_id) {
+            if (!scope.corretorIds.includes(prev.corretor_id)) return { erro: "Apenas Admin pode alterar escala fora da sua equipe." };
+          }
+          const { error } = await supabaseAdmin.from("plantao_escala" as never).upsert({
+            data: dataStr, corretor_id, criado_por: context.userId,
+            ...(prev?.corretor_id !== corretor_id ? { notificado_em: null } : {}),
+          } as never, { onConflict: "data" });
+          if (error) return { erro: error.message };
+          return { ok: true, mensagem: `Plantão de ${dataStr} definido.` };
+        },
+      }),
+
+      plantao_remover: tool({
+        description: "Remove a escala de plantão de uma data. Mesmas regras de permissão de plantao_definir. Sempre CONFIRME antes.",
+        inputSchema: z.object({
+          data: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+          confirmado: z.literal(true),
+        }),
+        execute: async ({ data: dataStr }) => {
+          const { data: prevRaw } = await supabaseAdmin.from("plantao_escala" as never).select("corretor_id").eq("data", dataStr).maybeSingle();
+          const prev = prevRaw as { corretor_id: string } | null;
+          if (!prev) return { ok: true, mensagem: "Dia já estava sem escala." };
+          if (scope.tipo === "corretor" && prev.corretor_id !== scope.userId) return { erro: "Você só pode se remover do plantão." };
+          if (scope.tipo === "executivo" && prev.corretor_id !== scope.userId && !scope.corretorIds.includes(prev.corretor_id)) {
+            return { erro: "Apenas Admin pode remover escala fora da sua equipe." };
+          }
+          const { error } = await supabaseAdmin.from("plantao_escala" as never).delete().eq("data", dataStr);
+          if (error) return { erro: error.message };
+          return { ok: true, mensagem: `Escala de ${dataStr} removida.` };
+        },
+      }),
+
+      // ============ METAS ============
+      meta_consultar: tool({
+        description: "Consulta meta mensal de um corretor (ou de toda a equipe, se corretor_id omitido). Corretor vê só a própria; executivo, da equipe; admin, todos.",
+        inputSchema: z.object({
+          corretor_id: z.string().uuid().optional(),
+          ano: z.number().int().min(2024).max(2100),
+          mes: z.number().int().min(1).max(12),
+        }),
+        execute: async ({ corretor_id, ano, mes }) => {
+          if (scope.tipo === "corretor" && corretor_id && corretor_id !== scope.userId) return { erro: "Você só pode consultar a própria meta." };
+          let q = supabaseAdmin.from("metas_mensais").select("corretor_id, ano, mes, meta_vendas, meta_locacoes, meta_receita, meta_leads_atendidos").eq("ano", ano).eq("mes", mes);
+          if (corretor_id) q = q.eq("corretor_id", corretor_id);
+          else if (scope.tipo === "executivo") q = q.in("corretor_id", [scope.userId, ...scope.corretorIds]);
+          else if (scope.tipo === "corretor") q = q.eq("corretor_id", scope.userId);
+          const { data, error } = await q;
+          if (error) return { erro: error.message, metas: [] };
+          return { total: data?.length ?? 0, metas: data ?? [] };
+        },
+      }),
+
+      meta_definir: tool({
+        description: "Define/atualiza a meta mensal de um corretor. APENAS ADMIN. CONFIRME (corretor, mês, valores) antes. Dispara push automático.",
+        inputSchema: z.object({
+          corretor_id: z.string().uuid(),
+          ano: z.number().int().min(2024).max(2100),
+          mes: z.number().int().min(1).max(12),
+          meta_vendas: z.number().int().min(0).max(9999),
+          meta_locacoes: z.number().int().min(0).max(9999),
+          meta_receita: z.number().min(0).max(1_000_000_000),
+          meta_leads_atendidos: z.number().int().min(0).max(9999),
+          confirmado: z.literal(true),
+        }),
+        execute: async ({ corretor_id, ano, mes, meta_vendas, meta_locacoes, meta_receita, meta_leads_atendidos }) => {
+          if (scope.tipo !== "admin") return { erro: "Apenas Admin pode definir metas." };
+          const { data: existente } = await supabaseAdmin.from("metas_mensais").select("id")
+            .eq("corretor_id", corretor_id).eq("ano", ano).eq("mes", mes).maybeSingle();
+          const isUpdate = !!existente;
+          const { error } = await supabaseAdmin.from("metas_mensais").upsert(
+            { corretor_id, ano, mes, meta_vendas, meta_locacoes, meta_receita, meta_leads_atendidos },
+            { onConflict: "corretor_id,ano,mes" },
+          );
+          if (error) return { erro: error.message };
+          try {
+            const { data: prof } = await supabaseAdmin.from("profiles").select("onesignal_external_id").eq("id", corretor_id).maybeSingle();
+            const ext = (prof as { onesignal_external_id: string | null } | null)?.onesignal_external_id;
+            if (ext) {
+              const { sendOneSignalPush } = await import("@/lib/onesignal.server");
+              await sendOneSignalPush({
+                externalIds: [ext],
+                title: isUpdate ? "Sua meta deste mês foi atualizada" : "Você recebeu uma meta este mês",
+                message: `${meta_vendas + meta_locacoes} vendas/locações`,
+                url: "/vendas/metas",
+                data: { tipo: "meta_definida", ano, mes },
+              });
+            }
+          } catch (e) { console.warn("[meta_definir] push falhou", e); }
+          return { ok: true, isUpdate, mensagem: isUpdate ? "Meta atualizada." : "Meta criada." };
+        },
+      }),
+
+      // ============ FINANCIAMENTO ============
+      financiamento_consultar_lead: tool({
+        description: "Consulta o financiamento vinculado a um lead (se houver). RLS limita ao escopo do usuário.",
+        inputSchema: z.object({ lead_id: z.string().uuid() }),
+        execute: async ({ lead_id }) => {
+          const sup = context.supabase as unknown as SupabaseClient;
+          const { data, error } = await sup.from("financiamentos")
+            .select("id, status, observacao, nome, imovel_endereco, imovel_valor, created_at")
+            .eq("lead_id", lead_id).order("created_at", { ascending: false }).limit(1).maybeSingle();
+          if (error) return { erro: error.message };
+          return { financiamento: data ?? null };
+        },
+      }),
+
+      financiamento_listar: tool({
+        description: "Lista financiamentos (Admin ou Correspondente Bancária). Filtro opcional por status.",
+        inputSchema: z.object({
+          status: z.enum(["pendente", "em_analise", "aprovado", "recusado"]).optional(),
+          limite: z.number().int().min(1).max(50).default(20),
+        }),
+        execute: async ({ status, limite }) => {
+          const sup = context.supabase as unknown as SupabaseClient;
+          const { data: isCorresp } = await sup.rpc("is_correspondente_bancaria", { _user_id: context.userId });
+          if (scope.tipo !== "admin" && !isCorresp) return { erro: "Acesso restrito a Admin/Correspondente." };
+          let q = supabaseAdmin.from("financiamentos" as never)
+            .select("id, nome, telefone, status, imovel_endereco, imovel_valor, created_at, lead_id")
+            .order("created_at", { ascending: false }).limit(limite);
+          if (status) q = q.eq("status", status);
+          const { data, error } = await q;
+          if (error) return { erro: error.message, financiamentos: [] };
+          return { total: data?.length ?? 0, financiamentos: data ?? [] };
+        },
+      }),
+
+      financiamento_atualizar_status: tool({
+        description: "Atualiza status do financiamento. APENAS Admin ou Correspondente. CONFIRME (qual financiamento + novo status) antes. Push automático em aprovado/recusado.",
+        inputSchema: z.object({
+          id: z.string().uuid(),
+          status: z.enum(["pendente", "em_analise", "aprovado", "recusado"]),
+          observacao: z.string().max(2000).optional(),
+          confirmado: z.literal(true),
+        }),
+        execute: async ({ id, status, observacao }) => {
+          const sup = context.supabase as unknown as SupabaseClient;
+          const { data: isCorresp } = await sup.rpc("is_correspondente_bancaria", { _user_id: context.userId });
+          if (scope.tipo !== "admin" && !isCorresp) return { erro: "Acesso restrito a Admin/Correspondente." };
+          const { data: prev } = await supabaseAdmin.from("financiamentos" as never).select("status, lead_id, nome").eq("id", id).maybeSingle();
+          const { error } = await supabaseAdmin.from("financiamentos" as never)
+            .update({ status, observacao: observacao || null, updated_by: context.userId } as never).eq("id", id);
+          if (error) return { erro: error.message };
+          const prevRow = prev as { status: string; lead_id: string | null; nome: string } | null;
+          if (prevRow && prevRow.status !== status && (status === "aprovado" || status === "recusado")) {
+            try {
+              const dest = new Set<string>();
+              if (prevRow.lead_id) {
+                const { data: lr } = await supabaseAdmin.from("vendas_leads").select("atribuido_por, corretor_id").eq("id", prevRow.lead_id).maybeSingle();
+                const l = lr as { atribuido_por: string | null; corretor_id: string | null } | null;
+                if (l?.atribuido_por) dest.add(l.atribuido_por);
+                if (l?.corretor_id) dest.add(l.corretor_id);
+              }
+              const { data: admins } = await supabaseAdmin.from("user_roles").select("user_id").eq("role", "admin");
+              ((admins ?? []) as { user_id: string }[]).forEach((a) => dest.add(a.user_id));
+              if (dest.size) {
+                const { data: profs } = await supabaseAdmin.from("profiles").select("onesignal_external_id").in("id", Array.from(dest));
+                const ext = ((profs ?? []) as { onesignal_external_id: string | null }[]).map((p) => p.onesignal_external_id).filter((x): x is string => !!x);
+                if (ext.length) {
+                  const { sendOneSignalPush } = await import("@/lib/onesignal.server");
+                  await sendOneSignalPush({
+                    externalIds: ext,
+                    title: status === "aprovado" ? "Financiamento aprovado" : "Financiamento recusado",
+                    message: `${prevRow.nome}: ${status}${observacao ? ` — ${observacao}` : ""}`,
+                    url: "https://sistemanexus.app/correspondente",
+                    data: { financiamento_id: id, status },
+                  });
+                }
+              }
+            } catch (e) { console.warn("[financiamento_atualizar_status] push falhou", e); }
+          }
+          return { ok: true, mensagem: `Financiamento atualizado para ${status}.` };
+        },
+      }),
+
+      // ============ ATRIBUIÇÃO DE LEAD ============
+      lead_atribuir_plantonista: tool({
+        description: "Atribui um lead de vendas ao plantonista de uma data (default = hoje). APENAS ADMIN. CONFIRME antes. Dispara push para o corretor.",
+        inputSchema: z.object({
+          lead_id: z.string().uuid(),
+          data: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+          confirmado: z.literal(true),
+        }),
+        execute: async ({ lead_id, data: dataStr }) => {
+          if (scope.tipo !== "admin") return { erro: "Apenas Admin pode atribuir leads." };
+          const hoje = dataStr ?? new Date().toISOString().slice(0, 10);
+          const { data: esc } = await supabaseAdmin.from("plantao_escala" as never).select("corretor_id").eq("data", hoje).maybeSingle();
+          const corretorId = (esc as { corretor_id: string } | null)?.corretor_id;
+          if (!corretorId) return { erro: `Não há plantonista escalado em ${hoje}.` };
+          return await atribuirLeadInline(lead_id, corretorId);
+        },
+      }),
+
+      lead_atribuir_corretor: tool({
+        description: "Atribui um lead de vendas a um corretor específico. APENAS ADMIN. Use listar_corretores_disponiveis para descobrir IDs. CONFIRME antes.",
+        inputSchema: z.object({
+          lead_id: z.string().uuid(),
+          corretor_id: z.string().uuid(),
+          confirmado: z.literal(true),
+        }),
+        execute: async ({ lead_id, corretor_id }) => {
+          if (scope.tipo !== "admin") return { erro: "Apenas Admin pode atribuir leads." };
+          return await atribuirLeadInline(lead_id, corretor_id);
+        },
+      }),
     };
+
+    // Helper para as duas tools de atribuição (mesma lógica de atribuirLead em vendas-distribuicao)
+    async function atribuirLeadInline(leadId: string, corretorId: string) {
+      const { data: updated, error } = await supabaseAdmin
+        .from("vendas_leads")
+        .update({
+          corretor_id: corretorId,
+          atribuicao_status: "pendente",
+          atribuido_em: new Date().toISOString(),
+          atribuido_por: context.userId,
+        } as never)
+        .eq("id", leadId)
+        .select("nome, telefone, regiao")
+        .single();
+      if (error) return { erro: error.message };
+      try {
+        const { data: prof } = await supabaseAdmin
+          .from("profiles").select("onesignal_external_id").eq("id", corretorId).maybeSingle();
+        const ext = (prof as { onesignal_external_id: string | null } | null)?.onesignal_external_id;
+        if (ext) {
+          const lead = updated as { nome: string; telefone: string; regiao: string };
+          const { sendOneSignalPush } = await import("@/lib/onesignal.server");
+          await sendOneSignalPush({
+            externalId: ext,
+            title: "🏠 Novo Lead Atribuído!",
+            message: `${lead.nome} · ${lead.telefone} · ${lead.regiao.replace(/_/g, " ")}`,
+            url: "https://sistemanexus.app/vendas/leads",
+            data: { lead_id: leadId },
+          });
+        }
+      } catch (e) { console.warn("[lead_atribuir] push falhou", e); }
+      return { ok: true, mensagem: "Lead atribuído com sucesso." };
+    }
 
     const escopoTexto =
       scope.tipo === "admin"
