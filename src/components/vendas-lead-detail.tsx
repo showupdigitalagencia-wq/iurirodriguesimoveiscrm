@@ -336,6 +336,16 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
         onClose={() => setChecklistVisitaId(null)}
         onConfirmed={() => refetchVisitas()}
       />
+      <MensagemTemplatesDialog
+        open={templatesOpen}
+        onClose={() => setTemplatesOpen(false)}
+        telefone={lead.telefone}
+        vars={{
+          nome_lead: lead.nome,
+          primeiro_nome_lead: lead.nome?.split(" ")[0] ?? null,
+          telefone_lead: lead.telefone,
+        }}
+      />
     </Dialog>
   );
 }
