@@ -1,14 +1,15 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { supabase } from "@/integrations/supabase/client";
 import type { AuthorGroup } from "./stories-bar";
 import { Button } from "@/components/ui/button";
-import { X, Eye, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, Eye, Trash2, ChevronLeft, ChevronRight, Volume2, VolumeX } from "lucide-react";
 import { toast } from "sonner";
 import { StoryViewsSheet } from "./story-views-sheet";
 
 const BUCKET = "feed";
-const DURATION_MS = 6000;
+const IMAGE_DURATION_MS = 6000;
+const FALLBACK_VIDEO_DURATION_MS = 15000;
 
 function initials(name: string) {
   return name.trim().split(/\s+/).slice(0, 2).map((p) => p[0]?.toUpperCase() ?? "").join("") || "?";
@@ -37,28 +38,31 @@ export function StoryViewer({
   const [storyIdx, setStoryIdx] = useState(0);
   const [progress, setProgress] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [muted, setMuted] = useState(true);
   const [urlCache, setUrlCache] = useState<Record<string, string>>({});
   const [showViews, setShowViews] = useState(false);
   const rafRef = useRef<number | null>(null);
   const startRef = useRef<number>(0);
   const accumRef = useRef<number>(0);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const touchStart = useRef<{ x: number; y: number } | null>(null);
 
   const group = groups[authorIdx];
   const story = group?.stories[storyIdx];
   const isOwner = !!story && userId === story.author_id;
+  const isVideo = story?.media_type === "video";
 
-  // resolve signed url
+  // resolve signed url + preload next
   useEffect(() => {
     if (!story) return;
-    if (urlCache[story.id]) return;
     let cancelled = false;
-    supabase.storage.from(BUCKET).createSignedUrl(story.image_path, 60 * 60).then(({ data }) => {
-      if (!cancelled && data?.signedUrl) {
-        setUrlCache((c) => ({ ...c, [story.id]: data.signedUrl }));
-      }
-    });
-    // preload próximo
+    if (!urlCache[story.id]) {
+      supabase.storage.from(BUCKET).createSignedUrl(story.image_path, 60 * 60).then(({ data }) => {
+        if (!cancelled && data?.signedUrl) {
+          setUrlCache((c) => ({ ...c, [story.id]: data.signedUrl }));
+        }
+      });
+    }
     const next = group.stories[storyIdx + 1];
     if (next && !urlCache[next.id]) {
       supabase.storage.from(BUCKET).createSignedUrl(next.image_path, 60 * 60).then(({ data }) => {
@@ -99,7 +103,12 @@ export function StoryViewer({
     ).then(() => null);
   }, [story, userId]);
 
-  // animação de progresso
+  // duração efetiva do story atual
+  const durationMs = isVideo
+    ? (story?.duration_ms && story.duration_ms > 0 ? story.duration_ms : FALLBACK_VIDEO_DURATION_MS)
+    : IMAGE_DURATION_MS;
+
+  // progresso por rAF — para vídeo, lemos do elemento
   useEffect(() => {
     setProgress(0);
     accumRef.current = 0;
@@ -112,8 +121,13 @@ export function StoryViewer({
         rafRef.current = requestAnimationFrame(tick);
         return;
       }
-      const elapsed = accumRef.current + (t - startRef.current);
-      const p = Math.min(1, elapsed / DURATION_MS);
+      let p: number;
+      if (isVideo && videoRef.current && videoRef.current.duration > 0) {
+        p = Math.min(1, videoRef.current.currentTime / videoRef.current.duration);
+      } else {
+        const elapsed = accumRef.current + (t - startRef.current);
+        p = Math.min(1, elapsed / durationMs);
+      }
       setProgress(p);
       if (p >= 1) {
         goNext();
@@ -123,7 +137,14 @@ export function StoryViewer({
     };
     rafRef.current = requestAnimationFrame(tick);
     return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
-  }, [story?.id, paused, goNext]);
+  }, [story?.id, paused, goNext, isVideo, durationMs]);
+
+  // controla play/pause do vídeo quando paused muda
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (paused) v.pause(); else v.play().catch(() => null);
+  }, [paused, story?.id]);
 
   // pausa atualiza acumulado
   useEffect(() => {
@@ -152,13 +173,12 @@ export function StoryViewer({
     supabase.storage.from(BUCKET).remove([story.image_path]).catch(() => null);
     toast.success("Story removido");
     onChanged();
-    // pular pra próximo
     goNext();
   }
 
   if (!group || !story) return null;
 
-  const imgUrl = urlCache[story.id];
+  const mediaUrl = urlCache[story.id];
 
   function onTouchStart(e: React.TouchEvent) {
     const t = e.touches[0];
@@ -178,7 +198,6 @@ export function StoryViewer({
       if (dx < 0) goNext(); else goPrev();
       return;
     }
-    // tap
     if (Math.abs(dx) < 8 && Math.abs(dy) < 8) {
       const w = window.innerWidth;
       if (t.clientX < w / 3) goPrev(); else goNext();
@@ -187,28 +206,36 @@ export function StoryViewer({
 
   const node = (
     <div className="fixed inset-0 z-[100] bg-black text-white select-none" role="dialog" aria-modal>
-      {/* área de toque mobile */}
       <div
         className="absolute inset-0"
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
       />
 
-      {/* imagem */}
       <div className="absolute inset-0 grid place-items-center">
-        {imgUrl ? (
-          <img src={imgUrl} alt="" className="max-h-full max-w-full object-contain" draggable={false} />
+        {mediaUrl ? (
+          isVideo ? (
+            <video
+              ref={videoRef}
+              key={story.id}
+              src={mediaUrl}
+              className="max-h-full max-w-full object-contain"
+              autoPlay
+              muted={muted}
+              playsInline
+              onEnded={goNext}
+            />
+          ) : (
+            <img src={mediaUrl} alt="" className="max-h-full max-w-full object-contain" draggable={false} />
+          )
         ) : (
           <div className="h-full w-full bg-neutral-900 animate-pulse" />
         )}
       </div>
 
-      {/* gradiente topo */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/70 to-transparent" />
-      {/* gradiente base */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/70 to-transparent" />
 
-      {/* barras de progresso */}
       <div className="absolute top-3 inset-x-3 flex gap-1">
         {group.stories.map((_, i) => (
           <div key={i} className="flex-1 h-0.5 rounded-full bg-white/30 overflow-hidden">
@@ -220,7 +247,6 @@ export function StoryViewer({
         ))}
       </div>
 
-      {/* header */}
       <div className="absolute top-6 inset-x-3 flex items-center gap-3 pt-2">
         <span className="h-9 w-9 rounded-full bg-gradient-to-br from-gold/40 to-gold/10 border border-gold/30 grid place-items-center text-xs font-semibold text-gold">
           {initials(group.authorName)}
@@ -230,6 +256,15 @@ export function StoryViewer({
           <div className="text-[11px] text-white/70">{formatRelative(story.created_at)}</div>
         </div>
         <div className="ml-auto flex items-center gap-1 pointer-events-auto">
+          {isVideo && (
+            <Button
+              variant="ghost" size="icon" className="text-white hover:bg-white/10"
+              onClick={() => setMuted((m) => !m)}
+              aria-label={muted ? "Ativar som" : "Silenciar"}
+            >
+              {muted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+            </Button>
+          )}
           {(isOwner || isAdmin) && (
             <Button
               variant="ghost" size="icon" className="text-white hover:bg-white/10"
@@ -247,7 +282,6 @@ export function StoryViewer({
         </div>
       </div>
 
-      {/* legenda + visto por */}
       <div className="absolute bottom-4 inset-x-4 flex items-end justify-between gap-3 pointer-events-none">
         <div className="text-sm whitespace-pre-wrap max-w-[80%]">{story.caption ?? ""}</div>
         {(isOwner || isAdmin) && (
@@ -261,7 +295,6 @@ export function StoryViewer({
         )}
       </div>
 
-      {/* setas desktop */}
       <button
         onClick={goPrev}
         className="hidden md:grid absolute left-2 top-1/2 -translate-y-1/2 h-10 w-10 place-items-center rounded-full bg-white/10 hover:bg-white/20"
