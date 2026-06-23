@@ -390,6 +390,100 @@ export type Database = {
           },
         ]
       }
+      feed_comments: {
+        Row: {
+          author_id: string
+          body: string
+          created_at: string
+          id: string
+          post_id: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          created_at?: string
+          id?: string
+          post_id: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          created_at?: string
+          id?: string
+          post_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feed_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "feed_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feed_likes: {
+        Row: {
+          created_at: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feed_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "feed_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feed_posts: {
+        Row: {
+          author_id: string
+          caption: string | null
+          created_at: string
+          hidden_at: string | null
+          hidden_by: string | null
+          id: string
+          image_path: string
+          source: string
+          source_ref: string | null
+        }
+        Insert: {
+          author_id: string
+          caption?: string | null
+          created_at?: string
+          hidden_at?: string | null
+          hidden_by?: string | null
+          id?: string
+          image_path: string
+          source?: string
+          source_ref?: string | null
+        }
+        Update: {
+          author_id?: string
+          caption?: string | null
+          created_at?: string
+          hidden_at?: string | null
+          hidden_by?: string | null
+          id?: string
+          image_path?: string
+          source?: string
+          source_ref?: string | null
+        }
+        Relationships: []
+      }
       financiamentos: {
         Row: {
           comp_renda_path: string | null

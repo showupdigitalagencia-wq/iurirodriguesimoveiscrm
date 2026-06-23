@@ -23,6 +23,7 @@ import { Route as AuthenticatedRelatorioRouteImport } from './routes/_authentica
 import { Route as AuthenticatedPipelineRouteImport } from './routes/_authenticated/pipeline'
 import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
 import { Route as AuthenticatedLeadsRouteImport } from './routes/_authenticated/leads'
+import { Route as AuthenticatedInicioRouteImport } from './routes/_authenticated/inicio'
 import { Route as AuthenticatedExecutivosRouteImport } from './routes/_authenticated/executivos'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCorretoresRouteImport } from './routes/_authenticated/corretores'
@@ -137,6 +138,11 @@ const AuthenticatedNotificacoesRoute =
 const AuthenticatedLeadsRoute = AuthenticatedLeadsRouteImport.update({
   id: '/leads',
   path: '/leads',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedInicioRoute = AuthenticatedInicioRouteImport.update({
+  id: '/inicio',
+  path: '/inicio',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedExecutivosRoute = AuthenticatedExecutivosRouteImport.update({
@@ -408,6 +414,7 @@ export interface FileRoutesByFullPath {
   '/corretores': typeof AuthenticatedCorretoresRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/executivos': typeof AuthenticatedExecutivosRouteWithChildren
+  '/inicio': typeof AuthenticatedInicioRoute
   '/leads': typeof AuthenticatedLeadsRouteWithChildren
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/pipeline': typeof AuthenticatedPipelineRoute
@@ -465,6 +472,7 @@ export interface FileRoutesByTo {
   '/correspondente': typeof AuthenticatedCorrespondenteRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/inicio': typeof AuthenticatedInicioRoute
   '/leads': typeof AuthenticatedLeadsRouteWithChildren
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/pipeline': typeof AuthenticatedPipelineRoute
@@ -525,6 +533,7 @@ export interface FileRoutesById {
   '/_authenticated/corretores': typeof AuthenticatedCorretoresRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/executivos': typeof AuthenticatedExecutivosRouteWithChildren
+  '/_authenticated/inicio': typeof AuthenticatedInicioRoute
   '/_authenticated/leads': typeof AuthenticatedLeadsRouteWithChildren
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/_authenticated/pipeline': typeof AuthenticatedPipelineRoute
@@ -586,6 +595,7 @@ export interface FileRouteTypes {
     | '/corretores'
     | '/dashboard'
     | '/executivos'
+    | '/inicio'
     | '/leads'
     | '/notificacoes'
     | '/pipeline'
@@ -643,6 +653,7 @@ export interface FileRouteTypes {
     | '/correspondente'
     | '/corretores'
     | '/dashboard'
+    | '/inicio'
     | '/leads'
     | '/notificacoes'
     | '/pipeline'
@@ -702,6 +713,7 @@ export interface FileRouteTypes {
     | '/_authenticated/corretores'
     | '/_authenticated/dashboard'
     | '/_authenticated/executivos'
+    | '/_authenticated/inicio'
     | '/_authenticated/leads'
     | '/_authenticated/notificacoes'
     | '/_authenticated/pipeline'
@@ -868,6 +880,13 @@ declare module '@tanstack/react-router' {
       path: '/leads'
       fullPath: '/leads'
       preLoaderRoute: typeof AuthenticatedLeadsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/inicio': {
+      id: '/_authenticated/inicio'
+      path: '/inicio'
+      fullPath: '/inicio'
+      preLoaderRoute: typeof AuthenticatedInicioRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/executivos': {
@@ -1276,6 +1295,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCorretoresRoute: typeof AuthenticatedCorretoresRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedExecutivosRoute: typeof AuthenticatedExecutivosRouteWithChildren
+  AuthenticatedInicioRoute: typeof AuthenticatedInicioRoute
   AuthenticatedLeadsRoute: typeof AuthenticatedLeadsRouteWithChildren
   AuthenticatedNotificacoesRoute: typeof AuthenticatedNotificacoesRoute
   AuthenticatedPipelineRoute: typeof AuthenticatedPipelineRoute
@@ -1294,6 +1314,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCorretoresRoute: AuthenticatedCorretoresRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedExecutivosRoute: AuthenticatedExecutivosRouteWithChildren,
+  AuthenticatedInicioRoute: AuthenticatedInicioRoute,
   AuthenticatedLeadsRoute: AuthenticatedLeadsRouteWithChildren,
   AuthenticatedNotificacoesRoute: AuthenticatedNotificacoesRoute,
   AuthenticatedPipelineRoute: AuthenticatedPipelineRoute,
