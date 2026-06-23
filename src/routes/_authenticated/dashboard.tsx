@@ -5,7 +5,7 @@ import { Users, Clock, CheckCircle2 } from "lucide-react";
 import { ETAPAS, etapaColor, type LeadRow } from "@/lib/lead-helpers";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard — Sistema NEXUS" }] }),
+  head: () => ({ meta: [{ title: "Centro de Comando — Sistema NEXUS" }] }),
   component: DashboardPage,
 });
 
