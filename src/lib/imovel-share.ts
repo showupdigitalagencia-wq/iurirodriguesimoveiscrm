@@ -42,12 +42,16 @@ export type ImovelShareInput = {
   codigo?: string | null;
 };
 
-export function buildImovelShareMessage(imovel: ImovelShareInput, fotos: string[] = []): string {
+export function buildImovelShareMessage(
+  imovel: ImovelShareInput,
+  fotos: string[] = [],
+  opts: { includePhotoLinks?: boolean } = {},
+): string {
   const lines: string[] = [];
 
   const tipo = TIPO_LABEL[imovel.tipo ?? ""] ?? (imovel.tipo ? imovel.tipo : "Imóvel");
   const fin = FINALIDADE_LABEL[imovel.finalidade ?? ""] ?? null;
-  lines.push(`🏠 *${tipo}${fin ? ` · ${fin}` : ""}*${imovel.codigo ? ` (${imovel.codigo})` : ""}`);
+  lines.push(`🏠 ${tipo}${fin ? ` · ${fin}` : ""}`);
 
   const endereco = [
     [imovel.rua, imovel.numero].filter(Boolean).join(", "),
@@ -74,10 +78,12 @@ export function buildImovelShareMessage(imovel: ImovelShareInput, fotos: string[
 
   if (imovel.vitrine_url) lines.push(`\n🔗 ${imovel.vitrine_url}`);
 
-  const fotosTop = fotos.filter(Boolean).slice(0, 3);
-  if (fotosTop.length) {
-    lines.push("");
-    fotosTop.forEach((u) => lines.push(u));
+  if (opts.includePhotoLinks) {
+    const fotosTop = fotos.filter(Boolean).slice(0, 3);
+    if (fotosTop.length) {
+      lines.push("");
+      fotosTop.forEach((u) => lines.push(u));
+    }
   }
 
   return lines.join("\n");
@@ -87,4 +93,60 @@ export function openWhatsAppShare(message: string, telefone?: string | null) {
   const phone = telefone ? telefone.replace(/\D/g, "") : "";
   const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
   window.open(url, "_blank", "noopener,noreferrer");
+}
+
+async function urlsToFiles(urls: string[], max = 6): Promise<File[]> {
+  const top = urls.filter(Boolean).slice(0, max);
+  const files: File[] = [];
+  await Promise.all(
+    top.map(async (url, i) => {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) return;
+        const blob = await res.blob();
+        const type = blob.type || "image/jpeg";
+        const ext = type.split("/")[1]?.split("+")[0] || "jpg";
+        files.push(new File([blob], `imovel-${i + 1}.${ext}`, { type }));
+      } catch {
+        /* ignora foto que falhar */
+      }
+    }),
+  );
+  return files;
+}
+
+/**
+ * Tenta abrir o menu de compartilhamento NATIVO com fotos reais (Web Share API Level 2).
+ * Faz fallback para wa.me com texto puro (sem links de foto) se não suportado.
+ */
+export async function shareImovelNative(
+  imovel: ImovelShareInput,
+  fotosUrls: string[] = [],
+): Promise<"native" | "whatsapp"> {
+  const text = buildImovelShareMessage(imovel, fotosUrls, { includePhotoLinks: false });
+
+  try {
+    const nav = typeof navigator !== "undefined" ? (navigator as Navigator) : null;
+    if (nav && typeof nav.share === "function") {
+      const files = await urlsToFiles(fotosUrls);
+      const data: ShareData & { files?: File[] } = { text };
+      if (files.length && typeof nav.canShare === "function" && nav.canShare({ files })) {
+        data.files = files;
+      }
+      if (!data.files && !nav.canShare?.({ text })) {
+        // share existe mas não aceita esse payload — cai no fallback
+        throw new Error("share não suportado para esse payload");
+      }
+      await nav.share(data);
+      return "native";
+    }
+  } catch (err) {
+    const name = (err as { name?: string })?.name;
+    if (name === "AbortError") return "native"; // usuário cancelou
+    // segue para fallback
+  }
+
+  const fallbackMsg = buildImovelShareMessage(imovel, fotosUrls, { includePhotoLinks: true });
+  openWhatsAppShare(fallbackMsg);
+  return "whatsapp";
 }
