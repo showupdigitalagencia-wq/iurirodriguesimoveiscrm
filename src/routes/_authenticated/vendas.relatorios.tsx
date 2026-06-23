@@ -424,7 +424,7 @@ function VendasRelatoriosPage() {
                         <td className="px-3 py-2 text-right">{c.vendas}</td>
                         <td className="px-3 py-2 text-right">{c.locacoes}</td>
                         <td className="px-3 py-2 text-right">{c.conversao}%</td>
-                        <td className="px-3 py-2 text-right font-semibold text-gold">{brl(Number(c.receita))}</td>
+                        {data.escopo.is_admin && <td className="px-3 py-2 text-right font-semibold text-gold">{brl(Number(c.receita))}</td>}
                       </tr>
                     ))}
                   </tbody>
