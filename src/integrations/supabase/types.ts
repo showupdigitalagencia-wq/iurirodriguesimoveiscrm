@@ -749,6 +749,7 @@ export type Database = {
           banheiros: number | null
           captador_id: string | null
           cep: string | null
+          chave_atraso_notificado_em: string | null
           chave_com_id: string | null
           chave_foto_atual: string | null
           chave_retirada_em: string | null
@@ -798,6 +799,7 @@ export type Database = {
           banheiros?: number | null
           captador_id?: string | null
           cep?: string | null
+          chave_atraso_notificado_em?: string | null
           chave_com_id?: string | null
           chave_foto_atual?: string | null
           chave_retirada_em?: string | null
@@ -847,6 +849,7 @@ export type Database = {
           banheiros?: number | null
           captador_id?: string | null
           cep?: string | null
+          chave_atraso_notificado_em?: string | null
           chave_com_id?: string | null
           chave_foto_atual?: string | null
           chave_retirada_em?: string | null
@@ -1798,6 +1801,7 @@ export type Database = {
       }
       vendas_visitas: {
         Row: {
+          chave_lembrete_enviado_em: string | null
           comparecimento: string | null
           confirmada_em: string | null
           confirmada_por: string | null
@@ -1815,6 +1819,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          chave_lembrete_enviado_em?: string | null
           comparecimento?: string | null
           confirmada_em?: string | null
           confirmada_por?: string | null
@@ -1832,6 +1837,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          chave_lembrete_enviado_em?: string | null
           comparecimento?: string | null
           confirmada_em?: string | null
           confirmada_por?: string | null
