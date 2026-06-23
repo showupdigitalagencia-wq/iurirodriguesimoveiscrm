@@ -28,6 +28,7 @@ import { Route as AuthenticatedExecutivosRouteImport } from './routes/_authentic
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCorretoresRouteImport } from './routes/_authenticated/corretores'
 import { Route as AuthenticatedCorrespondenteRouteImport } from './routes/_authenticated/correspondente'
+import { Route as AuthenticatedConquistasRouteImport } from './routes/_authenticated/conquistas'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as AuthenticatedCaptacaoLinksRouteImport } from './routes/_authenticated/captacao-links'
 import { Route as AuthenticatedAgendaRouteImport } from './routes/_authenticated/agenda'
@@ -171,6 +172,11 @@ const AuthenticatedCorrespondenteRoute =
     path: '/correspondente',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedConquistasRoute = AuthenticatedConquistasRouteImport.update({
+  id: '/conquistas',
+  path: '/conquistas',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedConfiguracoesRoute =
   AuthenticatedConfiguracoesRouteImport.update({
     id: '/configuracoes',
@@ -445,6 +451,7 @@ export interface FileRoutesByFullPath {
   '/agenda': typeof AuthenticatedAgendaRoute
   '/captacao-links': typeof AuthenticatedCaptacaoLinksRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
+  '/conquistas': typeof AuthenticatedConquistasRoute
   '/correspondente': typeof AuthenticatedCorrespondenteRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -509,6 +516,7 @@ export interface FileRoutesByTo {
   '/agenda': typeof AuthenticatedAgendaRoute
   '/captacao-links': typeof AuthenticatedCaptacaoLinksRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
+  '/conquistas': typeof AuthenticatedConquistasRoute
   '/correspondente': typeof AuthenticatedCorrespondenteRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -574,6 +582,7 @@ export interface FileRoutesById {
   '/_authenticated/agenda': typeof AuthenticatedAgendaRoute
   '/_authenticated/captacao-links': typeof AuthenticatedCaptacaoLinksRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
+  '/_authenticated/conquistas': typeof AuthenticatedConquistasRoute
   '/_authenticated/correspondente': typeof AuthenticatedCorrespondenteRoute
   '/_authenticated/corretores': typeof AuthenticatedCorretoresRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -641,6 +650,7 @@ export interface FileRouteTypes {
     | '/agenda'
     | '/captacao-links'
     | '/configuracoes'
+    | '/conquistas'
     | '/correspondente'
     | '/corretores'
     | '/dashboard'
@@ -705,6 +715,7 @@ export interface FileRouteTypes {
     | '/agenda'
     | '/captacao-links'
     | '/configuracoes'
+    | '/conquistas'
     | '/correspondente'
     | '/corretores'
     | '/dashboard'
@@ -769,6 +780,7 @@ export interface FileRouteTypes {
     | '/_authenticated/agenda'
     | '/_authenticated/captacao-links'
     | '/_authenticated/configuracoes'
+    | '/_authenticated/conquistas'
     | '/_authenticated/correspondente'
     | '/_authenticated/corretores'
     | '/_authenticated/dashboard'
@@ -984,6 +996,13 @@ declare module '@tanstack/react-router' {
       path: '/correspondente'
       fullPath: '/correspondente'
       preLoaderRoute: typeof AuthenticatedCorrespondenteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/conquistas': {
+      id: '/_authenticated/conquistas'
+      path: '/conquistas'
+      fullPath: '/conquistas'
+      preLoaderRoute: typeof AuthenticatedConquistasRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/configuracoes': {
@@ -1397,6 +1416,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAgendaRoute: typeof AuthenticatedAgendaRoute
   AuthenticatedCaptacaoLinksRoute: typeof AuthenticatedCaptacaoLinksRoute
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
+  AuthenticatedConquistasRoute: typeof AuthenticatedConquistasRoute
   AuthenticatedCorrespondenteRoute: typeof AuthenticatedCorrespondenteRoute
   AuthenticatedCorretoresRoute: typeof AuthenticatedCorretoresRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
@@ -1416,6 +1436,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAgendaRoute: AuthenticatedAgendaRoute,
   AuthenticatedCaptacaoLinksRoute: AuthenticatedCaptacaoLinksRoute,
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
+  AuthenticatedConquistasRoute: AuthenticatedConquistasRoute,
   AuthenticatedCorrespondenteRoute: AuthenticatedCorrespondenteRoute,
   AuthenticatedCorretoresRoute: AuthenticatedCorretoresRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
