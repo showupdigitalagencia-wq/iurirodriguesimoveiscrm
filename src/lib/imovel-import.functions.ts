@@ -531,4 +531,15 @@ export async function runImovelImport(
         map_query: mapQuery,
       },
     };
+  };
+}
+
+export const importImovelFromUrl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { url: string }) =>
+    z.object({ url: z.string().url() }).parse(input)
+  )
+  .handler(async ({ data }): Promise<ImovelImportResult> => {
+    return runImovelImport(data.url);
   });
+
