@@ -19,6 +19,8 @@ import { MessageCircle, Trash2, Pencil, MapPin, Video, Banknote, Copy, CheckCirc
 import { FecharLeadDialog } from "@/components/fechar-lead-dialog";
 import { LeadTimeline } from "@/components/lead-timeline";
 import { ChecklistVisitaDialog } from "@/components/checklist-visita-dialog";
+import { MensagemTemplatesDialog } from "@/components/mensagem-templates-dialog";
+import { MessagesSquare } from "lucide-react";
 
 function toLocalInputValue(d: Date) {
   const pad = (n: number) => String(n).padStart(2, "0");
