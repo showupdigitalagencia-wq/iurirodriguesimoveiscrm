@@ -81,11 +81,19 @@ async function applyResync(
 
   for (const field of OVERWRITE_FIELDS) {
     const newV = d[field];
-    if (typeof newV === "number" && Number.isFinite(newV) && newV > 0 && imovel[field] !== newV) {
+    const curV = imovel[field];
+    const parserHasValue = typeof newV === "number" && Number.isFinite(newV) && newV > 0;
+    if (parserHasValue && curV !== newV) {
       update[field] = newV;
-      changes.push({ field, oldValue: asScalar(imovel[field]), newValue: newV });
+      changes.push({ field, oldValue: asScalar(curV), newValue: newV });
+    } else if (!parserHasValue && typeof curV === "number" && curV === 0) {
+      // Lixo legado (bug antigo gravava 0 quando JSON-LD vinha zerado).
+      // Parser confirma que o site não publica o dado → limpa para null.
+      update[field] = null;
+      changes.push({ field, oldValue: 0, newValue: null });
     }
   }
+
   for (const field of FILL_IF_EMPTY) {
     const newV = d[field];
     if (newV != null && newV !== "" && isEmpty(imovel[field])) {
