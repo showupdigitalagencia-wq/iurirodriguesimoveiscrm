@@ -296,8 +296,10 @@ function ImoveisPage() {
               imoveis={filtered as unknown as Record<string, unknown>[]}
               onImported={() => qc.invalidateQueries({ queryKey: ["imoveis"] })}
             />
+            <ResyncTodosButton onDone={() => qc.invalidateQueries({ queryKey: ["imoveis"] })} />
             <Button onClick={openNew} className="flex-1 sm:flex-none"><Plus className="h-4 w-4 mr-1" /> Novo Imóvel</Button>
           </div>
+
         </div>
       </div>
 
