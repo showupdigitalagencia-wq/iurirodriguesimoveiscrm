@@ -68,6 +68,7 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
   const confirmarVisitaFn = useServerFn(confirmarVisita);
   const visitasPendentes = visitas.filter((v) => v.comparecimento == null && new Date(v.data_inicio) < new Date());
   const [checklistVisitaId, setChecklistVisitaId] = useState<string | null>(null);
+  const [templatesOpen, setTemplatesOpen] = useState(false);
   async function handleNaoCompareceu(visitaId: string) {
     try {
       await confirmarVisitaFn({ data: { visita_id: visitaId, comparecimento: "nao_compareceu" } });
