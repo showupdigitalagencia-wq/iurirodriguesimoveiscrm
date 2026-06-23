@@ -194,6 +194,14 @@ function ImoveisPage() {
                 {i.rua}{i.numero ? `, ${i.numero}` : ""}{i.bairro ? ` — ${i.bairro}` : ""}{i.cidade ? ` / ${i.cidade}` : ""}
               </div>
               <div className="text-xs text-muted-foreground">Proprietário: {i.proprietario_nome}</div>
+              {(i as unknown as { captador_id?: string | null }).captador_id && (
+                <div className="text-xs text-muted-foreground">
+                  Captador: {profilesMap[(i as unknown as { captador_id: string }).captador_id] ?? "—"}
+                </div>
+              )}
+              {(i as unknown as { gestao_patrimonio?: boolean }).gestao_patrimonio && (
+                <Badge variant="outline" className="text-[10px] border-gold/40 text-gold">Gestão de Patrimônio</Badge>
+              )}
               {(i as unknown as { dia_vencimento?: number | null }).dia_vencimento != null && (
                 <div className="text-xs text-muted-foreground">Vencimento: dia {(i as unknown as { dia_vencimento?: number | null }).dia_vencimento}</div>
               )}
