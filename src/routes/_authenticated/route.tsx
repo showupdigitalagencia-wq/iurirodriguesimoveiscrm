@@ -97,7 +97,7 @@ function AuthLayout() {
     if (isCorrespondente && !isAdmin && !isCorretorVendas && !isAdministrativo) {
       return [
         { to: "/inicio", label: "Início", icon: Home },
-        { to: "/correspondente", label: "Financiamento", icon: Banknote },
+        { to: "/correspondente", label: "Crédito Nexus", icon: Banknote },
         { to: "/notificacoes", label: "Notificações", icon: BellRing },
         { to: "/configuracoes", label: "Configurações", icon: Settings },
       ];
@@ -109,8 +109,8 @@ function AuthLayout() {
       ];
       if (adminModuloAtivo) {
         items.push(
-          { to: "/admin", label: "Administração", icon: Building2 },
-          { to: "/executivos/landing-page", label: "Landing Page", icon: Megaphone },
+          { to: "/admin", label: "Gestão Patrimonial", icon: Building2 },
+          { to: "/executivos/landing-page", label: "Central de Conversão", icon: Megaphone },
           { to: "/notificacoes", label: "Notificações", icon: BellRing },
           { to: "/configuracoes", label: "Configurações", icon: Settings },
         );
@@ -124,9 +124,9 @@ function AuthLayout() {
       ];
       if (corretorPodeVer) {
         items.push(
-          { to: "/vendas", label: "Dashboard", icon: LayoutDashboard },
-          { to: "/vendas/leads", label: "Leads", icon: Users },
-          { to: "/vendas/pipeline", label: "Pipeline", icon: Kanban },
+          { to: "/vendas", label: "Centro de Comando", icon: LayoutDashboard },
+          { to: "/vendas/leads", label: "Oportunidades", icon: Users },
+          { to: "/vendas/pipeline", label: "Negócios", icon: Kanban },
           { to: "/vendas/agenda", label: "Agenda", icon: CalendarDays },
           { to: "/vendas/plantao", label: "Plantão", icon: CalendarClock },
           { to: "/notificacoes", label: "Notificações", icon: BellRing },
@@ -137,10 +137,10 @@ function AuthLayout() {
     }
     const base: Array<{ to: string; label: string; icon: typeof LayoutDashboard }> = [...NAV];
     if ((isAdmin || isExec) && vendasAtivo) base.push({ to: "/vendas", label: "Vendas", icon: Briefcase });
-    if (isAdmin && adminModuloAtivo) base.push({ to: "/admin", label: "Administração", icon: Building2 });
-    if (isAdmin || isExec) base.push({ to: "/executivos/landing-page", label: "Landing Page", icon: Megaphone });
-    if (isAdmin || isExec) base.push({ to: "/captacao-links", label: "Links de Captação", icon: Share2 });
-    if (isAdmin) base.push({ to: "/correspondente", label: "Financiamento", icon: Banknote });
+    if (isAdmin && adminModuloAtivo) base.push({ to: "/admin", label: "Gestão Patrimonial", icon: Building2 });
+    if (isAdmin || isExec) base.push({ to: "/executivos/landing-page", label: "Central de Conversão", icon: Megaphone });
+    if (isAdmin || isExec) base.push({ to: "/captacao-links", label: "Hub de Captação", icon: Share2 });
+    if (isAdmin) base.push({ to: "/correspondente", label: "Crédito Nexus", icon: Banknote });
     return isAdmin ? [...base, ...ADMIN_NAV, ...CONFIG_NAV] : [...base, ...CONFIG_NAV];
   }, [isAdmin, isCorretorVendas, isAdministrativo, isCorrespondente, vendasAtivo, vendasAcessoIndividual, adminModuloAtivo, isExec]);
 
