@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Plus } from "lucide-react";
 import { StoryViewer } from "./story-viewer";
 import { StoryUploadDialog } from "./story-upload-dialog";
+import { signAvatarMap } from "@/lib/avatar-url";
+import { UserAvatar } from "@/components/user-avatar";
 
 export type StoryRow = {
   id: string;
@@ -18,13 +20,11 @@ export type StoryRow = {
 export type AuthorGroup = {
   authorId: string;
   authorName: string;
+  authorAvatarUrl: string | null;
   stories: StoryRow[];
   hasUnseen: boolean;
 };
 
-function initials(name: string) {
-  return name.trim().split(/\s+/).slice(0, 2).map((p) => p[0]?.toUpperCase() ?? "").join("") || "?";
-}
 
 export function StoriesBar({
   userId,
@@ -36,7 +36,9 @@ export function StoriesBar({
   isAdmin: boolean;
 }) {
   const [stories, setStories] = useState<StoryRow[]>([]);
-  const [profiles, setProfiles] = useState<Record<string, string>>({});
+  const [profiles, setProfiles] = useState<Record<string, { nome: string; avatar_url: string | null }>>({});
+  const [avatarUrls, setAvatarUrls] = useState<Record<string, string>>({});
+  const [ownAvatar, setOwnAvatar] = useState<string | null>(null);
   const [seen, setSeen] = useState<Set<string>>(new Set());
   const [openUpload, setOpenUpload] = useState(false);
   const [viewerAuthorIndex, setViewerAuthorIndex] = useState<number | null>(null);
@@ -52,11 +54,16 @@ export function StoriesBar({
     const list = (data ?? []) as (StoryRow & { hidden_at: string | null })[];
     setStories(list.map(({ hidden_at: _h, ...rest }) => rest));
     const authorIds = Array.from(new Set(list.map((s) => s.author_id)));
+    if (userId && !authorIds.includes(userId)) authorIds.push(userId);
     if (authorIds.length) {
-      const { data: profs } = await supabase.from("profiles").select("id, nome").in("id", authorIds);
-      const map: Record<string, string> = {};
-      for (const p of (profs ?? []) as { id: string; nome: string }[]) map[p.id] = p.nome;
+      const { data: profs } = await supabase.from("profiles").select("id, nome, avatar_url").in("id", authorIds);
+      const rows = (profs ?? []) as { id: string; nome: string; avatar_url: string | null }[];
+      const map: Record<string, { nome: string; avatar_url: string | null }> = {};
+      for (const p of rows) map[p.id] = { nome: p.nome, avatar_url: p.avatar_url };
       setProfiles(map);
+      const signed = await signAvatarMap(rows.map((r) => ({ id: r.id, path: r.avatar_url })));
+      setAvatarUrls(signed);
+      if (userId) setOwnAvatar(signed[userId] ?? null);
     }
     if (userId && list.length) {
       const { data: views } = await supabase
@@ -90,7 +97,8 @@ export function StoriesBar({
       const hasUnseen = items.some((s) => !seen.has(s.id));
       arr.push({
         authorId,
-        authorName: profiles[authorId] ?? "—",
+        authorName: profiles[authorId]?.nome ?? "—",
+        authorAvatarUrl: avatarUrls[authorId] ?? null,
         stories: items,
         hasUnseen,
       });
@@ -108,7 +116,8 @@ export function StoriesBar({
       if (idx > 0) { const [me] = arr.splice(idx, 1); arr.unshift(me); }
     }
     return arr;
-  }, [stories, profiles, seen, userId]);
+  }, [stories, profiles, avatarUrls, seen, userId]);
+
 
   function openViewer(authorId: string) {
     const i = groups.findIndex((g) => g.authorId === authorId);
@@ -125,9 +134,12 @@ export function StoriesBar({
             aria-label="Adicionar story"
           >
             <span className="relative h-16 w-16 rounded-full bg-card border border-border grid place-items-center overflow-hidden">
-              <span className="absolute inset-0 grid place-items-center text-xs font-semibold text-muted-foreground group-hover:opacity-60 transition">
-                {initials(userName)}
-              </span>
+              <UserAvatar
+                name={userName}
+                url={ownAvatar}
+                className="absolute inset-0 h-full w-full text-xs border-0 rounded-full"
+                fallbackClassName="text-xs"
+              />
               <span className="absolute -bottom-0 -right-0 h-6 w-6 rounded-full bg-gold text-gold-foreground grid place-items-center border-2 border-background shadow">
                 <Plus className="h-3.5 w-3.5" />
               </span>
@@ -150,11 +162,14 @@ export function StoriesBar({
                   : "bg-border"
               }`}
             >
-              <span className="block h-full w-full rounded-full bg-background p-[2px]">
-                <span className="block h-full w-full rounded-full bg-gradient-to-br from-gold/30 to-gold/10 border border-gold/20 grid place-items-center text-xs font-semibold text-gold">
-                  {initials(g.authorName)}
-                </span>
-              </span>
+            <span className="block h-full w-full rounded-full bg-background p-[2px]">
+              <UserAvatar
+                name={g.authorName}
+                url={g.authorAvatarUrl}
+                className="block h-full w-full text-xs"
+                fallbackClassName="text-xs"
+              />
+            </span>
             </span>
             <span className="text-[10px] text-muted-foreground max-w-[64px] truncate">
               {g.authorId === userId ? "Você" : g.authorName.split(" ")[0]}

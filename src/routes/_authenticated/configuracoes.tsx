@@ -23,6 +23,7 @@ import {
 import { exportSistemaZip } from "@/lib/export-sistema.functions";
 import { listarBackups, gerarUrlBackup, rodarBackupManual } from "@/lib/backups.functions";
 import { Download, Archive, RefreshCcw } from "lucide-react";
+import { FotoPerfilSection } from "@/components/foto-perfil-section";
 
 type Resp = { id: string; canal: string; nome: string; whatsapp: string };
 type Mapping = {
@@ -64,6 +65,7 @@ function ConfigPage() {
           <h1 className="text-3xl font-bold tracking-tight">Configurações</h1>
           <p className="text-muted-foreground mt-1">Gerencie sua conta.</p>
         </header>
+        <FotoPerfilSection />
         <MinhaContaSection />
         <GoogleConnectSection />
       </div>
@@ -85,6 +87,7 @@ function ConfigPage() {
           <TabsTrigger value="admin">Admin</TabsTrigger>
         </TabsList>
         <TabsContent value="conta" className="mt-6 space-y-6">
+          <FotoPerfilSection />
           <MinhaContaSection />
           <GoogleConnectSection />
         </TabsContent>

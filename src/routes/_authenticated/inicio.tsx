@@ -20,6 +20,8 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { StoriesBar } from "@/components/feed/stories-bar";
+import { UserAvatar } from "@/components/user-avatar";
+import { signAvatarMap } from "@/lib/avatar-url";
 
 
 export const Route = createFileRoute("/_authenticated/inicio")({
@@ -48,7 +50,7 @@ type Comment = {
   created_at: string;
 };
 
-type ProfileLite = { id: string; nome: string };
+type ProfileLite = { id: string; nome: string; avatar_url: string | null };
 
 async function signedUrl(path: string): Promise<string> {
   if (/^https?:\/\//i.test(path)) return path;
@@ -81,6 +83,8 @@ function InicioPage() {
   const [loading, setLoading] = useState(true);
   const [profiles, setProfiles] = useState<Record<string, ProfileLite>>({});
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
+  const [avatarUrls, setAvatarUrls] = useState<Record<string, string>>({});
+
   const [likes, setLikes] = useState<Record<string, { count: number; mine: boolean }>>({});
   const [commentsByPost, setCommentsByPost] = useState<Record<string, Comment[]>>({});
   const [openComments, setOpenComments] = useState<Record<string, boolean>>({});
@@ -103,7 +107,7 @@ function InicioPage() {
     const authorIds = Array.from(new Set(list.map((p) => p.author_id)));
 
     const [profRes, likesRes, myLikesRes, commentsRes] = await Promise.all([
-      supabase.from("profiles").select("id, nome").in("id", authorIds),
+      supabase.from("profiles").select("id, nome, avatar_url").in("id", authorIds),
       supabase.from("feed_likes").select("post_id").in("post_id", ids),
       userId
         ? supabase.from("feed_likes").select("post_id").in("post_id", ids).eq("user_id", userId)
@@ -114,6 +118,7 @@ function InicioPage() {
     const profMap: Record<string, ProfileLite> = {};
     for (const p of (profRes.data ?? []) as ProfileLite[]) profMap[p.id] = p;
     setProfiles(profMap);
+
 
     const counts: Record<string, { count: number; mine: boolean }> = {};
     for (const id of ids) counts[id] = { count: 0, mine: false };
@@ -135,14 +140,21 @@ function InicioPage() {
     const commentAuthors = Array.from(
       new Set((commentsRes.data ?? []).map((c: Comment) => c.author_id).filter((id) => !profMap[id])),
     );
+    let allProfiles: ProfileLite[] = Object.values(profMap);
     if (commentAuthors.length) {
-      const { data } = await supabase.from("profiles").select("id, nome").in("id", commentAuthors);
+      const { data } = await supabase.from("profiles").select("id, nome, avatar_url").in("id", commentAuthors);
+      const extra = (data ?? []) as ProfileLite[];
       setProfiles((prev) => {
         const next = { ...prev };
-        for (const p of (data ?? []) as ProfileLite[]) next[p.id] = p;
+        for (const p of extra) next[p.id] = p;
         return next;
       });
+      allProfiles = allProfiles.concat(extra);
     }
+
+    // assina avatars de todos os autores envolvidos
+    const signed = await signAvatarMap(allProfiles.map((p) => ({ id: p.id, path: p.avatar_url })));
+    setAvatarUrls(signed);
 
     // resolve image urls
     const urlEntries = await Promise.all(
@@ -150,6 +162,7 @@ function InicioPage() {
     );
     setImageUrls(Object.fromEntries(urlEntries));
   }, [userId]);
+
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -283,9 +296,12 @@ function InicioPage() {
               >
                 <div className="flex items-center justify-between gap-3 px-4 py-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-gold/30 to-gold/10 border border-gold/30 grid place-items-center text-sm font-semibold text-gold ring-2 ring-background">
-                      {initials(author?.nome ?? "?")}
-                    </div>
+                    <UserAvatar
+                      name={author?.nome ?? "?"}
+                      url={avatarUrls[p.author_id] ?? null}
+                      className="h-10 w-10 text-sm ring-2 ring-background"
+                      fallbackClassName="text-sm"
+                    />
                     <div className="min-w-0">
                       <div className="text-sm font-semibold truncate">{author?.nome ?? "—"}</div>
                       <div className="text-[11px] text-muted-foreground flex items-center gap-2">
@@ -400,9 +416,12 @@ function InicioPage() {
                       const canDelete = isAdmin || userId === c.author_id;
                       return (
                         <div key={c.id} className="flex items-start gap-2">
-                          <div className="h-7 w-7 rounded-full bg-muted border border-border grid place-items-center text-[10px] font-semibold shrink-0">
-                            {initials(ca?.nome ?? "?")}
-                          </div>
+                          <UserAvatar
+                            name={ca?.nome ?? "?"}
+                            url={avatarUrls[c.author_id] ?? null}
+                            className="h-7 w-7 text-[10px]"
+                            fallbackClassName="text-[10px]"
+                          />
                           <div className="flex-1 min-w-0">
                             <div className="text-xs">
                               <span className="font-medium">{ca?.nome ?? "—"}</span>
