@@ -107,7 +107,7 @@ function InicioPage() {
     const authorIds = Array.from(new Set(list.map((p) => p.author_id)));
 
     const [profRes, likesRes, myLikesRes, commentsRes] = await Promise.all([
-      supabase.from("profiles").select("id, nome").in("id", authorIds),
+      supabase.from("profiles").select("id, nome, avatar_url").in("id", authorIds),
       supabase.from("feed_likes").select("post_id").in("post_id", ids),
       userId
         ? supabase.from("feed_likes").select("post_id").in("post_id", ids).eq("user_id", userId)
@@ -118,6 +118,7 @@ function InicioPage() {
     const profMap: Record<string, ProfileLite> = {};
     for (const p of (profRes.data ?? []) as ProfileLite[]) profMap[p.id] = p;
     setProfiles(profMap);
+
 
     const counts: Record<string, { count: number; mine: boolean }> = {};
     for (const id of ids) counts[id] = { count: 0, mine: false };
