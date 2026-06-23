@@ -383,10 +383,12 @@ function VendasRelatoriosPage() {
                           {c.recebidos} leads · {c.vendas}v / {c.locacoes}l · conv {c.conversao}%
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className="font-bold text-gold">{brl(Number(c.receita))}</div>
-                        <div className="text-[10px] text-muted-foreground">receita p/ imobiliária</div>
-                      </div>
+                      {data.escopo.is_admin && (
+                        <div className="text-right">
+                          <div className="font-bold text-gold">{brl(Number(c.receita))}</div>
+                          <div className="text-[10px] text-muted-foreground">receita p/ imobiliária</div>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
