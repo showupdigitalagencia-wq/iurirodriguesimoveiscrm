@@ -173,7 +173,7 @@ function ModuloAdministrativoToggle() {
         <div>
           <h3 className="font-semibold">Liberar módulo Administrativo</h3>
           <p className="text-sm text-muted-foreground mt-1">
-            Quando ativado, o menu <strong>Administração</strong> (imóveis, contratos e locações) fica visível para administradores e usuários com perfil <strong>Administrativo</strong>.
+            Quando ativado, o menu <strong>Gestão Patrimonial</strong> (imóveis, contratos e locações) fica visível para administradores e usuários com perfil <strong>Administrativo</strong>.
           </p>
         </div>
         <Switch checked={ativo === true} disabled={saving || ativo === null} onCheckedChange={toggle} />
