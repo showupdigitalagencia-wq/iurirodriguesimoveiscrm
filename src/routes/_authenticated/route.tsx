@@ -30,6 +30,7 @@ const NAV = [
   { to: "/agenda", label: "Agenda", icon: CalendarDays },
   { to: "/corretores", label: "Corretores", icon: BadgeCheck },
   { to: "/relatorio", label: "Relatórios", icon: BarChart3 },
+  { to: "/conquistas", label: "Conquistas", icon: Trophy },
   { to: "/notificacoes", label: "Notificações", icon: BellRing },
 ] as const;
 
