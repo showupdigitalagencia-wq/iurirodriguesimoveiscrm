@@ -90,6 +90,7 @@ function ConfigPage() {
           <FotoPerfilSection />
           <MinhaContaSection />
           <GoogleConnectSection />
+          <MensagemTemplatesSection />
         </TabsContent>
         <TabsContent value="responsaveis" className="mt-6">
           <ResponsaveisSection />
