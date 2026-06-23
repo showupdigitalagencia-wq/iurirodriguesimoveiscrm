@@ -11,7 +11,7 @@ import {
 } from "@/lib/captacao.constants";
 
 export const Route = createFileRoute("/_authenticated/captacao-links")({
-  head: () => ({ meta: [{ title: "Links de Captação — Sistema NEXUS" }] }),
+  head: () => ({ meta: [{ title: "Hub de Captação — Sistema NEXUS" }] }),
   component: CaptacaoLinksPage,
 });
 
