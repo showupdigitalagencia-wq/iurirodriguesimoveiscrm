@@ -457,6 +457,7 @@ export type Database = {
           hidden_by: string | null
           id: string
           image_path: string
+          media_type: string
           source: string
           source_ref: string | null
         }
@@ -468,6 +469,7 @@ export type Database = {
           hidden_by?: string | null
           id?: string
           image_path: string
+          media_type?: string
           source?: string
           source_ref?: string | null
         }
@@ -479,6 +481,7 @@ export type Database = {
           hidden_by?: string | null
           id?: string
           image_path?: string
+          media_type?: string
           source?: string
           source_ref?: string | null
         }
@@ -489,31 +492,37 @@ export type Database = {
           author_id: string
           caption: string | null
           created_at: string
+          duration_ms: number | null
           expires_at: string
           hidden_at: string | null
           hidden_by: string | null
           id: string
           image_path: string
+          media_type: string
         }
         Insert: {
           author_id: string
           caption?: string | null
           created_at?: string
+          duration_ms?: number | null
           expires_at?: string
           hidden_at?: string | null
           hidden_by?: string | null
           id?: string
           image_path: string
+          media_type?: string
         }
         Update: {
           author_id?: string
           caption?: string | null
           created_at?: string
+          duration_ms?: number | null
           expires_at?: string
           hidden_at?: string | null
           hidden_by?: string | null
           id?: string
           image_path?: string
+          media_type?: string
         }
         Relationships: [
           {

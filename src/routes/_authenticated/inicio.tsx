@@ -13,8 +13,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import {
-  Heart, MessageCircle, ImagePlus, Send, MoreVertical, EyeOff, Eye, Trash2, Loader2, Info, ShieldAlert,
+  Heart, MessageCircle, ImagePlus, Send, MoreVertical, EyeOff, Eye, Trash2, Loader2, Info, ShieldAlert, Film,
 } from "lucide-react";
+import { FeedVideo } from "@/components/feed/feed-video";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -36,6 +37,7 @@ type Post = {
   source: string;
   hidden_at: string | null;
   created_at: string;
+  media_type: "image" | "video";
 };
 
 type Comment = {
@@ -325,14 +327,18 @@ function InicioPage() {
                 </div>
 
                 {url ? (
-                  <div className="bg-black">
-                    <img
-                      src={url}
-                      alt=""
-                      className="w-full max-h-[720px] object-contain mx-auto"
-                      onDoubleClick={() => !lk.mine && toggleLike(p.id)}
-                    />
-                  </div>
+                  p.media_type === "video" ? (
+                    <FeedVideo src={url} onDoubleClick={() => !lk.mine && toggleLike(p.id)} />
+                  ) : (
+                    <div className="bg-black">
+                      <img
+                        src={url}
+                        alt=""
+                        className="w-full max-h-[720px] object-contain mx-auto"
+                        onDoubleClick={() => !lk.mine && toggleLike(p.id)}
+                      />
+                    </div>
+                  )
                 ) : (
                   <div className="w-full aspect-[4/5] bg-muted animate-pulse" />
                 )}
@@ -461,6 +467,20 @@ function DeleteAction({ onConfirm }: { onConfirm: () => void }) {
   );
 }
 
+const MAX_BYTES = 50 * 1024 * 1024;
+const MAX_VIDEO_SECONDS = 60;
+
+async function probeVideoDuration(file: File): Promise<number> {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const v = document.createElement("video");
+    v.preload = "metadata";
+    v.src = url;
+    v.onloadedmetadata = () => { URL.revokeObjectURL(url); resolve(v.duration || 0); };
+    v.onerror = () => { URL.revokeObjectURL(url); resolve(0); };
+  });
+}
+
 function ComposeButton({
   open, setOpen, userId, onPosted,
 }: {
@@ -469,29 +489,47 @@ function ComposeButton({
   const fileRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [mediaType, setMediaType] = useState<"image" | "video">("image");
   const [caption, setCaption] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   function reset() {
-    setFile(null); setPreview(null); setCaption(""); setSubmitting(false);
+    setFile(null); setPreview(null); setCaption(""); setSubmitting(false); setMediaType("image");
     if (fileRef.current) fileRef.current.value = "";
   }
 
-  function pickFile(f: File | null) {
-    setFile(f);
+  async function pickFile(f: File | null) {
     if (preview) URL.revokeObjectURL(preview);
-    setPreview(f ? URL.createObjectURL(f) : null);
+    if (!f) { setFile(null); setPreview(null); setMediaType("image"); return; }
+    if (f.size > MAX_BYTES) { toast.error("Arquivo acima de 50 MB."); return; }
+    const isVideo = f.type.startsWith("video/");
+    if (isVideo) {
+      const secs = await probeVideoDuration(f);
+      if (secs > MAX_VIDEO_SECONDS + 0.5) {
+        toast.error(`Vídeo precisa ter no máximo ${MAX_VIDEO_SECONDS}s.`);
+        return;
+      }
+    }
+    setMediaType(isVideo ? "video" : "image");
+    setFile(f);
+    setPreview(URL.createObjectURL(f));
   }
 
   async function submit() {
     if (!file || !userId) return;
     setSubmitting(true);
-    const ext = file.name.split(".").pop() || "jpg";
+    const ext = file.name.split(".").pop() || (mediaType === "video" ? "mp4" : "jpg");
     const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-    const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, file, { upsert: false });
+    const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, file, {
+      upsert: false, contentType: file.type,
+    });
     if (upErr) { setSubmitting(false); return toast.error("Falha no upload: " + upErr.message); }
     const { error } = await supabase.from("feed_posts").insert({
-      author_id: userId, caption: caption.trim() || null, image_path: path, source: "manual",
+      author_id: userId,
+      caption: caption.trim() || null,
+      image_path: path,
+      source: "manual",
+      media_type: mediaType,
     });
     if (error) {
       setSubmitting(false);
@@ -512,14 +550,14 @@ function ComposeButton({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Novo post no mural</DialogTitle>
-          <DialogDescription>Foto + uma legenda curta.</DialogDescription>
+          <DialogDescription>Foto ou vídeo (até 60s · 50MB) + uma legenda curta.</DialogDescription>
         </DialogHeader>
 
         <div className="rounded-lg border border-amber-500/40 bg-amber-500/5 p-3 flex gap-2">
           <ShieldAlert className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
           <p className="text-xs text-amber-700 dark:text-amber-300 leading-relaxed">
-            Sua foto deve estar relacionada ao trabalho — visitas, captação, atendimento ao cliente,
-            reuniões, entregas. Fotos genéricas sem relação com o trabalho serão removidas.
+            Seu conteúdo (foto ou vídeo) deve estar relacionado ao trabalho — visitas, captação, atendimento ao cliente,
+            reuniões, entregas. Conteúdo genérico será removido.
           </p>
         </div>
 
@@ -527,13 +565,17 @@ function ComposeButton({
           <input
             ref={fileRef}
             type="file"
-            accept="image/*"
+            accept="image/*,video/*"
             className="hidden"
             onChange={(e) => pickFile(e.target.files?.[0] ?? null)}
           />
           {preview ? (
             <div className="relative">
-              <img src={preview} alt="" className="w-full max-h-80 object-cover rounded-lg border border-border" />
+              {mediaType === "video" ? (
+                <video src={preview} controls className="w-full max-h-80 rounded-lg border border-border bg-black" />
+              ) : (
+                <img src={preview} alt="" className="w-full max-h-80 object-cover rounded-lg border border-border" />
+              )}
               <Button
                 type="button"
                 variant="secondary"
@@ -550,9 +592,12 @@ function ComposeButton({
               onClick={() => fileRef.current?.click()}
               className="w-full border-2 border-dashed border-border rounded-lg p-8 text-center hover:bg-muted/40 transition-colors"
             >
-              <ImagePlus className="h-6 w-6 mx-auto text-muted-foreground" />
-              <div className="text-sm mt-2">Selecionar foto</div>
-              <div className="text-xs text-muted-foreground mt-1">PNG, JPG ou HEIC</div>
+              <div className="flex items-center justify-center gap-3 text-muted-foreground">
+                <ImagePlus className="h-6 w-6" />
+                <Film className="h-6 w-6" />
+              </div>
+              <div className="text-sm mt-2">Selecionar foto ou vídeo</div>
+              <div className="text-xs text-muted-foreground mt-1">Foto · vídeo até 60s · máx 50MB</div>
             </button>
           )}
 
