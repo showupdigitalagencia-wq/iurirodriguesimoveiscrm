@@ -350,6 +350,7 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
   const [importUrl, setImportUrl] = useState("");
   const [importing, setImporting] = useState(false);
   const importFn = useServerFn(importImovelFromUrl);
+  const notifyDisponivel = useServerFn(notifyImovelDisponivelNovamente);
 
   async function handleImport() {
     const url = importUrl.trim();
