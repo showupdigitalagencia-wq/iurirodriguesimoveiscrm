@@ -797,3 +797,116 @@ function ShareImovelButton({ imovel }: { imovel: Imovel }) {
     </Button>
   );
 }
+
+function ResyncImovelButton({ id, onDone }: { id: string; onDone: () => void }) {
+  const fn = useServerFn(resyncImovelFromSite);
+  const [loading, setLoading] = useState(false);
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      className="h-7 px-2 gap-1 text-xs"
+      disabled={loading}
+      onClick={async () => {
+        setLoading(true);
+        try {
+          const rep = await fn({ data: { id } });
+          if (rep.skipped) {
+            toast.info(rep.skipped);
+          } else if (!rep.ok) {
+            toast.error(rep.error ?? "Falha ao atualizar");
+          } else if (rep.changes.length === 0) {
+            toast.success("Imóvel já está atualizado.");
+          } else {
+            toast.success(
+              `Atualizado: ${rep.changes.map((c) => c.field).join(", ")}${rep.fotosAdicionadas ? ` (+${rep.fotosAdicionadas} foto)` : ""}`
+            );
+            onDone();
+          }
+        } catch (e) {
+          toast.error(e instanceof Error ? e.message : "Falha ao atualizar");
+        } finally {
+          setLoading(false);
+        }
+      }}
+    >
+      {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+      Atualizar do site
+    </Button>
+  );
+}
+
+function ResyncTodosButton({ onDone }: { onDone: () => void }) {
+  const fn = useServerFn(resyncTodosImoveisDoSite);
+  const [loading, setLoading] = useState(false);
+  const [report, setReport] = useState<ResyncBatchReport | null>(null);
+  return (
+    <>
+      <Button
+        variant="outline"
+        disabled={loading}
+        onClick={async () => {
+          if (!confirm("Re-sincronizar TODOS os imóveis com URL salva? Pode demorar alguns minutos.")) return;
+          setLoading(true);
+          try {
+            const rep = await fn();
+            setReport(rep);
+            onDone();
+          } catch (e) {
+            toast.error(e instanceof Error ? e.message : "Falha no re-sync em lote");
+          } finally {
+            setLoading(false);
+          }
+        }}
+      >
+        {loading ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <RefreshCw className="h-4 w-4 mr-1" />}
+        Atualizar todos do site
+      </Button>
+      <Dialog open={!!report} onOpenChange={(v) => !v && setReport(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Relatório de re-sincronização</DialogTitle>
+          </DialogHeader>
+          {report && (
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
+                <div className="rounded border p-2"><div className="text-muted-foreground text-xs">Total</div><div className="font-bold">{report.total}</div></div>
+                <div className="rounded border p-2"><div className="text-muted-foreground text-xs">Atualizados</div><div className="font-bold text-emerald-600">{report.atualizados}</div></div>
+                <div className="rounded border p-2"><div className="text-muted-foreground text-xs">Sem mudança</div><div className="font-bold">{report.semMudanca}</div></div>
+                <div className="rounded border p-2"><div className="text-muted-foreground text-xs">Erros</div><div className="font-bold text-destructive">{report.comErro}</div></div>
+              </div>
+              <ScrollArea className="h-[400px] rounded border">
+                <div className="p-2 space-y-2">
+                  {report.items.filter((i: ResyncImovelReport) => i.changes.length > 0 || !i.ok).map((i) => (
+                    <div key={i.id} className="text-xs border-b pb-2">
+                      <div className="font-mono font-semibold">{i.codigo ?? i.id.slice(0, 8)}</div>
+                      {!i.ok && <div className="text-destructive">{i.error ?? i.skipped}</div>}
+                      {i.changes.length > 0 && (
+                        <ul className="mt-1 space-y-0.5">
+                          {i.changes.map((c, idx) => (
+                            <li key={idx}>
+                              <span className="font-medium">{c.field}:</span>{" "}
+                              <span className="text-muted-foreground line-through">{String(c.oldValue ?? "—")}</span>{" → "}
+                              <span className="text-emerald-700">{String(c.newValue ?? "—")}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  ))}
+                  {report.items.every((i) => i.changes.length === 0 && i.ok) && (
+                    <div className="text-sm text-muted-foreground p-4 text-center">Todos os imóveis já estavam atualizados.</div>
+                  )}
+                </div>
+              </ScrollArea>
+            </div>
+          )}
+          <DialogFooter>
+            <Button onClick={() => setReport(null)}>Fechar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
