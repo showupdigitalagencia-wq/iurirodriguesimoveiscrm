@@ -32,7 +32,7 @@ async function resolverAcesso(
   const { data: cfg } = await supabaseAdmin
     .from("configuracoes")
     .select("chave, valor")
-    .in("chave", ["sophia_executivos_acesso", "sophia_corretores_acesso"]);
+    .in("chave", ["sophia_executivos_acesso", "sophia_corretores_acesso", "sophia_chaves_acoes"]);
   const cfgMap = new Map((cfg ?? []).map((r) => [r.chave, r.valor]));
 
   const { data: profile } = await supabaseAdmin
