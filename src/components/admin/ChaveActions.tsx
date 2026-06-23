@@ -170,9 +170,10 @@ function ChaveActionDialog({ imovelId, tipo, onClose, onDone }: {
       const up = await supabase.storage.from("chaves-fotos").upload(path, file, { upsert: false, contentType: file.type || "image/jpeg" });
       if (up.error) throw up.error;
 
+      const obs = observacao || undefined;
       const rpc = isRetirar
-        ? supabase.rpc("retirar_chave", { _imovel_id: imovelId, _foto_url: path, _observacao: observacao || null })
-        : supabase.rpc("devolver_chave", { _imovel_id: imovelId, _foto_url: path, _observacao: observacao || null });
+        ? supabase.rpc("retirar_chave", { _imovel_id: imovelId, _foto_url: path, _observacao: obs })
+        : supabase.rpc("devolver_chave", { _imovel_id: imovelId, _foto_url: path, _observacao: obs });
       const { error } = await rpc;
       if (error) throw error;
 
