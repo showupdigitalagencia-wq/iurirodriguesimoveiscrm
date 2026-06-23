@@ -464,6 +464,13 @@ function InicioPage() {
           })}
         </ul>
       )}
+      {likesDialogPost && (
+        <LikesDialog
+          postId={likesDialogPost}
+          open={!!likesDialogPost}
+          onOpenChange={(v) => { if (!v) setLikesDialogPost(null); }}
+        />
+      )}
     </div>
   );
 }
