@@ -36,7 +36,7 @@ type Post = {
   id: string;
   author_id: string;
   caption: string | null;
-  image_path: string;
+  image_path: string | null;
   source: string;
   hidden_at: string | null;
   created_at: string;
@@ -158,9 +158,9 @@ function InicioPage() {
     const signed = await signAvatarMap(allProfiles.map((p) => ({ id: p.id, path: p.avatar_url })));
     setAvatarUrls(signed);
 
-    // resolve image urls
+    // resolve image urls (posts sem image_path — ex.: conquistas — são pulados)
     const urlEntries = await Promise.all(
-      list.map(async (p) => [p.id, await signedUrl(p.image_path)] as const),
+      list.map(async (p) => [p.id, p.image_path ? await signedUrl(p.image_path) : null] as const),
     );
     setImageUrls(Object.fromEntries(urlEntries));
   }, [userId]);
@@ -245,7 +245,7 @@ function InicioPage() {
     const { error } = await supabase.from("feed_posts").delete().eq("id", post.id);
     if (error) return toast.error("Falha: " + error.message);
     // remove storage best-effort
-    if (!/^https?:\/\//i.test(post.image_path)) {
+    if (post.image_path && !/^https?:\/\//i.test(post.image_path)) {
       supabase.storage.from(BUCKET).remove([post.image_path]).catch(() => null);
     }
     toast.success("Post excluído");
