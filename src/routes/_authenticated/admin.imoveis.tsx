@@ -11,7 +11,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Download, Loader2, ExternalLink } from "lucide-react";
+import { Plus, Pencil, Trash2, Download, Loader2, ExternalLink, Share2 } from "lucide-react";
+import { buildImovelShareMessage, openWhatsAppShare } from "@/lib/imovel-share";
+import { useFotosUrls } from "@/components/admin/FotosManager";
 import type { Database } from "@/integrations/supabase/types";
 import { DocumentosManager } from "@/components/admin/DocumentosManager";
 import { FotosManager, FotosThumbs } from "@/components/admin/FotosManager";
