@@ -289,12 +289,6 @@ export function StoryViewer({
               <Trash2 className="h-5 w-5" />
             </Button>
           )}
-          <Button
-            variant="ghost" size="icon" className="text-white hover:bg-white/10"
-            onClick={onClose} aria-label="Fechar"
-          >
-            <X className="h-5 w-5" />
-          </Button>
         </div>
       </div>
 
