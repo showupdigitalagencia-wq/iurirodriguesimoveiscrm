@@ -1917,6 +1917,9 @@ export type Database = {
           banheiros: number | null
           captador_id: string | null
           cep: string | null
+          chave_com_id: string | null
+          chave_foto_atual: string | null
+          chave_retirada_em: string | null
           cidade: string | null
           codigo: string | null
           complemento: string | null
@@ -1945,6 +1948,9 @@ export type Database = {
           banheiros?: number | null
           captador_id?: string | null
           cep?: string | null
+          chave_com_id?: string | null
+          chave_foto_atual?: string | null
+          chave_retirada_em?: string | null
           cidade?: string | null
           codigo?: string | null
           complemento?: string | null
@@ -1973,6 +1979,9 @@ export type Database = {
           banheiros?: number | null
           captador_id?: string | null
           cep?: string | null
+          chave_com_id?: string | null
+          chave_foto_atual?: string | null
+          chave_retirada_em?: string | null
           cidade?: string | null
           codigo?: string | null
           complemento?: string | null
@@ -1999,6 +2008,13 @@ export type Database = {
           {
             foreignKeyName: "imoveis_captador_id_fkey"
             columns: ["captador_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "imoveis_chave_com_id_fkey"
+            columns: ["chave_com_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]

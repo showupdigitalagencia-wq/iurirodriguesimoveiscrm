@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FotosThumbs, useFotosUrls } from "@/components/admin/FotosManager";
+import { ChaveActions, ChaveStatusBadge, useAtrasoHoras } from "@/components/admin/ChaveActions";
 import { Bed, Bath, Car, Maximize2, MapPin, Building2, X, ExternalLink } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -191,9 +192,16 @@ function PortfolioPage() {
 
 function ImovelCard({ imovel, onClick }: { imovel: Imovel; onClick: () => void }) {
   const urls = useFotosUrls((imovel.fotos ?? []).slice(0, 1));
+  const atrasoHoras = useAtrasoHoras();
   const fin = imovel.finalidade ?? "locacao";
   const mostraAluguel = fin === "locacao" || fin === "ambos";
   const mostraVenda = fin === "venda" || fin === "ambos";
+  const chaveLite = {
+    id: imovel.id as string,
+    chave_com_id: (imovel.chave_com_id as string | null) ?? null,
+    chave_retirada_em: (imovel.chave_retirada_em as string | null) ?? null,
+    chave_foto_atual: (imovel.chave_foto_atual as string | null) ?? null,
+  };
 
   return (
     <Card className="overflow-hidden cursor-pointer hover:shadow-md transition group" onClick={onClick}>
@@ -242,6 +250,9 @@ function ImovelCard({ imovel, onClick }: { imovel: Imovel; onClick: () => void }
               {formatBRL(imovel.valor_venda)} <span className="text-[10px] font-normal text-muted-foreground">venda</span>
             </div>
           )}
+        </div>
+        <div className="pt-2 border-t" onClick={(e) => e.stopPropagation()}>
+          <ChaveStatusBadge imovel={chaveLite} atrasoHoras={atrasoHoras} />
         </div>
       </CardContent>
     </Card>
@@ -322,6 +333,17 @@ function ImovelDialog({ imovel, onClose }: { imovel: Imovel | null; onClose: () 
               <div className="text-xs text-muted-foreground">Gestão de Patrimônio</div>
               <div>{imovel.gestao_patrimonio ? "Sim" : "Não"}</div>
             </div>
+          </div>
+          <div className="border-t pt-3">
+            <div className="text-xs text-muted-foreground mb-2">Chave do imóvel</div>
+            <ChaveActions
+              imovel={{
+                id: imovel.id as string,
+                chave_com_id: (imovel.chave_com_id as string | null) ?? null,
+                chave_retirada_em: (imovel.chave_retirada_em as string | null) ?? null,
+                chave_foto_atual: (imovel.chave_foto_atual as string | null) ?? null,
+              }}
+            />
           </div>
           {imovel.observacoes && (
             <div className="text-sm">
