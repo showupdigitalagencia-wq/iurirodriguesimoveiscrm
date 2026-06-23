@@ -93,6 +93,13 @@ export const sophiaChat = createServerFn({ method: "POST" })
     const { createLovableAiGatewayProvider } = await import("./ai-gateway.server");
     const gateway = createLovableAiGatewayProvider(apiKey);
 
+    // Flag global de ações de chave + foto anexada no último turno do usuário
+    const { data: cfgChave } = await supabaseAdmin
+      .from("configuracoes").select("valor").eq("chave", "sophia_chaves_acoes").maybeSingle();
+    const chavesAcoesHabilitado = cfgChave?.valor === true;
+    const lastUser = [...data.messages].reverse().find((m) => m.role === "user");
+    const lastFotoPath: string | null = lastUser?.imageStoragePath ?? null;
+
     const NEGADO = "Não tenho autorização para compartilhar essas informações.";
     const NEGADO_ADMIN = "Esse assunto não está dentro das minhas atribuições para o seu perfil";
     const podeAdmin = scope.tipo === "admin" || scope.tipo === "administrativo";
