@@ -162,11 +162,14 @@ export function StoriesBar({
                   : "bg-border"
               }`}
             >
-              <span className="block h-full w-full rounded-full bg-background p-[2px]">
-                <span className="block h-full w-full rounded-full bg-gradient-to-br from-gold/30 to-gold/10 border border-gold/20 grid place-items-center text-xs font-semibold text-gold">
-                  {initials(g.authorName)}
-                </span>
-              </span>
+            <span className="block h-full w-full rounded-full bg-background p-[2px]">
+              <UserAvatar
+                name={g.authorName}
+                url={g.authorAvatarUrl}
+                className="block h-full w-full text-xs"
+                fallbackClassName="text-xs"
+              />
+            </span>
             </span>
             <span className="text-[10px] text-muted-foreground max-w-[64px] truncate">
               {g.authorId === userId ? "Você" : g.authorName.split(" ")[0]}
