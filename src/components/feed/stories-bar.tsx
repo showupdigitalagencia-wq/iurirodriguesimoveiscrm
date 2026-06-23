@@ -11,6 +11,8 @@ export type StoryRow = {
   caption: string | null;
   created_at: string;
   expires_at: string;
+  media_type: "image" | "video";
+  duration_ms: number | null;
 };
 
 export type AuthorGroup = {
