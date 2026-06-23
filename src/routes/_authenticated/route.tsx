@@ -315,7 +315,7 @@ function AuthLayout() {
                 return (
                   <li key={item.to}>
                     <Link to={item.to}
-                      activeOptions={item.to === "/vendas" ? { exact: true } : undefined}
+                      activeOptions={item.to === "/inicio" ? { exact: true } : undefined}
                       className="flex flex-col items-center justify-center gap-1 h-16 text-[10px] font-medium text-sidebar-foreground/80 hover:text-gold [&.active]:text-gold"
                       activeProps={{ className: "active" }}>
                       <Icon className="h-5 w-5" />
