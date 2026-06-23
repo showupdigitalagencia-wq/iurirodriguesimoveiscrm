@@ -225,6 +225,9 @@ function ImoveisPage() {
                 </Button>
               )}
 
+              <div onClick={(e) => e.stopPropagation()}>
+                <ChaveActions imovel={{ id: i.id, chave_com_id: (i as any).chave_com_id ?? null, chave_retirada_em: (i as any).chave_retirada_em ?? null, chave_foto_atual: (i as any).chave_foto_atual ?? null }} />
+              </div>
 
               <div className="flex justify-between items-center pt-2 border-t">
                 <div className="flex flex-col">
