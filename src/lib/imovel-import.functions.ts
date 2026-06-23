@@ -336,6 +336,17 @@ export async function runImovelImport(
     let downloadFailures = 0;
 
     for (const imgUrl of remoteFotos) {
+      // Sanitiza nome (mesma regra usada no upload) para comparar com fotos já salvas
+      const baseNameForSkip = (imgUrl.split("/").pop() ?? "foto")
+        .replace(/\?.*$/, "")
+        .replace(/\.[a-z]+$/i, "")
+        .replace(/[^a-z0-9-_]/gi, "_")
+        .slice(0, 60);
+      if (skipStems && skipStems.has(baseNameForSkip)) {
+        console.info("[importImovel] pulando foto já existente", { baseNameForSkip });
+        continue;
+      }
+
       try {
         const startedAt = Date.now();
         const imgRes = await fetchWithTimeout(imgUrl, {
