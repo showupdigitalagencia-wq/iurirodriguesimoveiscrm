@@ -90,6 +90,7 @@ function ConfigPage() {
           <FotoPerfilSection />
           <MinhaContaSection />
           <GoogleConnectSection />
+          <MensagemTemplatesSection />
         </TabsContent>
         <TabsContent value="responsaveis" className="mt-6">
           <ResponsaveisSection />
@@ -1182,6 +1183,147 @@ function VisitaChecklistConfig() {
             </ul>
           )}
         </>
+      )}
+    </section>
+  );
+}
+
+function MensagemTemplatesSection() {
+  const [items, setItems] = useState<Array<{ id: string; titulo: string; conteudo: string; escopo: "pessoal" | "global"; owner_id: string | null }>>([]);
+  const [titulo, setTitulo] = useState("");
+  const [conteudo, setConteudo] = useState("");
+  const [escopo, setEscopo] = useState<"pessoal" | "global">("pessoal");
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  async function refresh() {
+    const { data, error } = await supabase
+      .from("mensagem_templates")
+      .select("id, titulo, conteudo, escopo, owner_id")
+      .order("escopo", { ascending: true })
+      .order("titulo", { ascending: true });
+    if (error) toast.error(error.message);
+    setItems((data ?? []) as typeof items);
+  }
+
+  useEffect(() => {
+    (async () => {
+      const { data: u } = await supabase.auth.getUser();
+      const uid = u.user?.id ?? null;
+      setUserId(uid);
+      if (uid) {
+        const { data: roleData } = await supabase.rpc("has_role", { _user_id: uid, _role: "admin" });
+        setIsAdmin(!!roleData);
+      }
+      await refresh();
+      setLoading(false);
+    })();
+  }, []);
+
+  async function adicionar() {
+    const t = titulo.trim();
+    const c = conteudo.trim();
+    if (!t || !c) { toast.error("Preencha título e mensagem"); return; }
+    if (t.length > 80) { toast.error("Título muito longo"); return; }
+    if (c.length > 2000) { toast.error("Mensagem muito longa"); return; }
+    setSaving(true);
+    const { error } = await supabase.from("mensagem_templates").insert({
+      titulo: t,
+      conteudo: c,
+      escopo,
+      owner_id: userId,
+    });
+    setSaving(false);
+    if (error) { toast.error(error.message); return; }
+    setTitulo(""); setConteudo(""); setEscopo("pessoal");
+    toast.success("Template criado");
+    refresh();
+  }
+
+  async function remover(id: string) {
+    if (!confirm("Excluir este template?")) return;
+    const { error } = await supabase.from("mensagem_templates").delete().eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Template excluído");
+    refresh();
+  }
+
+  return (
+    <section className="rounded-2xl border bg-card p-4 md:p-6 space-y-4">
+      <header>
+        <h2 className="text-lg font-semibold">Templates de WhatsApp</h2>
+        <p className="text-sm text-muted-foreground">
+          Crie modelos de mensagem para enviar rapidamente aos leads. Use variáveis como{" "}
+          <code className="text-[11px]">{"{primeiro_nome_lead}"}</code>,{" "}
+          <code className="text-[11px]">{"{imovel_endereco}"}</code>,{" "}
+          <code className="text-[11px]">{"{nome_corretor}"}</code>.
+        </p>
+      </header>
+
+      <div className="space-y-2 rounded-lg border p-3 bg-muted/30">
+        <Input
+          placeholder="Título (ex.: Primeiro contato)"
+          value={titulo}
+          onChange={(e) => setTitulo(e.target.value)}
+          maxLength={80}
+          disabled={saving}
+        />
+        <textarea
+          className="w-full min-h-[100px] rounded-md border bg-background p-2 text-sm"
+          placeholder="Olá {primeiro_nome_lead}! Aqui é {nome_corretor} da imobiliária..."
+          value={conteudo}
+          onChange={(e) => setConteudo(e.target.value)}
+          maxLength={2000}
+          disabled={saving}
+        />
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          {isAdmin ? (
+            <Select value={escopo} onValueChange={(v) => setEscopo(v as "pessoal" | "global")}>
+              <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pessoal">Pessoal (só eu)</SelectItem>
+                <SelectItem value="global">Global (todos)</SelectItem>
+              </SelectContent>
+            </Select>
+          ) : (
+            <span className="text-xs text-muted-foreground">Visível apenas para você</span>
+          )}
+          <Button onClick={adicionar} disabled={saving || !titulo.trim() || !conteudo.trim()}>
+            Adicionar template
+          </Button>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="text-sm text-muted-foreground">Carregando...</div>
+      ) : items.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Nenhum template criado ainda.</p>
+      ) : (
+        <ul className="space-y-2">
+          {items.map((it) => {
+            const podeRemover = it.escopo === "pessoal" ? it.owner_id === userId : isAdmin;
+            return (
+              <li key={it.id} className="rounded-md border p-3 space-y-1">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-sm font-medium truncate">{it.titulo}</span>
+                    <span className={`text-[10px] rounded px-1.5 py-0.5 border ${it.escopo === "global" ? "bg-amber-500/10 border-amber-500/40 text-amber-700 dark:text-amber-300" : "bg-muted text-muted-foreground"}`}>
+                      {it.escopo === "global" ? "Global" : "Meu"}
+                    </span>
+                  </div>
+                  {podeRemover && (
+                    <Button variant="ghost" size="icon" onClick={() => remover(it.id)} aria-label="Remover">
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground whitespace-pre-wrap">{it.conteudo}</p>
+              </li>
+            );
+          })}
+        </ul>
       )}
     </section>
   );

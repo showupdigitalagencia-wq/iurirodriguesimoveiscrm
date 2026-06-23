@@ -19,6 +19,8 @@ import { MessageCircle, Trash2, Pencil, MapPin, Video, Banknote, Copy, CheckCirc
 import { FecharLeadDialog } from "@/components/fechar-lead-dialog";
 import { LeadTimeline } from "@/components/lead-timeline";
 import { ChecklistVisitaDialog } from "@/components/checklist-visita-dialog";
+import { MensagemTemplatesDialog } from "@/components/mensagem-templates-dialog";
+import { MessagesSquare } from "lucide-react";
 
 function toLocalInputValue(d: Date) {
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -66,6 +68,7 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
   const confirmarVisitaFn = useServerFn(confirmarVisita);
   const visitasPendentes = visitas.filter((v) => v.comparecimento == null && new Date(v.data_inicio) < new Date());
   const [checklistVisitaId, setChecklistVisitaId] = useState<string | null>(null);
+  const [templatesOpen, setTemplatesOpen] = useState(false);
   async function handleNaoCompareceu(visitaId: string) {
     try {
       await confirmarVisitaFn({ data: { visita_id: visitaId, comparecimento: "nao_compareceu" } });
@@ -309,6 +312,7 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
           ) : (
             <>
               <Button variant="outline" size="sm" className="gap-1" onClick={openWhatsApp}><MessageCircle className="h-3.5 w-3.5" />WhatsApp</Button>
+              <Button variant="outline" size="sm" className="gap-1" onClick={() => setTemplatesOpen(true)}><MessagesSquare className="h-3.5 w-3.5" />Templates</Button>
               <AgendarVisitaInline lead={lead} onDone={() => { invalidate(); refetch(); }} />
               <ReuniaoOnlineInline lead={lead} onDone={() => { invalidate(); refetch(); }} />
               {lead.tipo === "compra" && canEnviarFinanciamento && <EnviarFinanciamentoInline lead={lead} />}
@@ -331,6 +335,16 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
         visitaId={checklistVisitaId}
         onClose={() => setChecklistVisitaId(null)}
         onConfirmed={() => refetchVisitas()}
+      />
+      <MensagemTemplatesDialog
+        open={templatesOpen}
+        onClose={() => setTemplatesOpen(false)}
+        telefone={lead.telefone}
+        vars={{
+          nome_lead: lead.nome,
+          primeiro_nome_lead: lead.nome?.split(" ")[0] ?? null,
+          telefone_lead: lead.telefone,
+        }}
       />
     </Dialog>
   );
