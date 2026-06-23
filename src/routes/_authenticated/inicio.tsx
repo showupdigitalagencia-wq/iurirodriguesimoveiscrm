@@ -20,6 +20,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { StoriesBar } from "@/components/feed/stories-bar";
+import { LikesDialog } from "@/components/feed/likes-dialog";
 import { UserAvatar } from "@/components/user-avatar";
 import { signAvatarMap } from "@/lib/avatar-url";
 
@@ -90,6 +91,7 @@ function InicioPage() {
   const [openComments, setOpenComments] = useState<Record<string, boolean>>({});
   const [newComment, setNewComment] = useState<Record<string, string>>({});
   const [showCompose, setShowCompose] = useState(false);
+  const [likesDialogPost, setLikesDialogPost] = useState<string | null>(null);
 
   const loadAll = useCallback(async () => {
     setLoading(true);
@@ -381,9 +383,13 @@ function InicioPage() {
                 </div>
 
                 {lk.count > 0 && (
-                  <div className="px-4 text-sm font-semibold">
+                  <button
+                    type="button"
+                    onClick={() => setLikesDialogPost(p.id)}
+                    className="px-4 text-sm font-semibold text-left hover:underline underline-offset-2"
+                  >
                     {lk.count} {lk.count === 1 ? "curtida" : "curtidas"}
-                  </div>
+                  </button>
                 )}
 
                 {p.caption && (
@@ -457,6 +463,13 @@ function InicioPage() {
             );
           })}
         </ul>
+      )}
+      {likesDialogPost && (
+        <LikesDialog
+          postId={likesDialogPost}
+          open={!!likesDialogPost}
+          onOpenChange={(v) => { if (!v) setLikesDialogPost(null); }}
+        />
       )}
     </div>
   );
