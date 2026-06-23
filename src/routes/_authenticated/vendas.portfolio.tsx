@@ -251,6 +251,9 @@ function ImovelCard({ imovel, onClick }: { imovel: Imovel; onClick: () => void }
             </div>
           )}
         </div>
+        <div className="pt-2 border-t" onClick={(e) => e.stopPropagation()}>
+          <ChaveStatusBadge imovel={chaveLite} atrasoHoras={atrasoHoras} />
+        </div>
       </CardContent>
     </Card>
   );
