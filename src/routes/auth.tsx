@@ -22,7 +22,7 @@ function AuthPage() {
     if (redirectTo && redirectTo.startsWith("/")) {
       window.location.assign(redirectTo);
     } else {
-      navigate({ to: "/dashboard" });
+      navigate({ to: "/inicio" });
     }
   }
 

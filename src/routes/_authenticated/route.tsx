@@ -2,7 +2,7 @@ import { createFileRoute, Outlet, redirect, Link, useRouter, useRouterState } fr
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useMemo, useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
-import { LayoutDashboard, Kanban, Users, BarChart3, Settings, LogOut, BadgeCheck, UserCog, BellRing, Clock, CalendarDays, MoreHorizontal, Briefcase, Users2, Building2, Megaphone, Banknote, Share2, CalendarClock } from "lucide-react";
+import { LayoutDashboard, Kanban, Users, BarChart3, Settings, LogOut, BadgeCheck, UserCog, BellRing, Clock, CalendarDays, MoreHorizontal, Briefcase, Users2, Building2, Megaphone, Banknote, Share2, CalendarClock, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { toast } from "sonner";
@@ -23,6 +23,7 @@ export const Route = createFileRoute("/_authenticated")({
 
 
 const NAV = [
+  { to: "/inicio", label: "Início", icon: Home },
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/pipeline", label: "Pipeline", icon: Kanban },
   { to: "/leads", label: "Leads", icon: Users },
@@ -34,16 +35,16 @@ const NAV = [
 
 // Itens visíveis na bottom bar mobile (máx 5)
 const MOBILE_BOTTOM = [
+  { to: "/inicio", label: "Início", icon: Home },
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/pipeline", label: "Pipeline", icon: Kanban },
   { to: "/leads", label: "Leads", icon: Users },
   { to: "/agenda", label: "Agenda", icon: CalendarDays },
-  { to: "/corretores", label: "Corretores", icon: BadgeCheck },
 ] as const;
 
 // Bottom bar exclusiva do corretor de vendas (5 itens — Plantão entra, sino fica no topo)
 const CORRETOR_MOBILE_BOTTOM = [
-  { to: "/vendas", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/inicio", label: "Início", icon: Home },
   { to: "/vendas/leads", label: "Leads", icon: Users },
   { to: "/vendas/pipeline", label: "Pipeline", icon: Kanban },
   { to: "/vendas/agenda", label: "Agenda", icon: CalendarDays },
@@ -67,11 +68,11 @@ const CONFIG_NAV = [
 ] as const;
 
 // Rotas permitidas para corretor_vendas (puro)
-const CORRETOR_ALLOWED_PREFIXES = ["/vendas", "/notificacoes", "/configuracoes"];
+const CORRETOR_ALLOWED_PREFIXES = ["/inicio", "/vendas", "/notificacoes", "/configuracoes"];
 // Rotas permitidas para administrativo (puro)
-const ADMINISTRATIVO_ALLOWED_PREFIXES = ["/admin", "/executivos/landing-page", "/notificacoes", "/configuracoes"];
+const ADMINISTRATIVO_ALLOWED_PREFIXES = ["/inicio", "/admin", "/executivos/landing-page", "/notificacoes", "/configuracoes"];
 // Rotas permitidas para correspondente_bancaria (puro)
-const CORRESPONDENTE_ALLOWED_PREFIXES = ["/correspondente", "/notificacoes", "/configuracoes"];
+const CORRESPONDENTE_ALLOWED_PREFIXES = ["/inicio", "/correspondente", "/notificacoes", "/configuracoes"];
 
 
 function AuthLayout() {
