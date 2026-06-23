@@ -147,7 +147,28 @@ function UsuariosPage() {
     } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
   }
 
+  async function handleEdit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!editing) return;
+    const fd = new FormData(e.currentTarget);
+    const nome = String(fd.get("nome") || "").trim();
+    const email = String(fd.get("email") || "").trim();
+    if (!nome) { toast.error("Nome obrigatório"); return; }
+    if (!email) { toast.error("Email obrigatório"); return; }
+    try {
+      const payload: { id: string; nome?: string; email?: string } = { id: editing.id };
+      if (nome !== editing.nome) payload.nome = nome;
+      if (email !== editing.email) payload.email = email;
+      if (!payload.nome && !payload.email) { setEditing(null); return; }
+      await fnUpdate({ data: payload });
+      toast.success("Dados atualizados");
+      setEditing(null);
+      refresh();
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
+  }
+
   async function handleDelete(u: UserRow) {
+
     if (!confirm(`Excluir ${u.email}? Esta ação não pode ser desfeita.`)) return;
     try {
       await fnDelete({ data: { id: u.id } });
