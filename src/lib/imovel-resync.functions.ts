@@ -83,14 +83,12 @@ async function applyResync(
     const newV = d[field];
     const curV = imovel[field];
     const parserHasValue = typeof newV === "number" && Number.isFinite(newV) && newV > 0;
+    // Regra: só sobrescreve quando o parser trouxe valor > 0. Nunca substitui
+    // um valor existente por null/0 só porque o site de origem não publicou
+    // a informação — preserva o que já está no banco.
     if (parserHasValue && curV !== newV) {
       update[field] = newV;
       changes.push({ field, oldValue: asScalar(curV), newValue: newV });
-    } else if (!parserHasValue && typeof curV === "number" && curV === 0) {
-      // Lixo legado (bug antigo gravava 0 quando JSON-LD vinha zerado).
-      // Parser confirma que o site não publica o dado → limpa para null.
-      update[field] = null;
-      changes.push({ field, oldValue: 0, newValue: null });
     }
   }
 

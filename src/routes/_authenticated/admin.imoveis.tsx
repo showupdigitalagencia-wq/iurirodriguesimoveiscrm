@@ -25,6 +25,7 @@ import { importImovelFromUrl } from "@/lib/imovel-import.functions";
 import { notifyImovelDisponivelNovamente } from "@/lib/imoveis-notify.functions";
 import { ChaveActions } from "@/components/admin/ChaveActions";
 import { resyncImovelFromSite, resyncTodosImoveisDoSite, type ResyncImovelReport, type ResyncBatchReport } from "@/lib/imovel-resync.functions";
+import { auditarMetragemImoveis, type MetragemAuditReport } from "@/lib/imovel-metragem-audit.functions";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 
@@ -297,6 +298,7 @@ function ImoveisPage() {
               onImported={() => qc.invalidateQueries({ queryKey: ["imoveis"] })}
             />
             <ResyncTodosButton onDone={() => qc.invalidateQueries({ queryKey: ["imoveis"] })} />
+            <AuditarMetragemButton />
             <Button onClick={openNew} className="flex-1 sm:flex-none"><Plus className="h-4 w-4 mr-1" /> Novo Imóvel</Button>
           </div>
 
@@ -910,3 +912,92 @@ function ResyncTodosButton({ onDone }: { onDone: () => void }) {
   );
 }
 
+
+function AuditarMetragemButton() {
+  const fn = useServerFn(auditarMetragemImoveis);
+  const [loading, setLoading] = useState(false);
+  const [report, setReport] = useState<MetragemAuditReport | null>(null);
+  const labelConclusao: Record<string, string> = {
+    parser_capturou: "Capturado agora",
+    ausente_na_vitrine: "Ausente na vitrine",
+    parser_perdeu_dado_presente: "Parser não capturou",
+    erro: "Erro",
+  };
+  return (
+    <>
+      <Button
+        variant="outline"
+        disabled={loading}
+        onClick={async () => {
+          if (!confirm("Auditar metragem dos imóveis sem área? Faz fetch de cada vitrine — pode demorar.")) return;
+          setLoading(true);
+          try {
+            setReport(await fn());
+          } catch (e) {
+            toast.error(e instanceof Error ? e.message : "Falha na auditoria");
+          } finally {
+            setLoading(false);
+          }
+        }}
+      >
+        {loading ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <RefreshCw className="h-4 w-4 mr-1" />}
+        Auditar metragem
+      </Button>
+      <Dialog open={!!report} onOpenChange={(v) => !v && setReport(null)}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Auditoria de metragem (area_m2)</DialogTitle>
+          </DialogHeader>
+          {report && (
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-sm">
+                <div className="rounded border p-2"><div className="text-muted-foreground text-xs">Total</div><div className="font-bold">{report.total}</div></div>
+                <div className="rounded border p-2"><div className="text-muted-foreground text-xs">Capturados agora</div><div className="font-bold text-emerald-600">{report.capturadosAgora}</div></div>
+                <div className="rounded border p-2"><div className="text-muted-foreground text-xs">Ausentes na vitrine</div><div className="font-bold">{report.ausentesNaVitrine}</div></div>
+                <div className="rounded border p-2"><div className="text-muted-foreground text-xs">Parser não capturou</div><div className="font-bold text-amber-600">{report.perdidosPeloParser}</div></div>
+                <div className="rounded border p-2"><div className="text-muted-foreground text-xs">Erros</div><div className="font-bold text-destructive">{report.comErro}</div></div>
+              </div>
+              <ScrollArea className="h-[500px] rounded border">
+                <div className="p-2 space-y-3">
+                  {report.items.map((i) => (
+                    <div key={i.id} className="text-xs border-b pb-2 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono font-semibold">{i.codigo ?? i.id.slice(0, 8)}</span>
+                        <span className="text-[10px] uppercase tracking-wide rounded bg-muted px-1.5 py-0.5">{labelConclusao[i.conclusao]}</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-x-3 gap-y-0.5">
+                        <div><span className="text-muted-foreground">DB:</span> {i.areaDb ?? "—"}</div>
+                        <div><span className="text-muted-foreground">Parser:</span> {i.areaParser ?? "—"}</div>
+                        <div><span className="text-muted-foreground">JSON-LD:</span> {i.jsonLdValue ?? "—"}</div>
+                        <div><span className="text-muted-foreground">Descrição:</span> {i.encontradoNoDescricao ?? "—"}</div>
+                        <div className="col-span-2"><span className="text-muted-foreground">Corpo da página:</span> {i.encontradoNoCorpo ?? "—"}</div>
+                      </div>
+                      {i.url && (
+                        <a href={i.url} target="_blank" rel="noreferrer" className="block text-blue-600 hover:underline truncate">
+                          {i.url}
+                        </a>
+                      )}
+                      <div className="text-muted-foreground">Fontes tentadas: {i.fontesTentadas.join(" → ")}</div>
+                      {i.trechos.length > 0 && (
+                        <details>
+                          <summary className="cursor-pointer text-muted-foreground">Trechos encontrados ({i.trechos.length})</summary>
+                          <ul className="list-disc pl-5 mt-1 space-y-0.5">
+                            {i.trechos.map((t, idx) => <li key={idx} className="font-mono">…{t}…</li>)}
+                          </ul>
+                        </details>
+                      )}
+                      {i.erro && <div className="text-destructive">Erro: {i.erro}</div>}
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
+          )}
+          <DialogFooter>
+            <Button onClick={() => setReport(null)}>Fechar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
