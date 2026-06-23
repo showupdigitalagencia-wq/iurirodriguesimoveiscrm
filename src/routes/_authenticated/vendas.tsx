@@ -32,9 +32,9 @@ export const Route = createFileRoute("/_authenticated/vendas")({
 
 type TabDef = { to: string; label: string; icon: typeof LayoutDashboard; exact: boolean; adminOnly?: boolean };
 const TABS: readonly TabDef[] = [
-  { to: "/vendas", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { to: "/vendas/leads", label: "Leads", icon: Users, exact: false },
-  { to: "/vendas/pipeline", label: "Pipeline", icon: Kanban, exact: false },
+  { to: "/vendas", label: "Centro de Comando", icon: LayoutDashboard, exact: true },
+  { to: "/vendas/leads", label: "Oportunidades", icon: Users, exact: false },
+  { to: "/vendas/pipeline", label: "Negócios", icon: Kanban, exact: false },
   { to: "/vendas/agenda", label: "Agenda", icon: CalendarDays, exact: false },
   { to: "/vendas/portfolio", label: "Portfólio", icon: Building2, exact: false },
   { to: "/vendas/plantao", label: "Plantão", icon: CalendarClock, exact: false },
