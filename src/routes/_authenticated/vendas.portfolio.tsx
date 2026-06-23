@@ -192,9 +192,16 @@ function PortfolioPage() {
 
 function ImovelCard({ imovel, onClick }: { imovel: Imovel; onClick: () => void }) {
   const urls = useFotosUrls((imovel.fotos ?? []).slice(0, 1));
+  const atrasoHoras = useAtrasoHoras();
   const fin = imovel.finalidade ?? "locacao";
   const mostraAluguel = fin === "locacao" || fin === "ambos";
   const mostraVenda = fin === "venda" || fin === "ambos";
+  const chaveLite = {
+    id: imovel.id as string,
+    chave_com_id: (imovel.chave_com_id as string | null) ?? null,
+    chave_retirada_em: (imovel.chave_retirada_em as string | null) ?? null,
+    chave_foto_atual: (imovel.chave_foto_atual as string | null) ?? null,
+  };
 
   return (
     <Card className="overflow-hidden cursor-pointer hover:shadow-md transition group" onClick={onClick}>
