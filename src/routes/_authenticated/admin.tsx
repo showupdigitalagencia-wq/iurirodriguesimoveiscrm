@@ -25,7 +25,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
 });
 
 const BASE_TABS = [
-  { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { to: "/admin", label: "Centro de Comando", icon: LayoutDashboard, exact: true },
   { to: "/admin/imoveis", label: "Imóveis", icon: Building2, exact: false },
   { to: "/admin/contratos", label: "Contratos", icon: FileText, exact: false },
   { to: "/admin/pagamentos", label: "Pagamentos", icon: DollarSign, exact: false },
