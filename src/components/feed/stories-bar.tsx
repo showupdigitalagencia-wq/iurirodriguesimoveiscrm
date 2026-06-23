@@ -134,9 +134,12 @@ export function StoriesBar({
             aria-label="Adicionar story"
           >
             <span className="relative h-16 w-16 rounded-full bg-card border border-border grid place-items-center overflow-hidden">
-              <span className="absolute inset-0 grid place-items-center text-xs font-semibold text-muted-foreground group-hover:opacity-60 transition">
-                {initials(userName)}
-              </span>
+              <UserAvatar
+                name={userName}
+                url={ownAvatar}
+                className="absolute inset-0 h-full w-full text-xs border-0 rounded-full"
+                fallbackClassName="text-xs"
+              />
               <span className="absolute -bottom-0 -right-0 h-6 w-6 rounded-full bg-gold text-gold-foreground grid place-items-center border-2 border-background shadow">
                 <Plus className="h-3.5 w-3.5" />
               </span>
