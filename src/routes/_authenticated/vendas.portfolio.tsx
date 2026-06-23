@@ -247,6 +247,15 @@ function ImovelCard({ imovel, onClick }: { imovel: Imovel; onClick: () => void }
 
 function ImovelDialog({ imovel, onClose }: { imovel: Imovel | null; onClose: () => void }) {
   const urls = useFotosUrls(imovel?.fotos ?? []);
+  const { data: captadorNome } = useQuery({
+    queryKey: ["captador-nome", imovel?.captador_id],
+    queryFn: async () => {
+      if (!imovel?.captador_id) return null;
+      const { data } = await supabase.from("profiles").select("nome").eq("id", imovel.captador_id).maybeSingle();
+      return data?.nome ?? null;
+    },
+    enabled: !!imovel?.captador_id,
+  });
   if (!imovel) return null;
   const fin = imovel.finalidade ?? "locacao";
 
