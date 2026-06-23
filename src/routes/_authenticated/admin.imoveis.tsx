@@ -17,8 +17,10 @@ import { DocumentosManager } from "@/components/admin/DocumentosManager";
 import { FotosManager, FotosThumbs } from "@/components/admin/FotosManager";
 import { ImoveisImportExport } from "@/components/admin/ImoveisImportExport";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 import { useServerFn } from "@tanstack/react-start";
 import { importImovelFromUrl } from "@/lib/imovel-import.functions";
+import { notifyImovelDisponivelNovamente } from "@/lib/imoveis-notify.functions";
 
 type Imovel = Database["public"]["Tables"]["imoveis"]["Row"];
 type ImovelInsert = Database["public"]["Tables"]["imoveis"]["Insert"];
@@ -110,6 +112,16 @@ function ImoveisPage() {
     },
   });
 
+  const { data: profilesMap = {} } = useQuery({
+    queryKey: ["profiles-nomes"],
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("id, nome").eq("ativo", true);
+      const map: Record<string, string> = {};
+      (data ?? []).forEach((p) => { map[p.id] = p.nome ?? "—"; });
+      return map;
+    },
+  });
+
   const byFinalidade = imoveis.filter((i) => {
     if (finalidadeFiltro === "todos") return true;
     const fin = ((i as unknown as { finalidade?: string }).finalidade) ?? "locacao";
@@ -182,6 +194,14 @@ function ImoveisPage() {
                 {i.rua}{i.numero ? `, ${i.numero}` : ""}{i.bairro ? ` — ${i.bairro}` : ""}{i.cidade ? ` / ${i.cidade}` : ""}
               </div>
               <div className="text-xs text-muted-foreground">Proprietário: {i.proprietario_nome}</div>
+              {(i as unknown as { captador_id?: string | null }).captador_id && (
+                <div className="text-xs text-muted-foreground">
+                  Captador: {profilesMap[(i as unknown as { captador_id: string }).captador_id] ?? "—"}
+                </div>
+              )}
+              {(i as unknown as { gestao_patrimonio?: boolean }).gestao_patrimonio && (
+                <Badge variant="outline" className="text-[10px] border-gold/40 text-gold">Gestão de Patrimônio</Badge>
+              )}
               {(i as unknown as { dia_vencimento?: number | null }).dia_vencimento != null && (
                 <div className="text-xs text-muted-foreground">Vencimento: dia {(i as unknown as { dia_vencimento?: number | null }).dia_vencimento}</div>
               )}
@@ -330,6 +350,7 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
   const [importUrl, setImportUrl] = useState("");
   const [importing, setImporting] = useState(false);
   const importFn = useServerFn(importImovelFromUrl);
+  const notifyDisponivel = useServerFn(notifyImovelDisponivelNovamente);
 
   async function handleImport() {
     const url = importUrl.trim();
@@ -389,6 +410,19 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
       if (!ids.length) return [] as Array<{ id: string; nome: string; responsavel_id: string | null }>;
       const { data: profs } = await supabase.from("profiles").select("id, nome, responsavel_id").in("id", ids).order("nome");
       return (profs ?? []) as Array<{ id: string; nome: string; responsavel_id: string | null }>;
+    },
+    enabled: open,
+  });
+
+  const { data: captadores = [] } = useQuery({
+    queryKey: ["captadores"],
+    queryFn: async () => {
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("id, nome")
+        .eq("ativo", true)
+        .order("nome");
+      return (profs ?? []) as Array<{ id: string; nome: string }>;
     },
     enabled: open,
   });
@@ -458,6 +492,20 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
       console.error("[imoveis save]", error, payload);
       toast.error(error.message || "Erro ao salvar imóvel");
       return;
+    }
+    // Notificação: imóvel de locação voltou a estar disponível
+    const finForm = ((form as { finalidade?: string }).finalidade) ?? "locacao";
+    const novoStatus = (form.status ?? "") as string;
+    const statusAntigo = (imovel?.status ?? "") as string;
+    if (
+      imovel &&
+      (finForm === "locacao" || finForm === "ambos") &&
+      statusAntigo === "locado" &&
+      novoStatus === "disponivel_locacao"
+    ) {
+      notifyDisponivel({ data: { imovelId: imovel.id } })
+        .then((r) => { if (!r.ok) console.warn("[notifyDisponivel]", r.error); })
+        .catch((e) => console.warn("[notifyDisponivel]", e));
     }
     toast.success(imovel ? "Imóvel atualizado" : "Imóvel cadastrado");
     onOpenChange(false);
@@ -627,6 +675,30 @@ function ImovelDialog({ open, onOpenChange, imovel, onSaved }: {
                 <SelectItem value="seguro">Seguro</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          <div className="md:col-span-2 border-t pt-3 mt-2"><h3 className="font-semibold text-sm">Captação e gestão</h3></div>
+          <div>
+            <Label>Captador (quem captou este imóvel)</Label>
+            <Select
+              value={(form as { captador_id?: string | null }).captador_id ?? "__none__"}
+              onValueChange={(v) => set("captador_id" as never, (v === "__none__" ? null : v) as never)}
+            >
+              <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">— Não definido —</SelectItem>
+                {captadores.map((c) => <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-end gap-3">
+            <div className="flex-1">
+              <Label className="block">Este imóvel está com Gestão de Patrimônio?</Label>
+              <p className="text-xs text-muted-foreground">Marque caso a imobiliária administre o patrimônio.</p>
+            </div>
+            <Switch
+              checked={Boolean((form as { gestao_patrimonio?: boolean }).gestao_patrimonio)}
+              onCheckedChange={(v) => set("gestao_patrimonio" as never, v as never)}
+            />
           </div>
           <div className="md:col-span-2 border-t pt-3 mt-2">
             <Label className="text-sm font-semibold">Link da Vitrine (Bom Corretor)</Label>

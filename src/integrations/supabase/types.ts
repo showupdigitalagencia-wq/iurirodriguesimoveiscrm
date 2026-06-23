@@ -695,6 +695,7 @@ export type Database = {
           area_m2: number | null
           bairro: string | null
           banheiros: number | null
+          captador_id: string | null
           cep: string | null
           cidade: string | null
           codigo: string | null
@@ -711,6 +712,7 @@ export type Database = {
           finalidade: string
           fotos: string[] | null
           garantia: string | null
+          gestao_patrimonio: boolean
           id: string
           iptu: number | null
           latitude: number | null
@@ -739,6 +741,7 @@ export type Database = {
           area_m2?: number | null
           bairro?: string | null
           banheiros?: number | null
+          captador_id?: string | null
           cep?: string | null
           cidade?: string | null
           codigo?: string | null
@@ -755,6 +758,7 @@ export type Database = {
           finalidade?: string
           fotos?: string[] | null
           garantia?: string | null
+          gestao_patrimonio?: boolean
           id?: string
           iptu?: number | null
           latitude?: number | null
@@ -783,6 +787,7 @@ export type Database = {
           area_m2?: number | null
           bairro?: string | null
           banheiros?: number | null
+          captador_id?: string | null
           cep?: string | null
           cidade?: string | null
           codigo?: string | null
@@ -799,6 +804,7 @@ export type Database = {
           finalidade?: string
           fotos?: string[] | null
           garantia?: string | null
+          gestao_patrimonio?: boolean
           id?: string
           iptu?: number | null
           latitude?: number | null
@@ -824,6 +830,13 @@ export type Database = {
           vitrine_url?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "imoveis_captador_id_fkey"
+            columns: ["captador_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "imoveis_corretor_fechamento_id_fkey"
             columns: ["corretor_fechamento_id"]
@@ -1828,6 +1841,7 @@ export type Database = {
           area_m2: number | null
           bairro: string | null
           banheiros: number | null
+          captador_id: string | null
           cep: string | null
           cidade: string | null
           codigo: string | null
@@ -1836,6 +1850,7 @@ export type Database = {
           created_at: string | null
           finalidade: string | null
           fotos: string[] | null
+          gestao_patrimonio: boolean | null
           id: string | null
           iptu: number | null
           numero: string | null
@@ -1854,6 +1869,7 @@ export type Database = {
           area_m2?: number | null
           bairro?: string | null
           banheiros?: number | null
+          captador_id?: string | null
           cep?: string | null
           cidade?: string | null
           codigo?: string | null
@@ -1862,6 +1878,7 @@ export type Database = {
           created_at?: string | null
           finalidade?: string | null
           fotos?: string[] | null
+          gestao_patrimonio?: boolean | null
           id?: string | null
           iptu?: number | null
           numero?: string | null
@@ -1880,6 +1897,7 @@ export type Database = {
           area_m2?: number | null
           bairro?: string | null
           banheiros?: number | null
+          captador_id?: string | null
           cep?: string | null
           cidade?: string | null
           codigo?: string | null
@@ -1888,6 +1906,7 @@ export type Database = {
           created_at?: string | null
           finalidade?: string | null
           fotos?: string[] | null
+          gestao_patrimonio?: boolean | null
           id?: string | null
           iptu?: number | null
           numero?: string | null
@@ -1902,7 +1921,15 @@ export type Database = {
           valor_venda?: number | null
           vitrine_url?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "imoveis_captador_id_fkey"
+            columns: ["captador_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Functions: {

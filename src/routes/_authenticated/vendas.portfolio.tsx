@@ -205,8 +205,11 @@ function ImovelCard({ imovel, onClick }: { imovel: Imovel; onClick: () => void }
             <Building2 className="h-12 w-12" />
           </div>
         )}
-        <div className="absolute top-2 left-2 flex gap-1">
+        <div className="absolute top-2 left-2 flex gap-1 flex-wrap">
           <Badge variant="secondary" className="text-[10px]">{STATUS_LABEL[imovel.status ?? ""] ?? imovel.status}</Badge>
+          {imovel.gestao_patrimonio && (
+            <Badge className="text-[10px] bg-gold/90 text-black hover:bg-gold">Gestão de Patrimônio</Badge>
+          )}
         </div>
         {imovel.codigo && (
           <div className="absolute top-2 right-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded">
@@ -247,6 +250,15 @@ function ImovelCard({ imovel, onClick }: { imovel: Imovel; onClick: () => void }
 
 function ImovelDialog({ imovel, onClose }: { imovel: Imovel | null; onClose: () => void }) {
   const urls = useFotosUrls(imovel?.fotos ?? []);
+  const { data: captadorNome } = useQuery({
+    queryKey: ["captador-nome", imovel?.captador_id],
+    queryFn: async () => {
+      if (!imovel?.captador_id) return null;
+      const { data } = await supabase.from("profiles").select("nome").eq("id", imovel.captador_id).maybeSingle();
+      return data?.nome ?? null;
+    },
+    enabled: !!imovel?.captador_id,
+  });
   if (!imovel) return null;
   const fin = imovel.finalidade ?? "locacao";
 
@@ -299,6 +311,16 @@ function ImovelDialog({ imovel, onClose }: { imovel: Imovel | null; onClose: () 
               {imovel.bairro ? `, ${imovel.bairro}` : ""}
               {imovel.cidade ? ` — ${imovel.cidade}` : ""}
               {imovel.cep ? ` · CEP ${imovel.cep}` : ""}
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-3 text-sm">
+            <div>
+              <div className="text-xs text-muted-foreground">Captador</div>
+              <div>{captadorNome ?? "—"}</div>
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">Gestão de Patrimônio</div>
+              <div>{imovel.gestao_patrimonio ? "Sim" : "Não"}</div>
             </div>
           </div>
           {imovel.observacoes && (
