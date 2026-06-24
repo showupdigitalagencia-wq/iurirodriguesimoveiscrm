@@ -216,14 +216,20 @@ function VendasRelatoriosPage() {
       <Dialog open={noShowOpen} onOpenChange={setNoShowOpen}>
         <DialogContent className="max-w-5xl">
           <DialogHeader>
-            <DialogTitle>Visitas — Não Compareceu</DialogTitle>
+            <DialogTitle>Visitas no período</DialogTitle>
           </DialogHeader>
-          <VisitasNaoCompareceuList
-            from={range.from}
-            to={range.to}
-            scope={scope}
-            targetId={targetId || null}
-          />
+          <Tabs defaultValue="nao_compareceu" className="space-y-3">
+            <TabsList className="grid w-full grid-cols-2 max-w-md">
+              <TabsTrigger value="compareceu">Compareceu{data?.visitas?.realizadas != null ? ` (${data.visitas.realizadas})` : ""}</TabsTrigger>
+              <TabsTrigger value="nao_compareceu">Não Compareceu{data?.visitas?.nao_compareceu != null ? ` (${data.visitas.nao_compareceu})` : ""}</TabsTrigger>
+            </TabsList>
+            <TabsContent value="compareceu" className="mt-0">
+              <VisitasNaoCompareceuList from={range.from} to={range.to} scope={scope} targetId={targetId || null} status="realizada" />
+            </TabsContent>
+            <TabsContent value="nao_compareceu" className="mt-0">
+              <VisitasNaoCompareceuList from={range.from} to={range.to} scope={scope} targetId={targetId || null} status="nao_compareceu" />
+            </TabsContent>
+          </Tabs>
         </DialogContent>
       </Dialog>
 
