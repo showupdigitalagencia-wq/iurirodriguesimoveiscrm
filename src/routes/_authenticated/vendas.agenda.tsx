@@ -222,6 +222,47 @@ function AgendaCorretorPage() {
     catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
   }
 
+  function openReagendar(v: VisitaItem) {
+    const dt = new Date(v.data_inicio);
+    setReagendar({
+      visita: v,
+      date: format(dt, "yyyy-MM-dd"),
+      time: format(dt, "HH:mm"),
+      saving: false,
+    });
+  }
+
+  async function handleReagendar(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!reagendar.visita) return;
+    if (!reagendar.date || !reagendar.time) { toast.error("Informe data e hora"); return; }
+    const iso = new Date(`${reagendar.date}T${reagendar.time}:00`).toISOString();
+    const { confirmNoGoogleConflict } = await import("@/lib/google-conflict");
+    if (!(await confirmNoGoogleConflict(iso, reagendar.visita.duracao_min ?? 60))) return;
+    setReagendar((r) => ({ ...r, saving: true }));
+    try {
+      await fnRescheduleVisita({ data: { id: reagendar.visita.id, data_inicio: iso } });
+      toast.success("Visita reagendada");
+      const lead = reagendar.visita.vendas_leads;
+      const endereco = reagendar.visita.endereco;
+      setReagendar({ visita: null, date: "", time: "09:00", saving: false });
+      refresh();
+      if (lead?.telefone) {
+        const dt = new Date(iso);
+        const msg = buildVisitaConfirmacaoMsg({
+          nome: lead.nome,
+          endereco,
+          dataFmt: format(dt, "dd/MM/yyyy", { locale: ptBR }),
+          horaFmt: format(dt, "HH:mm", { locale: ptBR }),
+        });
+        window.open(whatsappLink(lead.telefone, msg), "_blank");
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao reagendar");
+      setReagendar((r) => ({ ...r, saving: false }));
+    }
+  }
+
   // Form state: cadastro em lote (vários dias + vários intervalos)
   const [recDias, setRecDias] = useState<number[]>([1, 2, 3, 4, 5]); // Seg-Sex
   const [recIntervalos, setRecIntervalos] = useState<{ inicio: string; fim: string }[]>([{ inicio: "09:00", fim: "18:00" }]);
