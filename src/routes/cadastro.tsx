@@ -37,6 +37,7 @@ const REGIOES = [
   { v: "belford_roxo", l: "Belford Roxo" },
   { v: "nilopolis", l: "Nilópolis" },
   { v: "mesquita", l: "Mesquita" },
+  { v: "nova_iguacu", l: "Nova Iguaçu" },
   { v: "outras", l: "Outras" },
 ] as const;
 

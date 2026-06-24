@@ -15,6 +15,7 @@ const REGIOES = [
   "belford_roxo",
   "nilopolis",
   "mesquita",
+  "nova_iguacu",
 ] as const;
 
 const REGIOES_LABEL: Record<(typeof REGIOES)[number], string> = {
@@ -29,6 +30,7 @@ const REGIOES_LABEL: Record<(typeof REGIOES)[number], string> = {
   belford_roxo: "Belford Roxo",
   nilopolis: "Nilópolis",
   mesquita: "Mesquita",
+  nova_iguacu: "Nova Iguaçu",
 };
 
 // Mapa região → canal (executivo) usado no enum lead_canal

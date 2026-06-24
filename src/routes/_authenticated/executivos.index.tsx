@@ -30,6 +30,7 @@ const REGIOES = [
   "Recreio dos Bandeirantes",
   "Belford Roxo",
   "Mesquita/Nilópolis",
+  "Nova Iguaçu",
   "Outra",
 ];
 
