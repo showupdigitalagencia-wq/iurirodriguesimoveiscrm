@@ -152,6 +152,7 @@ function VendasLeads() {
           </tbody>
         </table>
       </div>
+      )}
     </div>
   );
 }
