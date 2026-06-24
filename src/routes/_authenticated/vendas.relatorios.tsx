@@ -301,6 +301,8 @@ function VendasRelatoriosPage() {
               hint={data.visitas
                 ? `${data.visitas.realizadas} realizadas · ${data.visitas.nao_compareceu} não compareceu${data.visitas.pendentes_confirmacao ? ` · ${data.visitas.pendentes_confirmacao} a confirmar` : ""}`
                 : undefined}
+              onClick={data.visitas && data.visitas.nao_compareceu > 0 ? () => setNoShowOpen(true) : undefined}
+              actionHint={data.visitas && data.visitas.nao_compareceu > 0 ? "Ver quem não compareceu →" : undefined}
             />
           </section>
 
