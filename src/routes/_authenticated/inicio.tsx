@@ -14,8 +14,10 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import {
   Heart, MessageCircle, ImagePlus, Send, MoreVertical, EyeOff, Eye, Trash2, Loader2, Info, ShieldAlert, Film,
+  Type, Mic, Square, X,
 } from "lucide-react";
 import { FeedVideo } from "@/components/feed/feed-video";
+import { FeedAudio } from "@/components/feed/feed-audio";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -40,7 +42,7 @@ type Post = {
   source: string;
   hidden_at: string | null;
   created_at: string;
-  media_type: "image" | "video";
+  media_type: "image" | "video" | "audio" | "text";
 };
 
 type Comment = {
@@ -354,9 +356,11 @@ function InicioPage() {
                       Nova conquista desbloqueada!
                     </div>
                   </div>
-                ) : url ? (
+                ) : p.media_type === "text" || (!p.image_path && p.media_type !== "audio") ? null : url ? (
                   p.media_type === "video" ? (
                     <FeedVideo src={url} onDoubleClick={() => !lk.mine && toggleLike(p.id)} />
+                  ) : p.media_type === "audio" ? (
+                    <FeedAudio src={url} />
                   ) : (
                     <div className="bg-black">
                       <img
@@ -369,6 +373,12 @@ function InicioPage() {
                   )
                 ) : (
                   <div className="w-full aspect-[4/5] bg-muted animate-pulse" />
+                )}
+
+                {p.media_type === "text" && p.caption && (
+                  <div className="px-5 py-6 text-base md:text-lg leading-relaxed whitespace-pre-wrap">
+                    {p.caption}
+                  </div>
                 )}
 
                 <div className="flex items-center gap-1 px-3 pt-3">
@@ -402,7 +412,7 @@ function InicioPage() {
                   </button>
                 )}
 
-                {p.caption && (
+                {p.caption && p.media_type !== "text" && (
                   <div className="px-4 pt-1 text-sm whitespace-pre-wrap">
                     <span className="font-semibold mr-2">{author?.nome?.split(" ")[0] ?? ""}</span>
                     {p.caption}
@@ -511,6 +521,8 @@ function DeleteAction({ onConfirm }: { onConfirm: () => void }) {
 
 const MAX_BYTES = 50 * 1024 * 1024;
 const MAX_VIDEO_SECONDS = 60;
+const MAX_AUDIO_SECONDS = 120;
+const MAX_TEXT_CHARS = 500;
 
 async function probeVideoDuration(file: File): Promise<number> {
   return new Promise((resolve) => {
@@ -523,21 +535,59 @@ async function probeVideoDuration(file: File): Promise<number> {
   });
 }
 
+async function probeAudioDuration(file: File | Blob): Promise<number> {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const a = document.createElement("audio");
+    a.preload = "metadata";
+    a.src = url;
+    a.onloadedmetadata = () => { URL.revokeObjectURL(url); resolve(a.duration || 0); };
+    a.onerror = () => { URL.revokeObjectURL(url); resolve(0); };
+  });
+}
+
+type Mode = "media" | "text" | "audio";
+
 function ComposeButton({
   open, setOpen, userId, onPosted,
 }: {
   open: boolean; setOpen: (v: boolean) => void; userId: string | null; onPosted: () => void;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
+  const audioFileRef = useRef<HTMLInputElement>(null);
+  const [mode, setMode] = useState<Mode>("media");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [mediaType, setMediaType] = useState<"image" | "video">("image");
   const [caption, setCaption] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  // audio state
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [audioDuration, setAudioDuration] = useState(0);
+  const [recording, setRecording] = useState(false);
+  const [recordSecs, setRecordSecs] = useState(0);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const recordTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const recordStreamRef = useRef<MediaStream | null>(null);
+
+  function stopStream() {
+    recordStreamRef.current?.getTracks().forEach((t) => t.stop());
+    recordStreamRef.current = null;
+    if (recordTimerRef.current) { clearInterval(recordTimerRef.current); recordTimerRef.current = null; }
+  }
+
   function reset() {
     setFile(null); setPreview(null); setCaption(""); setSubmitting(false); setMediaType("image");
+    setMode("media");
     if (fileRef.current) fileRef.current.value = "";
+    if (audioFileRef.current) audioFileRef.current.value = "";
+    if (audioUrl) URL.revokeObjectURL(audioUrl);
+    setAudioBlob(null); setAudioUrl(null); setAudioDuration(0);
+    setRecording(false); setRecordSecs(0);
+    stopStream();
+    recorderRef.current = null;
   }
 
   async function pickFile(f: File | null) {
@@ -557,32 +607,128 @@ function ComposeButton({
     setPreview(URL.createObjectURL(f));
   }
 
-  async function submit() {
-    if (!file || !userId) return;
-    setSubmitting(true);
-    const ext = file.name.split(".").pop() || (mediaType === "video" ? "mp4" : "jpg");
-    const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-    const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, file, {
-      upsert: false, contentType: file.type || undefined,
-    });
-    if (upErr) { setSubmitting(false); return toast.error("Falha no upload: " + upErr.message); }
-    const { error } = await supabase.from("feed_posts").insert({
-      author_id: userId,
-      caption: caption.trim() || null,
-      image_path: path,
-      source: "manual",
-      media_type: mediaType,
-    });
-    if (error) {
-      setSubmitting(false);
-      supabase.storage.from(BUCKET).remove([path]).catch(() => null);
-      return toast.error("Falha ao publicar: " + error.message);
+  async function pickAudio(f: File | null) {
+    if (audioUrl) URL.revokeObjectURL(audioUrl);
+    if (!f) { setAudioBlob(null); setAudioUrl(null); setAudioDuration(0); return; }
+    if (f.size > MAX_BYTES) { toast.error("Arquivo acima de 50 MB."); return; }
+    const secs = await probeAudioDuration(f);
+    if (secs > MAX_AUDIO_SECONDS + 0.5) {
+      toast.error(`Áudio precisa ter no máximo ${MAX_AUDIO_SECONDS / 60} minutos.`);
+      return;
     }
-    toast.success("Publicado no mural");
-    reset();
-    setOpen(false);
-    onPosted();
+    setAudioBlob(f);
+    setAudioUrl(URL.createObjectURL(f));
+    setAudioDuration(secs);
   }
+
+  async function startRecording() {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      toast.error("Gravação não suportada neste dispositivo.");
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      recordStreamRef.current = stream;
+      const mimeCandidates = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg"];
+      const mime = mimeCandidates.find((m) => MediaRecorder.isTypeSupported(m)) ?? "";
+      const rec = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+      const chunks: Blob[] = [];
+      rec.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
+      rec.onstop = async () => {
+        const blob = new Blob(chunks, { type: rec.mimeType || "audio/webm" });
+        const secs = await probeAudioDuration(blob);
+        stopStream();
+        setRecording(false);
+        if (audioUrl) URL.revokeObjectURL(audioUrl);
+        setAudioBlob(blob);
+        setAudioUrl(URL.createObjectURL(blob));
+        setAudioDuration(secs || recordSecs);
+      };
+      recorderRef.current = rec;
+      rec.start();
+      setRecording(true);
+      setRecordSecs(0);
+      recordTimerRef.current = setInterval(() => {
+        setRecordSecs((s) => {
+          const next = s + 1;
+          if (next >= MAX_AUDIO_SECONDS) {
+            try { rec.state !== "inactive" && rec.stop(); } catch { /* noop */ }
+          }
+          return next;
+        });
+      }, 1000);
+    } catch {
+      toast.error("Não foi possível acessar o microfone.");
+      stopStream();
+    }
+  }
+
+  function stopRecording() {
+    const rec = recorderRef.current;
+    if (rec && rec.state !== "inactive") rec.stop();
+  }
+
+  async function submit() {
+    if (!userId) return;
+    setSubmitting(true);
+
+    try {
+      if (mode === "text") {
+        const body = caption.trim();
+        if (!body) { setSubmitting(false); return toast.error("Escreva algo para postar."); }
+        const { error } = await supabase.from("feed_posts").insert({
+          author_id: userId, caption: body, image_path: null, source: "manual", media_type: "text",
+        });
+        if (error) { setSubmitting(false); return toast.error("Falha ao publicar: " + error.message); }
+      } else if (mode === "audio") {
+        if (!audioBlob) { setSubmitting(false); return toast.error("Grave ou selecione um áudio."); }
+        const ext = (audioBlob.type.includes("mp4") ? "m4a"
+          : audioBlob.type.includes("ogg") ? "ogg"
+          : audioBlob.type.includes("mpeg") ? "mp3"
+          : "webm");
+        const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, audioBlob, {
+          upsert: false, contentType: audioBlob.type || "audio/webm",
+        });
+        if (upErr) { setSubmitting(false); return toast.error("Falha no upload: " + upErr.message); }
+        const { error } = await supabase.from("feed_posts").insert({
+          author_id: userId, caption: caption.trim() || null, image_path: path, source: "manual", media_type: "audio",
+        });
+        if (error) {
+          setSubmitting(false);
+          supabase.storage.from(BUCKET).remove([path]).catch(() => null);
+          return toast.error("Falha ao publicar: " + error.message);
+        }
+      } else {
+        if (!file) { setSubmitting(false); return toast.error("Selecione uma foto ou vídeo."); }
+        const ext = file.name.split(".").pop() || (mediaType === "video" ? "mp4" : "jpg");
+        const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, file, {
+          upsert: false, contentType: file.type || undefined,
+        });
+        if (upErr) { setSubmitting(false); return toast.error("Falha no upload: " + upErr.message); }
+        const { error } = await supabase.from("feed_posts").insert({
+          author_id: userId, caption: caption.trim() || null, image_path: path, source: "manual", media_type: mediaType,
+        });
+        if (error) {
+          setSubmitting(false);
+          supabase.storage.from(BUCKET).remove([path]).catch(() => null);
+          return toast.error("Falha ao publicar: " + error.message);
+        }
+      }
+      toast.success("Publicado no mural");
+      reset();
+      setOpen(false);
+      onPosted();
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  const tabBtn = (active: boolean) =>
+    `flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md transition ${
+      active ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground"
+    }`;
 
   return (
     <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) reset(); }}>
@@ -592,72 +738,181 @@ function ComposeButton({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Novo post no mural</DialogTitle>
-          <DialogDescription>Foto ou vídeo (até 60s · 50MB) + uma legenda curta.</DialogDescription>
+          <DialogDescription>Foto, vídeo (até 60s), áudio (até 2min) ou texto.</DialogDescription>
         </DialogHeader>
+
+        <div className="flex items-center gap-1 p-1 rounded-lg bg-muted">
+          <button type="button" className={tabBtn(mode === "media")} onClick={() => setMode("media")}>
+            <ImagePlus className="h-3.5 w-3.5" /> Mídia
+          </button>
+          <button type="button" className={tabBtn(mode === "audio")} onClick={() => setMode("audio")}>
+            <Mic className="h-3.5 w-3.5" /> Áudio
+          </button>
+          <button type="button" className={tabBtn(mode === "text")} onClick={() => setMode("text")}>
+            <Type className="h-3.5 w-3.5" /> Texto
+          </button>
+        </div>
 
         <div className="rounded-lg border border-amber-500/40 bg-amber-500/5 p-3 flex gap-2">
           <ShieldAlert className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
           <p className="text-xs text-amber-700 dark:text-amber-300 leading-relaxed">
-            Seu conteúdo (foto ou vídeo) deve estar relacionado ao trabalho — visitas, captação, atendimento ao cliente,
-            reuniões, entregas. Conteúdo genérico será removido.
+            Seu conteúdo deve estar relacionado ao trabalho — visitas, captação, atendimento, reuniões, entregas.
+            Conteúdo genérico será removido.
           </p>
         </div>
 
-        <div className="space-y-3">
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*,video/*"
-            className="hidden"
-            onChange={(e) => pickFile(e.target.files?.[0] ?? null)}
-          />
-          {preview ? (
-            <div className="relative">
-              {mediaType === "video" ? (
-                <video src={preview} controls className="w-full max-h-80 rounded-lg border border-border bg-black" />
-              ) : (
-                <img src={preview} alt="" className="w-full max-h-80 object-cover rounded-lg border border-border" />
-              )}
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                className="absolute top-2 right-2"
-                onClick={() => pickFile(null)}
-              >
-                Trocar
-              </Button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => fileRef.current?.click()}
-              className="w-full border-2 border-dashed border-border rounded-lg p-8 text-center hover:bg-muted/40 transition-colors"
-            >
-              <div className="flex items-center justify-center gap-3 text-muted-foreground">
-                <ImagePlus className="h-6 w-6" />
-                <Film className="h-6 w-6" />
+        {mode === "media" && (
+          <div className="space-y-3">
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*,video/*"
+              className="hidden"
+              onChange={(e) => pickFile(e.target.files?.[0] ?? null)}
+            />
+            {preview ? (
+              <div className="relative">
+                {mediaType === "video" ? (
+                  <video src={preview} controls className="w-full max-h-80 rounded-lg border border-border bg-black" />
+                ) : (
+                  <img src={preview} alt="" className="w-full max-h-80 object-cover rounded-lg border border-border" />
+                )}
+                <Button
+                  type="button" variant="secondary" size="sm"
+                  className="absolute top-2 right-2"
+                  onClick={() => pickFile(null)}
+                >
+                  Trocar
+                </Button>
               </div>
-              <div className="text-sm mt-2">Selecionar foto ou vídeo</div>
-              <div className="text-xs text-muted-foreground mt-1">Foto · vídeo até 60s · máx 50MB</div>
-            </button>
-          )}
-
-          <Textarea
-            placeholder="Escreva uma legenda (opcional)…"
-            value={caption}
-            onChange={(e) => setCaption(e.target.value)}
-            rows={3}
-            maxLength={500}
-          />
-          <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-            <Info className="h-3 w-3" /> Máx. 500 caracteres
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                className="w-full border-2 border-dashed border-border rounded-lg p-8 text-center hover:bg-muted/40 transition-colors"
+              >
+                <div className="flex items-center justify-center gap-3 text-muted-foreground">
+                  <ImagePlus className="h-6 w-6" />
+                  <Film className="h-6 w-6" />
+                </div>
+                <div className="text-sm mt-2">Selecionar foto ou vídeo</div>
+                <div className="text-xs text-muted-foreground mt-1">Foto · vídeo até 60s · máx 50MB</div>
+              </button>
+            )}
+            <Textarea
+              placeholder="Escreva uma legenda (opcional)…"
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+              rows={3}
+              maxLength={MAX_TEXT_CHARS}
+            />
+            <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+              <span className="flex items-center gap-1"><Info className="h-3 w-3" /> Máx. {MAX_TEXT_CHARS} caracteres</span>
+              <span>{caption.length}/{MAX_TEXT_CHARS}</span>
+            </div>
           </div>
-        </div>
+        )}
+
+        {mode === "audio" && (
+          <div className="space-y-3">
+            <input
+              ref={audioFileRef}
+              type="file"
+              accept="audio/*"
+              className="hidden"
+              onChange={(e) => pickAudio(e.target.files?.[0] ?? null)}
+            />
+
+            {audioUrl ? (
+              <div className="rounded-lg border border-border bg-card p-3 space-y-2">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Mic className="h-3.5 w-3.5" />
+                  <span>Pré-visualização · {Math.round(audioDuration)}s</span>
+                  <Button
+                    type="button" variant="ghost" size="sm"
+                    className="ml-auto h-7 px-2"
+                    onClick={() => pickAudio(null)}
+                  >
+                    <X className="h-3.5 w-3.5 mr-1" /> Descartar
+                  </Button>
+                </div>
+                <audio src={audioUrl} controls className="w-full" />
+              </div>
+            ) : (
+              <div className="rounded-lg border-2 border-dashed border-border p-6 text-center space-y-3">
+                {recording ? (
+                  <>
+                    <div className="flex items-center justify-center gap-2 text-rose-500">
+                      <span className="h-2.5 w-2.5 rounded-full bg-rose-500 animate-pulse" />
+                      <span className="font-mono text-lg">{Math.floor(recordSecs / 60)}:{(recordSecs % 60).toString().padStart(2, "0")}</span>
+                    </div>
+                    <Button type="button" variant="destructive" onClick={stopRecording} className="gap-2">
+                      <Square className="h-4 w-4" /> Parar gravação
+                    </Button>
+                    <div className="text-[11px] text-muted-foreground">Máx. 2 minutos</div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex flex-col items-center gap-3">
+                      <Button type="button" onClick={startRecording} size="lg" className="rounded-full h-14 w-14 p-0 bg-rose-500 hover:bg-rose-600">
+                        <Mic className="h-6 w-6" />
+                      </Button>
+                      <div className="text-sm">Tocar para gravar</div>
+                      <div className="text-xs text-muted-foreground">
+                        ou{" "}
+                        <button
+                          type="button"
+                          onClick={() => audioFileRef.current?.click()}
+                          className="underline underline-offset-2 hover:text-foreground"
+                        >
+                          enviar um arquivo
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            <Textarea
+              placeholder="Legenda (opcional)…"
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+              rows={2}
+              maxLength={MAX_TEXT_CHARS}
+            />
+          </div>
+        )}
+
+        {mode === "text" && (
+          <div className="space-y-2">
+            <Textarea
+              placeholder="O que você quer compartilhar com o time?"
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+              rows={6}
+              maxLength={MAX_TEXT_CHARS}
+              autoFocus
+            />
+            <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+              <span className="flex items-center gap-1"><Info className="h-3 w-3" /> Texto puro · sem anexo</span>
+              <span>{caption.length}/{MAX_TEXT_CHARS}</span>
+            </div>
+          </div>
+        )}
 
         <DialogFooter>
           <Button variant="ghost" onClick={() => { reset(); setOpen(false); }}>Cancelar</Button>
-          <Button onClick={submit} disabled={!file || submitting} className="gap-2">
+          <Button
+            onClick={submit}
+            disabled={
+              submitting ||
+              (mode === "media" && !file) ||
+              (mode === "audio" && !audioBlob) ||
+              (mode === "text" && !caption.trim())
+            }
+            className="gap-2"
+          >
             {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             Publicar
           </Button>
