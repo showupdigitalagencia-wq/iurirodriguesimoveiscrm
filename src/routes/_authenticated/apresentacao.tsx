@@ -25,7 +25,7 @@ export const Route = createFileRoute("/_authenticated/apresentacao")({
 type SlideDef = {
   id: number;
   title: string;
-  render: () => JSX.Element;
+  render: () => React.ReactElement;
   // pdf representation
   pdf: {
     eyebrow?: string;
