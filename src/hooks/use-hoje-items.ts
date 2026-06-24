@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -259,10 +259,11 @@ export function useHojeData() {
   });
 
   // Realtime — invalidação leve por tabela
+  const channelId = useId();
   useEffect(() => {
     if (!uid) return;
     const ch = supabase
-      .channel(`hoje-${uid}`)
+      .channel(`hoje-${uid}-${channelId}-${Math.random().toString(36).slice(2, 8)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "vendas_leads" }, () => {
         qc.invalidateQueries({ queryKey: ["hoje-leads-sem-contato", uid] });
         qc.invalidateQueries({ queryKey: ["hoje-followup", uid] });
