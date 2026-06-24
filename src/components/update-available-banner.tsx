@@ -126,10 +126,11 @@ export function UpdateAvailableBanner() {
     };
   }, []);
 
-  function handleSnooze() {
-    if (freshFp) snooze(freshFp);
+  function handleSnooze(days: number) {
+    if (freshFp) snooze(freshFp, days);
     setUpdateReady(false);
   }
+
 
 
   async function handleUpdate() {
