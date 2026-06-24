@@ -16,8 +16,9 @@ import { listCorretoresDisponibilidade, atribuirLead, aceitarLead, recusarLead, 
 import { createManualVendasLead } from "@/lib/vendas-manual.functions";
 import { getPlantonistaHoje, listCorretoresElegiveis } from "@/lib/plantao.functions";
 import { toast } from "sonner";
-import { Plus, MapPin, Video, UserPlus, Check, X } from "lucide-react";
+import { Plus, MapPin, Video, UserPlus, Check, X, CalendarX2 } from "lucide-react";
 import { VendasLeadDetail } from "@/components/vendas-lead-detail";
+import { VisitasNaoCompareceuList } from "@/components/visitas-nao-compareceu-list";
 
 type VendasLeadExt = VendasLead & {
   atribuicao_status?: "pendente" | "aceito" | "recusado" | null;
@@ -59,14 +60,38 @@ function VendasLeads() {
   const invalidate = () => qc.invalidateQueries({ queryKey: ["vendas_leads"] });
 
   const [detailId, setDetailId] = useState<string | null>(null);
+  const [filter, setFilter] = useState<"todos" | "nao_compareceu">("todos");
+
+  const noShowRange = useMemo(() => {
+    const now = new Date();
+    const start = new Date(now); start.setDate(now.getDate() - 30);
+    return { from: start.toISOString(), to: now.toISOString() };
+  }, []);
 
   return (
     <div className="space-y-3">
-      <div className="flex justify-end">
+      <div className="flex justify-between items-center gap-2 flex-wrap">
+        <div className="flex gap-2 flex-wrap">
+          <Button size="sm" variant={filter === "todos" ? "gold" : "outline"} onClick={() => setFilter("todos")}>
+            Todos os leads
+          </Button>
+          <Button size="sm" variant={filter === "nao_compareceu" ? "gold" : "outline"} onClick={() => setFilter("nao_compareceu")} className="gap-1.5">
+            <CalendarX2 className="h-3.5 w-3.5" /> Visitas — Não Compareceu
+          </Button>
+        </div>
         <CreateVendasLeadDialog onCreated={invalidate} />
       </div>
       <VendasLeadDetail leadId={detailId} open={!!detailId} onOpenChange={(o) => !o && setDetailId(null)} isAdmin={isAdmin} onChanged={invalidate} />
 
+      {filter === "nao_compareceu" ? (
+        <VisitasNaoCompareceuList
+          from={noShowRange.from}
+          to={noShowRange.to}
+          scope="auto"
+          showPeriodInputs
+          onLeadClick={(id) => setDetailId(id)}
+        />
+      ) : (
       <div className="rounded-md border overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-muted/50">
@@ -127,6 +152,7 @@ function VendasLeads() {
           </tbody>
         </table>
       </div>
+      )}
     </div>
   );
 }

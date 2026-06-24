@@ -16,8 +16,10 @@ import {
   BarChart3, Clock,
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { VendasFunilPanel } from "@/components/vendas-funil-panel";
 import { VendasTempoRespostaPanel } from "@/components/vendas-tempo-resposta-panel";
+import { VisitasNaoCompareceuList } from "@/components/visitas-nao-compareceu-list";
 
 export const Route = createFileRoute("/_authenticated/vendas/relatorios")({
   head: () => ({ meta: [{ title: "Relatórios — Vendas" }] }),
@@ -105,6 +107,7 @@ function VendasRelatoriosPage() {
   const [escopos, setEscopos] = useState<Escopos | null>(null);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [noShowOpen, setNoShowOpen] = useState(false);
 
   // Load allowed scopes once
   useEffect(() => {
@@ -210,6 +213,20 @@ function VendasRelatoriosPage() {
         </div>
       </header>
 
+      <Dialog open={noShowOpen} onOpenChange={setNoShowOpen}>
+        <DialogContent className="max-w-5xl">
+          <DialogHeader>
+            <DialogTitle>Visitas — Não Compareceu</DialogTitle>
+          </DialogHeader>
+          <VisitasNaoCompareceuList
+            from={range.from}
+            to={range.to}
+            scope={scope}
+            targetId={targetId || null}
+          />
+        </DialogContent>
+      </Dialog>
+
       <Tabs defaultValue="geral" className="space-y-4">
         <TabsList className="grid w-full grid-cols-3 max-w-xl">
           <TabsTrigger value="geral"><BarChart3 className="h-3.5 w-3.5 mr-1.5" /> Visão Geral</TabsTrigger>
@@ -298,6 +315,8 @@ function VendasRelatoriosPage() {
               hint={data.visitas
                 ? `${data.visitas.realizadas} realizadas · ${data.visitas.nao_compareceu} não compareceu${data.visitas.pendentes_confirmacao ? ` · ${data.visitas.pendentes_confirmacao} a confirmar` : ""}`
                 : undefined}
+              onClick={data.visitas && data.visitas.nao_compareceu > 0 ? () => setNoShowOpen(true) : undefined}
+              actionHint={data.visitas && data.visitas.nao_compareceu > 0 ? "Ver quem não compareceu →" : undefined}
             />
           </section>
 
@@ -538,16 +557,24 @@ const ACCENT: Record<string, string> = {
   rose: "from-rose-500/10 to-transparent border-rose-500/20 text-rose-500",
 };
 
-function KpiCard({ icon: Icon, label, value, d, accent, hint }: {
+function KpiCard({ icon: Icon, label, value, d, accent, hint, onClick, actionHint }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string; value: number | string;
   d: { txt: string; up: boolean | null } | null;
   accent: keyof typeof ACCENT;
   hint?: string;
+  onClick?: () => void;
+  actionHint?: string;
 }) {
   const cls = ACCENT[accent];
+  const interactive = !!onClick;
+  const Tag: "button" | "div" = interactive ? "button" : "div";
   return (
-    <div className={`relative overflow-hidden rounded-xl border bg-gradient-to-br ${cls} p-4`}>
+    <Tag
+      onClick={onClick}
+      type={interactive ? "button" : undefined}
+      className={`relative overflow-hidden rounded-xl border bg-gradient-to-br ${cls} p-4 text-left ${interactive ? "cursor-pointer hover:ring-2 hover:ring-offset-0 hover:ring-current/30 transition" : ""}`}
+    >
       <div className="flex items-center justify-between mb-2">
         <Icon className={`h-5 w-5 ${cls.split(" ").find((c) => c.startsWith("text-")) ?? ""}`} />
         {d && d.up !== null && (
@@ -559,6 +586,7 @@ function KpiCard({ icon: Icon, label, value, d, accent, hint }: {
       <div className="text-2xl md:text-3xl font-bold leading-tight">{value}</div>
       <div className="text-[11px] text-muted-foreground mt-0.5">{label}</div>
       {hint && <div className="text-[10px] text-muted-foreground mt-1 leading-tight">{hint}</div>}
-    </div>
+      {actionHint && <div className="text-[10px] font-medium mt-1 underline-offset-2 underline opacity-80">{actionHint}</div>}
+    </Tag>
   );
 }
