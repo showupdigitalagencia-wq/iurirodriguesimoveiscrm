@@ -147,6 +147,61 @@ export const deleteVisita = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const rescheduleVisita = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { id: string; data_inicio: string; duracao_min?: number }) => input)
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: row, error: selErr } = await supabase
+      .from("vendas_visitas" as never)
+      .select("id, lead_id, endereco, observacoes, duracao_min, google_event_id")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (selErr) throw new Error(selErr.message);
+    if (!row) throw new Error("Visita não encontrada");
+    const visita = row as { id: string; lead_id: string; endereco: string; observacoes: string | null; duracao_min: number; google_event_id: string | null };
+
+    const duracao = data.duracao_min ?? visita.duracao_min ?? 60;
+
+    // Substituir evento no Google Calendar (delete + create)
+    let newEventId: string | null = visita.google_event_id;
+    if (visita.google_event_id) {
+      try {
+        const { deleteCalendarEvent } = await import("@/lib/google.server");
+        await deleteCalendarEvent({ userId, eventId: visita.google_event_id });
+      } catch (e) { console.warn("[visitas] google delete on reschedule failed", e); }
+      newEventId = null;
+    }
+    try {
+      const { data: leadRow } = await supabase
+        .from("vendas_leads")
+        .select("nome")
+        .eq("id", visita.lead_id)
+        .maybeSingle();
+      const { createCalendarEventWithMeet } = await import("@/lib/google.server");
+      const r = await createCalendarEventWithMeet({
+        userId,
+        summary: `Visita: ${(leadRow as { nome: string } | null)?.nome ?? "Lead"} — ${visita.endereco}`,
+        description: visita.observacoes ?? null,
+        startISO: data.data_inicio,
+        durationMin: duracao,
+      });
+      if (r?.eventId) newEventId = r.eventId;
+    } catch (e) { console.warn("[visitas] google create on reschedule failed", e); }
+
+    const { error } = await supabase
+      .from("vendas_visitas" as never)
+      .update({
+        data_inicio: data.data_inicio,
+        duracao_min: duracao,
+        google_event_id: newEventId,
+        status: "agendada",
+      } as never)
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
 export const confirmarVisita = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: {
