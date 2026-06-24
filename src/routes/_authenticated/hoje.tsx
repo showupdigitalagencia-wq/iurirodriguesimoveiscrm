@@ -64,7 +64,9 @@ function HojePage() {
     data.leadsSemContato.length === 0 &&
     data.visitas.length === 0 &&
     data.followup.length === 0 &&
-    data.chaves.length === 0;
+    data.chaves.length === 0 &&
+    data.candidatos.length === 0 &&
+    data.reunioes.length === 0;
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-6 space-y-5">
