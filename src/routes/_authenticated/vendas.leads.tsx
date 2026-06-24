@@ -16,7 +16,7 @@ import { listCorretoresDisponibilidade, atribuirLead, aceitarLead, recusarLead, 
 import { createManualVendasLead } from "@/lib/vendas-manual.functions";
 import { getPlantonistaHoje, listCorretoresElegiveis } from "@/lib/plantao.functions";
 import { toast } from "sonner";
-import { Plus, MapPin, Video, UserPlus, Check, X, CalendarX2 } from "lucide-react";
+import { Plus, MapPin, Video, UserPlus, Check, X, CalendarX2, CalendarCheck2 } from "lucide-react";
 import { VendasLeadDetail } from "@/components/vendas-lead-detail";
 import { VisitasNaoCompareceuList } from "@/components/visitas-nao-compareceu-list";
 
@@ -60,7 +60,7 @@ function VendasLeads() {
   const invalidate = () => qc.invalidateQueries({ queryKey: ["vendas_leads"] });
 
   const [detailId, setDetailId] = useState<string | null>(null);
-  const [filter, setFilter] = useState<"todos" | "nao_compareceu">("todos");
+  const [filter, setFilter] = useState<"todos" | "nao_compareceu" | "compareceu">("todos");
 
   const noShowRange = useMemo(() => {
     const now = new Date();
@@ -75,6 +75,9 @@ function VendasLeads() {
           <Button size="sm" variant={filter === "todos" ? "gold" : "outline"} onClick={() => setFilter("todos")}>
             Todos os leads
           </Button>
+          <Button size="sm" variant={filter === "compareceu" ? "gold" : "outline"} onClick={() => setFilter("compareceu")} className="gap-1.5">
+            <CalendarCheck2 className="h-3.5 w-3.5" /> Visitas — Compareceu
+          </Button>
           <Button size="sm" variant={filter === "nao_compareceu" ? "gold" : "outline"} onClick={() => setFilter("nao_compareceu")} className="gap-1.5">
             <CalendarX2 className="h-3.5 w-3.5" /> Visitas — Não Compareceu
           </Button>
@@ -83,11 +86,12 @@ function VendasLeads() {
       </div>
       <VendasLeadDetail leadId={detailId} open={!!detailId} onOpenChange={(o) => !o && setDetailId(null)} isAdmin={isAdmin} onChanged={invalidate} />
 
-      {filter === "nao_compareceu" ? (
+      {filter === "nao_compareceu" || filter === "compareceu" ? (
         <VisitasNaoCompareceuList
           from={noShowRange.from}
           to={noShowRange.to}
           scope="auto"
+          status={filter === "compareceu" ? "realizada" : "nao_compareceu"}
           showPeriodInputs
           onLeadClick={(id) => setDetailId(id)}
         />
