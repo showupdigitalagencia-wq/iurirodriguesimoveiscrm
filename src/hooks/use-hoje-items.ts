@@ -199,6 +199,65 @@ export function useHojeData() {
     },
   });
 
+  // === Captação (Executivo) ===
+  const candidatos = useQuery({
+    queryKey: ["hoje-candidatos", responsavelId],
+    enabled: !!uid && isExec && !!responsavelId,
+    queryFn: async (): Promise<CandidatoSemContato[]> => {
+      const { data: cfg } = await supabase
+        .from("configuracoes")
+        .select("valor")
+        .eq("chave", "candidatos_sem_contato_dias")
+        .maybeSingle();
+      const dias = typeof cfg?.valor === "number" ? cfg!.valor : 3;
+      const limite = new Date(Date.now() - dias * 86400_000).toISOString();
+      const { data } = await supabase
+        .from("candidatos")
+        .select("id, nome, telefone, regiao, created_at, status, responsavel_id")
+        .eq("responsavel_id", responsavelId!)
+        .eq("status", "pendente_revisao")
+        .lt("created_at", limite)
+        .order("created_at", { ascending: true })
+        .limit(50);
+      return (data ?? []) as CandidatoSemContato[];
+    },
+  });
+
+  const reunioes = useQuery({
+    queryKey: ["hoje-reunioes-inst", uid, isExec],
+    enabled: !!uid && isExec,
+    queryFn: async (): Promise<ReuniaoInstitucionalHoje[]> => {
+      const { data: rs } = await supabase
+        .from("reunioes")
+        .select("id, titulo, data_inicio, local, tipo, status, criado_por")
+        .eq("tipo", "institucional")
+        .neq("status", "cancelada")
+        .eq("criado_por", uid!)
+        .gte("data_inicio", startOfToday())
+        .lte("data_inicio", endOfToday())
+        .order("data_inicio", { ascending: true });
+      const rows = (rs ?? []) as Array<{ id: string; titulo: string; data_inicio: string; local: string | null }>;
+      if (rows.length === 0) return [];
+      const ids = rows.map((r) => r.id);
+      const { data: parts } = await supabase
+        .from("reuniao_participantes")
+        .select("reuniao_id, lead_id")
+        .in("reuniao_id", ids)
+        .not("lead_id", "is", null);
+      const counts = new Map<string, number>();
+      ((parts ?? []) as Array<{ reuniao_id: string }>).forEach((p) => {
+        counts.set(p.reuniao_id, (counts.get(p.reuniao_id) ?? 0) + 1);
+      });
+      return rows.map((r) => ({
+        id: r.id,
+        titulo: r.titulo,
+        data_inicio: r.data_inicio,
+        local: r.local,
+        candidatos_confirmados: counts.get(r.id) ?? 0,
+      }));
+    },
+  });
+
   // Realtime — invalidação leve por tabela
   useEffect(() => {
     if (!uid) return;
@@ -220,32 +279,48 @@ export function useHojeData() {
       .on("postgres_changes", { event: "*", schema: "public", table: "plantao_escala" }, () => {
         qc.invalidateQueries({ queryKey: ["hoje-plantao", uid] });
       })
+      .on("postgres_changes", { event: "*", schema: "public", table: "candidatos" }, () => {
+        qc.invalidateQueries({ queryKey: ["hoje-candidatos", responsavelId] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "reunioes" }, () => {
+        qc.invalidateQueries({ queryKey: ["hoje-reunioes-inst", uid, isExec] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "reuniao_participantes" }, () => {
+        qc.invalidateQueries({ queryKey: ["hoje-reunioes-inst", uid, isExec] });
+      })
       .subscribe();
     return () => {
       supabase.removeChannel(ch);
     };
-  }, [uid, qc]);
+  }, [uid, qc, responsavelId, isExec]);
 
   const total =
     (leadsSemContato.data?.length ?? 0) +
     (visitas.data?.length ?? 0) +
     (followup.data?.length ?? 0) +
-    (chaves.data?.length ?? 0);
+    (chaves.data?.length ?? 0) +
+    (candidatos.data?.length ?? 0) +
+    (reunioes.data?.length ?? 0);
 
   return {
     uid,
+    isExec,
     plantao: plantao.data ?? null,
     leadsSemContato: leadsSemContato.data ?? [],
     visitas: visitas.data ?? [],
     followup: followup.data ?? [],
     chaves: chaves.data ?? [],
+    candidatos: candidatos.data ?? [],
+    reunioes: reunioes.data ?? [],
     total,
     loading:
       plantao.isLoading ||
       leadsSemContato.isLoading ||
       visitas.isLoading ||
       followup.isLoading ||
-      chaves.isLoading,
+      chaves.isLoading ||
+      candidatos.isLoading ||
+      reunioes.isLoading,
   };
 }
 
