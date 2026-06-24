@@ -13,10 +13,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { addDays, addMonths, endOfMonth, endOfWeek, format, isSameDay, isSameMonth, startOfMonth, startOfWeek, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarCheck2, ChevronLeft, ChevronRight, Loader2, Plus, Trash2, Link2, Link2Off, MapPin, Video } from "lucide-react";
+import { CalendarCheck2, ChevronLeft, ChevronRight, Loader2, Plus, Trash2, Link2, Link2Off, MapPin, Video, CalendarClock } from "lucide-react";
 import { addBloqueio, addRecorrente, listDisponibilidade, removeDisponibilidade, type DisponibilidadeRow } from "@/lib/disponibilidade.functions";
 import { disconnectGoogle, getGoogleStatus, startGoogleOAuth } from "@/lib/google.functions";
-import { createReuniaoOnlineVenda, createVisita, deleteVisita, listImoveisForVisita, listMyVendasLeads, listReunioesCorretor, listVisitas, type ImovelOption, type ReuniaoCorretorRow, type VisitaRow } from "@/lib/visitas.functions";
+import { createReuniaoOnlineVenda, createVisita, deleteVisita, listImoveisForVisita, listMyVendasLeads, listReunioesCorretor, listVisitas, rescheduleVisita, type ImovelOption, type ReuniaoCorretorRow, type VisitaRow } from "@/lib/visitas.functions";
 import { buildVisitaConfirmacaoMsg, formatImovelEndereco, formatImovelOptionLabel } from "@/lib/visita-helpers";
 
 
@@ -46,6 +46,7 @@ function AgendaCorretorPage() {
   const fnCreateVisita = useServerFn(createVisita);
   const fnCreateReuniao = useServerFn(createReuniaoOnlineVenda);
   const fnDeleteVisita = useServerFn(deleteVisita);
+  const fnRescheduleVisita = useServerFn(rescheduleVisita);
   const fnListLeads = useServerFn(listMyVendasLeads);
   const fnListImoveis = useServerFn(listImoveisForVisita);
 
@@ -71,6 +72,7 @@ function AgendaCorretorPage() {
   const [savingReuniao, setSavingReuniao] = useState(false);
   const [google, setGoogle] = useState<{ connected: boolean; email: string | null }>({ connected: false, email: null });
   const [connectingGoogle, setConnectingGoogle] = useState(false);
+  const [reagendar, setReagendar] = useState<{ visita: VisitaItem | null; date: string; time: string; saving: boolean }>({ visita: null, date: "", time: "09:00", saving: false });
 
   const refresh = useCallback(async () => {
     try {
@@ -218,6 +220,47 @@ function AgendaCorretorPage() {
     if (!confirm("Cancelar esta visita?")) return;
     try { await fnDeleteVisita({ data: { id } }); toast.success("Visita removida"); refresh(); }
     catch (e) { toast.error(e instanceof Error ? e.message : "Erro"); }
+  }
+
+  function openReagendar(v: VisitaItem) {
+    const dt = new Date(v.data_inicio);
+    setReagendar({
+      visita: v,
+      date: format(dt, "yyyy-MM-dd"),
+      time: format(dt, "HH:mm"),
+      saving: false,
+    });
+  }
+
+  async function handleReagendar(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!reagendar.visita) return;
+    if (!reagendar.date || !reagendar.time) { toast.error("Informe data e hora"); return; }
+    const iso = new Date(`${reagendar.date}T${reagendar.time}:00`).toISOString();
+    const { confirmNoGoogleConflict } = await import("@/lib/google-conflict");
+    if (!(await confirmNoGoogleConflict(iso, reagendar.visita.duracao_min ?? 60))) return;
+    setReagendar((r) => ({ ...r, saving: true }));
+    try {
+      await fnRescheduleVisita({ data: { id: reagendar.visita.id, data_inicio: iso } });
+      toast.success("Visita reagendada");
+      const lead = reagendar.visita.vendas_leads;
+      const endereco = reagendar.visita.endereco;
+      setReagendar({ visita: null, date: "", time: "09:00", saving: false });
+      refresh();
+      if (lead?.telefone) {
+        const dt = new Date(iso);
+        const msg = buildVisitaConfirmacaoMsg({
+          nome: lead.nome,
+          endereco,
+          dataFmt: format(dt, "dd/MM/yyyy", { locale: ptBR }),
+          horaFmt: format(dt, "HH:mm", { locale: ptBR }),
+        });
+        window.open(whatsappLink(lead.telefone, msg), "_blank");
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao reagendar");
+      setReagendar((r) => ({ ...r, saving: false }));
+    }
   }
 
   // Form state: cadastro em lote (vários dias + vários intervalos)
@@ -374,7 +417,7 @@ function AgendaCorretorPage() {
       {/* Visão */}
       {view === "mes"
         ? <MonthView cursor={cursor} slotsForDate={slotsForDate} onSlotClick={openVisitaFor} onReuniaoClick={openReuniaoFor} />
-        : <ListView view={view} cursor={cursor} slotsForDate={slotsForDate} onSlotClick={openVisitaFor} onReuniaoClick={openReuniaoFor} onRemoveVisita={handleDeleteVisita} />}
+        : <ListView view={view} cursor={cursor} slotsForDate={slotsForDate} onSlotClick={openVisitaFor} onReuniaoClick={openReuniaoFor} onRemoveVisita={handleDeleteVisita} onRescheduleVisita={openReagendar} />}
 
       {/* Dialog: nova visita */}
       <Dialog open={openVisita} onOpenChange={setOpenVisita}>
@@ -467,6 +510,38 @@ function AgendaCorretorPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Dialog: reagendar visita */}
+      <Dialog open={!!reagendar.visita} onOpenChange={(o) => { if (!o) setReagendar({ visita: null, date: "", time: "09:00", saving: false }); }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Reagendar visita</DialogTitle></DialogHeader>
+          {reagendar.visita && (
+            <form onSubmit={handleReagendar} className="space-y-3">
+              <div className="text-xs text-muted-foreground rounded-md border bg-muted/40 px-3 py-2">
+                <div><span className="font-medium text-foreground">Lead:</span> {reagendar.visita.vendas_leads?.nome ?? "—"}</div>
+                <div className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {reagendar.visita.endereco}</div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Nova data</Label>
+                  <Input type="date" value={reagendar.date} onChange={(e) => setReagendar((r) => ({ ...r, date: e.target.value }))} required className="mt-1.5" />
+                </div>
+                <div>
+                  <Label>Nova hora</Label>
+                  <Input type="time" value={reagendar.time} onChange={(e) => setReagendar((r) => ({ ...r, time: e.target.value }))} required className="mt-1.5" />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button type="submit" variant="gold" disabled={reagendar.saving}>
+                  {reagendar.saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
+                  Reagendar e avisar no WhatsApp
+                </Button>
+              </DialogFooter>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
+
 
       {/* Gerenciar janelas */}
       <section className="rounded-xl border border-border bg-card p-4 space-y-3">
@@ -605,12 +680,13 @@ function AgendaCorretorPage() {
   );
 }
 
-function ListView({ view, cursor, slotsForDate, onSlotClick, onReuniaoClick, onRemoveVisita }: {
+function ListView({ view, cursor, slotsForDate, onSlotClick, onReuniaoClick, onRemoveVisita, onRescheduleVisita }: {
   view: View; cursor: Date;
   slotsForDate: (d: Date) => AgendaSlot;
   onSlotClick: (date: Date, time?: string) => void;
   onReuniaoClick: (date: Date, time?: string) => void;
   onRemoveVisita: (id: string) => void;
+  onRescheduleVisita: (v: VisitaItem) => void;
 }) {
   const days = useMemo(() => {
     if (view === "dia") return [cursor];
@@ -668,9 +744,14 @@ function ListView({ view, cursor, slotsForDate, onSlotClick, onReuniaoClick, onR
                       </div>
                       <div className="text-muted-foreground truncate flex items-center gap-1"><MapPin className="h-3 w-3" /> {v.endereco}</div>
                     </div>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive shrink-0" onClick={() => onRemoveVisita(v.id)}>
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
+                    <div className="flex items-center gap-0.5 shrink-0">
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-gold" title="Reagendar" onClick={() => onRescheduleVisita(v)}>
+                        <CalendarClock className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" title="Cancelar" onClick={() => onRemoveVisita(v.id)}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>
