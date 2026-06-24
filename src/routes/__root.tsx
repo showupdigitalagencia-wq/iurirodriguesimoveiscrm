@@ -87,6 +87,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { name: "apple-mobile-web-app-title", content: "Sistema NEXUS" },
       { name: "mobile-web-app-capable", content: "yes" },
+      { name: "google", content: "notranslate" },
       { property: "og:title", content: "Sistema NEXUS" },
       { property: "og:description", content: "Pixel Perfect Copy captures and processes leads from Meta forms, integrating them with the system for streamlined lead management." },
       { property: "og:type", content: "website" },
@@ -114,7 +115,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="pt-BR" translate="no" className="notranslate">
       <head>
         <HeadContent />
         <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer />
