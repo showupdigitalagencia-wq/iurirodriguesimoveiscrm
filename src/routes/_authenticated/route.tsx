@@ -8,6 +8,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { toast } from "sonner";
 import { endUserSession, startUserSession } from "@/lib/session-tracker";
 import { LauraChat } from "@/components/sophia-chat";
+import { HojeIconButton } from "@/components/hoje/hoje-icon-button";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -69,11 +70,11 @@ const CONFIG_NAV = [
 ] as const;
 
 // Rotas permitidas para corretor_vendas (puro)
-const CORRETOR_ALLOWED_PREFIXES = ["/inicio", "/vendas", "/conquistas", "/notificacoes", "/configuracoes"];
+const CORRETOR_ALLOWED_PREFIXES = ["/inicio", "/hoje", "/vendas", "/conquistas", "/notificacoes", "/configuracoes"];
 // Rotas permitidas para administrativo (puro)
-const ADMINISTRATIVO_ALLOWED_PREFIXES = ["/inicio", "/admin", "/executivos/landing-page", "/conquistas", "/notificacoes", "/configuracoes"];
+const ADMINISTRATIVO_ALLOWED_PREFIXES = ["/inicio", "/hoje", "/admin", "/executivos/landing-page", "/conquistas", "/notificacoes", "/configuracoes"];
 // Rotas permitidas para correspondente_bancaria (puro)
-const CORRESPONDENTE_ALLOWED_PREFIXES = ["/inicio", "/correspondente", "/conquistas", "/notificacoes", "/configuracoes"];
+const CORRESPONDENTE_ALLOWED_PREFIXES = ["/inicio", "/hoje", "/correspondente", "/conquistas", "/notificacoes", "/configuracoes"];
 
 
 function AuthLayout() {
@@ -290,6 +291,7 @@ function AuthLayout() {
             <div className="text-sm font-bold text-gold leading-tight truncate">Sistema NEXUS</div>
           </div>
           <div className="flex items-center gap-1 shrink-0">
+            <HojeIconButton />
             {mobileTopItems.map((item) => {
               const Icon = item.icon;
               return (
@@ -304,6 +306,11 @@ function AuthLayout() {
               <LogOut className="h-5 w-5" />
             </Button>
           </div>
+        </header>
+
+        {/* Header desktop: ícone de ações rápidas (Hoje) — fora do menu lateral */}
+        <header className="hidden md:flex sticky top-0 z-30 h-12 items-center justify-end gap-1 px-4 bg-sidebar/95 backdrop-blur text-sidebar-foreground border-b border-sidebar-border">
+          <HojeIconButton />
         </header>
 
         <main className="flex-1 overflow-auto pb-20 md:pb-0">
