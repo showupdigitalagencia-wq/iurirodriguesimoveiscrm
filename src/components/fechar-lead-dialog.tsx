@@ -20,7 +20,6 @@ interface Props {
 }
 
 export function FecharLeadDialog({ open, onOpenChange, leadId, leadNome, tipo, onFechado }: Props) {
-  const finalidade = tipo === "compra" ? "venda" : "locacao";
   const listFn = useServerFn(listImoveisParaFechamento);
   const fecharFn = useServerFn(fecharLeadVendas);
 
@@ -29,22 +28,22 @@ export function FecharLeadDialog({ open, onOpenChange, leadId, leadNome, tipo, o
   const [saving, setSaving] = useState(false);
 
   const { data, isLoading } = useQuery({
-    queryKey: ["fechamento_imoveis", finalidade],
+    queryKey: ["fechamento_imoveis_all"],
     enabled: open,
-    queryFn: () => listFn({ data: { finalidade } }),
+    queryFn: () => listFn({ data: {} }),
   });
 
   const itens = data?.items ?? [];
   const filtrados = useMemo(() => {
     const q = busca.trim().toLowerCase();
-    if (!q) return itens.slice(0, 50);
+    if (!q) return itens.slice(0, 100);
     return itens
       .filter((i) =>
         (i.codigo ?? "").toLowerCase().includes(q) ||
         (i.bairro ?? "").toLowerCase().includes(q) ||
         (i.tipo ?? "").toLowerCase().includes(q),
       )
-      .slice(0, 50);
+      .slice(0, 100);
   }, [itens, busca]);
 
   const imovelSel: ImovelFechamentoOption | null =
