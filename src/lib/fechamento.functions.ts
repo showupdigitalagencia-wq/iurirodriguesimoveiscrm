@@ -14,15 +14,12 @@ export type ImovelFechamentoOption = {
 export const listImoveisParaFechamento = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { finalidade?: "venda" | "locacao" }) => input)
-  .handler(async ({ data, context }) => {
-    let q = context.supabase
+  .handler(async ({ context }) => {
+    const { data: rows, error } = await context.supabase
       .from("imoveis")
       .select("id, codigo, tipo, finalidade, bairro, valor_venda, valor_aluguel")
       .order("codigo", { ascending: true })
-      .limit(500);
-    if (data.finalidade === "venda") q = q.in("finalidade", ["venda", "venda_locacao"]);
-    if (data.finalidade === "locacao") q = q.in("finalidade", ["locacao", "venda_locacao"]);
-    const { data: rows, error } = await q;
+      .limit(2000);
     if (error) throw new Error(error.message);
     return { items: (rows ?? []) as ImovelFechamentoOption[] };
   });
