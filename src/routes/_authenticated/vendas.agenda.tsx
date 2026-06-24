@@ -72,6 +72,7 @@ function AgendaCorretorPage() {
   const [savingReuniao, setSavingReuniao] = useState(false);
   const [google, setGoogle] = useState<{ connected: boolean; email: string | null }>({ connected: false, email: null });
   const [connectingGoogle, setConnectingGoogle] = useState(false);
+  const [reagendar, setReagendar] = useState<{ visita: VisitaItem | null; date: string; time: string; saving: boolean }>({ visita: null, date: "", time: "09:00", saving: false });
 
   const refresh = useCallback(async () => {
     try {
