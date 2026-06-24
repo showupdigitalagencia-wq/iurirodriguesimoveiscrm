@@ -249,38 +249,42 @@ const SLIDES: SlideDef[] = [
   },
   {
     id: 6,
-    title: "Laura IA",
+    title: "Laura entende você",
     pdf: {
-      eyebrow: "Inteligência Artificial",
-      title: "Laura — sua assistente pessoal, 24 horas por dia",
+      eyebrow: "Laura IA · Consultas",
+      title: "Laura entende você",
       bullets: [
-        "\"Temos apartamento na Barra até R$ 2.500?\"",
-        "\"Me coloca de plantão na quinta.\"",
-        "\"A visita com o João foi realizada.\"",
-        "Como ter um assistente particular, sem custo nenhum pra você.",
+        "\"Temos apartamento na Barra até R$ 2.500?\" → portfólio na hora, com fotos.",
+        "\"Qual minha meta esse mês?\" → progresso pessoal, em tempo real.",
+        "\"Quais imóveis estão disponíveis em Nova Iguaçu?\" → busca em segundos.",
       ],
     },
     render: () => (
-      <SlideShell eyebrow="Inteligência Artificial">
+      <SlideShell eyebrow="Laura IA · Consultas">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <Bot className="h-10 w-10" style={{ color: GOLD }} />
-              <h2 className="text-5xl font-semibold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Laura</h2>
+              <h2 className="text-5xl font-semibold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Laura entende você</h2>
             </div>
-            <p className="text-xl opacity-90">Sua assistente pessoal, <span style={{ color: GOLD_SOFT }}>24 horas por dia</span>.</p>
-            <p className="text-base opacity-80 pt-2">Como ter um assistente particular, sem custo nenhum pra você.</p>
+            <p className="text-xl opacity-90">Pergunta natural. Resposta na hora.</p>
+            <p className="text-base opacity-75 pt-2">Texto, áudio ou foto — como você preferir.</p>
           </div>
           <div className="space-y-3">
             {[
-              "Temos apartamento na Barra até R$ 2.500?",
-              "Me coloca de plantão na quinta.",
-              "A visita com o João foi realizada.",
+              { q: "Temos apartamento na Barra até R$ 2.500?", a: "Achei 7 opções. Vou te mandar as fotos." },
+              { q: "Qual minha meta esse mês?", a: "Você está em 72% — R$ 18.000 de R$ 25.000." },
+              { q: "Quais imóveis disponíveis em Nova Iguaçu?", a: "12 imóveis ativos. Quer filtrar por preço?" },
             ].map((m, i) => (
-              <GlassCard key={i} className="py-4">
-                <div className="text-xs uppercase tracking-wider opacity-60 mb-1">Você</div>
-                <div className="text-base">"{m}"</div>
-              </GlassCard>
+              <div key={i} className="space-y-1.5">
+                <div className="rounded-2xl rounded-br-sm px-4 py-2.5 ml-auto max-w-[85%] text-sm" style={{ background: `${GOLD}22`, border: `1px solid ${GOLD}55` }}>
+                  <span className="opacity-95">"{m.q}"</span>
+                </div>
+                <div className="rounded-2xl rounded-bl-sm px-4 py-2.5 max-w-[85%] text-sm" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}>
+                  <span className="text-xs uppercase tracking-wider opacity-60 mr-2" style={{ color: GOLD_SOFT }}>Laura</span>
+                  {m.a}
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -289,6 +293,89 @@ const SLIDES: SlideDef[] = [
   },
   {
     id: 7,
+    title: "Laura trabalha por você",
+    pdf: {
+      eyebrow: "Laura IA · Ações",
+      title: "Laura trabalha por você",
+      bullets: [
+        "\"Me coloca de plantão na quinta-feira\" → ajusta sua escala.",
+        "\"A visita com o João foi realizada\" → confirma direto no sistema.",
+        "\"Estou retirando a chave do 304\" + foto → registra a retirada.",
+        "\"Atribui esse lead pra quem está livre\" (executivos) → distribui pelo melhor critério.",
+      ],
+    },
+    render: () => (
+      <SlideShell eyebrow="Laura IA · Ações">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <Bot className="h-10 w-10" style={{ color: GOLD }} />
+              <h2 className="text-5xl font-semibold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Laura trabalha por você</h2>
+            </div>
+            <p className="text-xl opacity-90">Você fala. Ela faz <span style={{ color: GOLD_SOFT }}>direto no sistema</span>.</p>
+          </div>
+          <div className="space-y-3">
+            {[
+              { q: "Me coloca de plantão na quinta-feira", a: "Pronto: você está escalado para quinta, 9h–18h." },
+              { q: "A visita com o João foi realizada", a: "Visita confirmada. Quer registrar follow-up?" },
+              { q: "Estou retirando a chave do 304 📷", a: "Retirada registrada com a foto da chave." },
+              { q: "Atribui esse lead pra quem está livre hoje", a: "Atribuí para o Pedro — agenda livre agora." },
+            ].map((m, i) => (
+              <div key={i} className="space-y-1.5">
+                <div className="rounded-2xl rounded-br-sm px-4 py-2.5 ml-auto max-w-[85%] text-sm" style={{ background: `${GOLD}22`, border: `1px solid ${GOLD}55` }}>
+                  <span className="opacity-95">"{m.q}"</span>
+                </div>
+                <div className="rounded-2xl rounded-bl-sm px-4 py-2.5 max-w-[85%] text-sm" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}>
+                  <span className="text-xs uppercase tracking-wider opacity-60 mr-2" style={{ color: GOLD_SOFT }}>Laura</span>
+                  {m.a}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </SlideShell>
+    ),
+  },
+  {
+    id: 8,
+    title: "Laura tem seu lado",
+    pdf: {
+      eyebrow: "Laura IA · Confiança",
+      title: "Laura tem seu lado, com segurança",
+      bullets: [
+        "Sempre pede sua confirmação antes de qualquer ação — nada acontece sem você aprovar.",
+        "Só vê e faz o que faz sentido pro seu perfil — suas informações continuam só suas.",
+        "Disponível a qualquer hora, sem fila, sem esperar alguém responder.",
+      ],
+    },
+    render: () => (
+      <SlideShell eyebrow="Laura IA · Confiança">
+        <div className="space-y-8 max-w-5xl">
+          <div className="flex items-center gap-3">
+            <Bot className="h-10 w-10" style={{ color: GOLD }} />
+            <h2 className="text-5xl font-semibold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+              Laura tem <span style={{ color: GOLD }}>seu lado</span>, com segurança.
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[
+              { i: CheckCircle2, t: "Confirma antes de agir", d: "Nada acontece sem você aprovar." },
+              { i: Sparkles, t: "Respeita o seu perfil", d: "Suas informações continuam só suas." },
+              { i: Heart, t: "Disponível 24h", d: "Sem fila, sem esperar alguém responder." },
+            ].map((c, i) => (
+              <GlassCard key={i}>
+                <c.i className="h-7 w-7 mb-3" style={{ color: GOLD }} />
+                <div className="text-lg font-semibold mb-1">{c.t}</div>
+                <div className="text-sm opacity-80">{c.d}</div>
+              </GlassCard>
+            ))}
+          </div>
+        </div>
+      </SlideShell>
+    ),
+  },
+  {
+    id: 9,
     title: "Central Hoje",
     pdf: {
       eyebrow: "Central Hoje",
@@ -326,7 +413,7 @@ const SLIDES: SlideDef[] = [
     ),
   },
   {
-    id: 8,
+    id: 10,
     title: "Metas e Conquistas",
     pdf: {
       eyebrow: "Metas e Conquistas",
@@ -366,7 +453,7 @@ const SLIDES: SlideDef[] = [
     ),
   },
   {
-    id: 9,
+    id: 11,
     title: "Feed e Stories",
     pdf: {
       eyebrow: "Início",
@@ -402,7 +489,7 @@ const SLIDES: SlideDef[] = [
     ),
   },
   {
-    id: 10,
+    id: 12,
     title: "Mobile",
     pdf: {
       eyebrow: "Mobile",
@@ -440,7 +527,7 @@ const SLIDES: SlideDef[] = [
     ),
   },
   {
-    id: 11,
+    id: 13,
     title: "Crescimento",
     pdf: {
       eyebrow: "Crescimento",
@@ -475,7 +562,7 @@ const SLIDES: SlideDef[] = [
     ),
   },
   {
-    id: 12,
+    id: 14,
     title: "Resumo emocional",
     pdf: {
       eyebrow: "Por que o Nexus",
@@ -514,7 +601,7 @@ const SLIDES: SlideDef[] = [
     ),
   },
   {
-    id: 13,
+    id: 15,
     title: "Fechamento",
     pdf: {
       title: "Você é um dos próximos?",
@@ -563,11 +650,11 @@ function generatePDF() {
     // title
     pdf.setTextColor(255, 255, 255);
     pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(slide.id === 1 || slide.id === 13 ? 64 : 40);
+    pdf.setFontSize(slide.id === 1 || slide.id === 15 ? 64 : 40);
     const titleLines = pdf.splitTextToSize(slide.pdf.title, W - 120);
-    pdf.text(titleLines, 60, slide.id === 1 || slide.id === 13 ? H / 2 - 40 : 140);
+    pdf.text(titleLines, 60, slide.id === 1 || slide.id === 15 ? H / 2 - 40 : 140);
 
-    let y = slide.id === 1 || slide.id === 13 ? H / 2 + 40 : 140 + titleLines.length * 50 + 30;
+    let y = slide.id === 1 || slide.id === 15 ? H / 2 + 40 : 140 + titleLines.length * 50 + 30;
 
     if (slide.pdf.subtitle) {
       pdf.setFont("helvetica", "normal");
