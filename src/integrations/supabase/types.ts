@@ -2239,6 +2239,15 @@ export type Database = {
         Args: { _profile_id: string }
         Returns: string
       }
+      list_visitas_nao_compareceu: {
+        Args: {
+          _from: string
+          _scope?: string
+          _target_id?: string
+          _to: string
+        }
+        Returns: Json
+      }
       log_audit: {
         Args: {
           _acao: string
