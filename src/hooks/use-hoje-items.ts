@@ -60,10 +60,42 @@ export type ChaveAtrasada = {
   bairro: string | null;
   chave_retirada_em: string | null;
 };
+export type CandidatoSemContato = {
+  id: string;
+  nome: string;
+  telefone: string | null;
+  regiao: string | null;
+  created_at: string;
+};
+export type ReuniaoInstitucionalHoje = {
+  id: string;
+  titulo: string;
+  data_inicio: string;
+  local: string | null;
+  candidatos_confirmados: number;
+};
 
 export function useHojeData() {
   const uid = useUserId();
   const qc = useQueryClient();
+
+  const profile = useQuery({
+    queryKey: ["hoje-profile", uid],
+    enabled: !!uid,
+    queryFn: async () => {
+      const [{ data: p }, { data: exec }] = await Promise.all([
+        supabase.from("profiles").select("responsavel_id").eq("id", uid!).maybeSingle(),
+        supabase.rpc("current_user_is_executivo"),
+      ]);
+      return {
+        responsavel_id:
+          (p as { responsavel_id?: string | null } | null)?.responsavel_id ?? null,
+        isExec: exec === true,
+      };
+    },
+  });
+  const isExec = profile.data?.isExec ?? false;
+  const responsavelId = profile.data?.responsavel_id ?? null;
 
   const plantao = useQuery({
     queryKey: ["hoje-plantao", uid],
