@@ -292,7 +292,7 @@ const SLIDES: SlideDef[] = [
     ),
   },
   {
-    id: 7,
+    id: 9,
     title: "Laura trabalha por você",
     pdf: {
       eyebrow: "Laura IA · Ações",
@@ -337,7 +337,7 @@ const SLIDES: SlideDef[] = [
     ),
   },
   {
-    id: 8,
+    id: 10,
     title: "Laura tem seu lado",
     pdf: {
       eyebrow: "Laura IA · Confiança",
@@ -453,7 +453,7 @@ const SLIDES: SlideDef[] = [
     ),
   },
   {
-    id: 9,
+    id: 11,
     title: "Feed e Stories",
     pdf: {
       eyebrow: "Início",
@@ -489,7 +489,7 @@ const SLIDES: SlideDef[] = [
     ),
   },
   {
-    id: 10,
+    id: 12,
     title: "Mobile",
     pdf: {
       eyebrow: "Mobile",
@@ -527,7 +527,7 @@ const SLIDES: SlideDef[] = [
     ),
   },
   {
-    id: 11,
+    id: 13,
     title: "Crescimento",
     pdf: {
       eyebrow: "Crescimento",
@@ -562,7 +562,7 @@ const SLIDES: SlideDef[] = [
     ),
   },
   {
-    id: 12,
+    id: 14,
     title: "Resumo emocional",
     pdf: {
       eyebrow: "Por que o Nexus",
@@ -601,7 +601,7 @@ const SLIDES: SlideDef[] = [
     ),
   },
   {
-    id: 13,
+    id: 15,
     title: "Fechamento",
     pdf: {
       title: "Você é um dos próximos?",
@@ -650,11 +650,11 @@ function generatePDF() {
     // title
     pdf.setTextColor(255, 255, 255);
     pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(slide.id === 1 || slide.id === 13 ? 64 : 40);
+    pdf.setFontSize(slide.id === 1 || slide.id === 15 ? 64 : 40);
     const titleLines = pdf.splitTextToSize(slide.pdf.title, W - 120);
-    pdf.text(titleLines, 60, slide.id === 1 || slide.id === 13 ? H / 2 - 40 : 140);
+    pdf.text(titleLines, 60, slide.id === 1 || slide.id === 15 ? H / 2 - 40 : 140);
 
-    let y = slide.id === 1 || slide.id === 13 ? H / 2 + 40 : 140 + titleLines.length * 50 + 30;
+    let y = slide.id === 1 || slide.id === 15 ? H / 2 + 40 : 140 + titleLines.length * 50 + 30;
 
     if (slide.pdf.subtitle) {
       pdf.setFont("helvetica", "normal");
