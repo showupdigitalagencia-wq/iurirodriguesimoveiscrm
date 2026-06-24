@@ -16,8 +16,10 @@ import {
   BarChart3, Clock,
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { VendasFunilPanel } from "@/components/vendas-funil-panel";
 import { VendasTempoRespostaPanel } from "@/components/vendas-tempo-resposta-panel";
+import { VisitasNaoCompareceuList } from "@/components/visitas-nao-compareceu-list";
 
 export const Route = createFileRoute("/_authenticated/vendas/relatorios")({
   head: () => ({ meta: [{ title: "Relatórios — Vendas" }] }),
