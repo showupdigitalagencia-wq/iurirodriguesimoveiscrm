@@ -291,6 +291,7 @@ function AuthLayout() {
             <div className="text-sm font-bold text-gold leading-tight truncate">Sistema NEXUS</div>
           </div>
           <div className="flex items-center gap-1 shrink-0">
+            <HojeIconButton />
             {mobileTopItems.map((item) => {
               const Icon = item.icon;
               return (
@@ -305,6 +306,11 @@ function AuthLayout() {
               <LogOut className="h-5 w-5" />
             </Button>
           </div>
+        </header>
+
+        {/* Header desktop: ícone de ações rápidas (Hoje) — fora do menu lateral */}
+        <header className="hidden md:flex sticky top-0 z-30 h-12 items-center justify-end gap-1 px-4 bg-sidebar/95 backdrop-blur text-sidebar-foreground border-b border-sidebar-border">
+          <HojeIconButton />
         </header>
 
         <main className="flex-1 overflow-auto pb-20 md:pb-0">
