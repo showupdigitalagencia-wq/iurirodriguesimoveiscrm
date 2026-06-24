@@ -156,6 +156,8 @@ export function UpdateAvailableBanner() {
 
   async function handleUpdate() {
     setRefreshing(true);
+    setGlobalSnooze(15);
+
     try {
       // Desregistra workers (OneSignal mantém o seu — apenas força reload limpo).
       if ("caches" in window) {
