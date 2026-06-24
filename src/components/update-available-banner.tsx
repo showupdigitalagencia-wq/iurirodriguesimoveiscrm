@@ -45,8 +45,35 @@ function fingerprintFromDocument(): string {
   return Array.from(new Set(urls)).sort().join("|");
 }
 
+const SNOOZE_KEY = "update-banner-snooze";
+const SNOOZE_MS = 7 * 24 * 60 * 60 * 1000;
+
+function snoozedFor(fingerprint: string): boolean {
+  try {
+    const raw = localStorage.getItem(SNOOZE_KEY);
+    if (!raw) return false;
+    const { fp, until } = JSON.parse(raw) as { fp: string; until: number };
+    if (fp !== fingerprint) return false;
+    return Date.now() < until;
+  } catch {
+    return false;
+  }
+}
+
+function snooze(fingerprint: string) {
+  try {
+    localStorage.setItem(
+      SNOOZE_KEY,
+      JSON.stringify({ fp: fingerprint, until: Date.now() + SNOOZE_MS }),
+    );
+  } catch {
+    /* ignore */
+  }
+}
+
 export function UpdateAvailableBanner() {
   const [updateReady, setUpdateReady] = useState(false);
+  const [freshFp, setFreshFp] = useState("");
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
@@ -67,7 +94,11 @@ export function UpdateAvailableBanner() {
         const html = await res.text();
         const fresh = fingerprintFromHtml(html);
         if (!fresh) return;
-        if (fresh !== current && !cancelled) setUpdateReady(true);
+        if (fresh !== current && !cancelled) {
+          if (snoozedFor(fresh)) return;
+          setFreshFp(fresh);
+          setUpdateReady(true);
+        }
       } catch {
         /* offline / network — ignore */
       }
@@ -86,6 +117,12 @@ export function UpdateAvailableBanner() {
       window.removeEventListener("focus", onFocus);
     };
   }, []);
+
+  function handleSnooze() {
+    if (freshFp) snooze(freshFp);
+    setUpdateReady(false);
+  }
+
 
   async function handleUpdate() {
     setRefreshing(true);
@@ -120,9 +157,13 @@ export function UpdateAvailableBanner() {
             Atualize para continuar usando todos os recursos.
           </div>
         </div>
+        <Button size="sm" variant="ghost" onClick={handleSnooze} disabled={refreshing} className="shrink-0">
+          Depois
+        </Button>
         <Button size="sm" onClick={handleUpdate} disabled={refreshing} className="shrink-0">
           {refreshing ? <Loader2 className="h-4 w-4 animate-spin" /> : "Atualizar agora"}
         </Button>
+
       </div>
     </div>
   );
