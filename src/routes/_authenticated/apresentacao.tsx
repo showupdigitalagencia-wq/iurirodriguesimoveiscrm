@@ -4,8 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   ChevronLeft, ChevronRight, Download, Maximize2, Radio, Building2, Bot,
-  CalendarDays, Key, BarChart3, Trophy, Newspaper, Smartphone, DollarSign,
-  Target, AlertTriangle, CheckCircle2, Sparkles,
+  CalendarDays, Key, BarChart3, Trophy, Newspaper, Smartphone,
+  Target, AlertTriangle, CheckCircle2, Sparkles, Heart, Rocket, Users,
 } from "lucide-react";
 import jsPDF from "jspdf";
 
