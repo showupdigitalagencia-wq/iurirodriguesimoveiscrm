@@ -712,9 +712,14 @@ function ListView({ view, cursor, slotsForDate, onSlotClick, onReuniaoClick, onR
                       </div>
                       <div className="text-muted-foreground truncate flex items-center gap-1"><MapPin className="h-3 w-3" /> {v.endereco}</div>
                     </div>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive shrink-0" onClick={() => onRemoveVisita(v.id)}>
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
+                    <div className="flex items-center gap-0.5 shrink-0">
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-gold" title="Reagendar" onClick={() => onRescheduleVisita(v)}>
+                        <CalendarClock className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" title="Cancelar" onClick={() => onRemoveVisita(v.id)}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>
