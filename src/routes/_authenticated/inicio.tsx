@@ -42,7 +42,7 @@ type Post = {
   source: string;
   hidden_at: string | null;
   created_at: string;
-  media_type: "image" | "video";
+  media_type: "image" | "video" | "audio" | "text";
 };
 
 type Comment = {
