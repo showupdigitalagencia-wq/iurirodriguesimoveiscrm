@@ -375,6 +375,12 @@ function InicioPage() {
                   <div className="w-full aspect-[4/5] bg-muted animate-pulse" />
                 )}
 
+                {p.media_type === "text" && p.caption && (
+                  <div className="px-5 py-6 text-base md:text-lg leading-relaxed whitespace-pre-wrap">
+                    {p.caption}
+                  </div>
+                )}
+
                 <div className="flex items-center gap-1 px-3 pt-3">
                   <Button
                     variant="ghost"
