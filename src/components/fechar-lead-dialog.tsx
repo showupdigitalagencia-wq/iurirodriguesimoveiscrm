@@ -20,7 +20,6 @@ interface Props {
 }
 
 export function FecharLeadDialog({ open, onOpenChange, leadId, leadNome, tipo, onFechado }: Props) {
-  const finalidade = tipo === "compra" ? "venda" : "locacao";
   const listFn = useServerFn(listImoveisParaFechamento);
   const fecharFn = useServerFn(fecharLeadVendas);
 
@@ -29,22 +28,22 @@ export function FecharLeadDialog({ open, onOpenChange, leadId, leadNome, tipo, o
   const [saving, setSaving] = useState(false);
 
   const { data, isLoading } = useQuery({
-    queryKey: ["fechamento_imoveis", finalidade],
+    queryKey: ["fechamento_imoveis_all"],
     enabled: open,
-    queryFn: () => listFn({ data: { finalidade } }),
+    queryFn: () => listFn({ data: {} }),
   });
 
   const itens = data?.items ?? [];
   const filtrados = useMemo(() => {
     const q = busca.trim().toLowerCase();
-    if (!q) return itens.slice(0, 50);
+    if (!q) return itens.slice(0, 100);
     return itens
       .filter((i) =>
         (i.codigo ?? "").toLowerCase().includes(q) ||
         (i.bairro ?? "").toLowerCase().includes(q) ||
         (i.tipo ?? "").toLowerCase().includes(q),
       )
-      .slice(0, 50);
+      .slice(0, 100);
   }, [itens, busca]);
 
   const imovelSel: ImovelFechamentoOption | null =
@@ -100,11 +99,16 @@ export function FecharLeadDialog({ open, onOpenChange, leadId, leadNome, tipo, o
           <div className="border rounded max-h-72 overflow-y-auto divide-y">
             {isLoading && <div className="p-3 text-sm text-muted-foreground">Carregando imóveis…</div>}
             {!isLoading && filtrados.length === 0 && (
-              <div className="p-3 text-sm text-muted-foreground">Nenhum imóvel encontrado para {tipo === "compra" ? "venda" : "locação"}.</div>
+              <div className="p-3 text-sm text-muted-foreground">Nenhum imóvel encontrado.</div>
             )}
             {filtrados.map((i) => {
               const valor = tipo === "compra" ? i.valor_venda : i.valor_aluguel;
               const sel = i.id === imovelId;
+              const finLabel =
+                i.finalidade === "venda" ? "Venda"
+                : i.finalidade === "locacao" ? "Locação"
+                : i.finalidade === "venda_locacao" ? "Venda+Locação"
+                : i.finalidade;
               return (
                 <button
                   key={i.id}
@@ -114,8 +118,9 @@ export function FecharLeadDialog({ open, onOpenChange, leadId, leadNome, tipo, o
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="min-w-0">
-                      <div className="font-medium text-sm truncate">
-                        {i.codigo ?? "(sem código)"} — {i.tipo} {i.bairro ? `· ${i.bairro}` : ""}
+                      <div className="font-medium text-sm truncate flex items-center gap-2">
+                        <span>{i.codigo ?? "(sem código)"} — {i.tipo} {i.bairro ? `· ${i.bairro}` : ""}</span>
+                        <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-muted text-muted-foreground shrink-0">{finLabel}</span>
                       </div>
                       <div className="text-xs text-muted-foreground">
                         {tipo === "compra" ? "Venda" : "Aluguel"}: {valor ? formatBRL(Number(valor)) : "—"}
