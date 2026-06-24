@@ -526,7 +526,7 @@ function DeleteAction({ onConfirm }: { onConfirm: () => void }) {
 const MAX_BYTES = 50 * 1024 * 1024;
 const MAX_VIDEO_SECONDS = 60;
 const MAX_AUDIO_SECONDS = 120;
-const MAX_TEXT_CHARS = 500;
+const MAX_TEXT_CHARS = 1000;
 
 async function probeVideoDuration(file: File): Promise<number> {
   return new Promise((resolve) => {
