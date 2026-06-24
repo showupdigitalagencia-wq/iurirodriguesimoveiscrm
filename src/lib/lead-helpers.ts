@@ -29,6 +29,7 @@ export const REGIOES: { id: LeadRegiao; nome: string }[] = [
   { id: "zona_norte", nome: "Zona Norte" },
   { id: "zona_oeste", nome: "Zona Oeste" },
   { id: "centro", nome: "Centro" },
+  { id: "nova_iguacu", nome: "Nova Iguaçu" },
   { id: "outras", nome: "Outras" },
 ];
 

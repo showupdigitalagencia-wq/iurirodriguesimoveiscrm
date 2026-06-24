@@ -19,6 +19,7 @@ const REGIAO_LABELS: Record<string, string> = {
   zona_norte: "Zona Norte",
   zona_oeste: "Zona Oeste",
   centro: "Centro",
+  nova_iguacu: "Nova Iguaçu",
   outras: "Outras",
 };
 

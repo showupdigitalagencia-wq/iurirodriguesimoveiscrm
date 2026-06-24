@@ -59,6 +59,7 @@ export const CAPTACAO_REGIOES_MARQUEE = [
   "Belford Roxo",
   "Nilópolis",
   "Mesquita",
+  "Nova Iguaçu",
   "Centro",
   "Zona Norte",
   "Zona Oeste",
