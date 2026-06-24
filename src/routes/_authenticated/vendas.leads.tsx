@@ -16,8 +16,9 @@ import { listCorretoresDisponibilidade, atribuirLead, aceitarLead, recusarLead, 
 import { createManualVendasLead } from "@/lib/vendas-manual.functions";
 import { getPlantonistaHoje, listCorretoresElegiveis } from "@/lib/plantao.functions";
 import { toast } from "sonner";
-import { Plus, MapPin, Video, UserPlus, Check, X } from "lucide-react";
+import { Plus, MapPin, Video, UserPlus, Check, X, CalendarX2 } from "lucide-react";
 import { VendasLeadDetail } from "@/components/vendas-lead-detail";
+import { VisitasNaoCompareceuList } from "@/components/visitas-nao-compareceu-list";
 
 type VendasLeadExt = VendasLead & {
   atribuicao_status?: "pendente" | "aceito" | "recusado" | null;
