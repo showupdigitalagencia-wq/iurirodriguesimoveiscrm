@@ -543,16 +543,24 @@ const ACCENT: Record<string, string> = {
   rose: "from-rose-500/10 to-transparent border-rose-500/20 text-rose-500",
 };
 
-function KpiCard({ icon: Icon, label, value, d, accent, hint }: {
+function KpiCard({ icon: Icon, label, value, d, accent, hint, onClick, actionHint }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string; value: number | string;
   d: { txt: string; up: boolean | null } | null;
   accent: keyof typeof ACCENT;
   hint?: string;
+  onClick?: () => void;
+  actionHint?: string;
 }) {
   const cls = ACCENT[accent];
+  const interactive = !!onClick;
+  const Tag: "button" | "div" = interactive ? "button" : "div";
   return (
-    <div className={`relative overflow-hidden rounded-xl border bg-gradient-to-br ${cls} p-4`}>
+    <Tag
+      onClick={onClick}
+      type={interactive ? "button" : undefined}
+      className={`relative overflow-hidden rounded-xl border bg-gradient-to-br ${cls} p-4 text-left ${interactive ? "cursor-pointer hover:ring-2 hover:ring-offset-0 hover:ring-current/30 transition" : ""}`}
+    >
       <div className="flex items-center justify-between mb-2">
         <Icon className={`h-5 w-5 ${cls.split(" ").find((c) => c.startsWith("text-")) ?? ""}`} />
         {d && d.up !== null && (
@@ -564,6 +572,7 @@ function KpiCard({ icon: Icon, label, value, d, accent, hint }: {
       <div className="text-2xl md:text-3xl font-bold leading-tight">{value}</div>
       <div className="text-[11px] text-muted-foreground mt-0.5">{label}</div>
       {hint && <div className="text-[10px] text-muted-foreground mt-1 leading-tight">{hint}</div>}
-    </div>
+      {actionHint && <div className="text-[10px] font-medium mt-1 underline-offset-2 underline opacity-80">{actionHint}</div>}
+    </Tag>
   );
 }
