@@ -417,7 +417,7 @@ function AgendaCorretorPage() {
       {/* Visão */}
       {view === "mes"
         ? <MonthView cursor={cursor} slotsForDate={slotsForDate} onSlotClick={openVisitaFor} onReuniaoClick={openReuniaoFor} />
-        : <ListView view={view} cursor={cursor} slotsForDate={slotsForDate} onSlotClick={openVisitaFor} onReuniaoClick={openReuniaoFor} onRemoveVisita={handleDeleteVisita} />}
+        : <ListView view={view} cursor={cursor} slotsForDate={slotsForDate} onSlotClick={openVisitaFor} onReuniaoClick={openReuniaoFor} onRemoveVisita={handleDeleteVisita} onRescheduleVisita={openReagendar} />}
 
       {/* Dialog: nova visita */}
       <Dialog open={openVisita} onOpenChange={setOpenVisita}>
