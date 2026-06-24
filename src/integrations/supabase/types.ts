@@ -2250,6 +2250,7 @@ export type Database = {
         Args: {
           _from: string
           _scope?: string
+          _status?: string
           _target_id?: string
           _to: string
         }
