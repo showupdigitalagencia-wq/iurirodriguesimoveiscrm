@@ -53,7 +53,7 @@ function fingerprintFromDocument(): string {
 }
 
 const SNOOZE_KEY = "update-banner-snooze";
-const SNOOZE_MS = 7 * 24 * 60 * 60 * 1000;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 function snoozedFor(fingerprint: string): boolean {
   try {
@@ -67,16 +67,17 @@ function snoozedFor(fingerprint: string): boolean {
   }
 }
 
-function snooze(fingerprint: string) {
+function snooze(fingerprint: string, days: number) {
   try {
     localStorage.setItem(
       SNOOZE_KEY,
-      JSON.stringify({ fp: fingerprint, until: Date.now() + SNOOZE_MS }),
+      JSON.stringify({ fp: fingerprint, until: Date.now() + days * DAY_MS }),
     );
   } catch {
     /* ignore */
   }
 }
+
 
 export function UpdateAvailableBanner() {
   const [updateReady, setUpdateReady] = useState(false);
