@@ -292,7 +292,7 @@ const SLIDES: SlideDef[] = [
     ),
   },
   {
-    id: 9,
+    id: 7,
     title: "Laura trabalha por você",
     pdf: {
       eyebrow: "Laura IA · Ações",
@@ -337,7 +337,7 @@ const SLIDES: SlideDef[] = [
     ),
   },
   {
-    id: 10,
+    id: 8,
     title: "Laura tem seu lado",
     pdf: {
       eyebrow: "Laura IA · Confiança",
@@ -375,7 +375,7 @@ const SLIDES: SlideDef[] = [
     ),
   },
   {
-    id: 7,
+    id: 9,
     title: "Central Hoje",
     pdf: {
       eyebrow: "Central Hoje",
@@ -413,7 +413,7 @@ const SLIDES: SlideDef[] = [
     ),
   },
   {
-    id: 8,
+    id: 10,
     title: "Metas e Conquistas",
     pdf: {
       eyebrow: "Metas e Conquistas",
