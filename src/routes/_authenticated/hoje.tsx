@@ -13,6 +13,8 @@ import {
   Phone,
   Sparkles,
   Timer,
+  UserPlus,
+  Users,
   XCircle,
   Zap,
 } from "lucide-react";
