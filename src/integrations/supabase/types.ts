@@ -801,6 +801,8 @@ export type Database = {
           dia_vencimento: number | null
           drive_folder_id: string | null
           executivo_fechamento_id: string | null
+          fechado_em: string | null
+          fechado_por: string | null
           finalidade: string
           fotos: string[] | null
           garantia: string | null
@@ -808,6 +810,7 @@ export type Database = {
           id: string
           iptu: number | null
           latitude: number | null
+          lead_fechamento_id: string | null
           locatario_documento: string | null
           locatario_email: string | null
           locatario_nome: string | null
@@ -851,6 +854,8 @@ export type Database = {
           dia_vencimento?: number | null
           drive_folder_id?: string | null
           executivo_fechamento_id?: string | null
+          fechado_em?: string | null
+          fechado_por?: string | null
           finalidade?: string
           fotos?: string[] | null
           garantia?: string | null
@@ -858,6 +863,7 @@ export type Database = {
           id?: string
           iptu?: number | null
           latitude?: number | null
+          lead_fechamento_id?: string | null
           locatario_documento?: string | null
           locatario_email?: string | null
           locatario_nome?: string | null
@@ -901,6 +907,8 @@ export type Database = {
           dia_vencimento?: number | null
           drive_folder_id?: string | null
           executivo_fechamento_id?: string | null
+          fechado_em?: string | null
+          fechado_por?: string | null
           finalidade?: string
           fotos?: string[] | null
           garantia?: string | null
@@ -908,6 +916,7 @@ export type Database = {
           id?: string
           iptu?: number | null
           latitude?: number | null
+          lead_fechamento_id?: string | null
           locatario_documento?: string | null
           locatario_email?: string | null
           locatario_nome?: string | null
@@ -956,6 +965,20 @@ export type Database = {
             columns: ["executivo_fechamento_id"]
             isOneToOne: false
             referencedRelation: "responsaveis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "imoveis_fechado_por_fkey"
+            columns: ["fechado_por"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "imoveis_lead_fechamento_id_fkey"
+            columns: ["lead_fechamento_id"]
+            isOneToOne: false
+            referencedRelation: "vendas_leads"
             referencedColumns: ["id"]
           },
         ]
