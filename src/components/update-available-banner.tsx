@@ -166,12 +166,21 @@ export function UpdateAvailableBanner() {
             Atualize para continuar usando todos os recursos.
           </div>
         </div>
-        <Button size="sm" variant="ghost" onClick={handleSnooze} disabled={refreshing} className="shrink-0">
-          Depois
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button size="sm" variant="ghost" disabled={refreshing} className="shrink-0">
+              Depois
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => handleSnooze(7)}>Lembrar em 7 dias</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleSnooze(15)}>Lembrar em 15 dias</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
         <Button size="sm" onClick={handleUpdate} disabled={refreshing} className="shrink-0">
           {refreshing ? <Loader2 className="h-4 w-4 animate-spin" /> : "Atualizar agora"}
         </Button>
+
 
       </div>
     </div>
