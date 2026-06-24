@@ -22,6 +22,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { StoriesBar } from "@/components/feed/stories-bar";
+import { EnableNotificationsBanner } from "@/components/enable-notifications-banner";
 import { LikesDialog } from "@/components/feed/likes-dialog";
 import { UserAvatar } from "@/components/user-avatar";
 import { signAvatarMap } from "@/lib/avatar-url";
@@ -267,6 +268,9 @@ function InicioPage() {
       </header>
 
       <StoriesBar userId={userId} userName={userName} isAdmin={isAdmin} />
+
+      <EnableNotificationsBanner />
+
 
 
 
