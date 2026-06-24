@@ -213,6 +213,20 @@ function VendasRelatoriosPage() {
         </div>
       </header>
 
+      <Dialog open={noShowOpen} onOpenChange={setNoShowOpen}>
+        <DialogContent className="max-w-5xl">
+          <DialogHeader>
+            <DialogTitle>Visitas — Não Compareceu</DialogTitle>
+          </DialogHeader>
+          <VisitasNaoCompareceuList
+            from={range.from}
+            to={range.to}
+            scope={scope}
+            targetId={targetId || null}
+          />
+        </DialogContent>
+      </Dialog>
+
       <Tabs defaultValue="geral" className="space-y-4">
         <TabsList className="grid w-full grid-cols-3 max-w-xl">
           <TabsTrigger value="geral"><BarChart3 className="h-3.5 w-3.5 mr-1.5" /> Visão Geral</TabsTrigger>
