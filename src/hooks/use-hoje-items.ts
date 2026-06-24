@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -259,11 +259,15 @@ export function useHojeData() {
   });
 
   // Realtime — invalidação leve por tabela
-  const channelId = useId();
+  // Nome de canal único por montagem (evita colisão entre múltiplas
+  // instâncias do hook — ex.: HojeIconButton no header + rota /hoje).
+  const channelKeyRef = useRef<string>(
+    `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`,
+  );
   useEffect(() => {
     if (!uid) return;
     const ch = supabase
-      .channel(`hoje-${uid}-${channelId}-${Math.random().toString(36).slice(2, 8)}`)
+      .channel(`hoje-${uid}-${channelKeyRef.current}-${Math.random().toString(36).slice(2, 6)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "vendas_leads" }, () => {
         qc.invalidateQueries({ queryKey: ["hoje-leads-sem-contato", uid] });
         qc.invalidateQueries({ queryKey: ["hoje-followup", uid] });
