@@ -107,6 +107,7 @@ function VendasRelatoriosPage() {
   const [escopos, setEscopos] = useState<Escopos | null>(null);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [noShowOpen, setNoShowOpen] = useState(false);
 
   // Load allowed scopes once
   useEffect(() => {
