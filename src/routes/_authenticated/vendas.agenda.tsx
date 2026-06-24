@@ -648,12 +648,13 @@ function AgendaCorretorPage() {
   );
 }
 
-function ListView({ view, cursor, slotsForDate, onSlotClick, onReuniaoClick, onRemoveVisita }: {
+function ListView({ view, cursor, slotsForDate, onSlotClick, onReuniaoClick, onRemoveVisita, onRescheduleVisita }: {
   view: View; cursor: Date;
   slotsForDate: (d: Date) => AgendaSlot;
   onSlotClick: (date: Date, time?: string) => void;
   onReuniaoClick: (date: Date, time?: string) => void;
   onRemoveVisita: (id: string) => void;
+  onRescheduleVisita: (v: VisitaItem) => void;
 }) {
   const days = useMemo(() => {
     if (view === "dia") return [cursor];
