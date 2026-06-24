@@ -3,7 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MessageCircle, CalendarX2 } from "lucide-react";
+import { MessageCircle, CalendarX2, CalendarCheck2 } from "lucide-react";
+
+export type VisitaStatusFilter = "nao_compareceu" | "realizada";
 
 export type NaoCompareceuItem = {
   visita_id: string;
@@ -30,6 +32,7 @@ type Props = {
   targetId?: string | null;
   showPeriodInputs?: boolean;
   onLeadClick?: (leadId: string) => void;
+  status?: VisitaStatusFilter;
 };
 
 function whatsappUrl(tel: string, msg: string) {
@@ -44,7 +47,7 @@ function fmtDateTime(iso: string) {
   return `${d.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })} ${d.toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" })}`;
 }
 
-export function VisitasNaoCompareceuList({ from, to, scope = "auto", targetId, showPeriodInputs = false, onLeadClick }: Props) {
+export function VisitasNaoCompareceuList({ from, to, scope = "auto", targetId, showPeriodInputs = false, onLeadClick, status = "nao_compareceu" }: Props) {
   const [items, setItems] = useState<NaoCompareceuItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -60,7 +63,7 @@ export function VisitasNaoCompareceuList({ from, to, scope = "auto", targetId, s
     setLoading(true); setErr(null);
     (async () => {
       const { data, error } = await supabase.rpc("list_visitas_nao_compareceu", {
-        _from: effFrom, _to: effTo, _scope: scope, _target_id: targetId || undefined,
+        _from: effFrom, _to: effTo, _scope: scope, _target_id: targetId || undefined, _status: status,
       });
       if (!alive) return;
       if (error) { setErr(error.message); setItems([]); }
@@ -71,7 +74,16 @@ export function VisitasNaoCompareceuList({ from, to, scope = "auto", targetId, s
       setLoading(false);
     })();
     return () => { alive = false; };
-  }, [effFrom, effTo, scope, targetId]);
+  }, [effFrom, effTo, scope, targetId, status]);
+
+  const isRealizada = status === "realizada";
+  const EmptyIcon = isRealizada ? CalendarCheck2 : CalendarX2;
+  const emptyMsg = isRealizada
+    ? 'Nenhuma visita marcada como "Compareceu" no período.'
+    : 'Nenhuma visita marcada como "Não Compareceu" no período.';
+  const buildMsg = (nome: string, dt: string) => isRealizada
+    ? `Olá ${nome}! Foi ótimo te receber na visita de ${dt}. Posso te ajudar com os próximos passos?`
+    : `Olá ${nome}! Notamos que não conseguimos nos encontrar na visita marcada para ${dt}. Posso te ajudar a reagendar?`;
 
   return (
     <div className="space-y-3">
@@ -87,8 +99,8 @@ export function VisitasNaoCompareceuList({ from, to, scope = "auto", targetId, s
 
       {!loading && items.length === 0 && (
         <div className="border rounded-lg p-8 text-center text-muted-foreground text-sm flex flex-col items-center gap-2">
-          <CalendarX2 className="h-6 w-6 opacity-50" />
-          Nenhuma visita marcada como "Não Compareceu" no período.
+          <EmptyIcon className="h-6 w-6 opacity-50" />
+          {emptyMsg}
         </div>
       )}
 
@@ -107,7 +119,7 @@ export function VisitasNaoCompareceuList({ from, to, scope = "auto", targetId, s
             </thead>
             <tbody>
               {items.map((it) => {
-                const msg = `Olá ${it.lead_nome}! Notamos que não conseguimos nos encontrar na visita marcada para ${fmtDateTime(it.data_inicio)}. Posso te ajudar a reagendar?`;
+                const msg = buildMsg(it.lead_nome, fmtDateTime(it.data_inicio));
                 const wa = whatsappUrl(it.lead_telefone, msg);
                 const imovelLabel = it.imovel_codigo
                   ? `${it.imovel_codigo}${it.imovel_endereco ? ` — ${it.imovel_endereco}` : ""}`
