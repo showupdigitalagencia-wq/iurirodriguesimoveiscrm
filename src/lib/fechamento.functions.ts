@@ -15,13 +15,15 @@ export const listImoveisParaFechamento = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { finalidade?: "venda" | "locacao" }) => input)
   .handler(async ({ context }) => {
+    // Usa a view sanitizada `imoveis_portfolio` para que corretores e executivos
+    // (sem SELECT direto em `imoveis`) também consigam listar opções de fechamento.
     const { data: rows, error } = await context.supabase
-      .from("imoveis")
+      .from("imoveis_portfolio" as never)
       .select("id, codigo, tipo, finalidade, bairro, valor_venda, valor_aluguel")
       .order("codigo", { ascending: true })
       .limit(2000);
     if (error) throw new Error(error.message);
-    return { items: (rows ?? []) as ImovelFechamentoOption[] };
+    return { items: (rows ?? []) as unknown as ImovelFechamentoOption[] };
   });
 
 export const fecharLeadVendas = createServerFn({ method: "POST" })
