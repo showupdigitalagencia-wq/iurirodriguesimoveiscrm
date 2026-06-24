@@ -356,9 +356,11 @@ function InicioPage() {
                       Nova conquista desbloqueada!
                     </div>
                   </div>
-                ) : url ? (
+                ) : p.media_type === "text" || (!p.image_path && p.media_type !== "audio") ? null : url ? (
                   p.media_type === "video" ? (
                     <FeedVideo src={url} onDoubleClick={() => !lk.mine && toggleLike(p.id)} />
+                  ) : p.media_type === "audio" ? (
+                    <FeedAudio src={url} />
                   ) : (
                     <div className="bg-black">
                       <img
