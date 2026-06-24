@@ -1514,6 +1514,7 @@ export type Database = {
           onesignal_external_id: string | null
           regiao: string | null
           updated_at: string
+          user_id: string | null
           whatsapp: string
         }
         Insert: {
@@ -1526,6 +1527,7 @@ export type Database = {
           onesignal_external_id?: string | null
           regiao?: string | null
           updated_at?: string
+          user_id?: string | null
           whatsapp: string
         }
         Update: {
@@ -1538,6 +1540,7 @@ export type Database = {
           onesignal_external_id?: string | null
           regiao?: string | null
           updated_at?: string
+          user_id?: string | null
           whatsapp?: string
         }
         Relationships: []
@@ -2146,6 +2149,10 @@ export type Database = {
       }
       can_user_view_reuniao: { Args: { _reuniao_id: string }; Returns: boolean }
       can_view_candidatos: { Args: { _user_id?: string }; Returns: boolean }
+      can_write_imovel_foto: {
+        Args: { _name: string; _uid?: string }
+        Returns: boolean
+      }
       corretor_ocupado_agora: {
         Args: { _at?: string; _corretor_id: string }
         Returns: boolean
