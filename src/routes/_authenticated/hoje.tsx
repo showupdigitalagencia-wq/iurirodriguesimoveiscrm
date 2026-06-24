@@ -233,6 +233,63 @@ function HojePage() {
         </Section>
       )}
 
+      {data.isExec && data.candidatos.length > 0 && (
+        <Section icon={<UserPlus className="h-4 w-4" />} title="Captação — candidatos sem contato">
+          <ul className="space-y-2">
+            {data.candidatos.map((c) => {
+              const wa = whatsappLink(c.telefone);
+              return (
+                <li key={c.id} className="rounded-lg border border-border/60 bg-card p-3 flex items-center gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium truncate">{c.nome}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {c.regiao ?? ""} · cadastrado há {tempoDesde(c.created_at)}
+                    </div>
+                  </div>
+                  {wa && (
+                    <Button asChild size="sm" variant="outline">
+                      <a href={wa} target="_blank" rel="noreferrer">
+                        <MessageCircle className="h-4 w-4 mr-1" /> WhatsApp
+                      </a>
+                    </Button>
+                  )}
+                  <Button asChild size="sm" variant="ghost">
+                    <Link to="/admin/candidatos">Abrir</Link>
+                  </Button>
+                </li>
+              );
+            })}
+          </ul>
+        </Section>
+      )}
+
+      {data.isExec && data.reunioes.length > 0 && (
+        <Section icon={<Users className="h-4 w-4" />} title="Reuniões institucionais de hoje">
+          <ul className="space-y-2">
+            {data.reunioes.map((r) => (
+              <li key={r.id} className="rounded-lg border border-border/60 bg-card p-3 flex items-center gap-3">
+                <div className="text-sm font-bold text-gold w-14 shrink-0">{fmtHora(r.data_inicio)}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium truncate">{r.titulo}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {r.local ?? "Local não definido"} ·{" "}
+                    <span className="text-foreground/80">
+                      {r.candidatos_confirmados} candidato{r.candidatos_confirmados === 1 ? "" : "s"} confirmado
+                      {r.candidatos_confirmados === 1 ? "" : "s"}
+                    </span>
+                  </div>
+                </div>
+                <Button asChild size="sm" variant="outline">
+                  <Link to="/agenda">Ver agenda</Link>
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
+
+
+
       {vazio && !data.loading && (
         <Card>
           <CardContent className="py-10 text-center space-y-2">
