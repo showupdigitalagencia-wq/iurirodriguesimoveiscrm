@@ -53,9 +53,29 @@ function fingerprintFromDocument(): string {
 }
 
 const SNOOZE_KEY = "update-banner-snooze";
+const GLOBAL_SNOOZE_KEY = "update-banner-global-snooze";
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+function globalSnoozed(): boolean {
+  try {
+    const raw = localStorage.getItem(GLOBAL_SNOOZE_KEY);
+    if (!raw) return false;
+    return Date.now() < Number(raw);
+  } catch {
+    return false;
+  }
+}
+
+function setGlobalSnooze(days: number) {
+  try {
+    localStorage.setItem(GLOBAL_SNOOZE_KEY, String(Date.now() + days * DAY_MS));
+  } catch {
+    /* ignore */
+  }
+}
+
 function snoozedFor(fingerprint: string): boolean {
+  if (globalSnoozed()) return true;
   try {
     const raw = localStorage.getItem(SNOOZE_KEY);
     if (!raw) return false;
@@ -77,6 +97,7 @@ function snooze(fingerprint: string, days: number) {
     /* ignore */
   }
 }
+
 
 
 export function UpdateAvailableBanner() {
