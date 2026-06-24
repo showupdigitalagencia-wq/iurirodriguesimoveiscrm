@@ -8,6 +8,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { toast } from "sonner";
 import { endUserSession, startUserSession } from "@/lib/session-tracker";
 import { LauraChat } from "@/components/sophia-chat";
+import { HojeIconButton } from "@/components/hoje/hoje-icon-button";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
