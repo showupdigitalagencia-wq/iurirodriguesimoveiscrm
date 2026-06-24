@@ -99,8 +99,8 @@ export function VisitasNaoCompareceuList({ from, to, scope = "auto", targetId, s
 
       {!loading && items.length === 0 && (
         <div className="border rounded-lg p-8 text-center text-muted-foreground text-sm flex flex-col items-center gap-2">
-          <CalendarX2 className="h-6 w-6 opacity-50" />
-          Nenhuma visita marcada como "Não Compareceu" no período.
+          <EmptyIcon className="h-6 w-6 opacity-50" />
+          {emptyMsg}
         </div>
       )}
 
@@ -119,7 +119,7 @@ export function VisitasNaoCompareceuList({ from, to, scope = "auto", targetId, s
             </thead>
             <tbody>
               {items.map((it) => {
-                const msg = `Olá ${it.lead_nome}! Notamos que não conseguimos nos encontrar na visita marcada para ${fmtDateTime(it.data_inicio)}. Posso te ajudar a reagendar?`;
+                const msg = buildMsg(it.lead_nome, fmtDateTime(it.data_inicio));
                 const wa = whatsappUrl(it.lead_telefone, msg);
                 const imovelLabel = it.imovel_codigo
                   ? `${it.imovel_codigo}${it.imovel_endereco ? ` — ${it.imovel_endereco}` : ""}`
