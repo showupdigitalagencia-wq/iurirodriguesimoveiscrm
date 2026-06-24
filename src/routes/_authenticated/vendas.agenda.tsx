@@ -46,6 +46,7 @@ function AgendaCorretorPage() {
   const fnCreateVisita = useServerFn(createVisita);
   const fnCreateReuniao = useServerFn(createReuniaoOnlineVenda);
   const fnDeleteVisita = useServerFn(deleteVisita);
+  const fnRescheduleVisita = useServerFn(rescheduleVisita);
   const fnListLeads = useServerFn(listMyVendasLeads);
   const fnListImoveis = useServerFn(listImoveisForVisita);
 
