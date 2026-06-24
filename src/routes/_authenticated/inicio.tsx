@@ -412,7 +412,7 @@ function InicioPage() {
                   </button>
                 )}
 
-                {p.caption && (
+                {p.caption && p.media_type !== "text" && (
                   <div className="px-4 pt-1 text-sm whitespace-pre-wrap">
                     <span className="font-semibold mr-2">{author?.nome?.split(" ")[0] ?? ""}</span>
                     {p.caption}
