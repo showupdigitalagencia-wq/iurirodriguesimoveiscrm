@@ -157,9 +157,13 @@ export function UpdateAvailableBanner() {
             Atualize para continuar usando todos os recursos.
           </div>
         </div>
+        <Button size="sm" variant="ghost" onClick={handleSnooze} disabled={refreshing} className="shrink-0">
+          Depois
+        </Button>
         <Button size="sm" onClick={handleUpdate} disabled={refreshing} className="shrink-0">
           {refreshing ? <Loader2 className="h-4 w-4 animate-spin" /> : "Atualizar agora"}
         </Button>
+
       </div>
     </div>
   );
