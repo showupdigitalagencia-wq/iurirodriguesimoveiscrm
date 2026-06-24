@@ -81,7 +81,7 @@ const SLIDES: SlideDef[] = [
   {
     id: 1,
     title: "Capa",
-    pdf: { title: "Ecossistema Nexus", subtitle: "Tecnologia, organização e crescimento para o seu dia a dia como corretor", bullets: ["Iuri Rodrigues Imóveis"] },
+    pdf: { title: "Ecossistema Nexus", subtitle: "A tecnologia que trabalha por você", bullets: ["Iuri Rodrigues Imóveis"] },
     render: () => (
       <SlideShell>
         <div className="space-y-6">
@@ -91,7 +91,7 @@ const SLIDES: SlideDef[] = [
           <h1 className="text-6xl md:text-8xl font-bold tracking-tight" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
             Ecossistema <span style={{ color: GOLD }}>Nexus</span>
           </h1>
-          <p className="text-xl md:text-2xl max-w-3xl opacity-90">Tecnologia, organização e crescimento para o seu dia a dia como corretor.</p>
+          <p className="text-xl md:text-2xl max-w-3xl opacity-90">A tecnologia que <span style={{ color: GOLD_SOFT }}>trabalha por você</span>.</p>
           <div className="text-sm tracking-widest uppercase opacity-70 pt-4">Iuri Rodrigues Imóveis</div>
         </div>
       </SlideShell>
@@ -99,27 +99,27 @@ const SLIDES: SlideDef[] = [
   },
   {
     id: 2,
-    title: "A dor",
+    title: "A virada de chave",
     pdf: {
-      eyebrow: "O problema",
-      title: "Quantas vezes você já perdeu um lead por demorar pra responder?",
+      eyebrow: "A virada de chave",
+      title: "Imagine nunca mais perder uma oportunidade por demora, esquecimento ou falta de organização.",
       cards: [
-        { title: "Lead esquecido", body: "Mensagem some no WhatsApp e o cliente vai pro concorrente." },
-        { title: "Chave sem controle", body: "Ninguém sabe onde está. A visita atrasa. O cliente desiste." },
-        { title: "Sem visão clara", body: "Você não sabe quanto vendeu, quem está produzindo, o que melhorar." },
+        { title: "Lead esquecido", body: "A mensagem se perde no WhatsApp." },
+        { title: "Chave sem controle", body: "A visita atrasa, o cliente desiste." },
+        { title: "Caos do dia a dia", body: "Tarefa demais, foco de menos." },
       ],
     },
     render: () => (
-      <SlideShell eyebrow="O problema">
+      <SlideShell eyebrow="A virada de chave">
         <div className="space-y-8">
           <h2 className="text-4xl md:text-5xl font-semibold max-w-4xl leading-tight" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-            Quantas vezes você já <span style={{ color: GOLD }}>perdeu um lead</span> por demorar pra responder?
+            Imagine nunca mais <span style={{ color: GOLD }}>perder uma oportunidade</span> por demora, esquecimento ou falta de organização.
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {[
-              { i: AlertTriangle, t: "Lead esquecido", d: "Mensagem some no WhatsApp e o cliente vai pro concorrente." },
-              { i: Key, t: "Chave sem controle", d: "Ninguém sabe onde está. A visita atrasa. O cliente desiste." },
-              { i: BarChart3, t: "Sem visão clara", d: "Você não sabe quanto vendeu, quem está produzindo, o que melhorar." },
+              { i: AlertTriangle, t: "Lead esquecido", d: "A mensagem se perde no WhatsApp." },
+              { i: Key, t: "Chave sem controle", d: "A visita atrasa, o cliente desiste." },
+              { i: Sparkles, t: "Caos do dia a dia", d: "Tarefa demais, foco de menos." },
             ].map((c, i) => (
               <GlassCard key={i}>
                 <c.i className="h-7 w-7 mb-3" style={{ color: GOLD }} />
@@ -137,11 +137,11 @@ const SLIDES: SlideDef[] = [
     title: "A solução",
     pdf: {
       eyebrow: "A solução",
-      title: "Um único ecossistema. Tudo conectado.",
+      title: "Um ecossistema pensado pra você crescer.",
       cards: [
-        { title: "Plantão", body: "Distribuição justa de leads" },
+        { title: "Plantão", body: "Oportunidade pra todos" },
         { title: "Portfólio", body: "Imóveis no bolso" },
-        { title: "Laura IA", body: "Sua assistente 24/7" },
+        { title: "Laura IA", body: "Assistente 24/7" },
         { title: "Agenda", body: "Visitas e reuniões" },
         { title: "Chaves", body: "Controle total" },
         { title: "Relatórios", body: "Clareza no resultado" },
@@ -153,7 +153,7 @@ const SLIDES: SlideDef[] = [
       <SlideShell eyebrow="A solução">
         <div className="space-y-8">
           <h2 className="text-4xl md:text-5xl font-semibold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-            Um único ecossistema. <span style={{ color: GOLD }}>Tudo conectado.</span>
+            Um ecossistema pensado <span style={{ color: GOLD }}>pra você crescer</span>.
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
@@ -175,12 +175,12 @@ const SLIDES: SlideDef[] = [
     title: "Plantão",
     pdf: {
       eyebrow: "Plantão",
-      title: "Nenhum lead fica sem dono",
+      title: "Você nunca mais perde uma oportunidade",
       bullets: [
         "Lead chega → sistema identifica o plantonista do dia",
-        "Notificação imediata. Você tem 10 minutos pra responder",
-        "Se não responder, escalona automaticamente pro próximo",
-        "Distribuição justa, rastreável e transparente",
+        "Notificação imediata: 10 minutos pra responder",
+        "Sem resposta? Escalona automaticamente pro próximo",
+        "Justiça e oportunidade real pra todo mundo",
       ],
     },
     render: () => (
@@ -188,10 +188,9 @@ const SLIDES: SlideDef[] = [
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
           <div className="space-y-4">
             <h2 className="text-5xl font-semibold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-              Nenhum lead fica <span style={{ color: GOLD }}>sem dono</span>.
+              Você nunca mais <span style={{ color: GOLD }}>perde uma oportunidade</span>.
             </h2>
-            <p className="opacity-85 text-lg">Distribuição automática, com verificação de agenda e escalonamento por SLA.</p>
-            <div className="text-sm opacity-75">Benefícios: justiça na distribuição, resposta rápida, mais conversão.</div>
+            <p className="opacity-85 text-lg">Justiça e oportunidade real pra todo mundo.</p>
           </div>
           <GlassCard>
             <ol className="space-y-4">
@@ -217,17 +216,27 @@ const SLIDES: SlideDef[] = [
     title: "Portfólio",
     pdf: {
       eyebrow: "Portfólio",
-      title: "Todo o portfólio no seu bolso",
-      bullets: ["Busca por região e finalidade", "Fotos reais, atualizadas", "Compartilhar em 1 toque (WhatsApp)", "Vitrine pronta pra mandar pro cliente"],
+      title: "Impressione o cliente em segundos",
+      bullets: [
+        "Busca por região, em segundos",
+        "Fotos profissionais e atualizadas",
+        "Compartilhar com o cliente em 1 toque",
+        "Você vira o corretor mais preparado da reunião",
+      ],
     },
     render: () => (
       <SlideShell eyebrow="Portfólio">
         <div className="space-y-6 max-w-4xl">
           <h2 className="text-5xl font-semibold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-            Todo o portfólio <span style={{ color: GOLD }}>no seu bolso</span>.
+            Impressione o cliente <span style={{ color: GOLD }}>em segundos</span>.
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-            {["Busca por região e finalidade", "Fotos reais, sempre atualizadas", "Compartilhar em 1 toque pelo WhatsApp", "Vitrine pronta pra mandar pro cliente"].map((b, i) => (
+            {[
+              "Busca por região, em segundos",
+              "Fotos profissionais e atualizadas",
+              "Compartilhar com o cliente em 1 toque",
+              "O corretor mais preparado da reunião",
+            ].map((b, i) => (
               <GlassCard key={i} className="flex items-center gap-3 py-4">
                 <CheckCircle2 className="h-5 w-5 flex-shrink-0" style={{ color: GOLD }} />
                 <span>{b}</span>
@@ -243,12 +252,12 @@ const SLIDES: SlideDef[] = [
     title: "Laura IA",
     pdf: {
       eyebrow: "Inteligência Artificial",
-      title: "Laura — sua assistente que entende imóvel",
+      title: "Laura — sua assistente pessoal, 24 horas por dia",
       bullets: [
         "\"Temos apartamento na Barra até R$ 2.500?\"",
         "\"Me coloca de plantão na quinta.\"",
-        "\"Agenda visita amanhã 15h pro João.\"",
-        "Busca imóveis, agenda, registra visitas, atualiza leads.",
+        "\"A visita com o João foi realizada.\"",
+        "Como ter um assistente particular, sem custo nenhum pra você.",
       ],
     },
     render: () => (
@@ -259,18 +268,14 @@ const SLIDES: SlideDef[] = [
               <Bot className="h-10 w-10" style={{ color: GOLD }} />
               <h2 className="text-5xl font-semibold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Laura</h2>
             </div>
-            <p className="text-xl opacity-90">Sua assistente que entende imóvel. Fala por texto, áudio e foto.</p>
-            <ul className="space-y-2 text-sm opacity-80 pt-2">
-              <li>• Busca no portfólio em segundos</li>
-              <li>• Agenda visitas e plantão</li>
-              <li>• Registra ações no sistema</li>
-            </ul>
+            <p className="text-xl opacity-90">Sua assistente pessoal, <span style={{ color: GOLD_SOFT }}>24 horas por dia</span>.</p>
+            <p className="text-base opacity-80 pt-2">Como ter um assistente particular, sem custo nenhum pra você.</p>
           </div>
           <div className="space-y-3">
             {[
               "Temos apartamento na Barra até R$ 2.500?",
               "Me coloca de plantão na quinta.",
-              "Agenda visita amanhã 15h pro João.",
+              "A visita com o João foi realizada.",
             ].map((m, i) => (
               <GlassCard key={i} className="py-4">
                 <div className="text-xs uppercase tracking-wider opacity-60 mb-1">Você</div>
@@ -287,14 +292,20 @@ const SLIDES: SlideDef[] = [
     title: "Central Hoje",
     pdf: {
       eyebrow: "Central Hoje",
-      title: "Tudo que importa, em um só lugar",
-      bullets: ["Leads urgentes sem primeiro contato", "Visitas de hoje", "Follow-ups vencendo", "Chaves atrasadas"],
+      title: "Sem caos, sem esquecimento",
+      bullets: [
+        "Leads urgentes sem primeiro contato",
+        "Visitas de hoje",
+        "Follow-ups vencendo",
+        "Chaves atrasadas",
+        "Sua mente livre pra vender, não pra lembrar de tarefa",
+      ],
     },
     render: () => (
       <SlideShell eyebrow="Central Hoje">
         <div className="space-y-8 max-w-5xl">
           <h2 className="text-5xl font-semibold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-            Tudo que importa, <span style={{ color: GOLD }}>em um só lugar</span>.
+            Sem caos, <span style={{ color: GOLD }}>sem esquecimento</span>.
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
@@ -309,62 +320,32 @@ const SLIDES: SlideDef[] = [
               </GlassCard>
             ))}
           </div>
+          <p className="text-lg opacity-85 pt-2">Sua mente livre pra <span style={{ color: GOLD_SOFT }}>vender</span>, não pra lembrar de tarefa.</p>
         </div>
       </SlideShell>
     ),
   },
   {
     id: 8,
-    title: "Comissão",
-    pdf: {
-      eyebrow: "Comissão",
-      title: "Comissão calculada automaticamente",
-      bullets: ["Venda: 6% do valor do imóvel", "Locação: 1 aluguel cheio", "Cálculo automático ao fechar o lead", "Histórico transparente"],
-    },
-    render: () => (
-      <SlideShell eyebrow="Comissão">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-          <h2 className="text-5xl font-semibold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-            Comissão <span style={{ color: GOLD }}>calculada automaticamente</span>.
-          </h2>
-          <div className="space-y-4">
-            <GlassCard className="flex items-center gap-4">
-              <DollarSign className="h-10 w-10" style={{ color: GOLD }} />
-              <div>
-                <div className="text-3xl font-bold">6%</div>
-                <div className="text-sm opacity-80">do valor do imóvel em venda</div>
-              </div>
-            </GlassCard>
-            <GlassCard className="flex items-center gap-4">
-              <DollarSign className="h-10 w-10" style={{ color: GOLD }} />
-              <div>
-                <div className="text-3xl font-bold">1 aluguel</div>
-                <div className="text-sm opacity-80">cheio em contrato de locação</div>
-              </div>
-            </GlassCard>
-          </div>
-        </div>
-      </SlideShell>
-    ),
-  },
-  {
-    id: 9,
     title: "Metas e Conquistas",
     pdf: {
       eyebrow: "Metas e Conquistas",
-      title: "Veja seu progresso. Comemore suas vitórias.",
-      bullets: ["Meta mensal sempre à vista", "Conquistas/badges automáticas", "Postagens no feed quando bate meta", "Notificação ao conquistar"],
+      title: "Seu crescimento, reconhecido",
+      bullets: [
+        "Progresso visual da sua meta, em tempo real",
+        "Conquistas e badges automáticas",
+        "O esforço que você faz, todo mundo vê",
+      ],
     },
     render: () => (
       <SlideShell eyebrow="Metas e Conquistas">
         <div className="space-y-8 max-w-5xl">
           <h2 className="text-5xl font-semibold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-            Veja seu progresso. <span style={{ color: GOLD }}>Comemore suas vitórias.</span>
+            Seu crescimento, <span style={{ color: GOLD }}>reconhecido</span>.
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <GlassCard>
               <div className="flex items-center gap-3 mb-3"><Target className="h-6 w-6" style={{ color: GOLD }} /><div className="font-semibold">Meta do mês</div></div>
-              <div className="text-sm opacity-80 mb-2">R$ 18.000 / R$ 25.000</div>
               <div className="h-3 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.1)" }}>
                 <div className="h-full rounded-full" style={{ width: "72%", background: `linear-gradient(90deg, ${GOLD}, ${GOLD_SOFT})` }} />
               </div>
@@ -379,30 +360,36 @@ const SLIDES: SlideDef[] = [
               </ul>
             </GlassCard>
           </div>
+          <p className="text-lg opacity-85">O esforço que você faz, <span style={{ color: GOLD_SOFT }}>todo mundo vê</span>.</p>
         </div>
       </SlideShell>
     ),
   },
   {
-    id: 10,
-    title: "Feed",
+    id: 9,
+    title: "Feed e Stories",
     pdf: {
       eyebrow: "Início",
-      title: "O feed da nossa equipe",
-      bullets: ["Fotos, vídeos, áudio e texto", "Stories de 24h", "Curtidas e comentários", "Conquistas viram post automaticamente"],
+      title: "Você faz parte de um time de verdade",
+      bullets: [
+        "Fotos, vídeos, áudios e textos",
+        "Stories de 24h, estilo Instagram",
+        "Curtidas e comentários",
+        "O ecossistema vivo, todos os dias",
+      ],
     },
     render: () => (
       <SlideShell eyebrow="Início">
         <div className="space-y-6 max-w-4xl">
           <h2 className="text-5xl font-semibold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-            O <span style={{ color: GOLD }}>feed da nossa equipe</span>.
+            Você faz parte de um <span style={{ color: GOLD }}>time de verdade</span>.
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[
               { t: "Mídia rica", d: "Foto, vídeo, áudio e texto" },
               { t: "Stories 24h", d: "Compartilhe o momento" },
               { t: "Curtidas e comentários", d: "Interação real do time" },
-              { t: "Conquistas no feed", d: "Bateu meta? Vai pro feed" },
+              { t: "Vivo todos os dias", d: "O ecossistema acontece junto" },
             ].map((c, i) => (
               <GlassCard key={i}>
                 <div className="font-semibold" style={{ color: GOLD }}>{c.t}</div>
@@ -415,24 +402,29 @@ const SLIDES: SlideDef[] = [
     ),
   },
   {
-    id: 11,
+    id: 10,
     title: "Mobile",
     pdf: {
       eyebrow: "Mobile",
-      title: "Tudo isso no seu celular",
-      bullets: ["Funciona em Android e iPhone", "Notificações push em tempo real", "PWA: instala como app, sem loja", "Offline-friendly nas telas principais"],
+      title: "Liberdade pra trabalhar de onde quiser",
+      bullets: [
+        "Funciona como app de verdade — Android e iPhone",
+        "Notificação em tempo real, você não perde nada",
+        "Instala direto, sem passar por loja",
+        "Sua carreira no seu bolso",
+      ],
     },
     render: () => (
       <SlideShell eyebrow="Mobile">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
           <h2 className="text-5xl font-semibold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-            Tudo isso <span style={{ color: GOLD }}>no seu celular</span>.
+            Liberdade pra trabalhar <span style={{ color: GOLD }}>de onde quiser</span>.
           </h2>
           <div className="space-y-3">
             {[
               { i: Smartphone, t: "Android e iPhone", d: "Mesma experiência em qualquer aparelho" },
-              { i: Sparkles, t: "Notificações push", d: "Você não perde nada importante" },
-              { i: Download, t: "PWA — instala como app", d: "Sem passar por loja, atualiza sozinho" },
+              { i: Sparkles, t: "Notificação em tempo real", d: "Você não perde nada importante" },
+              { i: Download, t: "Instala como app", d: "Sem loja, atualiza sozinho" },
             ].map((c, i) => (
               <GlassCard key={i} className="flex items-center gap-4 py-4">
                 <c.i className="h-7 w-7 flex-shrink-0" style={{ color: GOLD }} />
@@ -448,34 +440,72 @@ const SLIDES: SlideDef[] = [
     ),
   },
   {
-    id: 12,
-    title: "Resumo",
+    id: 11,
+    title: "Crescimento",
     pdf: {
-      eyebrow: "Resumo",
-      title: "Por que o Nexus muda o jogo",
-      cards: [
-        { title: "Mais leads com justiça", body: "Distribuição transparente, sem briga interna." },
-        { title: "Menos tempo perdido", body: "Tudo no mesmo lugar. Menos clique, mais ação." },
-        { title: "Mais clareza no resultado", body: "Você vê o que vendeu, o que falta, o que melhorar." },
-        { title: "Mais conexão com o time", body: "Feed, conquistas e metas compartilhadas." },
+      eyebrow: "Crescimento",
+      title: "Tecnologia que cresce com você",
+      bullets: [
+        "Laura, automações e organização cuidando do que é repetitivo",
+        "Seu tempo livre pro que realmente importa",
+        "Atender bem. Vender mais. Crescer todos os dias.",
       ],
     },
     render: () => (
-      <SlideShell eyebrow="Resumo">
+      <SlideShell eyebrow="Crescimento">
+        <div className="space-y-8 max-w-5xl">
+          <h2 className="text-5xl font-semibold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+            Tecnologia que <span style={{ color: GOLD }}>cresce com você</span>.
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[
+              { i: Bot, t: "Laura cuida do repetitivo", d: "Busca, agenda, registra — sem você levantar um dedo." },
+              { i: Sparkles, t: "Organização automática", d: "Tudo no seu lugar, sem você precisar lembrar." },
+              { i: Rocket, t: "Foco no que importa", d: "Atender bem. Vender mais. Crescer todos os dias." },
+            ].map((c, i) => (
+              <GlassCard key={i}>
+                <c.i className="h-7 w-7 mb-3" style={{ color: GOLD }} />
+                <div className="font-semibold mb-1">{c.t}</div>
+                <div className="text-sm opacity-80">{c.d}</div>
+              </GlassCard>
+            ))}
+          </div>
+        </div>
+      </SlideShell>
+    ),
+  },
+  {
+    id: 12,
+    title: "Resumo emocional",
+    pdf: {
+      eyebrow: "Por que o Nexus",
+      title: "Por que o Nexus muda a sua história",
+      cards: [
+        { title: "Nunca mais perde oportunidade", body: "Cada lead encontra o seu corretor." },
+        { title: "Nunca mais se perde na rotina", body: "Tudo no lugar, na hora certa." },
+        { title: "Seu esforço é reconhecido", body: "Metas, conquistas e visibilidade real." },
+        { title: "Você faz parte de algo maior", body: "Um time conectado, um ecossistema vivo." },
+      ],
+    },
+    render: () => (
+      <SlideShell eyebrow="Por que o Nexus">
         <div className="space-y-8 max-w-6xl">
           <h2 className="text-5xl font-semibold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-            Por que o <span style={{ color: GOLD }}>Nexus muda o jogo</span>.
+            Por que o Nexus <span style={{ color: GOLD }}>muda a sua história</span>.
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[
-              { t: "Mais leads com justiça", d: "Distribuição transparente, sem briga interna." },
-              { t: "Menos tempo perdido", d: "Tudo no mesmo lugar. Menos clique, mais ação." },
-              { t: "Mais clareza no resultado", d: "Você vê o que vendeu, o que falta, o que melhorar." },
-              { t: "Mais conexão com o time", d: "Feed, conquistas e metas compartilhadas." },
+              { i: CheckCircle2, t: "Nunca mais perde oportunidade", d: "Cada lead encontra o seu corretor." },
+              { i: Sparkles, t: "Nunca mais se perde na rotina", d: "Tudo no lugar, na hora certa." },
+              { i: Trophy, t: "Seu esforço é reconhecido", d: "Metas, conquistas e visibilidade real." },
+              { i: Users, t: "Você faz parte de algo maior", d: "Um time conectado, um ecossistema vivo." },
             ].map((c, i) => (
-              <GlassCard key={i}>
-                <div className="text-lg font-semibold" style={{ color: GOLD }}>{c.t}</div>
-                <div className="text-sm opacity-85 mt-1">{c.d}</div>
+              <GlassCard key={i} className="flex gap-4 items-start">
+                <c.i className="h-7 w-7 flex-shrink-0 mt-1" style={{ color: GOLD }} />
+                <div>
+                  <div className="text-lg font-semibold" style={{ color: GOLD }}>{c.t}</div>
+                  <div className="text-sm opacity-85 mt-1">{c.d}</div>
+                </div>
               </GlassCard>
             ))}
           </div>
@@ -488,16 +518,17 @@ const SLIDES: SlideDef[] = [
     title: "Fechamento",
     pdf: {
       title: "Você é um dos próximos?",
-      subtitle: "O Ecossistema Nexus está pronto. Agora é usar, todos os dias.",
+      subtitle: "O Ecossistema Nexus já está aqui. Agora é crescer, todos os dias.",
     },
     render: () => (
       <SlideShell>
         <div className="space-y-8 text-center">
+          <Heart className="h-12 w-12 mx-auto" style={{ color: GOLD }} />
           <h2 className="text-7xl md:text-8xl font-semibold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
             Você é um dos <span style={{ color: GOLD }}>próximos</span>?
           </h2>
           <p className="text-2xl opacity-90 max-w-3xl mx-auto">
-            O Ecossistema Nexus está pronto. <span style={{ color: GOLD_SOFT }}>Agora é usar, todos os dias.</span>
+            O Ecossistema Nexus já está aqui. <span style={{ color: GOLD_SOFT }}>Agora é crescer, todos os dias.</span>
           </p>
           <div className="pt-8 text-sm tracking-[0.3em] uppercase opacity-70">Iuri Rodrigues Imóveis</div>
         </div>
@@ -505,6 +536,7 @@ const SLIDES: SlideDef[] = [
     ),
   },
 ];
+
 
 // ---------------- PDF generation ----------------
 function generatePDF() {
