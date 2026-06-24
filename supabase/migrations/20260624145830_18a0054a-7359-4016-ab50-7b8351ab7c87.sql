@@ -1,0 +1,2 @@
+ALTER TABLE public.feed_posts DROP CONSTRAINT IF EXISTS feed_posts_media_type_check;
+ALTER TABLE public.feed_posts ADD CONSTRAINT feed_posts_media_type_check CHECK (media_type = ANY (ARRAY['image'::text, 'video'::text, 'text'::text, 'audio'::text]));
