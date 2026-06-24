@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { RefreshCw, Loader2 } from "lucide-react";
+
 
 function isPreviewOrIframe(): boolean {
   if (typeof window === "undefined") return true;
@@ -46,7 +53,7 @@ function fingerprintFromDocument(): string {
 }
 
 const SNOOZE_KEY = "update-banner-snooze";
-const SNOOZE_MS = 7 * 24 * 60 * 60 * 1000;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 function snoozedFor(fingerprint: string): boolean {
   try {
@@ -60,16 +67,17 @@ function snoozedFor(fingerprint: string): boolean {
   }
 }
 
-function snooze(fingerprint: string) {
+function snooze(fingerprint: string, days: number) {
   try {
     localStorage.setItem(
       SNOOZE_KEY,
-      JSON.stringify({ fp: fingerprint, until: Date.now() + SNOOZE_MS }),
+      JSON.stringify({ fp: fingerprint, until: Date.now() + days * DAY_MS }),
     );
   } catch {
     /* ignore */
   }
 }
+
 
 export function UpdateAvailableBanner() {
   const [updateReady, setUpdateReady] = useState(false);
@@ -118,10 +126,11 @@ export function UpdateAvailableBanner() {
     };
   }, []);
 
-  function handleSnooze() {
-    if (freshFp) snooze(freshFp);
+  function handleSnooze(days: number) {
+    if (freshFp) snooze(freshFp, days);
     setUpdateReady(false);
   }
+
 
 
   async function handleUpdate() {
@@ -157,12 +166,21 @@ export function UpdateAvailableBanner() {
             Atualize para continuar usando todos os recursos.
           </div>
         </div>
-        <Button size="sm" variant="ghost" onClick={handleSnooze} disabled={refreshing} className="shrink-0">
-          Depois
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button size="sm" variant="ghost" disabled={refreshing} className="shrink-0">
+              Depois
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => handleSnooze(7)}>Lembrar em 7 dias</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleSnooze(15)}>Lembrar em 15 dias</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
         <Button size="sm" onClick={handleUpdate} disabled={refreshing} className="shrink-0">
           {refreshing ? <Loader2 className="h-4 w-4 animate-spin" /> : "Atualizar agora"}
         </Button>
+
 
       </div>
     </div>
