@@ -2353,6 +2353,7 @@ export type Database = {
         | "belford_roxo"
         | "nilopolis"
         | "mesquita"
+        | "nova_iguacu"
       plantao_motivo:
         | "novo_lead"
         | "reincidencia"
@@ -2548,6 +2549,7 @@ export const Constants = {
         "belford_roxo",
         "nilopolis",
         "mesquita",
+        "nova_iguacu",
       ],
       plantao_motivo: [
         "novo_lead",
