@@ -70,11 +70,11 @@ const CONFIG_NAV = [
 ] as const;
 
 // Rotas permitidas para corretor_vendas (puro)
-const CORRETOR_ALLOWED_PREFIXES = ["/inicio", "/vendas", "/conquistas", "/notificacoes", "/configuracoes"];
+const CORRETOR_ALLOWED_PREFIXES = ["/inicio", "/hoje", "/vendas", "/conquistas", "/notificacoes", "/configuracoes"];
 // Rotas permitidas para administrativo (puro)
-const ADMINISTRATIVO_ALLOWED_PREFIXES = ["/inicio", "/admin", "/executivos/landing-page", "/conquistas", "/notificacoes", "/configuracoes"];
+const ADMINISTRATIVO_ALLOWED_PREFIXES = ["/inicio", "/hoje", "/admin", "/executivos/landing-page", "/conquistas", "/notificacoes", "/configuracoes"];
 // Rotas permitidas para correspondente_bancaria (puro)
-const CORRESPONDENTE_ALLOWED_PREFIXES = ["/inicio", "/correspondente", "/conquistas", "/notificacoes", "/configuracoes"];
+const CORRESPONDENTE_ALLOWED_PREFIXES = ["/inicio", "/hoje", "/correspondente", "/conquistas", "/notificacoes", "/configuracoes"];
 
 
 function AuthLayout() {
