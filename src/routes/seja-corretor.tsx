@@ -263,16 +263,26 @@ function SejaCorretorPage() {
             className="text-3xl md:text-5xl leading-[1.1]"
             style={{ fontFamily: SERIF, fontWeight: 500, letterSpacing: "-0.01em" }}
           >
-            Não recrutamos <span style={{ color: GOLD }}>qualquer um</span>
+            Não buscamos quantidade. <span style={{ color: GOLD }}>Selecionamos talentos.</span>
           </h2>
           <p className="text-white/70 text-base md:text-lg leading-relaxed">
-            Aqui dentro tem método, leads, mentoria e tecnologia. Por isso seguimos um padrão.
-            Quem entra, entra para crescer, não para tentar. Se você quer apenas plantão e
-            placa em poste, este lugar não é para você.
+            Na Iuri Rodrigues Imóveis, cada novo corretor passa a integrar um ecossistema construído sobre
+            método, tecnologia, processos e desenvolvimento contínuo. Aqui, performance não depende apenas
+            de esforço individual. Ela é potencializada por uma estrutura que reúne inteligência comercial,
+            geração de oportunidades, treinamento permanente e suporte estratégico.
           </p>
           <p className="text-white/70 text-base md:text-lg leading-relaxed">
-            Se quer um time que joga junto, um sistema que trabalha com você 24h por dia e um
-            executivo presente em cada negociação importante, então sim, podemos conversar.
+            Não procuramos profissionais em busca de uma oportunidade qualquer. Procuramos pessoas
+            comprometidas com evolução, disciplina e excelência. Se o seu objetivo é apenas utilizar uma
+            marca ou cumprir plantões ocasionais, provavelmente este não é o ambiente ideal.
+          </p>
+          <p className="text-white/70 text-base md:text-lg leading-relaxed">
+            Se você deseja construir uma carreira consistente ao lado de uma equipe que compartilha
+            conhecimento, investe em tecnologia e trabalha de forma integrada, será um prazer conhecer
+            o seu perfil.
+          </p>
+          <p className="text-white/80 text-base md:text-lg leading-relaxed" style={{ fontFamily: SERIF, fontStyle: "italic" }}>
+            Porque grandes resultados são consequência de grandes padrões.
           </p>
         </div>
       </section>
