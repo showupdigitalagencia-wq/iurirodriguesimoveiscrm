@@ -1143,7 +1143,7 @@ const SLIDES: SlideDef[] = [
     render: () => (
       <SlideShell eyebrow="A realidade · 4 de 4">
         <div className="space-y-8 text-center max-w-4xl mx-auto">
-          <UserX className="h-16 w-16 mx-auto opacity-50" />
+          <IllusAlone />
           <Headline>
             Você está <span style={{ color: GOLD }}>sozinho</span><br />
             contra o mercado.
