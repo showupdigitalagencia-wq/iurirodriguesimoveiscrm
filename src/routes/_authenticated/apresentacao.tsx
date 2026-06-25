@@ -136,6 +136,167 @@ function FlowDiagram({
   );
 }
 
+// ============= Ilustrações conceituais (Navy + Dourado + Prata) =============
+
+// Ilustração: lead esfriando (relógio com glow vermelho + balão WhatsApp perdendo opacidade)
+function IllusLeadCooling() {
+  return (
+    <div className="relative w-[460px] h-[420px] mx-auto">
+      {/* fundo radial sutil */}
+      <div className="absolute inset-0 rounded-[40px] opacity-60"
+        style={{ background: `radial-gradient(circle at 35% 40%, ${GOLD}15, transparent 60%), radial-gradient(circle at 70% 70%, #ef444422, transparent 65%)` }} />
+      {/* Relógio */}
+      <div className="absolute left-2 top-6">
+        <div className="relative">
+          <div className="absolute inset-0 rounded-full blur-3xl opacity-50" style={{ background: "#ef4444" }} />
+          <div className="relative h-56 w-56 rounded-full flex flex-col items-center justify-center"
+            style={{
+              background: `radial-gradient(circle at 30% 25%, #ffffff10, transparent 60%), ${NAVY_2}`,
+              border: `2px solid #ef4444`,
+              boxShadow: `0 0 60px #ef444466, inset 0 0 40px #ef444422`,
+            }}>
+            {/* anel interno tipo dial */}
+            <div className="absolute inset-3 rounded-full border opacity-30" style={{ borderColor: "#ef4444" }} />
+            <div className="absolute inset-6 rounded-full border opacity-20" style={{ borderColor: "#ef4444" }} />
+            <Clock className="h-12 w-12 mb-1" style={{ color: "#ef4444" }} />
+            <div className="text-[44px] font-bold leading-none" style={{ color: "#ef4444", fontFamily: "'Cormorant Garamond', serif" }}>20:00</div>
+            <div className="text-[10px] uppercase tracking-[0.3em] opacity-70 mt-2">tarde demais</div>
+          </div>
+          {/* badge alerta orbital */}
+          <div className="absolute -top-2 -right-2 h-10 w-10 rounded-full flex items-center justify-center animate-pulse"
+            style={{ background: "#ef4444", boxShadow: "0 0 24px #ef4444aa" }}>
+            <AlertTriangle className="h-5 w-5 text-white" />
+          </div>
+        </div>
+      </div>
+      {/* Balões WhatsApp em fade out (3 etapas) */}
+      <div className="absolute right-0 top-4 space-y-3 w-[210px]">
+        {[
+          { o: 1, t: "Oi, tem interesse?", time: "10:00", read: false },
+          { o: 0.55, t: "Estou aguardando…", time: "10:08", read: false },
+          { o: 0.22, t: "Fechei com outro.", time: "10:20", read: true },
+        ].map((b, i) => (
+          <div key={i}
+            className="rounded-2xl rounded-tr-sm px-4 py-2.5 text-[13px] shadow-lg"
+            style={{
+              background: `linear-gradient(135deg, rgba(34,197,94,0.18), rgba(34,197,94,0.08))`,
+              border: `1px solid rgba(34,197,94,${0.35 * b.o})`,
+              color: `rgba(232,236,245,${b.o})`,
+              opacity: b.o,
+              filter: b.o < 0.6 ? `blur(${(1 - b.o) * 1.2}px)` : "none",
+            }}>
+            <div className="leading-snug">{b.t}</div>
+            <div className="flex items-center justify-end gap-1 text-[10px] opacity-80 mt-1">
+              {b.time}
+              <Check className="h-3 w-3" style={{ color: b.read ? "#60a5fa" : "currentColor" }} />
+            </div>
+          </div>
+        ))}
+        {/* linha pontilhada descendo (linha do tempo) */}
+        <div className="absolute -left-3 top-2 bottom-2 w-[1px]"
+          style={{ backgroundImage: `linear-gradient(${GOLD}88 50%, transparent 0)`, backgroundSize: "1px 6px" }} />
+      </div>
+    </div>
+  );
+}
+
+// Ilustração: Virada (split antes/depois com portal dourado central)
+function IllusBeforeAfter() {
+  return (
+    <div className="relative w-full max-w-[920px] h-[300px] mx-auto rounded-3xl overflow-hidden border"
+      style={{ borderColor: `${GOLD}55`, boxShadow: `0 30px 80px -20px ${GOLD}33` }}>
+      {/* Antes */}
+      <div className="absolute inset-y-0 left-0 w-1/2"
+        style={{ background: `radial-gradient(circle at 70% 50%, #1a1a1a, #050505)`, filter: "saturate(0.4)" }}>
+        <div className="absolute inset-0 opacity-[0.06]"
+          style={{ backgroundImage: "linear-gradient(white 1px, transparent 1px), linear-gradient(90deg, white 1px, transparent 1px)", backgroundSize: "32px 32px" }} />
+        <div className="absolute top-6 left-6 text-[10px] tracking-[0.4em] uppercase opacity-50">Antes</div>
+        <div className="absolute inset-0 flex items-center justify-center gap-3 opacity-50">
+          {[Clock, FileText, Key, MessageCircle].map((I, i) => (
+            <I key={i} className="h-7 w-7" style={{ color: "#6b7280", transform: `rotate(${(i - 1) * 12}deg) translateY(${i % 2 ? 8 : -8}px)` }} />
+          ))}
+        </div>
+      </div>
+      {/* Depois */}
+      <div className="absolute inset-y-0 right-0 w-1/2"
+        style={{ background: `radial-gradient(circle at 30% 50%, ${GOLD}33, ${NAVY} 70%)` }}>
+        <div className="absolute top-6 right-6 text-[10px] tracking-[0.4em] uppercase" style={{ color: GOLD_SOFT }}>Depois</div>
+        <div className="absolute inset-0 flex items-center justify-center gap-4">
+          {[Sparkles, Bot, CalendarDays, CheckCircle2].map((I, i) => (
+            <div key={i} className="h-12 w-12 rounded-xl flex items-center justify-center"
+              style={{
+                background: `linear-gradient(135deg, ${GOLD}, ${GOLD_SOFT})`,
+                color: NAVY,
+                boxShadow: `0 0 24px ${GOLD}66`,
+                transform: `translateY(${i % 2 ? -6 : 6}px)`,
+              }}>
+              <I className="h-6 w-6" />
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* Portal central dourado */}
+      <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[3px]"
+        style={{ background: `linear-gradient(180deg, transparent, ${GOLD}, transparent)`, boxShadow: `0 0 40px ${GOLD}, 0 0 80px ${GOLD}88` }} />
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-32 w-32 rounded-full"
+        style={{ background: `radial-gradient(circle, ${GOLD}88, transparent 70%)`, filter: "blur(8px)" }} />
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-14 w-14 rounded-full flex items-center justify-center"
+        style={{ background: `linear-gradient(135deg, ${GOLD}, ${GOLD_SOFT})`, color: NAVY, boxShadow: `0 0 50px ${GOLD}` }}>
+        <ArrowRight className="h-7 w-7" />
+      </div>
+    </div>
+  );
+}
+
+// Ilustração: Orb Laura (assistente de voz moderna — anéis concêntricos + waveform)
+function IllusLauraOrb() {
+  return (
+    <div className="relative h-[420px] w-[420px] mx-auto">
+      {/* glow externo */}
+      <div className="absolute inset-0 rounded-full blur-3xl opacity-60"
+        style={{ background: `radial-gradient(circle, ${GOLD}88, transparent 60%)` }} />
+      {/* anéis concêntricos */}
+      {[0, 1, 2, 3].map((i) => (
+        <div key={i} className="absolute rounded-full border"
+          style={{
+            inset: `${i * 22}px`,
+            borderColor: `${GOLD}${["88", "66", "44", "22"][i]}`,
+            boxShadow: i === 0 ? `0 0 40px ${GOLD}66, inset 0 0 30px ${GOLD}33` : "none",
+          }} />
+      ))}
+      {/* núcleo */}
+      <div className="absolute inset-[110px] rounded-full flex items-center justify-center"
+        style={{
+          background: `radial-gradient(circle at 35% 30%, ${GOLD_SOFT}, ${GOLD} 55%, ${NAVY_2} 100%)`,
+          boxShadow: `0 0 80px ${GOLD}aa, inset 0 -20px 40px ${NAVY}88, inset 0 20px 40px #ffffff22`,
+        }}>
+        {/* waveform vertical (5 barras) */}
+        <div className="flex items-center gap-1.5 h-16">
+          {[0.55, 0.85, 1, 0.7, 0.4].map((h, i) => (
+            <div key={i} className="w-1.5 rounded-full"
+              style={{
+                height: `${h * 100}%`,
+                background: NAVY,
+                opacity: 0.85,
+                animation: `pulse 1.${4 + i}s ease-in-out ${i * 0.1}s infinite`,
+              }} />
+          ))}
+        </div>
+      </div>
+      {/* satélite "Sparkles" */}
+      <div className="absolute top-6 right-10 h-9 w-9 rounded-full flex items-center justify-center"
+        style={{ background: `${NAVY_2}`, border: `1px solid ${GOLD}88`, boxShadow: `0 0 20px ${GOLD}66` }}>
+        <Sparkles className="h-4 w-4" style={{ color: GOLD }} />
+      </div>
+      <div className="absolute bottom-10 left-4 h-8 w-8 rounded-full flex items-center justify-center"
+        style={{ background: `${NAVY_2}`, border: `1px solid ${GOLD}66`, boxShadow: `0 0 16px ${GOLD}44` }}>
+        <MessageCircle className="h-4 w-4" style={{ color: GOLD_SOFT }} />
+      </div>
+    </div>
+  );
+}
+
+
 // ---------------- Mockups (mockups visuais reais da identidade Nexus) ----------------
 
 function MockPlantaoCard() {
