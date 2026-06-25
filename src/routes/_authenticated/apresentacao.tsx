@@ -1759,7 +1759,9 @@ const SLIDES: SlideDef[] = [
           <BodyCopy className="mx-auto text-center">
             O Nexus não nasceu para substituir o corretor — nasceu para devolver o tempo, o reconhecimento e a tranquilidade que esse mercado costuma roubar. Quem entra agora não está testando um software: está escolhendo uma forma diferente de exercer a profissão.
           </BodyCopy>
+          <IllusFinale />
           <p className="text-3xl md:text-4xl opacity-95 font-light" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+
             Você é um dos <span style={{ color: GOLD_SOFT }}>próximos</span>?
           </p>
           <div className="pt-2 text-xs tracking-[0.35em] uppercase opacity-60">Iuri Rodrigues Imóveis</div>
