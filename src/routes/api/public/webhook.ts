@@ -212,7 +212,7 @@ export const Route = createFileRoute("/api/public/webhook")({
           const { data: vlead, error: vlErr } = await supabaseAdmin
             .from("vendas_leads").insert({
               nome,
-              telefone: telefone.replace(/\D/g, ""),
+              telefone: normalizePhoneBR(telefone) ?? telefone.replace(/\D/g, ""),
               email: email ?? null,
               regiao: regiao as never,
               etapa: "novo_lead" as never,
