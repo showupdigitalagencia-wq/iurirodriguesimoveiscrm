@@ -296,8 +296,8 @@ async function assertCanViewCandidatos(supabase: any, userId: string) {
 
 export const listCandidatos = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { status?: "pendente_revisao" | "arquivado" | "todos" }) =>
-    z.object({ status: z.enum(["pendente_revisao", "arquivado", "todos"]).optional() }).parse(input),
+  .inputValidator((input: { status?: "pendente_revisao" | "recebido_confirmado" | "arquivado" | "todos" }) =>
+    z.object({ status: z.enum(["pendente_revisao", "recebido_confirmado", "arquivado", "todos"]).optional() }).parse(input),
   )
   .handler(async ({ data, context }) => {
     await assertCanViewCandidatos(context.supabase, context.userId);
@@ -310,6 +310,23 @@ export const listCandidatos = createServerFn({ method: "POST" })
     const { data: rows, error } = await q;
     if (error) throw new Error(error.message);
     return { candidatos: (rows ?? []) as unknown as CandidatoRow[] };
+  });
+
+export const confirmarRecebimentoCandidato = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { candidatoId: string }) =>
+    z.object({ candidatoId: z.string().uuid() }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await assertCanViewCandidatos(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("candidatos" as never)
+      .update({ status: "recebido_confirmado" } as never)
+      .eq("id", data.candidatoId)
+      .eq("status", "pendente_revisao");
+    if (error) throw new Error(error.message);
+    return { ok: true };
   });
 
 export type CandidatoRow = {
