@@ -845,7 +845,11 @@ const SLIDES: SlideDef[] = [
           <BodyCopy className="mx-auto text-center">
             E se o sistema avisasse você no segundo certo? E se cada visita, cada chave, cada conversa ficasse registrada sem esforço? E se você tivesse uma assistente trabalhando 24 horas, só para você? Não é melhoria — é uma virada.
           </BodyCopy>
+          <div className="pt-2">
+            <IllusBeforeAfter />
+          </div>
         </div>
+
       </SlideShell>
     ),
   },
