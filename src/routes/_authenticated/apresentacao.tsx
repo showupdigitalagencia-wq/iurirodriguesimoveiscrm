@@ -1078,13 +1078,9 @@ const SLIDES: SlideDef[] = [
             </BodyCopy>
           </div>
           <div className="flex justify-center">
-            <div className="relative">
-              <div className="absolute inset-0 rounded-full blur-3xl opacity-40" style={{ background: GOLD }} />
-              <div className="relative h-72 w-72 rounded-full flex items-center justify-center" style={{ background: `radial-gradient(circle, ${GOLD}33, transparent 70%)`, border: `2px solid ${GOLD}55` }}>
-                <Bot className="h-40 w-40" style={{ color: GOLD }} />
-              </div>
-            </div>
+            <IllusLauraOrb />
           </div>
+
         </div>
       </SlideShell>
     ),
