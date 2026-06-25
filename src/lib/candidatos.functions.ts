@@ -116,7 +116,7 @@ export const submeterCandidato = createServerFn({ method: "POST" })
     const responsavelId = (mapa as { responsavel_id: string } | null)?.responsavel_id ?? null;
 
     // 2) Procura lead existente por telefone OU CPF
-    const telefoneClean = data.telefone.replace(/\D/g, "");
+    const telefoneClean = normalizePhoneBR(data.telefone) ?? data.telefone.replace(/\D/g, "");
     const cpfClean = data.cpf.replace(/\D/g, "");
 
     type LeadRow = {
