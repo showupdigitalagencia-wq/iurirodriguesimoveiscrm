@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { normalizeOrigem, shouldUsePlantao } from "@/lib/plantao-shared";
 import { withWebhookLog } from "@/lib/webhook-log.server";
+import { normalizePhoneBR } from "@/lib/phone";
+
 
 
 
