@@ -157,18 +157,24 @@ export const Route = createFileRoute("/api/public/notify-execs-pendencias")({
             total,
           };
 
-          if (total === 0) {
-            results.push({ exec: exec.nome, skipped: "sem pendências", detalhe });
-            continue;
-          }
-
           if (!exec.external_id) {
             results.push({ exec: exec.nome, skipped: "sem onesignal_external_id", detalhe });
             continue;
           }
 
-          const title = "📋 Suas pendências de hoje";
-          const message = `Você tem ${captacao} pendência${captacao === 1 ? "" : "s"} em Captação e ${vendas} em Vendas. Toque para ver em Hoje.`;
+          const prefix = mode === "morning" ? "☀️ Bom dia! " : mode === "evening" ? "🌙 Boa noite! " : "";
+          let title: string;
+          let message: string;
+          if (total === 0) {
+            title = `${prefix}Você está em dia ✅`;
+            message = mode === "evening"
+              ? "Nenhuma pendência aberta encerrando o dia. Bom descanso!"
+              : "Sem pendências de Captação ou Vendas no momento.";
+          } else {
+            title = `${prefix}📋 Suas pendências${mode === "morning" ? " de hoje" : mode === "evening" ? " ainda em aberto" : ""}`;
+            const verbo = mode === "evening" ? "ainda " : "";
+            message = `Você ${verbo}tem ${captacao} em Captação e ${vendas} em Vendas. Toque para abrir a Central Hoje.`;
+          }
 
           if (dryRun) {
             results.push({ exec: exec.nome, dryRun: true, title, message, detalhe, external_id: exec.external_id });
@@ -180,7 +186,7 @@ export const Route = createFileRoute("/api/public/notify-execs-pendencias")({
             title,
             message,
             url: "https://sistemanexus.app/hoje",
-            data: { route: "/hoje", source: "pendencias_manual" },
+            data: { route: "/hoje", source: `pendencias_${mode}` },
           });
           results.push({ exec: exec.nome, sent: push.ok, error: push.error, detalhe });
         }
