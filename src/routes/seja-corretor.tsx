@@ -173,7 +173,7 @@ function SejaCorretorPage() {
 
           <p className="text-white/70 max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
             Não somos apenas uma imobiliária. Somos o time, a tecnologia e a liderança que faltavam
-            para você vender mais — com método, respaldo e presença real em cada negociação.
+            para você vender mais. Com método, respaldo e presença real em cada negociação.
           </p>
 
         </div>
