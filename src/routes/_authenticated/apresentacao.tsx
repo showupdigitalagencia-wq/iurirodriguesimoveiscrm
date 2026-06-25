@@ -1378,6 +1378,9 @@ function ApresentacaoPage() {
             <span className="opacity-60 ml-2">· Slide {idx + 1} de {SLIDES.length}</span>
           </div>
           <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" asChild className="gap-2">
+              <a href="/apresentacao2"><Sparkles className="h-4 w-4" /> Apresentação 2</a>
+            </Button>
             <Button size="sm" variant="outline" onClick={generateGuide} className="gap-2">
               <BookOpen className="h-4 w-4" /> Guia Completo (PDF)
             </Button>
