@@ -61,18 +61,26 @@ function SejaCorretorPage() {
   const [photos, setPhotos] = useState<
     Array<{ url: string | null; nome: string; cargo: string }>
   >([]);
+  const [groupUrl, setGroupUrl] = useState<string | null>(null);
+  const [execPhotos, setExecPhotos] = useState<Record<string, string | null>>({});
 
   useEffect(() => {
     getConfig({})
       .then((r) => {
         setVslId(youtubeId(r.vslUrl));
         setPhotos(r.photos);
+        setGroupUrl(r.groupUrl);
+        setExecPhotos(r.execPhotos);
       })
       .catch(() => null);
   }, [getConfig]);
 
   const filteredExec = findExecutivoByRef(ref ?? null);
   const execsToShow = filteredExec ? [filteredExec] : CAPTACAO_EXECUTIVOS;
+
+  function initials(nome: string): string {
+    return nome.split(/\s+/).filter(Boolean).slice(0, 2).map((s) => s[0]?.toUpperCase() ?? "").join("");
+  }
 
   return (
     <div className="min-h-screen" style={{ background: "#0A0E1A", color: "white", fontFamily: "var(--font-sans)" }}>
