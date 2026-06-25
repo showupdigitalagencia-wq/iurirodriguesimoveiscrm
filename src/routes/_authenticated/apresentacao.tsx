@@ -1123,14 +1123,9 @@ const SLIDES: SlideDef[] = [
             </BodyCopy>
           </div>
           <div className="md:col-span-2 flex justify-center">
-            <div className="relative w-56 h-56">
-              <div className="absolute inset-0 rounded-full border-2 border-dashed opacity-30" style={{ borderColor: GOLD }} />
-              <div className="absolute inset-6 rounded-full border opacity-20" style={{ borderColor: GOLD }} />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <EyeOff className="h-20 w-20 opacity-40" />
-              </div>
-            </div>
+            <IllusInvisibleEffort />
           </div>
+
         </div>
       </SlideShell>
     ),
