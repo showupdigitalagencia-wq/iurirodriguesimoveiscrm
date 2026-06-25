@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { normalizePhoneBR } from "@/lib/phone";
+
 
 const InputSchema = z.object({
   nome: z.string().min(1),
