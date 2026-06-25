@@ -298,7 +298,7 @@ function SejaCorretorPage() {
         <div className="max-w-6xl mx-auto space-y-14">
           <div className="text-center space-y-3">
             <div className="text-[10px] md:text-xs uppercase tracking-[0.45em]" style={{ color: GOLD }}>
-              Três Pilares
+              Quatro Pilares
             </div>
             <h2
               className="text-3xl md:text-5xl leading-[1.1] max-w-3xl mx-auto"
@@ -308,7 +308,7 @@ function SejaCorretorPage() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 md:gap-8">
             {PILARES.map(({ icon: Icon, titulo, texto }, i) => (
               <article
                 key={i}
