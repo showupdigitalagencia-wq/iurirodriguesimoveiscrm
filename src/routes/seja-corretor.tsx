@@ -531,7 +531,8 @@ function SejaCorretorPage() {
                   Falar no WhatsApp →
                 </a>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
