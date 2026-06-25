@@ -32,6 +32,12 @@ const PILARES = [
     texto:
       "Aqui, leads não ficam perdidos em grupo de WhatsApp nem favorecem quem grita mais alto. Nosso sistema distribui oportunidades de forma automática e equilibrada, e acompanha seu desempenho com metas e conquistas reconhecidas por todo o time. Seu crescimento aqui depende do seu esforço, não de sorte.",
   },
+  {
+    icon: GraduationCap,
+    titulo: "Mentoria e treinamento que formam referências",
+    texto:
+      "Investimos continuamente na formação de cada corretor através de mentorias presenciais, treinamentos práticos e acompanhamento próximo da liderança executiva. Não entregamos apenas ferramentas. Entregamos conhecimento, técnica e direcionamento estratégico construídos a partir de anos de experiência real no mercado imobiliário. É esse compromisso com o desenvolvimento contínuo que faz da Iuri Rodrigues Imóveis uma referência reconhecida.",
+  },
 ];
 
 const searchSchema = z.object({
@@ -292,7 +298,7 @@ function SejaCorretorPage() {
         <div className="max-w-6xl mx-auto space-y-14">
           <div className="text-center space-y-3">
             <div className="text-[10px] md:text-xs uppercase tracking-[0.45em]" style={{ color: GOLD }}>
-              Três Pilares
+              Quatro Pilares
             </div>
             <h2
               className="text-3xl md:text-5xl leading-[1.1] max-w-3xl mx-auto"
@@ -302,7 +308,7 @@ function SejaCorretorPage() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 md:gap-8">
             {PILARES.map(({ icon: Icon, titulo, texto }, i) => (
               <article
                 key={i}
@@ -348,50 +354,8 @@ function SejaCorretorPage() {
         </div>
       </section>
 
-      {/* MENTORIA E TREINAMENTO */}
-      <section className="px-6 py-20 md:py-28" style={{ background: "#070B14" }}>
-        <div className="max-w-4xl mx-auto">
-          <article
-            className="relative flex flex-col items-center text-center p-10 md:p-16 rounded-2xl"
-            style={{
-              background: "linear-gradient(180deg, #111A2E 0%, #0C1322 100%)",
-              border: `1px solid ${GOLD}33`,
-              boxShadow: "0 30px 80px -40px rgba(0,0,0,0.9)",
-            }}
-          >
-            <div
-              className="flex items-center justify-center mb-8 rounded-xl"
-              style={{
-                width: 72,
-                height: 72,
-                background: `${GOLD}14`,
-                border: `1px solid ${GOLD}55`,
-              }}
-            >
-              <GraduationCap size={36} strokeWidth={1.5} style={{ color: GOLD }} />
-            </div>
-            <div
-              className="text-[10px] md:text-xs uppercase tracking-[0.45em] mb-4"
-              style={{ color: GOLD }}
-            >
-              Mentoria & Treinamento
-            </div>
-            <h2
-              className="text-3xl md:text-5xl leading-[1.1] mb-8"
-              style={{ fontFamily: SERIF, fontWeight: 500, letterSpacing: "-0.01em" }}
-            >
-              Mentoria e treinamento que <em style={{ color: GOLD, fontStyle: "italic", fontWeight: 500 }}>formam referências</em>
-            </h2>
-            <div className="h-px w-16 mb-8" style={{ background: `${GOLD}66` }} />
-            <p className="text-white/80 text-base md:text-lg leading-relaxed max-w-2xl">
-              Investimos continuamente na formação de cada corretor através de mentorias presenciais, treinamentos práticos e acompanhamento próximo da liderança executiva. Não entregamos apenas ferramentas. Entregamos conhecimento, técnica e direcionamento estratégico construídos a partir de anos de experiência real no mercado imobiliário.
-            </p>
-            <p className="text-white/75 text-base md:text-lg leading-relaxed max-w-2xl mt-5">
-              É esse compromisso com o desenvolvimento contínuo que faz da Iuri Rodrigues Imóveis uma referência reconhecida, formando profissionais preparados para os desafios reais do mercado, não apenas para cumprir tarefas.
-            </p>
-          </article>
-        </div>
-      </section>
+
+
 
 
 
