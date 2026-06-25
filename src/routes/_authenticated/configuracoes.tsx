@@ -111,6 +111,8 @@ function ConfigPage() {
           <ModuloAdministrativoToggle />
           <VslUrlSection />
           <VslCaptacaoSection />
+          <GroupPhotoSection />
+          <ExecutivoPhotosSection />
           <TeamPhotosSection />
           <ReativacaoLeadsConfig />
           <FollowupLeadsConfig />
