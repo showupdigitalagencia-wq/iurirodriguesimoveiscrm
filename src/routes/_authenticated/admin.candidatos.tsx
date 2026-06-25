@@ -2,14 +2,14 @@ import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useEffect, useState, useCallback } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { listCandidatos, getCandidatoDocUrls, salvarCandidatoNoDrive, excluirCandidato, type CandidatoRow } from "@/lib/candidatos.functions";
+import { listCandidatos, getCandidatoDocUrls, salvarCandidatoNoDrive, excluirCandidato, confirmarRecebimentoCandidato, type CandidatoRow } from "@/lib/candidatos.functions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Loader2, ExternalLink, FolderUp, FileText, Link2, ChevronDown, ChevronRight, CheckCircle2, XCircle, Trash2 } from "lucide-react";
+import { Loader2, ExternalLink, FolderUp, FileText, Link2, ChevronDown, ChevronRight, CheckCircle2, XCircle, Trash2, Check } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/candidatos")({
   head: () => ({ meta: [{ title: "Candidatos — Sistema NEXUS" }, { name: "robots", content: "noindex" }] }),
@@ -37,7 +37,7 @@ type DocUrls = { rg: string | null; cpf: string | null; creci: string | null; co
 
 function CandidatosPage() {
   const list = useServerFn(listCandidatos);
-  const [filter, setFilter] = useState<"pendente_revisao" | "arquivado" | "todos">("pendente_revisao");
+  const [filter, setFilter] = useState<"pendente_revisao" | "recebido_confirmado" | "arquivado" | "todos">("pendente_revisao");
   const [rows, setRows] = useState<CandidatoRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
@@ -70,6 +70,7 @@ function CandidatosPage() {
         <Tabs value={filter} onValueChange={(v) => setFilter(v as never)}>
           <TabsList>
             <TabsTrigger value="pendente_revisao">Pendentes</TabsTrigger>
+            <TabsTrigger value="recebido_confirmado">Recebidos</TabsTrigger>
             <TabsTrigger value="arquivado">Arquivados</TabsTrigger>
             <TabsTrigger value="todos">Todos</TabsTrigger>
           </TabsList>
@@ -111,10 +112,12 @@ function CandidatoCard({ candidato: c, expanded, onToggle, onChanged }: { candid
   const getUrls = useServerFn(getCandidatoDocUrls);
   const salvarDrive = useServerFn(salvarCandidatoNoDrive);
   const excluir = useServerFn(excluirCandidato);
+  const confirmar = useServerFn(confirmarRecebimentoCandidato);
   const [urls, setUrls] = useState<DocUrls | null>(null);
   const [loadingDocs, setLoadingDocs] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [confirming, setConfirming] = useState(false);
 
   useEffect(() => {
     if (!expanded || urls) return;
@@ -151,6 +154,19 @@ function CandidatoCard({ candidato: c, expanded, onToggle, onChanged }: { candid
     }
   }
 
+  async function handleConfirmar() {
+    setConfirming(true);
+    try {
+      await confirmar({ data: { candidatoId: c.id } });
+      toast.success("Recebimento confirmado.");
+      onChanged();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao confirmar");
+    } finally {
+      setConfirming(false);
+    }
+  }
+
   const slots = ["rg", "cpf", "creci", "comprovante"] as const;
   const recebidos = urls ? slots.filter((s) => urls[s]).length : 0;
 
@@ -168,8 +184,8 @@ function CandidatoCard({ candidato: c, expanded, onToggle, onChanged }: { candid
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant={c.status === "arquivado" ? "secondary" : "default"}>
-              {c.status === "arquivado" ? "Arquivado" : "Pendente"}
+            <Badge variant={c.status === "arquivado" ? "secondary" : c.status === "recebido_confirmado" ? "outline" : "default"} className={c.status === "recebido_confirmado" ? "border-emerald-500/40 text-emerald-700 dark:text-emerald-400" : undefined}>
+              {c.status === "arquivado" ? "Arquivado" : c.status === "recebido_confirmado" ? "Recebido" : "Pendente"}
             </Badge>
             <span className="text-xs text-muted-foreground">
               Enviado em {new Date(c.created_at).toLocaleDateString("pt-BR")}
@@ -240,6 +256,11 @@ function CandidatoCard({ candidato: c, expanded, onToggle, onChanged }: { candid
               </Link>
             )}
             <div className="ml-auto flex flex-wrap items-center gap-2">
+              {c.status === "pendente_revisao" && (
+                <Button onClick={handleConfirmar} disabled={confirming} variant="outline" className="border-emerald-500/50 text-emerald-700 hover:bg-emerald-500/10 dark:text-emerald-400">
+                  {confirming ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Confirmando...</> : <><Check className="h-4 w-4 mr-2" /> Confirmar Recebimento</>}
+                </Button>
+              )}
               {c.status !== "arquivado" && (
                 <Button onClick={handleSalvarDrive} disabled={saving} className="bg-gold text-black hover:bg-gold/90">
                   {saving ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Salvando...</> : <><FolderUp className="h-4 w-4 mr-2" /> Salvar no Google Drive</>}

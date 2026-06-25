@@ -1,0 +1,1 @@
+ALTER TYPE public.candidato_status ADD VALUE IF NOT EXISTS 'recebido_confirmado';

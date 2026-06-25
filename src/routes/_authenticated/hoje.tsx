@@ -8,9 +8,11 @@ import {
   AlarmClock,
   CalendarDays,
   CheckCircle2,
+  FileText,
   KeyRound,
   MessageCircle,
   Phone,
+  Receipt,
   Sparkles,
   Timer,
   UserPlus,
@@ -18,6 +20,14 @@ import {
   XCircle,
   Zap,
 } from "lucide-react";
+
+function fmtMoeda(n: number | null | undefined) {
+  if (n == null) return "—";
+  return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+function fmtDataBR(iso: string) {
+  return new Date(iso + (iso.length === 10 ? "T00:00:00" : "")).toLocaleDateString("pt-BR");
+}
 
 export const Route = createFileRoute("/_authenticated/hoje")({
   component: HojePage,
@@ -66,7 +76,11 @@ function HojePage() {
     data.followup.length === 0 &&
     data.chaves.length === 0 &&
     data.candidatos.length === 0 &&
-    data.reunioes.length === 0;
+    data.reunioes.length === 0 &&
+    data.contratosVencendo.length === 0 &&
+    data.pagamentosPendentes.length === 0 &&
+    data.candidatosPendentesAdmin.length === 0 &&
+    data.chavesAdmin.length === 0;
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-6 space-y-5">
@@ -289,6 +303,101 @@ function HojePage() {
       )}
 
 
+
+      {data.isAdministrativo && data.contratosVencendo.length > 0 && (
+        <Section icon={<FileText className="h-4 w-4" />} title="Contratos vencendo (próximos 90 dias)">
+          <ul className="space-y-2">
+            {data.contratosVencendo.map((c) => {
+              const tone =
+                c.dias_para_vencer <= 30
+                  ? "border-rose-300/40 bg-rose-500/5"
+                  : c.dias_para_vencer <= 60
+                    ? "border-amber-300/40 bg-amber-500/5"
+                    : "border-border/60 bg-card";
+              return (
+                <li key={c.id} className={`rounded-lg border p-3 flex items-center gap-3 ${tone}`}>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium truncate">{c.locatario_nome ?? "Locatário"}</div>
+                    <div className="text-xs text-muted-foreground">
+                      Vence em {fmtDataBR(c.data_fim)} · {c.dias_para_vencer} dia{c.dias_para_vencer === 1 ? "" : "s"} · {fmtMoeda(c.valor_aluguel)}
+                    </div>
+                  </div>
+                  <Button asChild size="sm" variant="outline">
+                    <Link to="/admin/contratos">Abrir</Link>
+                  </Button>
+                </li>
+              );
+            })}
+          </ul>
+        </Section>
+      )}
+
+      {data.isAdministrativo && data.pagamentosPendentes.length > 0 && (
+        <Section icon={<Receipt className="h-4 w-4" />} title="Pagamentos pendentes / inadimplentes">
+          <ul className="space-y-2">
+            {data.pagamentosPendentes.map((p) => (
+              <li key={p.id} className={`rounded-lg border p-3 flex items-center gap-3 ${p.status === "atrasado" ? "border-rose-300/40 bg-rose-500/5" : "border-border/60 bg-card"}`}>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium truncate">{p.locatario_nome ?? "Locatário"}</div>
+                  <div className="text-xs text-muted-foreground">
+                    Ref. {fmtDataBR(p.mes_referencia)} · {fmtMoeda(p.valor_previsto)}
+                  </div>
+                </div>
+                <Badge variant="outline" className={p.status === "atrasado" ? "border-rose-400 text-rose-700" : "border-amber-400 text-amber-700"}>
+                  {p.status === "atrasado" ? "Atrasado" : "Pendente"}
+                </Badge>
+                <Button asChild size="sm" variant="outline">
+                  <Link to="/admin/pagamentos">Abrir</Link>
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
+
+      {data.isAdministrativo && data.candidatosPendentesAdmin.length > 0 && (
+        <Section icon={<UserPlus className="h-4 w-4" />} title="Candidatos pendentes de confirmação">
+          <ul className="space-y-2">
+            {data.candidatosPendentesAdmin.map((c) => (
+              <li key={c.id} className="rounded-lg border border-border/60 bg-card p-3 flex items-center gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium truncate">{c.nome}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {c.regiao ?? ""} · enviado há {tempoDesde(c.created_at)}
+                  </div>
+                </div>
+                <Button asChild size="sm" variant="outline">
+                  <Link to="/admin/candidatos">Confirmar</Link>
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
+
+      {data.isAdministrativo && data.chavesAdmin.length > 0 && (
+        <Section icon={<KeyRound className="h-4 w-4" />} title="Chaves atrasadas (geral)">
+          <ul className="space-y-2">
+            {data.chavesAdmin.map((c) => (
+              <li key={c.id} className="rounded-lg border border-rose-300/40 bg-rose-500/5 p-3 flex items-center gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium truncate">
+                    {c.codigo ? `${c.codigo} · ` : ""}
+                    {c.rua}
+                    {c.numero ? `, ${c.numero}` : ""}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {c.bairro ?? ""} · há {tempoDesde(c.chave_retirada_em)}
+                  </div>
+                </div>
+                <Button asChild size="sm" variant="outline" className="border-rose-300 text-rose-700">
+                  <Link to="/admin/chaves">Abrir</Link>
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
 
       {vazio && !data.loading && (
         <Card>
