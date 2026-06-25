@@ -70,6 +70,7 @@ function CandidatosPage() {
         <Tabs value={filter} onValueChange={(v) => setFilter(v as never)}>
           <TabsList>
             <TabsTrigger value="pendente_revisao">Pendentes</TabsTrigger>
+            <TabsTrigger value="recebido_confirmado">Recebidos</TabsTrigger>
             <TabsTrigger value="arquivado">Arquivados</TabsTrigger>
             <TabsTrigger value="todos">Todos</TabsTrigger>
           </TabsList>
