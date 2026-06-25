@@ -1427,18 +1427,8 @@ const SLIDES: SlideDef[] = [
           <BodyCopy>
             Você não precisa decorar comando nem lembrar onde clicar. Pergunta como falaria com um colega — em português natural — e a Laura responde com o dado certo, na hora. Ela consulta portfólio, agenda, leads e metas em segundos.
           </BodyCopy>
-          <div className="space-y-3 max-w-3xl">
-            {[
-              "Temos apartamento na Barra até R$ 2.500?",
-              "Qual minha meta esse mês?",
-              "Quais leads ainda não atendi hoje?",
-            ].map((q, i) => (
-              <div key={i} className="flex items-start gap-3 rounded-2xl px-5 py-3" style={{ background: `${GOLD}15`, border: `1px solid ${GOLD}44` }}>
-                <MessageCircle className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: GOLD }} />
-                <div className="text-lg" style={{ fontFamily: "'Cormorant Garamond', serif" }}>"{q}"</div>
-              </div>
-            ))}
-          </div>
+          <IllusLauraQuery />
+
         </div>
       </SlideShell>
     ),
