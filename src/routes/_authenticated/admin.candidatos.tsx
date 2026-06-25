@@ -2,14 +2,14 @@ import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useEffect, useState, useCallback } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { listCandidatos, getCandidatoDocUrls, salvarCandidatoNoDrive, excluirCandidato, type CandidatoRow } from "@/lib/candidatos.functions";
+import { listCandidatos, getCandidatoDocUrls, salvarCandidatoNoDrive, excluirCandidato, confirmarRecebimentoCandidato, type CandidatoRow } from "@/lib/candidatos.functions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Loader2, ExternalLink, FolderUp, FileText, Link2, ChevronDown, ChevronRight, CheckCircle2, XCircle, Trash2 } from "lucide-react";
+import { Loader2, ExternalLink, FolderUp, FileText, Link2, ChevronDown, ChevronRight, CheckCircle2, XCircle, Trash2, Check } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/candidatos")({
   head: () => ({ meta: [{ title: "Candidatos — Sistema NEXUS" }, { name: "robots", content: "noindex" }] }),
