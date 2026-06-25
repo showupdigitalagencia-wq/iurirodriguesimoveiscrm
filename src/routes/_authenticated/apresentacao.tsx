@@ -296,6 +296,354 @@ function IllusLauraOrb() {
   );
 }
 
+// Ilustração: Caos da rotina (ícones em ilhas desconectadas com linhas pontilhadas quebradas)
+function IllusChaos() {
+  const items = [
+    { I: Key, t: "Chave", x: 8, y: 18, r: -8, c: "#94a3b8" },
+    { I: FileText, t: "Follow-up", x: 60, y: 8, r: 6, c: "#a3a3a3" },
+    { I: MessageCircle, t: "WhatsApp", x: 18, y: 62, r: 10, c: "#94a3b8" },
+    { I: CalendarDays, t: "Post-it", x: 70, y: 58, r: -12, c: "#a3a3a3" },
+  ];
+  return (
+    <div className="relative w-full max-w-[860px] h-[320px] mx-auto rounded-3xl overflow-hidden border"
+      style={{ borderColor: `${GOLD}33`, background: `radial-gradient(circle at 50% 50%, ${NAVY_2}, ${NAVY})` }}>
+      {/* grid sutil */}
+      <div className="absolute inset-0 opacity-[0.05]"
+        style={{ backgroundImage: "linear-gradient(white 1px, transparent 1px), linear-gradient(90deg, white 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
+      {/* linhas pontilhadas quebradas conectando aleatoriamente */}
+      <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
+        <defs>
+          <pattern id="dash1" patternUnits="userSpaceOnUse" width="8" height="1">
+            <rect width="4" height="1" fill="#ef444466" />
+          </pattern>
+        </defs>
+        <path d="M 100 80 Q 280 180 200 240" stroke="url(#dash1)" strokeWidth="2" fill="none" strokeDasharray="6 6" opacity="0.5" />
+        <path d="M 560 60 Q 400 160 620 230" stroke="url(#dash1)" strokeWidth="2" fill="none" strokeDasharray="6 6" opacity="0.5" />
+        <path d="M 180 90 L 540 70" stroke="#94a3b855" strokeWidth="1.5" strokeDasharray="4 8" fill="none" />
+      </svg>
+      {items.map((it, i) => (
+        <div key={i} className="absolute" style={{ left: `${it.x}%`, top: `${it.y}%`, transform: `rotate(${it.r}deg)` }}>
+          <div className="rounded-2xl px-4 py-3 flex items-center gap-2 backdrop-blur-sm"
+            style={{ background: `${NAVY_2}cc`, border: `1px solid ${it.c}55`, boxShadow: `0 12px 30px -10px #00000088` }}>
+            <it.I className="h-6 w-6" style={{ color: it.c }} />
+            <span className="text-xs uppercase tracking-[0.2em]" style={{ color: it.c }}>{it.t}</span>
+          </div>
+        </div>
+      ))}
+      {/* "?" central indicando confusão */}
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-20 w-20 rounded-full flex items-center justify-center"
+        style={{ background: `${NAVY}`, border: `2px dashed #ef444488`, boxShadow: `0 0 40px #ef444444` }}>
+        <span className="text-4xl font-bold" style={{ color: "#ef4444", fontFamily: "'Cormorant Garamond', serif" }}>?</span>
+      </div>
+    </div>
+  );
+}
+
+// Ilustração: Esforço invisível (silhuetas em fade + troféu desaparecendo)
+function IllusInvisibleEffort() {
+  return (
+    <div className="relative w-[340px] h-[340px] mx-auto">
+      <div className="absolute inset-0 rounded-full opacity-50"
+        style={{ background: `radial-gradient(circle, ${GOLD}22, transparent 65%)` }} />
+      {/* anéis */}
+      <div className="absolute inset-0 rounded-full border-2 border-dashed opacity-25" style={{ borderColor: GOLD }} />
+      <div className="absolute inset-8 rounded-full border opacity-15" style={{ borderColor: GOLD }} />
+      {/* stack de ações em fade */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+        {[
+          { I: CheckCircle2, t: "+1 visita", o: 0.85 },
+          { I: MessageCircle, t: "+1 atendimento", o: 0.55 },
+          { I: Phone, t: "+1 ligação", o: 0.3 },
+          { I: Clock, t: "+2h domingo", o: 0.15 },
+        ].map((a, i) => (
+          <div key={i} className="flex items-center gap-2 px-3 py-1.5 rounded-full"
+            style={{ background: `${NAVY_2}`, border: `1px solid ${GOLD}44`, opacity: a.o, filter: a.o < 0.5 ? `blur(${(1 - a.o)}px)` : "none" }}>
+            <a.I className="h-3.5 w-3.5" style={{ color: GOLD_SOFT }} />
+            <span className="text-[11px] tracking-wide opacity-80">{a.t}</span>
+          </div>
+        ))}
+      </div>
+      {/* olho fechado (invisível) sobreposto */}
+      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 h-16 w-16 rounded-full flex items-center justify-center"
+        style={{ background: NAVY_2, border: `1px solid ${GOLD}55`, boxShadow: `0 0 30px ${GOLD}33` }}>
+        <EyeOff className="h-7 w-7 opacity-70" style={{ color: GOLD_SOFT }} />
+      </div>
+    </div>
+  );
+}
+
+// Ilustração: Sozinho contra o mercado (silhueta central com setas convergindo)
+function IllusAlone() {
+  const arrows = [0, 45, 90, 135, 180, 225, 270, 315];
+  return (
+    <div className="relative w-[420px] h-[320px] mx-auto">
+      {/* glow vermelho ambiente */}
+      <div className="absolute inset-0 rounded-full opacity-40 blur-2xl"
+        style={{ background: `radial-gradient(circle, #ef444433, transparent 60%)` }} />
+      {/* setas vindo das bordas */}
+      {arrows.map((a, i) => (
+        <div key={i} className="absolute left-1/2 top-1/2 origin-left"
+          style={{ transform: `rotate(${a}deg) translateX(80px)` }}>
+          <div className="flex items-center gap-1 opacity-60">
+            <div className="h-[1.5px] w-12" style={{ background: `linear-gradient(90deg, transparent, #ef444488)` }} />
+            <ArrowRight className="h-4 w-4" style={{ color: "#ef4444", transform: "rotate(180deg)" }} />
+          </div>
+        </div>
+      ))}
+      {/* silhueta central */}
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-24 w-24 rounded-full flex items-center justify-center"
+        style={{ background: NAVY_2, border: `2px solid ${GOLD}88`, boxShadow: `0 0 50px ${GOLD}55, inset 0 0 20px ${GOLD}22` }}>
+        <UserX className="h-10 w-10" style={{ color: GOLD }} />
+      </div>
+      {/* halo dourado fino (esperança) */}
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-32 w-32 rounded-full border-2 border-dashed opacity-40"
+        style={{ borderColor: GOLD }} />
+    </div>
+  );
+}
+
+// Ilustração: Ecossistema (hub central + 6 módulos orbitando conectados por linhas douradas)
+function IllusEcosystem() {
+  const modules = [
+    { I: CalendarDays, t: "Agenda", a: 0 },
+    { I: Building2, t: "Portfólio", a: 60 },
+    { I: Bot, t: "Laura", a: 120 },
+    { I: Sparkles, t: "Hoje", a: 180 },
+    { I: BarChart3, t: "Desempenho", a: 240 },
+    { I: Newspaper, t: "Time", a: 300 },
+  ];
+  const R = 170;
+  return (
+    <div className="relative w-[520px] h-[440px] mx-auto">
+      <div className="absolute inset-0 rounded-full opacity-50 blur-3xl"
+        style={{ background: `radial-gradient(circle, ${GOLD}33, transparent 65%)` }} />
+      {/* linhas do hub para cada módulo */}
+      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 520 440">
+        {modules.map((m, i) => {
+          const rad = (m.a * Math.PI) / 180;
+          const x = 260 + R * Math.cos(rad);
+          const y = 220 + R * Math.sin(rad);
+          return (
+            <line key={i} x1="260" y1="220" x2={x} y2={y}
+              stroke={GOLD} strokeWidth="1.2" strokeDasharray="3 5" opacity="0.55" />
+          );
+        })}
+        {/* anel orbital */}
+        <circle cx="260" cy="220" r={R} fill="none" stroke={GOLD} strokeOpacity="0.18" strokeWidth="1" />
+      </svg>
+      {/* hub central NEXUS */}
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-24 w-24 rounded-full flex items-center justify-center"
+        style={{
+          background: `radial-gradient(circle at 35% 30%, ${GOLD_SOFT}, ${GOLD} 60%, ${NAVY_2})`,
+          color: NAVY,
+          boxShadow: `0 0 60px ${GOLD}aa, inset 0 -10px 20px ${NAVY}66`,
+        }}>
+        <div className="text-[10px] tracking-[0.3em] font-bold">NEXUS</div>
+      </div>
+      {/* módulos orbitando */}
+      {modules.map((m, i) => {
+        const rad = (m.a * Math.PI) / 180;
+        const x = 50 + (R * Math.cos(rad)) / 1;
+        const y = 50 + (R * Math.sin(rad)) / 1;
+        return (
+          <div key={i} className="absolute"
+            style={{ left: `calc(50% + ${R * Math.cos(rad)}px)`, top: `calc(50% + ${R * Math.sin(rad)}px)`, transform: "translate(-50%, -50%)" }}>
+            <div className="h-16 w-16 rounded-2xl flex flex-col items-center justify-center"
+              style={{ background: NAVY_2, border: `1px solid ${GOLD}66`, boxShadow: `0 0 20px ${GOLD}44` }}>
+              <m.I className="h-5 w-5 mb-0.5" style={{ color: GOLD }} />
+              <div className="text-[9px] uppercase tracking-wider opacity-80">{m.t}</div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// Ilustração: Laura — consulta (balão de pergunta + orb mini + dado retornado)
+function IllusLauraQuery() {
+  return (
+    <div className="relative w-full max-w-[760px] h-[260px] mx-auto rounded-3xl border overflow-hidden"
+      style={{ borderColor: `${GOLD}44`, background: `radial-gradient(circle at 50% 50%, ${NAVY_2}, ${NAVY})` }}>
+      {/* lado usuário */}
+      <div className="absolute left-6 top-1/2 -translate-y-1/2 max-w-[260px]">
+        <div className="text-[10px] uppercase tracking-[0.25em] opacity-60 mb-2">Você</div>
+        <div className="rounded-2xl rounded-bl-sm px-5 py-3"
+          style={{ background: NAVY_2, border: `1px solid ${GOLD}33`, boxShadow: `0 10px 25px -10px ${NAVY}` }}>
+          <div className="text-sm" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+            "Apartamento na Barra até R$ 2.500?"
+          </div>
+        </div>
+      </div>
+      {/* orb Laura mini no centro */}
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+        <div className="relative h-20 w-20">
+          <div className="absolute inset-0 rounded-full blur-2xl opacity-70" style={{ background: `radial-gradient(circle, ${GOLD}, transparent 60%)` }} />
+          <div className="absolute inset-0 rounded-full flex items-center justify-center"
+            style={{
+              background: `radial-gradient(circle at 35% 30%, ${GOLD_SOFT}, ${GOLD} 60%, ${NAVY_2})`,
+              boxShadow: `0 0 40px ${GOLD}aa`,
+            }}>
+            <Sparkles className="h-7 w-7" style={{ color: NAVY }} />
+          </div>
+        </div>
+      </div>
+      {/* lado Laura — resposta com dado */}
+      <div className="absolute right-6 top-1/2 -translate-y-1/2 max-w-[260px]">
+        <div className="text-[10px] uppercase tracking-[0.25em] mb-2 text-right" style={{ color: GOLD_SOFT }}>Laura</div>
+        <div className="rounded-2xl rounded-br-sm px-5 py-3"
+          style={{ background: `linear-gradient(135deg, ${GOLD}22, ${GOLD}10)`, border: `1px solid ${GOLD}66`, boxShadow: `0 10px 25px -10px ${GOLD}55` }}>
+          <div className="text-xs opacity-80 mb-1.5">Encontrei 7 imóveis:</div>
+          <div className="space-y-1">
+            {["Cobertura · R$ 2.300", "2 quartos · R$ 1.900", "+ 5 opções"].map((t, i) => (
+              <div key={i} className="flex items-center gap-2 text-[11px]">
+                <CheckCircle2 className="h-3 w-3 flex-shrink-0" style={{ color: GOLD }} />
+                <span className="opacity-85">{t}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Ilustração: Laura — ação (waveform → registro confirmado)
+function IllusLauraAction() {
+  return (
+    <div className="relative w-full max-w-[760px] h-[240px] mx-auto rounded-3xl border overflow-hidden flex items-center justify-around px-10"
+      style={{ borderColor: `${GOLD}44`, background: `radial-gradient(circle at 50% 50%, ${NAVY_2}, ${NAVY})` }}>
+      {/* fala (waveform) */}
+      <div className="flex flex-col items-center gap-3">
+        <div className="text-[10px] uppercase tracking-[0.25em] opacity-60">Você fala</div>
+        <div className="flex items-end gap-1 h-16">
+          {[0.4, 0.7, 1, 0.55, 0.9, 0.3, 0.75, 0.5, 0.85, 0.4].map((h, i) => (
+            <div key={i} className="w-1.5 rounded-full"
+              style={{
+                height: `${h * 100}%`,
+                background: `linear-gradient(180deg, ${GOLD}, ${GOLD_SOFT})`,
+                animation: `pulse 1.${3 + (i % 5)}s ease-in-out ${i * 0.05}s infinite`,
+              }} />
+          ))}
+        </div>
+        <div className="text-xs opacity-70 italic" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+          "Visita com o João feita"
+        </div>
+      </div>
+      {/* seta de transformação */}
+      <div className="flex flex-col items-center">
+        <ArrowRight className="h-8 w-8" style={{ color: GOLD }} />
+        <div className="text-[9px] uppercase tracking-[0.3em] mt-1" style={{ color: GOLD_SOFT }}>Laura</div>
+      </div>
+      {/* registro confirmado */}
+      <div className="flex flex-col items-center gap-2">
+        <div className="text-[10px] uppercase tracking-[0.25em]" style={{ color: GOLD_SOFT }}>Registrado</div>
+        <div className="rounded-2xl px-5 py-4 min-w-[200px]"
+          style={{ background: NAVY_2, border: `1px solid ${GOLD}66`, boxShadow: `0 0 30px ${GOLD}44` }}>
+          <div className="flex items-center gap-2 mb-2">
+            <CheckCircle2 className="h-5 w-5" style={{ color: "#22c55e" }} />
+            <span className="text-xs font-semibold">Visita concluída</span>
+          </div>
+          <div className="text-[10px] opacity-70 space-y-0.5">
+            <div>Cliente: João Silva</div>
+            <div>Imóvel: Apto 304</div>
+            <div>Hora: 14:30</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Ilustração: Laura — confirmação (modal de confirmação com escudo)
+function IllusLauraTrust() {
+  return (
+    <div className="relative w-[400px] h-[420px] mx-auto">
+      <div className="absolute inset-0 rounded-full opacity-50 blur-3xl"
+        style={{ background: `radial-gradient(circle, ${GOLD}33, transparent 60%)` }} />
+      {/* card modal */}
+      <div className="relative mx-auto w-[360px] rounded-3xl overflow-hidden"
+        style={{ background: NAVY_2, border: `1px solid ${GOLD}55`, boxShadow: `0 30px 80px -20px ${GOLD}55, 0 0 0 1px ${GOLD}22` }}>
+        {/* header */}
+        <div className="px-6 pt-6 pb-4 flex items-center gap-3 border-b" style={{ borderColor: `${GOLD}22` }}>
+          <div className="h-10 w-10 rounded-full flex items-center justify-center"
+            style={{ background: `linear-gradient(135deg, ${GOLD}, ${GOLD_SOFT})`, color: NAVY, boxShadow: `0 0 20px ${GOLD}88` }}>
+            <ShieldCheck className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="text-xs uppercase tracking-[0.2em]" style={{ color: GOLD_SOFT }}>Confirmação</div>
+            <div className="text-sm font-semibold">Laura precisa do seu OK</div>
+          </div>
+        </div>
+        {/* body */}
+        <div className="px-6 py-5">
+          <div className="text-xs opacity-70 mb-3">Quer que eu registre esta visita?</div>
+          <div className="rounded-xl px-4 py-3 mb-4" style={{ background: NAVY, border: `1px solid ${GOLD}22` }}>
+            <div className="text-[11px] opacity-60 mb-1">Detalhes</div>
+            <div className="text-sm" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Visita com João · 14:30 · Apto 304</div>
+          </div>
+          <div className="flex gap-2">
+            <button className="flex-1 rounded-xl py-2.5 text-xs font-semibold"
+              style={{ background: `linear-gradient(135deg, ${GOLD}, ${GOLD_SOFT})`, color: NAVY, boxShadow: `0 8px 20px -6px ${GOLD}88` }}>
+              Confirmar
+            </button>
+            <button className="flex-1 rounded-xl py-2.5 text-xs"
+              style={{ background: NAVY, border: `1px solid ${GOLD}33`, color: GOLD_SOFT }}>
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+      {/* badge orbital */}
+      <div className="absolute -top-2 right-6 h-12 w-12 rounded-full flex items-center justify-center"
+        style={{ background: NAVY_2, border: `1px solid ${GOLD}88`, boxShadow: `0 0 24px ${GOLD}66` }}>
+        <CheckCircle2 className="h-6 w-6" style={{ color: GOLD }} />
+      </div>
+    </div>
+  );
+}
+
+// Ilustração: Fechamento — abertura de luz dourada (novo capítulo)
+function IllusFinale() {
+  return (
+    <div className="relative w-full max-w-[820px] h-[260px] mx-auto">
+      {/* halos concêntricos */}
+      {[0, 1, 2, 3, 4].map((i) => (
+        <div key={i} className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+          style={{
+            height: `${120 + i * 80}px`,
+            width: `${120 + i * 80}px`,
+            border: `1px solid ${GOLD}`,
+            opacity: 0.4 - i * 0.07,
+            boxShadow: i === 0 ? `0 0 60px ${GOLD}aa, inset 0 0 40px ${GOLD}44` : "none",
+          }} />
+      ))}
+      {/* raio de luz vertical */}
+      <div className="absolute left-1/2 top-0 bottom-0 -translate-x-1/2 w-[3px]"
+        style={{ background: `linear-gradient(180deg, transparent, ${GOLD}, transparent)`, boxShadow: `0 0 30px ${GOLD}, 0 0 60px ${GOLD}88` }} />
+      {/* feixe horizontal */}
+      <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-[2px]"
+        style={{ background: `linear-gradient(90deg, transparent, ${GOLD}cc, transparent)`, boxShadow: `0 0 20px ${GOLD}88` }} />
+      {/* núcleo dourado */}
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-20 w-20 rounded-full flex items-center justify-center"
+        style={{
+          background: `radial-gradient(circle at 35% 30%, #ffffff, ${GOLD_SOFT} 40%, ${GOLD} 80%)`,
+          boxShadow: `0 0 80px ${GOLD}, 0 0 160px ${GOLD}88`,
+        }}>
+        <Sparkles className="h-9 w-9" style={{ color: NAVY }} />
+      </div>
+      {/* partículas */}
+      {[15, 35, 55, 75, 85, 25, 65].map((x, i) => (
+        <div key={i} className="absolute h-1 w-1 rounded-full"
+          style={{ left: `${x}%`, top: `${20 + (i * 13) % 60}%`, background: GOLD, boxShadow: `0 0 8px ${GOLD}`, opacity: 0.7 }} />
+      ))}
+    </div>
+  );
+}
+
+
+
+
 
 // ---------------- Mockups (mockups visuais reais da identidade Nexus) ----------------
 
