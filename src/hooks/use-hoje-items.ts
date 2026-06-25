@@ -398,6 +398,7 @@ export function useHojeData() {
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "candidatos" }, () => {
         qc.invalidateQueries({ queryKey: ["hoje-candidatos", responsavelId] });
+        qc.invalidateQueries({ queryKey: ["hoje-admin-candidatos", uid, isAdministrativo] });
       })
       .on("postgres_changes", { event: "*", schema: "public", table: "reunioes" }, () => {
         qc.invalidateQueries({ queryKey: ["hoje-reunioes-inst", uid, isExec] });
@@ -405,11 +406,17 @@ export function useHojeData() {
       .on("postgres_changes", { event: "*", schema: "public", table: "reuniao_participantes" }, () => {
         qc.invalidateQueries({ queryKey: ["hoje-reunioes-inst", uid, isExec] });
       })
+      .on("postgres_changes", { event: "*", schema: "public", table: "contratos" }, () => {
+        qc.invalidateQueries({ queryKey: ["hoje-admin-contratos", uid, isAdministrativo] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "pagamentos" }, () => {
+        qc.invalidateQueries({ queryKey: ["hoje-admin-pagamentos", uid, isAdministrativo] });
+      })
       .subscribe();
     return () => {
       supabase.removeChannel(ch);
     };
-  }, [uid, qc, responsavelId, isExec]);
+  }, [uid, qc, responsavelId, isExec, isAdministrativo]);
 
   const total =
     (leadsSemContato.data?.length ?? 0) +
@@ -417,11 +424,16 @@ export function useHojeData() {
     (followup.data?.length ?? 0) +
     (chaves.data?.length ?? 0) +
     (candidatos.data?.length ?? 0) +
-    (reunioes.data?.length ?? 0);
+    (reunioes.data?.length ?? 0) +
+    (contratosVencendo.data?.length ?? 0) +
+    (pagamentosPendentes.data?.length ?? 0) +
+    (candidatosPendentesAdmin.data?.length ?? 0) +
+    (chavesAdmin.data?.length ?? 0);
 
   return {
     uid,
     isExec,
+    isAdministrativo,
     plantao: plantao.data ?? null,
     leadsSemContato: leadsSemContato.data ?? [],
     visitas: visitas.data ?? [],
@@ -429,6 +441,10 @@ export function useHojeData() {
     chaves: chaves.data ?? [],
     candidatos: candidatos.data ?? [],
     reunioes: reunioes.data ?? [],
+    contratosVencendo: contratosVencendo.data ?? [],
+    pagamentosPendentes: pagamentosPendentes.data ?? [],
+    candidatosPendentesAdmin: candidatosPendentesAdmin.data ?? [],
+    chavesAdmin: chavesAdmin.data ?? [],
     total,
     loading:
       plantao.isLoading ||
@@ -437,7 +453,11 @@ export function useHojeData() {
       followup.isLoading ||
       chaves.isLoading ||
       candidatos.isLoading ||
-      reunioes.isLoading,
+      reunioes.isLoading ||
+      contratosVencendo.isLoading ||
+      pagamentosPendentes.isLoading ||
+      candidatosPendentesAdmin.isLoading ||
+      chavesAdmin.isLoading,
   };
 }
 
