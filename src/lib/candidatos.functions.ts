@@ -182,7 +182,7 @@ export const submeterCandidato = createServerFn({ method: "POST" })
         .from("leads")
         .insert({
           nome: data.nome,
-          telefone: data.telefone,
+          telefone: telefoneClean,
           email: data.email || null,
           creci: data.creci || null,
           regiao: data.regiao,
