@@ -11,6 +11,28 @@ import {
   type CaptacaoExecutivo,
 } from "@/lib/captacao.constants";
 import logoAsset from "@/assets/logo_iuri_rodrigues_v2.png.asset.json";
+import { ShieldCheck, Cpu, Scale } from "lucide-react";
+
+const PILARES = [
+  {
+    icon: ShieldCheck,
+    titulo: "Força de uma marca que já conquistou o mercado",
+    texto:
+      "Anos de atuação consolidada no Rio de Janeiro e Baixada Fluminense construíram uma reputação que abre portas. Clientes reconhecem o nome, indicam para outros e voltam a fechar negócio com a Iuri Rodrigues Imóveis. Trabalhar com uma marca respeitada muda completamente a forma como você é recebido em cada negociação.",
+  },
+  {
+    icon: Cpu,
+    titulo: "Tecnologia que nenhuma outra imobiliária da região tem",
+    texto:
+      "Desenvolvemos o Sistema Nexus, nosso próprio ecossistema digital com inteligência artificial integrada, a Laura. Gerencie seus leads, consulte o portfólio completo de imóveis, acompanhe sua agenda e organize toda sua rotina em um só lugar, direto do celular. Enquanto outros corretores ainda usam planilha e WhatsApp pessoal para tudo, você trabalha com tecnologia de ponta.",
+  },
+  {
+    icon: Scale,
+    titulo: "Oportunidades distribuídas com justiça",
+    texto:
+      "Aqui, leads não ficam perdidos em grupo de WhatsApp nem favorecem quem grita mais alto. Nosso sistema distribui oportunidades de forma automática e equilibrada, e acompanha seu desempenho com metas e conquistas reconhecidas por todo o time. Seu crescimento aqui depende do seu esforço, não de sorte.",
+  },
+];
 
 const searchSchema = z.object({
   ref: z.enum(["barra", "recreio", "belford", "mesquita"]).optional(),
@@ -254,6 +276,69 @@ function SejaCorretorPage() {
           </p>
         </div>
       </section>
+
+      {/* 3 PILARES */}
+      <section className="px-6 py-20 md:py-24" style={{ background: "#0A0E1A" }}>
+        <div className="max-w-6xl mx-auto space-y-14">
+          <div className="text-center space-y-3">
+            <div className="text-[10px] md:text-xs uppercase tracking-[0.45em]" style={{ color: GOLD }}>
+              Três Pilares
+            </div>
+            <h2
+              className="text-3xl md:text-5xl leading-[1.1] max-w-3xl mx-auto"
+              style={{ fontFamily: SERIF, fontWeight: 500, letterSpacing: "-0.01em" }}
+            >
+              O que sustenta <em style={{ color: GOLD, fontStyle: "italic", fontWeight: 500 }}>cada corretor</em> do nosso time
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+            {PILARES.map(({ icon: Icon, titulo, texto }, i) => (
+              <article
+                key={i}
+                className="relative flex flex-col p-8 md:p-10 rounded-2xl h-full"
+                style={{
+                  background: "linear-gradient(180deg, #111A2E 0%, #0C1322 100%)",
+                  border: `1px solid ${GOLD}33`,
+                  boxShadow: "0 30px 80px -40px rgba(0,0,0,0.9)",
+                }}
+              >
+                <div
+                  className="flex items-center justify-center mb-7 rounded-xl"
+                  style={{
+                    width: 64,
+                    height: 64,
+                    background: `${GOLD}14`,
+                    border: `1px solid ${GOLD}55`,
+                  }}
+                >
+                  <Icon size={30} strokeWidth={1.5} style={{ color: GOLD }} />
+                </div>
+                <h3
+                  className="text-base md:text-lg uppercase mb-5 leading-snug"
+                  style={{
+                    color: GOLD,
+                    fontFamily: SERIF,
+                    fontWeight: 500,
+                    letterSpacing: "0.12em",
+                  }}
+                >
+                  {titulo}
+                </h3>
+                <div
+                  className="h-px w-12 mb-5"
+                  style={{ background: `${GOLD}66` }}
+                />
+                <p className="text-white/75 text-[15px] md:text-base leading-relaxed">
+                  {texto}
+                </p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+
 
       {/* STATS */}
       <section className="px-6 py-14" style={{ background: "#0A0E1A" }}>
