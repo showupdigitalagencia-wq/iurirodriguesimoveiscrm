@@ -481,7 +481,11 @@ const SLIDES: SlideDef[] = [
   {
     id: 1,
     title: "Capa",
-    pdf: { title: "Ecossistema Nexus", subtitle: "A tecnologia que trabalha por você." },
+    pdf: {
+      title: "Ecossistema Nexus",
+      subtitle: "A tecnologia que trabalha por você.",
+      body: "Esta é a história de uma forma diferente de ser corretor. Onde o esforço deixa de ser invisível, o tempo deixa de ser desperdiçado, e a tecnologia finalmente joga do seu lado. Bem-vindo ao Ecossistema Nexus.",
+    },
     render: () => (
       <SlideShell>
         <div className="space-y-10 text-center">
@@ -494,6 +498,9 @@ const SLIDES: SlideDef[] = [
           <p className="text-2xl md:text-3xl opacity-85 max-w-3xl mx-auto font-light" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
             A tecnologia que trabalha <span style={{ color: GOLD_SOFT }}>por você</span>.
           </p>
+          <BodyCopy className="mx-auto text-center">
+            Esta é a história de uma forma diferente de ser corretor. Onde o esforço deixa de ser invisível, o tempo deixa de ser desperdiçado, e a tecnologia finalmente joga do seu lado.
+          </BodyCopy>
         </div>
       </SlideShell>
     ),
@@ -506,7 +513,7 @@ const SLIDES: SlideDef[] = [
     pdf: {
       eyebrow: "Abertura",
       title: "Antes de falar de tecnologia, vamos falar de você.",
-      subtitle: "Do corretor que acorda cedo, atende em qualquer horário, e segura tudo nas próprias mãos.",
+      body: "Todo corretor carrega muito mais do que parece. Acorda cedo, atende em qualquer horário, segura a operação inteira na cabeça e ainda precisa parecer inteiro para o cliente. Antes de mostrar telas e funcionalidades, é justo reconhecer: a maior parte do peso do seu dia é invisível para o mercado — mas é real demais para você.",
     },
     render: () => (
       <SlideShell eyebrow="Abertura">
@@ -514,10 +521,9 @@ const SLIDES: SlideDef[] = [
           <Headline>
             Antes de falar de tecnologia,<br /><span style={{ color: GOLD }}>vamos falar de você</span>.
           </Headline>
-          <p className="text-2xl opacity-85 font-light leading-relaxed" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-            Do corretor que acorda cedo. Atende a qualquer hora.<br />
-            Segura tudo nas próprias mãos.
-          </p>
+          <BodyCopy>
+            Todo corretor carrega muito mais do que parece. Acorda cedo, atende em qualquer horário, segura a operação inteira na cabeça e ainda precisa parecer inteiro para o cliente. Antes de mostrar telas, é justo reconhecer: a maior parte do peso do seu dia é invisível — mas é real demais para você.
+          </BodyCopy>
         </div>
       </SlideShell>
     ),
@@ -530,7 +536,7 @@ const SLIDES: SlideDef[] = [
     pdf: {
       eyebrow: "A realidade · 1 de 4",
       title: "O lead chegou. Você demorou 20 minutos. Ele já estava com outro.",
-      subtitle: "Toda oportunidade tem um relógio rodando. E ninguém te avisa.",
+      body: "Todo corretor já viveu isso: um cliente interessado manda mensagem, a resposta demora alguns minutos, e quando finalmente alguém responde, o cliente já fechou com outro. Isso não é falta de competência — é falta de um sistema que avise na hora certa, do jeito certo, para a pessoa certa. Toda oportunidade tem um relógio rodando por trás, e quase ninguém te avisa quando ele começa.",
     },
     render: () => (
       <SlideShell eyebrow="A realidade · 1 de 4">
@@ -544,7 +550,9 @@ const SLIDES: SlideDef[] = [
               Você demorou <span style={{ color: GOLD }}>20 minutos</span>.<br />
               Ele já estava <span style={{ color: GOLD }}>com outro</span>.
             </Headline>
-            <p className="text-lg opacity-75 max-w-md">Toda oportunidade tem um relógio rodando. E ninguém te avisa.</p>
+            <BodyCopy>
+              Todo corretor já viveu isso: o cliente manda mensagem, a resposta demora poucos minutos, e quando alguém responde, ele já fechou com outro. Não é falta de competência — é falta de um sistema que avise na hora certa. Toda oportunidade tem um relógio rodando, e quase ninguém te avisa quando ele começa.
+            </BodyCopy>
           </div>
           <div className="flex justify-center">
             <div className="relative">
@@ -567,16 +575,19 @@ const SLIDES: SlideDef[] = [
     title: "O caos da rotina",
     pdf: {
       eyebrow: "A realidade · 2 de 4",
-      title: "Chave em uma gaveta. Follow-up num caderno. Imóvel num grupo de WhatsApp.",
-      subtitle: "Tudo espalhado. Tudo na sua cabeça. Tudo prestes a escapar.",
+      title: "Chave numa gaveta. Follow-up num caderno. Imóvel num grupo de WhatsApp.",
+      body: "A rotina do corretor virou uma colcha de retalhos: chave física numa gaveta, follow-up anotado num caderno, imóveis circulando em três grupos de WhatsApp diferentes, visitas em post-its. Cada pedaço de informação mora em um lugar, e nenhum deles conversa entre si. Quando algo escapa — e sempre escapa — quem paga o preço é você, sozinho, sem rastro do que aconteceu.",
     },
     render: () => (
       <SlideShell eyebrow="A realidade · 2 de 4">
-        <div className="space-y-10">
+        <div className="space-y-8">
           <Headline>
             <span style={{ color: GOLD }}>Tudo espalhado.</span><br />
             Tudo na sua cabeça.
           </Headline>
+          <BodyCopy>
+            A rotina virou uma colcha de retalhos: chave numa gaveta, follow-up num caderno, imóveis em três grupos de WhatsApp, visitas em post-its. Cada informação mora em um lugar, e nenhuma conversa entre si. Quando algo escapa — e sempre escapa — quem paga é você.
+          </BodyCopy>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
               { i: Key, t: "Chave numa gaveta" },
@@ -584,15 +595,12 @@ const SLIDES: SlideDef[] = [
               { i: MessageCircle, t: "Imóvel num grupo" },
               { i: CalendarDays, t: "Visita num post-it" },
             ].map((b, i) => (
-              <GlassCard key={i} className="text-center py-8">
+              <GlassCard key={i} className="text-center py-6">
                 <b.i className="h-9 w-9 mx-auto mb-3 opacity-60" />
                 <div className="text-sm opacity-80">{b.t}</div>
               </GlassCard>
             ))}
           </div>
-          <p className="text-xl opacity-75 text-center font-light" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-            E quando algo escapa, <span style={{ color: GOLD_SOFT }}>quem paga é você</span>.
-          </p>
         </div>
       </SlideShell>
     ),
@@ -605,7 +613,7 @@ const SLIDES: SlideDef[] = [
     pdf: {
       eyebrow: "A realidade · 3 de 4",
       title: "Você trabalhou o mês inteiro. E ninguém viu.",
-      subtitle: "Sem registro. Sem ranking. Sem reconhecimento.",
+      body: "Você atendeu dezenas de leads, fez visitas no fim de semana, recuperou cliente que tinha sumido, segurou negócio que ia desandar. E no fim do mês, nada disso aparece em lugar nenhum. Sem registro, sem ranking, sem reconhecimento — fica a sensação amarga de quem corre muito e nunca é visto correndo.",
     },
     render: () => (
       <SlideShell eyebrow="A realidade · 3 de 4">
@@ -618,7 +626,9 @@ const SLIDES: SlideDef[] = [
               Você trabalhou o mês inteiro.<br />
               E <span style={{ color: GOLD }}>ninguém viu</span>.
             </Headline>
-            <p className="text-lg opacity-75 max-w-lg">Sem registro do que foi feito. Sem ranking. Sem reconhecimento.</p>
+            <BodyCopy>
+              Você atendeu dezenas de leads, fez visitas no fim de semana, recuperou cliente que tinha sumido, segurou negócio que ia desandar. E nada disso aparece em lugar nenhum. Sem registro, sem ranking, sem reconhecimento — fica a sensação de quem corre muito e nunca é visto correndo.
+            </BodyCopy>
           </div>
           <div className="md:col-span-2 flex justify-center">
             <div className="relative w-56 h-56">
@@ -641,20 +651,19 @@ const SLIDES: SlideDef[] = [
     pdf: {
       eyebrow: "A realidade · 4 de 4",
       title: "Você está sozinho contra o mercado.",
-      subtitle: "Sem time por perto. Sem ferramenta que ajude. Só você.",
+      body: "O mercado imobiliário é coletivo no discurso, mas individual na prática. No fim, é você sozinho contra o cliente que sumiu, contra o concorrente que respondeu mais rápido, contra a planilha que ninguém atualizou. Não falta esforço — falta um time de tecnologia jogando ao seu lado, todos os dias, em silêncio.",
     },
     render: () => (
       <SlideShell eyebrow="A realidade · 4 de 4">
-        <div className="space-y-10 text-center max-w-4xl mx-auto">
+        <div className="space-y-8 text-center max-w-4xl mx-auto">
           <UserX className="h-16 w-16 mx-auto opacity-50" />
           <Headline>
             Você está <span style={{ color: GOLD }}>sozinho</span><br />
             contra o mercado.
           </Headline>
-          <p className="text-xl opacity-80 font-light" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-            Sem time por perto. Sem ferramenta que ajude.<br />
-            Só você — e a próxima ligação.
-          </p>
+          <BodyCopy className="mx-auto text-center">
+            O mercado é coletivo no discurso, mas individual na prática. No fim, é você sozinho contra o cliente que sumiu, contra o concorrente que respondeu mais rápido, contra a planilha que ninguém atualizou. Não falta esforço — falta um time de tecnologia jogando ao seu lado.
+          </BodyCopy>
         </div>
       </SlideShell>
     ),
@@ -666,21 +675,21 @@ const SLIDES: SlideDef[] = [
     title: "E se existisse outro jeito?",
     pdf: {
       title: "E se existisse um jeito completamente diferente de ser corretor?",
-      subtitle: "Não uma melhoria. Uma virada. Algo que esse mercado nunca viu.",
+      body: "E se o sistema avisasse você no segundo certo? E se cada visita, cada chave, cada conversa ficasse registrada sem esforço? E se você tivesse uma assistente trabalhando 24 horas, só para você? Não estamos falando de uma melhoria — estamos falando de uma virada. Algo que esse mercado, até agora, nunca viu.",
     },
     render: () => (
       <SlideShell>
-        <div className="space-y-12 text-center max-w-5xl mx-auto">
+        <div className="space-y-10 text-center max-w-5xl mx-auto">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] tracking-[0.4em] uppercase mx-auto" style={{ background: `${GOLD}15`, color: GOLD_SOFT, border: `1px solid ${GOLD}55` }}>
             <Lightbulb className="h-3.5 w-3.5" /> A virada
           </div>
-          <h2 className="text-6xl md:text-8xl font-semibold leading-[1]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+          <h2 className="text-6xl md:text-7xl font-semibold leading-[1]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
             E se existisse<br />
             um jeito <span style={{ color: GOLD }}>completamente<br />diferente</span> de ser corretor?
           </h2>
-          <p className="text-2xl opacity-80 font-light" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-            Não uma melhoria.<br /><span style={{ color: GOLD_SOFT }}>Uma virada.</span>
-          </p>
+          <BodyCopy className="mx-auto text-center">
+            E se o sistema avisasse você no segundo certo? E se cada visita, cada chave, cada conversa ficasse registrada sem esforço? E se você tivesse uma assistente trabalhando 24 horas, só para você? Não é melhoria — é uma virada.
+          </BodyCopy>
         </div>
       </SlideShell>
     ),
@@ -693,6 +702,7 @@ const SLIDES: SlideDef[] = [
     pdf: {
       eyebrow: "Visão geral",
       title: "Um ecossistema. Uma única experiência.",
+      body: "O Nexus não é uma coleção de ferramentas soltas — é um ecossistema único, onde Agenda, Portfólio, Laura IA, Central Hoje, Desempenho e Time conversam entre si o tempo todo. O que acontece em uma parte alimenta todas as outras automaticamente. Você passa a operar em um só lugar, com a sensação de que tudo finalmente faz sentido junto.",
       cards: [
         { title: "Agenda", body: "Você no controle do seu tempo." },
         { title: "Portfólio", body: "Todo o catálogo no bolso." },
@@ -704,11 +714,14 @@ const SLIDES: SlideDef[] = [
     },
     render: () => (
       <SlideShell eyebrow="Visão geral">
-        <div className="space-y-8">
+        <div className="space-y-6">
           <Headline>
             Um ecossistema.<br /><span style={{ color: GOLD }}>Uma única experiência</span>.
           </Headline>
-          <div className="grid grid-cols-3 gap-4">
+          <BodyCopy>
+            O Nexus não é uma coleção de ferramentas soltas — é um ecossistema único, onde Agenda, Portfólio, Laura IA, Central Hoje, Desempenho e Time conversam entre si o tempo todo. O que acontece em uma parte alimenta todas as outras automaticamente.
+          </BodyCopy>
+          <div className="grid grid-cols-3 gap-4 pt-2">
             {[
               { i: CalendarDays, t: "Agenda", d: "Você no controle do seu tempo" },
               { i: Building2, t: "Portfólio", d: "Todo o catálogo no bolso" },
@@ -729,36 +742,39 @@ const SLIDES: SlideDef[] = [
     ),
   },
 
-  // 9 — Autonomia na distribuição de leads
+  // 9 — Autonomia na distribuição de leads (com FLUXO VISUAL)
   {
     id: 9,
     title: "Sua agenda, suas regras",
     pdf: {
       eyebrow: "Autonomia",
       title: "Você define quando está disponível. O sistema respeita.",
-      subtitle: "Lead novo só chega nos momentos que você escolheu. Sem invasão. Sem desperdício.",
+      body: "Funciona assim: você marca na sua Agenda os horários em que está disponível para atender. Quando um lead novo chega, o sistema verifica essa disponibilidade automaticamente — e só te entrega a oportunidade se você estiver dentro da sua janela. Nada de invasão fora de hora, nada de lead apodrecendo porque ninguém viu. É a primeira vez que distribuição de leads respeita a sua vida, e não o contrário.",
     },
     render: () => (
       <SlideShell eyebrow="Autonomia">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
-          <div className="space-y-6">
-            <Headline>
-              Sua agenda,<br /><span style={{ color: GOLD }}>suas regras</span>.
-            </Headline>
-            <p className="text-lg opacity-85 max-w-md">
-              Você marca quando está disponível.<br />
-              O sistema só te envia leads nesses momentos.
-            </p>
-            <div className="space-y-2 pt-2">
-              {["Sem invasão fora do horário", "Sem desperdício de oportunidade", "Você no comando do seu tempo"].map((b, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <CheckCircle2 className="h-5 w-5 flex-shrink-0" style={{ color: GOLD }} />
-                  <span className="text-sm opacity-90">{b}</span>
-                </div>
-              ))}
+        <div className="space-y-8">
+          <div className="grid md:grid-cols-2 gap-10 items-start">
+            <div className="space-y-5">
+              <Headline>
+                Sua agenda,<br /><span style={{ color: GOLD }}>suas regras</span>.
+              </Headline>
+              <BodyCopy>
+                Você marca na Agenda os horários em que está disponível. Quando um lead novo chega, o sistema verifica essa disponibilidade — e só te entrega a oportunidade se você estiver dentro da sua janela. Nada de invasão fora de hora, nada de lead apodrecendo porque ninguém viu.
+              </BodyCopy>
             </div>
+            <div className="flex justify-center"><MockAgendaCard /></div>
           </div>
-          <div className="flex justify-center"><MockAgendaCard /></div>
+          <div className="pt-2">
+            <div className="text-[11px] tracking-[0.35em] uppercase mb-4 text-center" style={{ color: GOLD_SOFT }}>Como funciona</div>
+            <FlowDiagram
+              steps={[
+                { icon: MessageCircle, label: "Lead chega", sub: "WhatsApp, site, anúncio" },
+                { icon: CalendarDays, label: "Sistema confere", sub: "sua disponibilidade" },
+                { icon: Bell, label: "Você é avisado", sub: "no momento certo" },
+              ]}
+            />
+          </div>
         </div>
       </SlideShell>
     ),
@@ -771,6 +787,7 @@ const SLIDES: SlideDef[] = [
     pdf: {
       eyebrow: "Prova real",
       title: "Seus leads, organizados para você.",
+      body: "Esta é a tela real que o corretor vê todos os dias. Cada lead recebido aparece com origem, horário e status — sem precisar abrir três telas, sem precisar perguntar para ninguém. Você abre o app e, em poucos segundos, sabe exatamente o que precisa fazer agora.",
     },
     render: () => (
       <SlideShell eyebrow="Prova real">
@@ -780,8 +797,11 @@ const SLIDES: SlideDef[] = [
             <h3 className="text-4xl md:text-5xl font-semibold leading-tight" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
               Seus leads,<br /><span style={{ color: GOLD }}>organizados</span> para você.
             </h3>
+            <BodyCopy>
+              Cada lead aparece com origem, horário e status. Sem abrir três telas, sem perguntar a ninguém. Você abre o app e, em segundos, sabe o que precisa fazer agora.
+            </BodyCopy>
           </div>
-          <div className="md:col-span-3 flex justify-center scale-110"><MockPlantaoCard /></div>
+          <div className="md:col-span-3 flex justify-center scale-105"><MockPlantaoCard /></div>
         </div>
       </SlideShell>
     ),
@@ -794,18 +814,17 @@ const SLIDES: SlideDef[] = [
     pdf: {
       eyebrow: "Portfólio",
       title: "Todo o catálogo, sempre atualizado, no seu bolso.",
-      subtitle: "Você nunca mais perde uma venda por não ter o imóvel certo na hora certa.",
+      body: "Cada imóvel, com fotos, descrição completa, valor e disponibilidade — atualizado em tempo real e sempre na palma da sua mão. Você pode filtrar por bairro, faixa de preço, número de quartos ou características específicas em segundos. Nunca mais aquela cena de perder uma venda porque você não tinha o imóvel certo na hora em que o cliente perguntou.",
     },
     render: () => (
       <SlideShell eyebrow="Portfólio">
-        <div className="space-y-8 max-w-5xl">
+        <div className="space-y-6 max-w-5xl">
           <Headline>
             Todo o catálogo<br /><span style={{ color: GOLD }}>no seu bolso</span>.
           </Headline>
-          <p className="text-xl opacity-85 max-w-2xl font-light" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-            Sempre atualizado. Sempre com você.<br />
-            Você nunca mais perde uma venda por não ter o imóvel certo na hora certa.
-          </p>
+          <BodyCopy>
+            Cada imóvel, com fotos, descrição, valor e disponibilidade — atualizado em tempo real, sempre na palma da sua mão. Você filtra por bairro, faixa de preço, quartos ou características em segundos. Nunca mais perder uma venda por não ter o imóvel certo na hora certa.
+          </BodyCopy>
           <div className="flex gap-3 pt-2">
             {[Search, MapPin, Layers, ImageIcon].map((I, i) => (
               <div key={i} className="h-12 w-12 rounded-xl flex items-center justify-center" style={{ background: `${GOLD}15`, border: `1px solid ${GOLD}44` }}>
@@ -822,17 +841,24 @@ const SLIDES: SlideDef[] = [
   {
     id: 12,
     title: "Prova real · Imóvel",
-    pdf: { eyebrow: "Prova real", title: "Cada imóvel, pronto para impressionar." },
+    pdf: {
+      eyebrow: "Prova real",
+      title: "Cada imóvel, pronto para impressionar.",
+      body: "Esta é a ficha real de um imóvel do portfólio. Foto de capa, características, localização, valor — tudo apresentado de forma que o cliente entenda na primeira olhada. É a diferença entre mandar um print desbotado num grupo e enviar uma apresentação à altura da sua marca.",
+    },
     render: () => (
       <SlideShell eyebrow="Prova real">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
+        <div className="grid md:grid-cols-2 gap-10 items-center">
           <div className="space-y-4">
             <div className="text-[11px] tracking-[0.35em] uppercase" style={{ color: GOLD_SOFT }}>Tela real</div>
             <h3 className="text-4xl md:text-5xl font-semibold leading-tight" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
               Cada imóvel,<br />pronto para <span style={{ color: GOLD }}>impressionar</span>.
             </h3>
+            <BodyCopy>
+              Foto, características, localização, valor — tudo apresentado de forma que o cliente entenda na primeira olhada. A diferença entre mandar um print desbotado e enviar uma apresentação à altura da sua marca.
+            </BodyCopy>
           </div>
-          <div className="flex justify-center scale-110"><MockImovelCard /></div>
+          <div className="flex justify-center scale-105"><MockImovelCard /></div>
         </div>
       </SlideShell>
     ),
@@ -845,11 +871,11 @@ const SLIDES: SlideDef[] = [
     pdf: {
       eyebrow: "Compartilhamento",
       title: "Impressione o cliente na hora. Em um toque.",
-      subtitle: "Foto, descrição, valor — tudo pronto. Você só envia.",
+      body: "Você está em uma conversa e o cliente pede mais um imóvel parecido? Um toque no botão de compartilhar e o anúncio completo — foto, descrição e valor — vai direto para o WhatsApp dele, com a sua marca. Sem copiar e colar, sem montar mensagem na mão, sem fricção. A velocidade de resposta vira o seu maior diferencial.",
     },
     render: () => (
       <SlideShell eyebrow="Compartilhamento">
-        <div className="space-y-10 text-center max-w-4xl mx-auto">
+        <div className="space-y-8 text-center max-w-4xl mx-auto">
           <div className="flex items-center justify-center gap-6">
             <div className="h-20 w-20 rounded-2xl flex items-center justify-center shadow-2xl" style={{ background: `linear-gradient(135deg, ${GOLD}, ${GOLD_SOFT})`, color: NAVY }}>
               <Share2 className="h-10 w-10" />
@@ -862,36 +888,35 @@ const SLIDES: SlideDef[] = [
           <Headline>
             Impressione o cliente<br /><span style={{ color: GOLD }}>na hora</span>.
           </Headline>
-          <p className="text-xl opacity-80 font-light" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-            Foto, descrição, valor — tudo pronto.<br />Você só envia.
-          </p>
+          <BodyCopy className="mx-auto text-center">
+            Um toque e o anúncio completo — foto, descrição, valor — vai direto para o WhatsApp do cliente, com a sua marca. Sem copiar e colar, sem montar mensagem na mão. A velocidade de resposta vira o seu maior diferencial.
+          </BodyCopy>
         </div>
       </SlideShell>
     ),
   },
 
-  // 14 — Conheça a Laura (impacto)
+  // 14 — Conheça a Laura
   {
     id: 14,
     title: "Conheça a Laura",
     pdf: {
       title: "Conheça a Laura.",
-      subtitle: "Sua assistente pessoal de Inteligência Artificial. Disponível 24 horas. Só para você.",
+      body: "Laura é uma Inteligência Artificial criada para trabalhar do seu lado, 24 horas por dia. Ela conhece o seu portfólio, a sua agenda, os seus leads e o seu jeito de operar. Você conversa com ela em linguagem natural — como conversa com um colega de equipe — e ela responde, registra, organiza e age. É como ter um braço direito que nunca dorme, nunca falha em lembrar de uma tarefa, e só age depois que você confirma.",
     },
     render: () => (
       <SlideShell>
-        <div className="grid md:grid-cols-2 gap-12 items-center">
-          <div className="space-y-8">
+        <div className="grid md:grid-cols-2 gap-10 items-center">
+          <div className="space-y-6">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] tracking-[0.4em] uppercase" style={{ background: `${GOLD}15`, color: GOLD_SOFT, border: `1px solid ${GOLD}55` }}>
               <Sparkles className="h-3.5 w-3.5" /> O diferencial
             </div>
-            <h2 className="text-7xl md:text-8xl font-semibold leading-[0.95]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+            <h2 className="text-6xl md:text-7xl font-semibold leading-[0.95]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
               Conheça a<br /><span style={{ color: GOLD }}>Laura</span>.
             </h2>
-            <p className="text-xl opacity-85 font-light max-w-md" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-              Sua assistente pessoal de Inteligência Artificial.<br />
-              <span style={{ color: GOLD_SOFT }}>Disponível 24 horas. Só para você.</span>
-            </p>
+            <BodyCopy>
+              Laura é uma Inteligência Artificial criada para trabalhar do seu lado, 24 horas por dia. Ela conhece seu portfólio, sua agenda, seus leads e o seu jeito de operar. Você conversa em linguagem natural — como conversa com um colega — e ela responde, registra e age.
+            </BodyCopy>
           </div>
           <div className="flex justify-center">
             <div className="relative">
@@ -906,13 +931,14 @@ const SLIDES: SlideDef[] = [
     ),
   },
 
-  // 15 — Laura entende você (consulta)
+  // 15 — Laura entende você
   {
     id: 15,
     title: "Laura entende você",
     pdf: {
       eyebrow: "Laura · Consulta",
       title: "Pergunte com suas palavras.",
+      body: "Você não precisa decorar comando, abrir tela, lembrar onde clicar. Pergunta como falaria com um colega — em português natural — e a Laura responde com o dado certo, na hora. Ela consulta portfólio, agenda, leads e metas em segundos, e devolve resposta direta, sem rodeio. O sistema deixa de ser um lugar onde você procura e passa a ser uma conversa.",
       bullets: [
         "Temos apartamento na Barra até R$ 2.500?",
         "Qual minha meta esse mês?",
@@ -921,17 +947,20 @@ const SLIDES: SlideDef[] = [
     },
     render: () => (
       <SlideShell eyebrow="Laura · Consulta">
-        <div className="space-y-8">
+        <div className="space-y-6">
           <Headline>
             Pergunte com<br /><span style={{ color: GOLD }}>suas palavras</span>.
           </Headline>
+          <BodyCopy>
+            Você não precisa decorar comando nem lembrar onde clicar. Pergunta como falaria com um colega — em português natural — e a Laura responde com o dado certo, na hora. Ela consulta portfólio, agenda, leads e metas em segundos.
+          </BodyCopy>
           <div className="space-y-3 max-w-3xl">
             {[
               "Temos apartamento na Barra até R$ 2.500?",
               "Qual minha meta esse mês?",
               "Quais leads ainda não atendi hoje?",
             ].map((q, i) => (
-              <div key={i} className="flex items-start gap-3 rounded-2xl px-5 py-4" style={{ background: `${GOLD}15`, border: `1px solid ${GOLD}44` }}>
+              <div key={i} className="flex items-start gap-3 rounded-2xl px-5 py-3" style={{ background: `${GOLD}15`, border: `1px solid ${GOLD}44` }}>
                 <MessageCircle className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: GOLD }} />
                 <div className="text-lg" style={{ fontFamily: "'Cormorant Garamond', serif" }}>"{q}"</div>
               </div>
@@ -942,30 +971,34 @@ const SLIDES: SlideDef[] = [
     ),
   },
 
-  // 16 — Laura trabalha por você (ação)
+  // 16 — Laura trabalha por você
   {
     id: 16,
     title: "Laura trabalha por você",
     pdf: {
       eyebrow: "Laura · Ação",
       title: "Diga o que aconteceu. Ela registra.",
+      body: "Você terminou uma visita, retirou uma chave, mudou sua disponibilidade — basta contar para a Laura, do jeito que você falaria para um colega. Ela entende, transforma em registro no sistema e devolve uma confirmação para você revisar. Você nunca mais perde tempo preenchendo formulário no fim do dia tentando lembrar o que aconteceu de manhã.",
       bullets: [
         "A visita com o João foi realizada.",
         "Estou retirando a chave do apto 304 (com foto).",
-        "Atualize minha agenda: seg a sex, 10h às 18h.",
+        "Estou disponível segunda a sexta, 10h às 18h — atualize minha agenda.",
       ],
     },
     render: () => (
       <SlideShell eyebrow="Laura · Ação">
-        <div className="space-y-8">
+        <div className="space-y-6">
           <Headline>
             Diga o que aconteceu.<br /><span style={{ color: GOLD }}>Ela registra</span>.
           </Headline>
+          <BodyCopy>
+            Você terminou uma visita, retirou uma chave, mudou sua disponibilidade — basta contar para a Laura. Ela entende, transforma em registro no sistema e devolve confirmação para você revisar. Acabou aquela história de preencher formulário no fim do dia.
+          </BodyCopy>
           <div className="grid md:grid-cols-3 gap-4">
             {[
               { i: CheckCircle2, q: "A visita com o João foi realizada." },
               { i: Camera, q: "Estou retirando a chave do apto 304." },
-              { i: CalendarDays, q: "Atualize minha agenda: seg-sex, 10-18h." },
+              { i: CalendarDays, q: "Disponível seg a sex, 10h-18h — atualize minha agenda." },
             ].map((c, i) => (
               <GlassCard key={i}>
                 <c.i className="h-7 w-7 mb-3" style={{ color: GOLD }} />
@@ -973,9 +1006,6 @@ const SLIDES: SlideDef[] = [
               </GlassCard>
             ))}
           </div>
-          <p className="text-center text-lg opacity-80 font-light pt-2" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-            Você fala. <span style={{ color: GOLD_SOFT }}>Ela faz</span>.
-          </p>
         </div>
       </SlideShell>
     ),
@@ -988,28 +1018,27 @@ const SLIDES: SlideDef[] = [
     pdf: {
       eyebrow: "Laura · Confiança",
       title: "Ela só age depois que você confirma.",
-      bullets: [
-        "Confirma toda ação sensível antes de executar.",
-        "Respeita o que é seu — não cruza limites.",
-        "Disponível 24h, sem fila, sem espera.",
-      ],
+      body: "Toda ação sensível — registrar visita, atualizar disponibilidade, encerrar atendimento — passa por uma confirmação sua antes de virar realidade no sistema. A Laura nunca decide sozinha pelo que é seu. Ela trabalha 24 horas, sem fila e sem espera, mas a última palavra é sempre do corretor. É inteligência artificial com o seu lado — não no lugar do seu lado.",
     },
     render: () => (
       <SlideShell eyebrow="Laura · Confiança">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
-          <div className="space-y-6">
+        <div className="grid md:grid-cols-2 gap-10 items-center">
+          <div className="space-y-5">
             <Headline>
               Ela só age depois<br />que <span style={{ color: GOLD }}>você confirma</span>.
             </Headline>
-            <div className="space-y-3 pt-2">
+            <BodyCopy>
+              Toda ação sensível passa por uma confirmação sua antes de virar realidade no sistema. A Laura nunca decide sozinha pelo que é seu. Trabalha 24 horas, sem fila e sem espera — mas a última palavra é sempre do corretor.
+            </BodyCopy>
+            <div className="space-y-2.5 pt-1">
               {[
                 { i: ShieldCheck, t: "Confirma antes de executar" },
                 { i: CheckCircle2, t: "Respeita o que é seu" },
                 { i: Clock, t: "Disponível 24h, sem fila" },
               ].map((b, i) => (
                 <div key={i} className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg flex items-center justify-center" style={{ background: `${GOLD}15`, border: `1px solid ${GOLD}44` }}>
-                    <b.i className="h-5 w-5" style={{ color: GOLD }} />
+                  <div className="h-9 w-9 rounded-lg flex items-center justify-center" style={{ background: `${GOLD}15`, border: `1px solid ${GOLD}44` }}>
+                    <b.i className="h-4.5 w-4.5" style={{ color: GOLD }} />
                   </div>
                   <span className="text-base opacity-90">{b.t}</span>
                 </div>
@@ -1029,18 +1058,17 @@ const SLIDES: SlideDef[] = [
     pdf: {
       eyebrow: "Central Hoje",
       title: "Tudo que importa, sem esforço de organizar.",
-      subtitle: "O que precisa da sua atenção agora — em uma só tela.",
+      body: "A Central Hoje é a primeira tela que você vê quando abre o app: uma curadoria automática do que precisa da sua atenção agora. Leads sem primeiro contato, visitas marcadas para o dia, follow-ups vencendo, chaves para devolver — tudo reunido em uma só tela, sem você precisar ir atrás. O sistema organiza a sua manhã antes de você sentar.",
     },
     render: () => (
       <SlideShell eyebrow="Central Hoje">
-        <div className="space-y-8 max-w-4xl">
+        <div className="space-y-6 max-w-4xl">
           <Headline>
             Tudo que importa,<br /><span style={{ color: GOLD }}>em uma tela só</span>.
           </Headline>
-          <p className="text-xl opacity-85 max-w-2xl font-light" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-            O que precisa da sua atenção agora.<br />
-            Sem você ter que procurar.
-          </p>
+          <BodyCopy>
+            A Central Hoje é a primeira tela quando você abre o app: uma curadoria automática do que precisa da sua atenção agora. Leads sem primeiro contato, visitas do dia, follow-ups vencendo, chaves para devolver — tudo reunido sem você precisar ir atrás. O sistema organiza a sua manhã antes de você sentar.
+          </BodyCopy>
         </div>
       </SlideShell>
     ),
@@ -1050,7 +1078,11 @@ const SLIDES: SlideDef[] = [
   {
     id: 19,
     title: "Prova real · Hoje",
-    pdf: { eyebrow: "Prova real", title: "O seu dia, pronto quando você abre o app." },
+    pdf: {
+      eyebrow: "Prova real",
+      title: "O seu dia, pronto quando você abre o app.",
+      body: "Esta é a tela real da Central Hoje, do jeito que ela aparece quando você abre o app pela manhã. Cada bloco é uma frente de ação prioritária do seu dia, com contexto suficiente para você decidir em segundos. É o fim daquela sensação de começar o dia sem saber por onde pegar.",
+    },
     render: () => (
       <SlideShell eyebrow="Prova real">
         <div className="space-y-4">
@@ -1058,7 +1090,10 @@ const SLIDES: SlideDef[] = [
           <h3 className="text-3xl md:text-4xl font-semibold text-center" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
             O seu dia, <span style={{ color: GOLD }}>pronto</span> quando você abre o app.
           </h3>
-          <div className="flex justify-center pt-4">
+          <BodyCopy className="mx-auto text-center">
+            Cada bloco é uma frente de ação prioritária, com contexto para você decidir em segundos. É o fim daquela sensação de começar o dia sem saber por onde pegar.
+          </BodyCopy>
+          <div className="flex justify-center pt-3">
             <div className="w-full max-w-3xl"><MockHojeCard /></div>
           </div>
         </div>
@@ -1073,18 +1108,17 @@ const SLIDES: SlideDef[] = [
     pdf: {
       eyebrow: "Desempenho",
       title: "Seu funil. Seu tempo de resposta. Sua evolução.",
-      subtitle: "Tudo medido, em tempo real, só para você ver.",
+      body: "Cada lead que entra, cada contato feito, cada visita realizada — tudo é medido em tempo real e devolvido para você de forma simples e visual. Você vê o seu próprio funil, o seu tempo médio de resposta, e como está evoluindo de uma semana para a outra. É a primeira vez que o esforço do corretor vira informação útil — para o próprio corretor, primeiro.",
     },
     render: () => (
       <SlideShell eyebrow="Desempenho">
-        <div className="space-y-8 max-w-5xl">
+        <div className="space-y-6 max-w-5xl">
           <Headline>
             Seu funil. Seu tempo.<br /><span style={{ color: GOLD }}>Sua evolução</span>.
           </Headline>
-          <p className="text-xl opacity-85 max-w-2xl font-light" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-            Tudo medido, em tempo real,<br />
-            só para você acompanhar.
-          </p>
+          <BodyCopy>
+            Cada lead que entra, cada contato feito, cada visita realizada é medido em tempo real e devolvido de forma simples e visual. Você vê o próprio funil, o tempo médio de resposta, e como evolui de uma semana para a outra. Pela primeira vez, o esforço do corretor vira informação útil — para o próprio corretor, primeiro.
+          </BodyCopy>
           <div className="flex gap-3 pt-2">
             {[TrendingUp, BarChart3, Target, Clock].map((I, i) => (
               <div key={i} className="h-12 w-12 rounded-xl flex items-center justify-center" style={{ background: `${GOLD}15`, border: `1px solid ${GOLD}44` }}>
@@ -1101,7 +1135,11 @@ const SLIDES: SlideDef[] = [
   {
     id: 21,
     title: "Prova real · Relatório",
-    pdf: { eyebrow: "Prova real", title: "Sua performance, em uma olhada." },
+    pdf: {
+      eyebrow: "Prova real",
+      title: "Sua performance, em uma olhada.",
+      body: "Esta é a tela real do seu relatório pessoal. Em uma única olhada você entende como está o seu mês: leads atendidos, taxa de conversão, evolução em relação ao período anterior. Nada de planilha complicada — informação direta, da forma como o corretor precisa enxergar.",
+    },
     render: () => (
       <SlideShell eyebrow="Prova real">
         <div className="space-y-4">
@@ -1109,7 +1147,10 @@ const SLIDES: SlideDef[] = [
           <h3 className="text-3xl md:text-4xl font-semibold text-center" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
             Sua performance, <span style={{ color: GOLD }}>em uma olhada</span>.
           </h3>
-          <div className="flex justify-center pt-4">
+          <BodyCopy className="mx-auto text-center">
+            Em uma única olhada você entende o seu mês: leads atendidos, taxa de conversão, evolução em relação ao período anterior. Nada de planilha — informação direta, do jeito que o corretor precisa enxergar.
+          </BodyCopy>
+          <div className="flex justify-center pt-3">
             <div className="w-full max-w-3xl"><MockDashboard /></div>
           </div>
         </div>
@@ -1124,6 +1165,7 @@ const SLIDES: SlideDef[] = [
     pdf: {
       eyebrow: "Metas e Conquistas",
       title: "Cada esforço seu, finalmente reconhecido.",
+      body: "O sistema acompanha suas metas em tempo real e celebra suas conquistas automaticamente: resposta relâmpago, top de visitas da semana, sequência de atendimentos sem falha. Cada marco vira uma badge no seu perfil e uma postagem no feed do time. É a transformação do esforço silencioso em conquista visível — primeiro para você, depois para o grupo.",
       cards: [
         { title: "Metas", body: "Progresso em tempo real." },
         { title: "Badges", body: "Resposta relâmpago, top do mês, mais visitas." },
@@ -1132,18 +1174,21 @@ const SLIDES: SlideDef[] = [
     },
     render: () => (
       <SlideShell eyebrow="Metas e Conquistas">
-        <div className="space-y-8">
+        <div className="space-y-6">
           <Headline>
             Cada esforço seu,<br /><span style={{ color: GOLD }}>reconhecido</span>.
           </Headline>
-          <div className="grid grid-cols-3 gap-4">
+          <BodyCopy>
+            O sistema acompanha suas metas em tempo real e celebra conquistas automaticamente: resposta relâmpago, top de visitas da semana, sequência sem falha. Cada marco vira badge no seu perfil e postagem no feed do time. Esforço silencioso vira conquista visível.
+          </BodyCopy>
+          <div className="grid grid-cols-3 gap-4 pt-2">
             {[
               { i: Target, t: "Metas", d: "Progresso em tempo real" },
               { i: Award, t: "Badges", d: "Conquistas automáticas" },
               { i: Trophy, t: "Ranking", d: "Time crescendo junto" },
             ].map((c, i) => (
-              <GlassCard key={i} className="text-center py-7">
-                <c.i className="h-10 w-10 mx-auto mb-3" style={{ color: GOLD }} />
+              <GlassCard key={i} className="text-center py-6">
+                <c.i className="h-9 w-9 mx-auto mb-3" style={{ color: GOLD }} />
                 <div className="text-xl font-semibold mb-1">{c.t}</div>
                 <div className="text-xs opacity-70">{c.d}</div>
               </GlassCard>
@@ -1161,18 +1206,17 @@ const SLIDES: SlideDef[] = [
     pdf: {
       eyebrow: "Cultura",
       title: "Você não vende sozinho. Você é parte de um time.",
-      subtitle: "Feed, stories, conquistas — cultura viva, todos os dias.",
+      body: "O Nexus tem um feed interno e stories, no estilo das redes sociais que você já usa. Cada conquista, cada visita marcante, cada chave entregue pode virar um post para o time inteiro ver. Não é vitrine — é cultura viva: corretor reconhece corretor, todo dia, sem depender de reunião mensal para sentir que pertence.",
     },
     render: () => (
       <SlideShell eyebrow="Cultura">
-        <div className="space-y-8 max-w-5xl">
+        <div className="space-y-6 max-w-5xl">
           <Headline>
             Você não vende sozinho.<br /><span style={{ color: GOLD }}>Você é time</span>.
           </Headline>
-          <p className="text-xl opacity-85 max-w-2xl font-light" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-            Feed, stories, conquistas compartilhadas.<br />
-            Cultura viva — todos os dias.
-          </p>
+          <BodyCopy>
+            O Nexus tem feed interno e stories, no estilo das redes que você já usa. Cada conquista, visita marcante, chave entregue pode virar post para o time ver. Não é vitrine — é cultura viva: corretor reconhece corretor, todo dia.
+          </BodyCopy>
           <div className="flex gap-3 pt-2">
             {[Newspaper, Heart, MessageCircle, Trophy].map((I, i) => (
               <div key={i} className="h-12 w-12 rounded-xl flex items-center justify-center" style={{ background: `${GOLD}15`, border: `1px solid ${GOLD}44` }}>
@@ -1189,17 +1233,24 @@ const SLIDES: SlideDef[] = [
   {
     id: 24,
     title: "Prova real · Feed",
-    pdf: { eyebrow: "Prova real", title: "Conquistas compartilhadas. Time conectado." },
+    pdf: {
+      eyebrow: "Prova real",
+      title: "Conquistas compartilhadas. Time conectado.",
+      body: "Esta é a tela real do feed do time. Quando alguém bate meta, fecha venda, recebe uma badge, o sistema avisa todo mundo de forma natural — não é spam, é vibração de equipe. O resultado: um clima de time forte, mesmo entre corretores que quase não se cruzam no escritório.",
+    },
     render: () => (
       <SlideShell eyebrow="Prova real">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
+        <div className="grid md:grid-cols-2 gap-10 items-center">
           <div className="space-y-4">
             <div className="text-[11px] tracking-[0.35em] uppercase" style={{ color: GOLD_SOFT }}>Tela real</div>
             <h3 className="text-4xl md:text-5xl font-semibold leading-tight" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
               Conquista de um,<br /><span style={{ color: GOLD }}>orgulho de todos</span>.
             </h3>
+            <BodyCopy>
+              Quando alguém bate meta, fecha venda, recebe uma badge, o sistema avisa todo mundo de forma natural — não é spam, é vibração de equipe. Clima de time forte, mesmo entre quem quase não se cruza no escritório.
+            </BodyCopy>
           </div>
-          <div className="flex justify-center scale-110"><MockFeedPost /></div>
+          <div className="flex justify-center scale-105"><MockFeedPost /></div>
         </div>
       </SlideShell>
     ),
@@ -1212,21 +1263,19 @@ const SLIDES: SlideDef[] = [
     pdf: {
       eyebrow: "Mobile",
       title: "No celular. Como app de verdade. Em qualquer lugar.",
-      subtitle: "Sem instalar pela loja. Em segundos. Pronto para usar.",
+      body: "O Nexus funciona como um aplicativo de verdade no seu celular: ícone na tela inicial, notificações, abertura instantânea — sem precisar entrar em loja de aplicativos nem passar por instalação demorada. Em poucos segundos, está pronto para usar no Android, iPhone ou tablet. A liberdade de trabalhar de qualquer lugar, com a fluidez de um app nativo.",
     },
     render: () => (
       <SlideShell eyebrow="Mobile">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
-          <div className="space-y-6">
+        <div className="grid md:grid-cols-2 gap-10 items-center">
+          <div className="space-y-5">
             <Headline>
               No celular.<br /><span style={{ color: GOLD }}>Em qualquer lugar</span>.
             </Headline>
-            <p className="text-lg opacity-85 max-w-md font-light" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-              Funciona como app de verdade.<br />
-              Sem loja, sem instalação complicada.<br />
-              Em segundos — pronto para usar.
-            </p>
-            <div className="flex items-center gap-2 text-xs opacity-70">
+            <BodyCopy>
+              Funciona como app de verdade: ícone na tela inicial, notificações, abertura instantânea — sem loja, sem instalação demorada. Em segundos, pronto para usar no Android, iPhone ou tablet. Liberdade de trabalhar de qualquer lugar, com fluidez de app nativo.
+            </BodyCopy>
+            <div className="flex items-center gap-2 text-xs opacity-70 pt-1">
               <Smartphone className="h-4 w-4" /> Android · iPhone · Tablet
             </div>
           </div>
@@ -1242,11 +1291,11 @@ const SLIDES: SlideDef[] = [
     title: "Você é um dos próximos?",
     pdf: {
       title: "Isso não é mais uma ferramenta. É uma forma diferente de ser corretor.",
-      subtitle: "Você é um dos próximos?",
+      body: "O Ecossistema Nexus não nasceu para substituir o corretor — nasceu para devolver a ele o tempo, o reconhecimento e a tranquilidade que esse mercado costuma roubar. Quem entra agora não está testando um software: está escolhendo uma forma diferente de exercer a profissão. A pergunta que fica é simples: você é um dos próximos?",
     },
     render: () => (
       <SlideShell>
-        <div className="space-y-12 text-center max-w-5xl mx-auto">
+        <div className="space-y-10 text-center max-w-5xl mx-auto">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] tracking-[0.4em] uppercase mx-auto" style={{ background: "rgba(212,175,55,0.12)", color: GOLD_SOFT, border: `1px solid ${GOLD}55` }}>
             <Sparkles className="h-3.5 w-3.5" /> Ecossistema Nexus
           </div>
@@ -1254,10 +1303,13 @@ const SLIDES: SlideDef[] = [
             Isso não é mais uma ferramenta.<br />
             <span style={{ color: GOLD }}>É uma forma diferente<br />de ser corretor.</span>
           </h2>
+          <BodyCopy className="mx-auto text-center">
+            O Nexus não nasceu para substituir o corretor — nasceu para devolver o tempo, o reconhecimento e a tranquilidade que esse mercado costuma roubar. Quem entra agora não está testando um software: está escolhendo uma forma diferente de exercer a profissão.
+          </BodyCopy>
           <p className="text-3xl md:text-4xl opacity-95 font-light" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
             Você é um dos <span style={{ color: GOLD_SOFT }}>próximos</span>?
           </p>
-          <div className="pt-4 text-xs tracking-[0.35em] uppercase opacity-60">Iuri Rodrigues Imóveis</div>
+          <div className="pt-2 text-xs tracking-[0.35em] uppercase opacity-60">Iuri Rodrigues Imóveis</div>
         </div>
       </SlideShell>
     ),
