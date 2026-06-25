@@ -62,7 +62,7 @@ export const createManualVendasLead = createServerFn({ method: "POST" })
       .from("vendas_leads")
       .insert({
         nome: data.nome.trim(),
-        telefone: data.telefone.replace(/\D/g, ""),
+        telefone: normalizePhoneBR(data.telefone) ?? data.telefone.replace(/\D/g, ""),
         email: data.email?.trim() || null,
         tipo: data.tipo as never,
         regiao: data.regiao as never,
