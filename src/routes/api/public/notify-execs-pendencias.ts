@@ -1,197 +1,221 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { sendOneSignalPush } from "@/lib/onesignal.server";
 
-// Endpoint público: dispara notificação push para cada Executivo
-// resumindo pendências de Captação + Vendas (mesma fonte da Central "Hoje").
-// Uso:
-//   POST https://sistemanexus.app/api/public/notify-execs-pendencias
-//   body opcional: { "nomes": ["Robson","Fabiola","Renata","Denise"], "dryRun": false }
+// Endpoint público: envia push diário/sob demanda com as pendências da
+// Central "Hoje" para Executivos, Corretores e perfil Administrativo.
+// Modos:
+//   - "morning"  → "☀️ Bom dia! Você tem N itens..."
+//   - "evening"  → "🌙 Ainda restam N pendências..."
+//   - "manual"   → versão neutra (pra disparo sob demanda)
+// Regra: NÃO envia quando o total é 0 (não incomodar sem motivo).
+// POST https://sistemanexus.app/api/public/notify-execs-pendencias
+// body opcional: { mode?: "manual"|"morning"|"evening", dryRun?: bool, uids?: string[] }
 
-type ExecRow = {
-  resp_id: string;
+type Recipient = {
+  uid: string;
   nome: string;
-  external_id: string | null;
-  user_id: string | null;
+  external_id: string;
+  resp_id: string | null; // não-nulo => Executivo
+  isAdministrativo: boolean;
 };
 
-function todayISOStart() { const d = new Date(); d.setHours(0,0,0,0); return d.toISOString(); }
-function todayISOEnd() { const d = new Date(); d.setHours(23,59,59,999); return d.toISOString(); }
+function startOfDayISO() { const d = new Date(); d.setHours(0,0,0,0); return d.toISOString(); }
+function endOfDayISO() { const d = new Date(); d.setHours(23,59,59,999); return d.toISOString(); }
 
 export const Route = createFileRoute("/api/public/notify-execs-pendencias")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        let input: { nomes?: string[]; dryRun?: boolean; mode?: "manual" | "morning" | "evening" } = {};
+        let input: { dryRun?: boolean; mode?: "manual" | "morning" | "evening"; uids?: string[] } = {};
         try { input = await request.json(); } catch { /* sem body */ }
-        const nomes = input.nomes && input.nomes.length
-          ? input.nomes
-          : ["Robson", "Fabiola", "Renata", "Denise"];
         const dryRun = input.dryRun === true;
         const mode = input.mode ?? "manual";
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-        // 1) Localiza os executivos por nome
-        const { data: respRows } = await supabaseAdmin
-          .from("responsaveis")
+        // ===== 1) Monta lista de destinatários =====
+        const { data: profs } = await supabaseAdmin
+          .from("profiles")
           .select("id, nome, onesignal_external_id")
-          .or(nomes.map((n) => `nome.ilike.%${n}%`).join(","));
+          .not("onesignal_external_id", "is", null);
 
-        const execs: ExecRow[] = [];
-        for (const r of (respRows ?? []) as Array<{ id: string; nome: string; onesignal_external_id: string | null }>) {
-          const { data: prof } = await supabaseAdmin
-            .from("profiles")
-            .select("id, onesignal_external_id")
-            .eq("responsavel_id", r.id)
-            .maybeSingle();
-          execs.push({
-            resp_id: r.id,
-            nome: r.nome,
-            external_id: r.onesignal_external_id ?? prof?.onesignal_external_id ?? null,
-            user_id: prof?.id ?? null,
+        let profiles = ((profs ?? []) as Array<{ id: string; nome: string | null; onesignal_external_id: string | null }>)
+          .filter((p) => !!p.onesignal_external_id);
+        if (input.uids?.length) profiles = profiles.filter((p) => input.uids!.includes(p.id));
+
+        if (!profiles.length) {
+          return new Response(JSON.stringify({ ok: true, results: [], note: "sem destinatários" }), {
+            status: 200, headers: { "Content-Type": "application/json" },
           });
         }
 
-        // Config: dias de candidatos sem contato + horas para chave atrasada
-        const { data: cfgCand } = await supabaseAdmin.from("configuracoes").select("valor").eq("chave", "candidatos_sem_contato_dias").maybeSingle();
-        const { data: cfgChaves } = await supabaseAdmin.from("configuracoes").select("valor").eq("chave", "chaves_atraso_horas").maybeSingle();
-        const diasCand = typeof cfgCand?.valor === "number" ? cfgCand.valor : 3;
-        const horasChaves = typeof cfgChaves?.valor === "number" ? cfgChaves.valor : 24;
+        const uids = profiles.map((p) => p.id);
+        const [respExec, rolesAdm] = await Promise.all([
+          supabaseAdmin.from("responsaveis").select("id, user_id").in("user_id", uids).eq("ativo", true),
+          supabaseAdmin.from("user_roles").select("user_id").in("user_id", uids).eq("role", "administrativo"),
+        ]);
+        const execByUid = new Map<string, string>();
+        ((respExec.data ?? []) as Array<{ id: string; user_id: string }>)
+          .forEach((r) => execByUid.set(r.user_id, r.id));
+        const admUids = new Set(((rolesAdm.data ?? []) as Array<{ user_id: string }>).map((r) => r.user_id));
+
+        const recipients: Recipient[] = profiles.map((p) => ({
+          uid: p.id,
+          nome: p.nome ?? "Usuário",
+          external_id: p.onesignal_external_id as string,
+          resp_id: execByUid.get(p.id) ?? null,
+          isAdministrativo: admUids.has(p.id),
+        }));
+
+        // ===== 2) Config (mesmos thresholds da Central Hoje) =====
+        const [cfgCand, cfgChaves] = await Promise.all([
+          supabaseAdmin.from("configuracoes").select("valor").eq("chave", "candidatos_sem_contato_dias").maybeSingle(),
+          supabaseAdmin.from("configuracoes").select("valor").eq("chave", "chaves_atraso_horas").maybeSingle(),
+        ]);
+        const diasCand = typeof cfgCand.data?.valor === "number" ? cfgCand.data.valor : 3;
+        const horasChaves = typeof cfgChaves.data?.valor === "number" ? cfgChaves.data.valor : 24;
         const limiteCand = new Date(Date.now() - diasCand * 86400_000).toISOString();
         const limiteChave = new Date(Date.now() - horasChaves * 3600_000).toISOString();
+        const start = startOfDayISO();
+        const end = endOfDayISO();
 
-        const start = todayISOStart();
-        const end = todayISOEnd();
+        // Para admin: data_fim de contratos vencendo nos próximos 90 dias
+        const hoje = new Date(); hoje.setHours(0,0,0,0);
+        const fimMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+        const isoDate = (d: Date) =>
+          `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+        const hojeIso = isoDate(hoje);
+        const limite90Iso = isoDate(new Date(hoje.getTime() + 90 * 86400_000));
+        const fimMesIso = isoDate(fimMes);
+
+        // ===== 3) Para cada destinatário, calcula pendências =====
         const results: Array<Record<string, unknown>> = [];
 
-        for (const exec of execs) {
-          // Corretores do time
-          const { data: team } = await supabaseAdmin
-            .from("profiles")
-            .select("id")
-            .eq("responsavel_id", exec.resp_id);
-          const teamIds = ((team ?? []) as Array<{ id: string }>).map((t) => t.id);
-
-          // ===== Captação =====
-          const candPromise = supabaseAdmin
-            .from("candidatos")
-            .select("id", { count: "exact", head: true })
-            .eq("responsavel_id", exec.resp_id)
-            .eq("status", "pendente_revisao")
-            .lt("created_at", limiteCand);
-
-          const reunPromise = exec.user_id
-            ? supabaseAdmin
-                .from("reunioes")
-                .select("id", { count: "exact", head: true })
-                .eq("tipo", "institucional")
-                .neq("status", "cancelada")
-                .eq("criado_por", exec.user_id)
-                .gte("data_inicio", start)
-                .lte("data_inicio", end)
-            : Promise.resolve({ count: 0, error: null } as { count: number | null; error: null });
-
-          // ===== Vendas (time) =====
-          const leadsUrgPromise = teamIds.length
-            ? supabaseAdmin
-                .from("vendas_leads")
-                .select("id", { count: "exact", head: true })
-                .in("corretor_id", teamIds)
-                .eq("atribuicao_status", "aceito")
-                .is("first_response_at", null)
-            : Promise.resolve({ count: 0, error: null } as { count: number | null; error: null });
-
-          const visitasPromise = teamIds.length
-            ? supabaseAdmin
-                .from("vendas_visitas")
-                .select("id", { count: "exact", head: true })
-                .in("corretor_id", teamIds)
-                .gte("data_inicio", start)
-                .lte("data_inicio", end)
-                .neq("status", "cancelada")
-            : Promise.resolve({ count: 0, error: null } as { count: number | null; error: null });
-
-          const fupVPromise = teamIds.length
-            ? supabaseAdmin
-                .from("vendas_leads")
-                .select("id", { count: "exact", head: true })
-                .in("corretor_id", teamIds)
-                .gte("followup_alerta_em", start)
-                .lte("followup_alerta_em", end)
-            : Promise.resolve({ count: 0, error: null } as { count: number | null; error: null });
-
-          const fupCPromise = teamIds.length
-            ? supabaseAdmin
-                .from("leads")
-                .select("id", { count: "exact", head: true })
-                .in("responsavel_id", teamIds)
-                .gte("followup_alerta_em", start)
-                .lte("followup_alerta_em", end)
-            : Promise.resolve({ count: 0, error: null } as { count: number | null; error: null });
-
-          const chavesPromise = teamIds.length
-            ? supabaseAdmin
-                .from("imoveis")
-                .select("id", { count: "exact", head: true })
-                .in("chave_com_id", teamIds)
-                .not("chave_retirada_em", "is", null)
-                .lt("chave_retirada_em", limiteChave)
-            : Promise.resolve({ count: 0, error: null } as { count: number | null; error: null });
-
-          const [cand, reun, leadsUrg, vis, fupV, fupC, ch] = await Promise.all([
-            candPromise, reunPromise, leadsUrgPromise, visitasPromise, fupVPromise, fupCPromise, chavesPromise,
+        for (const r of recipients) {
+          // -- Vendas pessoais (todo perfil que opera) --
+          const [leadsUrg, visitas, fupV, fupC, chaves] = await Promise.all([
+            supabaseAdmin.from("vendas_leads")
+              .select("id", { count: "exact", head: true })
+              .eq("corretor_id", r.uid).eq("atribuicao_status", "aceito").is("first_response_at", null),
+            supabaseAdmin.from("vendas_visitas")
+              .select("id", { count: "exact", head: true })
+              .eq("corretor_id", r.uid).gte("data_inicio", start).lte("data_inicio", end).neq("status", "cancelada"),
+            supabaseAdmin.from("vendas_leads")
+              .select("id", { count: "exact", head: true })
+              .eq("corretor_id", r.uid).gte("followup_alerta_em", start).lte("followup_alerta_em", end),
+            supabaseAdmin.from("leads")
+              .select("id", { count: "exact", head: true })
+              .eq("responsavel_id", r.uid).gte("followup_alerta_em", start).lte("followup_alerta_em", end),
+            supabaseAdmin.from("imoveis")
+              .select("id", { count: "exact", head: true })
+              .eq("chave_com_id", r.uid).not("chave_retirada_em", "is", null).lt("chave_retirada_em", limiteChave),
           ]);
 
-          const captacao = (cand.count ?? 0) + (reun.count ?? 0);
-          const vendas = (leadsUrg.count ?? 0) + (vis.count ?? 0) + (fupV.count ?? 0) + (fupC.count ?? 0) + (ch.count ?? 0);
-          const total = captacao + vendas;
+          // -- Captação (só Executivo) --
+          let candidatosCount = 0, reunioesCount = 0;
+          if (r.resp_id) {
+            const [cand, reun] = await Promise.all([
+              supabaseAdmin.from("candidatos")
+                .select("id", { count: "exact", head: true })
+                .eq("responsavel_id", r.resp_id).eq("status", "pendente_revisao").lt("created_at", limiteCand),
+              supabaseAdmin.from("reunioes")
+                .select("id", { count: "exact", head: true })
+                .eq("tipo", "institucional").neq("status", "cancelada")
+                .eq("criado_por", r.uid).gte("data_inicio", start).lte("data_inicio", end),
+            ]);
+            candidatosCount = cand.count ?? 0;
+            reunioesCount = reun.count ?? 0;
+          }
+
+          // -- Administrativo (só Larissa / role administrativo) --
+          let contratosCount = 0, pagamentosCount = 0, candAdmCount = 0, chavesAdmCount = 0;
+          if (r.isAdministrativo) {
+            const [contratos, pagamentos, candAdm, chavesAdm] = await Promise.all([
+              supabaseAdmin.from("contratos")
+                .select("id", { count: "exact", head: true })
+                .gte("data_fim", hojeIso).lte("data_fim", limite90Iso)
+                .not("status", "in", "(encerrado,cancelado)"),
+              supabaseAdmin.from("pagamentos")
+                .select("id", { count: "exact", head: true })
+                .in("status", ["pendente", "atrasado"]).lte("mes_referencia", fimMesIso),
+              supabaseAdmin.from("candidatos")
+                .select("id", { count: "exact", head: true })
+                .eq("status", "pendente_revisao"),
+              supabaseAdmin.from("imoveis")
+                .select("id", { count: "exact", head: true })
+                .not("chave_retirada_em", "is", null).lt("chave_retirada_em", limiteChave),
+            ]);
+            contratosCount = contratos.count ?? 0;
+            pagamentosCount = pagamentos.count ?? 0;
+            candAdmCount = candAdm.count ?? 0;
+            chavesAdmCount = chavesAdm.count ?? 0;
+          }
+
+          const captacao = candidatosCount + reunioesCount;
+          const vendas = (leadsUrg.count ?? 0) + (visitas.count ?? 0)
+            + (fupV.count ?? 0) + (fupC.count ?? 0) + (chaves.count ?? 0);
+          const admin = contratosCount + pagamentosCount + candAdmCount + chavesAdmCount;
+          const total = captacao + vendas + admin;
 
           const detalhe = {
-            captacao: { candidatos_sem_contato: cand.count ?? 0, reunioes_institucionais_hoje: reun.count ?? 0 },
+            captacao: { candidatos_sem_contato: candidatosCount, reunioes_institucionais_hoje: reunioesCount },
             vendas: {
               leads_urgentes: leadsUrg.count ?? 0,
-              visitas_hoje: vis.count ?? 0,
+              visitas_hoje: visitas.count ?? 0,
               followups_hoje: (fupV.count ?? 0) + (fupC.count ?? 0),
-              chaves_atrasadas: ch.count ?? 0,
+              chaves_atrasadas: chaves.count ?? 0,
+            },
+            admin: {
+              contratos_vencendo_90d: contratosCount,
+              pagamentos_pendentes: pagamentosCount,
+              candidatos_pendentes: candAdmCount,
+              chaves_atrasadas: chavesAdmCount,
             },
             total,
           };
 
-          if (!exec.external_id) {
-            results.push({ exec: exec.nome, skipped: "sem onesignal_external_id", detalhe });
+          // Regra: NÃO envia quando total = 0
+          if (total === 0) {
+            results.push({ user: r.nome, skipped: "sem pendências", detalhe });
             continue;
           }
 
-          const prefix = mode === "morning" ? "☀️ Bom dia! " : mode === "evening" ? "🌙 Boa noite! " : "";
+          // Monta a mensagem por modo
+          const partes: string[] = [];
+          if (captacao) partes.push(`${captacao} em Captação`);
+          if (vendas) partes.push(`${vendas} em Vendas`);
+          if (admin) partes.push(`${admin} no Administrativo`);
+          const resumo = partes.join(", ");
+
           let title: string;
           let message: string;
-          if (total === 0) {
-            title = `${prefix}Você está em dia ✅`;
-            message = mode === "evening"
-              ? "Nenhuma pendência aberta encerrando o dia. Bom descanso!"
-              : "Sem pendências de Captação ou Vendas no momento.";
+          if (mode === "morning") {
+            title = "☀️ Bom dia! Resumo de hoje";
+            message = `Você tem ${total} ${total === 1 ? "item" : "itens"} pra hoje: ${resumo}. Toque para ver.`;
+          } else if (mode === "evening") {
+            title = "🌙 Ainda restam pendências";
+            message = `Ainda restam ${total} ${total === 1 ? "pendência" : "pendências"} hoje: ${resumo}. Dá tempo de resolver!`;
           } else {
-            title = `${prefix}📋 Suas pendências${mode === "morning" ? " de hoje" : mode === "evening" ? " ainda em aberto" : ""}`;
-            const verbo = mode === "evening" ? "ainda " : "";
-            message = `Você ${verbo}tem ${captacao} em Captação e ${vendas} em Vendas. Toque para abrir a Central Hoje.`;
+            title = "📋 Suas pendências";
+            message = `Você tem ${total} ${total === 1 ? "item" : "itens"}: ${resumo}. Toque para abrir a Central Hoje.`;
           }
 
           if (dryRun) {
-            results.push({ exec: exec.nome, dryRun: true, title, message, detalhe, external_id: exec.external_id });
+            results.push({ user: r.nome, dryRun: true, title, message, detalhe, external_id: r.external_id });
             continue;
           }
 
           const push = await sendOneSignalPush({
-            externalId: exec.external_id,
+            externalId: r.external_id,
             title,
             message,
             url: "https://sistemanexus.app/hoje",
             data: { route: "/hoje", source: `pendencias_${mode}` },
           });
-          results.push({ exec: exec.nome, sent: push.ok, error: push.error, detalhe });
+          results.push({ user: r.nome, sent: push.ok, error: push.error, detalhe });
         }
 
-        return new Response(JSON.stringify({ ok: true, results }, null, 2), {
+        return new Response(JSON.stringify({ ok: true, mode, results }, null, 2), {
           status: 200, headers: { "Content-Type": "application/json" },
         });
       },
