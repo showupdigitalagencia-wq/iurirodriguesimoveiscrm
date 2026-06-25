@@ -21,12 +21,13 @@ export const Route = createFileRoute("/api/public/notify-execs-pendencias")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        let input: { nomes?: string[]; dryRun?: boolean } = {};
+        let input: { nomes?: string[]; dryRun?: boolean; mode?: "manual" | "morning" | "evening" } = {};
         try { input = await request.json(); } catch { /* sem body */ }
         const nomes = input.nomes && input.nomes.length
           ? input.nomes
           : ["Robson", "Fabiola", "Renata", "Denise"];
         const dryRun = input.dryRun === true;
+        const mode = input.mode ?? "manual";
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
