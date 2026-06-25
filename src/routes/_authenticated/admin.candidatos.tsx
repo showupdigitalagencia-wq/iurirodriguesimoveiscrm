@@ -112,10 +112,12 @@ function CandidatoCard({ candidato: c, expanded, onToggle, onChanged }: { candid
   const getUrls = useServerFn(getCandidatoDocUrls);
   const salvarDrive = useServerFn(salvarCandidatoNoDrive);
   const excluir = useServerFn(excluirCandidato);
+  const confirmar = useServerFn(confirmarRecebimentoCandidato);
   const [urls, setUrls] = useState<DocUrls | null>(null);
   const [loadingDocs, setLoadingDocs] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [confirming, setConfirming] = useState(false);
 
   useEffect(() => {
     if (!expanded || urls) return;
