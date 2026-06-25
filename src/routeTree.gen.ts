@@ -41,6 +41,7 @@ import { Route as AuthenticatedExecutivosIndexRouteImport } from './routes/_auth
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as ApiPublicWebhookRouteImport } from './routes/api/public/webhook'
 import { Route as ApiPublicOnesignalTestRouteImport } from './routes/api/public/onesignal-test'
+import { Route as ApiPublicNotifyExecsPendenciasRouteImport } from './routes/api/public/notify-execs-pendencias'
 import { Route as ApiPublicLeadMensagemRouteImport } from './routes/api/public/lead-mensagem'
 import { Route as ApiPublicLeadRouteImport } from './routes/api/public/lead'
 import { Route as ApiPublicGoogleOauthCallbackRouteImport } from './routes/api/public/google-oauth-callback'
@@ -246,6 +247,12 @@ const ApiPublicOnesignalTestRoute = ApiPublicOnesignalTestRouteImport.update({
   path: '/api/public/onesignal-test',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicNotifyExecsPendenciasRoute =
+  ApiPublicNotifyExecsPendenciasRouteImport.update({
+    id: '/api/public/notify-execs-pendencias',
+    path: '/api/public/notify-execs-pendencias',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicLeadMensagemRoute = ApiPublicLeadMensagemRouteImport.update({
   id: '/api/public/lead-mensagem',
   path: '/api/public/lead-mensagem',
@@ -516,6 +523,7 @@ export interface FileRoutesByFullPath {
   '/api/public/google-oauth-callback': typeof ApiPublicGoogleOauthCallbackRoute
   '/api/public/lead': typeof ApiPublicLeadRoute
   '/api/public/lead-mensagem': typeof ApiPublicLeadMensagemRoute
+  '/api/public/notify-execs-pendencias': typeof ApiPublicNotifyExecsPendenciasRoute
   '/api/public/onesignal-test': typeof ApiPublicOnesignalTestRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -582,6 +590,7 @@ export interface FileRoutesByTo {
   '/api/public/google-oauth-callback': typeof ApiPublicGoogleOauthCallbackRoute
   '/api/public/lead': typeof ApiPublicLeadRoute
   '/api/public/lead-mensagem': typeof ApiPublicLeadMensagemRoute
+  '/api/public/notify-execs-pendencias': typeof ApiPublicNotifyExecsPendenciasRoute
   '/api/public/onesignal-test': typeof ApiPublicOnesignalTestRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
@@ -653,6 +662,7 @@ export interface FileRoutesById {
   '/api/public/google-oauth-callback': typeof ApiPublicGoogleOauthCallbackRoute
   '/api/public/lead': typeof ApiPublicLeadRoute
   '/api/public/lead-mensagem': typeof ApiPublicLeadMensagemRoute
+  '/api/public/notify-execs-pendencias': typeof ApiPublicNotifyExecsPendenciasRoute
   '/api/public/onesignal-test': typeof ApiPublicOnesignalTestRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -724,6 +734,7 @@ export interface FileRouteTypes {
     | '/api/public/google-oauth-callback'
     | '/api/public/lead'
     | '/api/public/lead-mensagem'
+    | '/api/public/notify-execs-pendencias'
     | '/api/public/onesignal-test'
     | '/api/public/webhook'
     | '/admin/'
@@ -790,6 +801,7 @@ export interface FileRouteTypes {
     | '/api/public/google-oauth-callback'
     | '/api/public/lead'
     | '/api/public/lead-mensagem'
+    | '/api/public/notify-execs-pendencias'
     | '/api/public/onesignal-test'
     | '/api/public/webhook'
     | '/admin'
@@ -860,6 +872,7 @@ export interface FileRouteTypes {
     | '/api/public/google-oauth-callback'
     | '/api/public/lead'
     | '/api/public/lead-mensagem'
+    | '/api/public/notify-execs-pendencias'
     | '/api/public/onesignal-test'
     | '/api/public/webhook'
     | '/_authenticated/admin/'
@@ -890,6 +903,7 @@ export interface RootRouteChildren {
   ApiPublicGoogleOauthCallbackRoute: typeof ApiPublicGoogleOauthCallbackRoute
   ApiPublicLeadRoute: typeof ApiPublicLeadRoute
   ApiPublicLeadMensagemRoute: typeof ApiPublicLeadMensagemRoute
+  ApiPublicNotifyExecsPendenciasRoute: typeof ApiPublicNotifyExecsPendenciasRoute
   ApiPublicOnesignalTestRoute: typeof ApiPublicOnesignalTestRoute
   ApiPublicWebhookRoute: typeof ApiPublicWebhookRoute
   ApiPublicHooksBackupSemanalRoute: typeof ApiPublicHooksBackupSemanalRoute
@@ -1125,6 +1139,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/onesignal-test'
       fullPath: '/api/public/onesignal-test'
       preLoaderRoute: typeof ApiPublicOnesignalTestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/notify-execs-pendencias': {
+      id: '/api/public/notify-execs-pendencias'
+      path: '/api/public/notify-execs-pendencias'
+      fullPath: '/api/public/notify-execs-pendencias'
+      preLoaderRoute: typeof ApiPublicNotifyExecsPendenciasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/lead-mensagem': {
@@ -1536,6 +1557,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicGoogleOauthCallbackRoute: ApiPublicGoogleOauthCallbackRoute,
   ApiPublicLeadRoute: ApiPublicLeadRoute,
   ApiPublicLeadMensagemRoute: ApiPublicLeadMensagemRoute,
+  ApiPublicNotifyExecsPendenciasRoute: ApiPublicNotifyExecsPendenciasRoute,
   ApiPublicOnesignalTestRoute: ApiPublicOnesignalTestRoute,
   ApiPublicWebhookRoute: ApiPublicWebhookRoute,
   ApiPublicHooksBackupSemanalRoute: ApiPublicHooksBackupSemanalRoute,
