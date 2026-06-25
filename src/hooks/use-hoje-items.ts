@@ -74,6 +74,28 @@ export type ReuniaoInstitucionalHoje = {
   local: string | null;
   candidatos_confirmados: number;
 };
+export type ContratoVencendo = {
+  id: string;
+  locatario_nome: string | null;
+  data_fim: string;
+  valor_aluguel: number | null;
+  dias_para_vencer: number;
+};
+export type PagamentoPendente = {
+  id: string;
+  contrato_id: string;
+  mes_referencia: string;
+  valor_previsto: number;
+  status: string;
+  locatario_nome: string | null;
+};
+export type CandidatoPendenteAdmin = {
+  id: string;
+  nome: string;
+  telefone: string | null;
+  regiao: string | null;
+  created_at: string;
+};
 
 export function useHojeData() {
   const uid = useUserId();
