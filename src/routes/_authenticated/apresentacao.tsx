@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
@@ -1359,8 +1359,17 @@ function ApresentacaoPage() {
 
   const slide = SLIDES[idx];
 
+  const touchX = useRef<number | null>(null);
+  const onTouchStart = (e: React.TouchEvent) => { touchX.current = e.touches[0].clientX; };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (touchX.current == null) return;
+    const dx = e.changedTouches[0].clientX - touchX.current;
+    if (Math.abs(dx) > 50) (dx < 0 ? next : prev)();
+    touchX.current = null;
+  };
+
   return (
-    <div className="min-h-screen flex flex-col bg-black">
+    <div className={fullscreen ? "fixed inset-0 z-[9999] bg-black flex flex-col" : "min-h-screen flex flex-col bg-black"}>
       {!fullscreen && (
         <div className="flex items-center justify-between gap-3 px-4 py-3 border-b" style={{ background: NAVY_DEEP, borderColor: "rgba(212,175,55,0.25)" }}>
           <div className="text-white text-sm">
@@ -1382,9 +1391,20 @@ function ApresentacaoPage() {
         </div>
       )}
 
-      <div className="flex-1 flex items-center justify-center p-0 md:p-6">
-        <div className="relative w-full max-w-[1400px]" style={{ aspectRatio: "16/9" }}>
-          <div className="absolute inset-0 rounded-xl overflow-hidden shadow-2xl">
+      <div
+        className={fullscreen ? "flex-1 flex items-center justify-center overflow-hidden" : "flex-1 flex items-center justify-center p-0 md:p-6"}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+      >
+        <div
+          className={fullscreen ? "relative bg-black overflow-hidden" : "relative w-full max-w-[1400px] rounded-xl overflow-hidden shadow-2xl"}
+          style={
+            fullscreen
+              ? { width: "min(100vw, 177.78vh)", height: "min(56.25vw, 100vh)" }
+              : { aspectRatio: "16/9" }
+          }
+        >
+          <div className="absolute inset-0">
             {slide.render()}
           </div>
         </div>
@@ -1417,13 +1437,13 @@ function ApresentacaoPage() {
 
       {fullscreen && (
         <>
-          <button onClick={prev} className="fixed left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white" aria-label="Anterior">
+          <button onClick={prev} className="fixed left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white z-[10000]" aria-label="Anterior">
             <ChevronLeft className="h-6 w-6" />
           </button>
-          <button onClick={next} className="fixed right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white" aria-label="Próximo">
+          <button onClick={next} className="fixed right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white z-[10000]" aria-label="Próximo">
             <ChevronRight className="h-6 w-6" />
           </button>
-          <div className="fixed bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-black/60 text-white text-xs">
+          <div className="fixed bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-black/60 text-white text-xs z-[10000]">
             {idx + 1} / {SLIDES.length}
           </div>
         </>
