@@ -37,7 +37,7 @@ type DocUrls = { rg: string | null; cpf: string | null; creci: string | null; co
 
 function CandidatosPage() {
   const list = useServerFn(listCandidatos);
-  const [filter, setFilter] = useState<"pendente_revisao" | "arquivado" | "todos">("pendente_revisao");
+  const [filter, setFilter] = useState<"pendente_revisao" | "recebido_confirmado" | "arquivado" | "todos">("pendente_revisao");
   const [rows, setRows] = useState<CandidatoRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
