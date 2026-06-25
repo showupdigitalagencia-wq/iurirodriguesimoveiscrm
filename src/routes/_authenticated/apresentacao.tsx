@@ -1353,6 +1353,16 @@ function generatePDF() {
       y += subLines.length * 26 + 20;
     }
 
+    if (slide.pdf.body) {
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(14);
+      pdf.setTextColor(210, 215, 225);
+      const bodyLines = pdf.splitTextToSize(slide.pdf.body, W - 120);
+      pdf.text(bodyLines, 60, y);
+      y += bodyLines.length * 20 + 18;
+    }
+
+
     if (slide.pdf.bullets) {
       pdf.setFont("helvetica", "normal");
       pdf.setFontSize(18);
