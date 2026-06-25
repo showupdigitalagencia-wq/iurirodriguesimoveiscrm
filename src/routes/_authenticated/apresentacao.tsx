@@ -40,6 +40,7 @@ type SlideDef = {
     eyebrow?: string;
     title: string;
     subtitle?: string;
+    body?: string;
     bullets?: string[];
     cards?: { title: string; body: string }[];
   };
