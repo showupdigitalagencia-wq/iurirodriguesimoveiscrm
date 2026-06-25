@@ -488,7 +488,7 @@ function IllusLauraQuery() {
           </div>
         </div>
       </div>
-      {/* lado Laura — resposta com dado */}
+      {/* lado Laura, resposta com dado */}
       <div className="absolute right-6 top-1/2 -translate-y-1/2 max-w-[260px]">
         <div className="text-[10px] uppercase tracking-[0.25em] mb-2 text-right" style={{ color: GOLD_SOFT }}>Laura</div>
         <div className="rounded-2xl rounded-br-sm px-5 py-3"
@@ -681,7 +681,7 @@ function MockPlantaoCard() {
       </div>
       <div className="mt-4 rounded-lg p-3 text-xs flex items-center gap-2" style={{ background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.3)" }}>
         <CheckCircle2 className="h-4 w-4" style={{ color: "#22c55e" }} />
-        <span>Lead novo distribuído há 38s — Pedro respondeu em 2min.</span>
+        <span>Lead novo distribuído há 38s, Pedro respondeu em 2min.</span>
       </div>
     </div>
   );
@@ -951,7 +951,7 @@ function MockPhoneFrame({ variant = "dashboard" }: { variant?: "dashboard" | "ch
                   <CalendarDays className="h-3 w-3" /> Hoje
                 </div>
                 <div className="text-[11px] space-y-0.5">
-                  <div>· 14h Visita — Av. Lúcio</div>
+                  <div>· 14h Visita, Av. Lúcio</div>
                   <div>· Follow-up João Silva</div>
                 </div>
               </div>
@@ -1022,7 +1022,7 @@ const SLIDES: SlideDef[] = [
     pdf: {
       eyebrow: "Abertura",
       title: "Antes de falar de tecnologia, vamos falar de você.",
-      body: "Todo corretor carrega muito mais do que parece. Acorda cedo, atende em qualquer horário, segura a operação inteira na cabeça e ainda precisa parecer inteiro para o cliente. Antes de mostrar telas e funcionalidades, é justo reconhecer: a maior parte do peso do seu dia é invisível para o mercado — mas é real demais para você.",
+      body: "Todo corretor carrega muito mais do que parece. Acorda cedo, atende em qualquer horário, segura a operação inteira na cabeça e ainda precisa parecer inteiro para o cliente. Antes de mostrar telas e funcionalidades, é justo reconhecer: a maior parte do peso do seu dia é invisível para o mercado, mas é real demais para você.",
     },
     render: () => (
       <SlideShell eyebrow="Abertura">
@@ -1031,7 +1031,7 @@ const SLIDES: SlideDef[] = [
             Antes de falar de tecnologia,<br /><span style={{ color: GOLD }}>vamos falar de você</span>.
           </Headline>
           <BodyCopy>
-            Todo corretor carrega muito mais do que parece. Acorda cedo, atende em qualquer horário, segura a operação inteira na cabeça e ainda precisa parecer inteiro para o cliente. Antes de mostrar telas, é justo reconhecer: a maior parte do peso do seu dia é invisível — mas é real demais para você.
+            Todo corretor carrega muito mais do que parece. Acorda cedo, atende em qualquer horário, segura a operação inteira na cabeça e ainda precisa parecer inteiro para o cliente. Antes de mostrar telas, é justo reconhecer: a maior parte do peso do seu dia é invisível, mas é real demais para você.
           </BodyCopy>
         </div>
       </SlideShell>
@@ -1045,7 +1045,7 @@ const SLIDES: SlideDef[] = [
     pdf: {
       eyebrow: "A realidade · 1 de 4",
       title: "O lead chegou. Você demorou 20 minutos. Ele já estava com outro.",
-      body: "Todo corretor já viveu isso: um cliente interessado manda mensagem, a resposta demora alguns minutos, e quando finalmente alguém responde, o cliente já fechou com outro. Isso não é falta de competência — é falta de um sistema que avise na hora certa, do jeito certo, para a pessoa certa. Toda oportunidade tem um relógio rodando por trás, e quase ninguém te avisa quando ele começa.",
+      body: "Todo corretor já viveu isso: um cliente interessado manda mensagem, a resposta demora alguns minutos, e quando finalmente alguém responde, o cliente já fechou com outro. Isso não é falta de competência, é falta de um sistema que avise na hora certa, do jeito certo, para a pessoa certa. Toda oportunidade tem um relógio rodando por trás, e quase ninguém te avisa quando ele começa.",
     },
     render: () => (
       <SlideShell eyebrow="A realidade · 1 de 4">
@@ -1060,7 +1060,7 @@ const SLIDES: SlideDef[] = [
               Ele já estava <span style={{ color: GOLD }}>com outro</span>.
             </Headline>
             <BodyCopy>
-              Todo corretor já viveu isso: o cliente manda mensagem, a resposta demora poucos minutos, e quando alguém responde, ele já fechou com outro. Não é falta de competência — é falta de um sistema que avise na hora certa. Toda oportunidade tem um relógio rodando, e quase ninguém te avisa quando ele começa.
+              Todo corretor já viveu isso: o cliente manda mensagem, a resposta demora poucos minutos, e quando alguém responde, ele já fechou com outro. Não é falta de competência, é falta de um sistema que avise na hora certa. Toda oportunidade tem um relógio rodando, e quase ninguém te avisa quando ele começa.
             </BodyCopy>
           </div>
           <div className="flex justify-center">
@@ -1079,7 +1079,7 @@ const SLIDES: SlideDef[] = [
     pdf: {
       eyebrow: "A realidade · 2 de 4",
       title: "Chave numa gaveta. Follow-up num caderno. Imóvel num grupo de WhatsApp.",
-      body: "A rotina do corretor virou uma colcha de retalhos: chave física numa gaveta, follow-up anotado num caderno, imóveis circulando em três grupos de WhatsApp diferentes, visitas em post-its. Cada pedaço de informação mora em um lugar, e nenhum deles conversa entre si. Quando algo escapa — e sempre escapa — quem paga o preço é você, sozinho, sem rastro do que aconteceu.",
+      body: "A rotina do corretor virou uma colcha de retalhos: chave física numa gaveta, follow-up anotado num caderno, imóveis circulando em três grupos de WhatsApp diferentes, visitas em post-its. Cada pedaço de informação mora em um lugar, e nenhum deles conversa entre si. Quando algo escapa, e sempre escapa, quem paga o preço é você, sozinho, sem rastro do que aconteceu.",
     },
     render: () => (
       <SlideShell eyebrow="A realidade · 2 de 4">
@@ -1089,7 +1089,7 @@ const SLIDES: SlideDef[] = [
             Tudo na sua cabeça.
           </Headline>
           <BodyCopy>
-            A rotina virou uma colcha de retalhos: chave numa gaveta, follow-up num caderno, imóveis em três grupos de WhatsApp, visitas em post-its. Cada informação mora em um lugar, e nenhuma conversa entre si. Quando algo escapa — e sempre escapa — quem paga é você.
+            A rotina virou uma colcha de retalhos: chave numa gaveta, follow-up num caderno, imóveis em três grupos de WhatsApp, visitas em post-its. Cada informação mora em um lugar, e nenhuma conversa entre si. Quando algo escapa, e sempre escapa, quem paga é você.
           </BodyCopy>
           <IllusChaos />
 
@@ -1105,7 +1105,7 @@ const SLIDES: SlideDef[] = [
     pdf: {
       eyebrow: "A realidade · 3 de 4",
       title: "Você trabalhou o mês inteiro. E ninguém viu.",
-      body: "Você atendeu dezenas de leads, fez visitas no fim de semana, recuperou cliente que tinha sumido, segurou negócio que ia desandar. E no fim do mês, nada disso aparece em lugar nenhum. Sem registro, sem ranking, sem reconhecimento — fica a sensação amarga de quem corre muito e nunca é visto correndo.",
+      body: "Você atendeu dezenas de leads, fez visitas no fim de semana, recuperou cliente que tinha sumido, segurou negócio que ia desandar. E no fim do mês, nada disso aparece em lugar nenhum. Sem registro, sem ranking, sem reconhecimento, fica a sensação amarga de quem corre muito e nunca é visto correndo.",
     },
     render: () => (
       <SlideShell eyebrow="A realidade · 3 de 4">
@@ -1119,7 +1119,7 @@ const SLIDES: SlideDef[] = [
               E <span style={{ color: GOLD }}>ninguém viu</span>.
             </Headline>
             <BodyCopy>
-              Você atendeu dezenas de leads, fez visitas no fim de semana, recuperou cliente que tinha sumido, segurou negócio que ia desandar. E nada disso aparece em lugar nenhum. Sem registro, sem ranking, sem reconhecimento — fica a sensação de quem corre muito e nunca é visto correndo.
+              Você atendeu dezenas de leads, fez visitas no fim de semana, recuperou cliente que tinha sumido, segurou negócio que ia desandar. E nada disso aparece em lugar nenhum. Sem registro, sem ranking, sem reconhecimento, fica a sensação de quem corre muito e nunca é visto correndo.
             </BodyCopy>
           </div>
           <div className="md:col-span-2 flex justify-center">
@@ -1138,7 +1138,7 @@ const SLIDES: SlideDef[] = [
     pdf: {
       eyebrow: "A realidade · 4 de 4",
       title: "Você está sozinho contra o mercado.",
-      body: "O mercado imobiliário é coletivo no discurso, mas individual na prática. No fim, é você sozinho contra o cliente que sumiu, contra o concorrente que respondeu mais rápido, contra a planilha que ninguém atualizou. Não falta esforço — falta um time de tecnologia jogando ao seu lado, todos os dias, em silêncio.",
+      body: "O mercado imobiliário é coletivo no discurso, mas individual na prática. No fim, é você sozinho contra o cliente que sumiu, contra o concorrente que respondeu mais rápido, contra a planilha que ninguém atualizou. Não falta esforço, falta um time de tecnologia jogando ao seu lado, todos os dias, em silêncio.",
     },
     render: () => (
       <SlideShell eyebrow="A realidade · 4 de 4">
@@ -1149,7 +1149,7 @@ const SLIDES: SlideDef[] = [
             contra o mercado.
           </Headline>
           <BodyCopy className="mx-auto text-center">
-            O mercado é coletivo no discurso, mas individual na prática. No fim, é você sozinho contra o cliente que sumiu, contra o concorrente que respondeu mais rápido, contra a planilha que ninguém atualizou. Não falta esforço — falta um time de tecnologia jogando ao seu lado.
+            O mercado é coletivo no discurso, mas individual na prática. No fim, é você sozinho contra o cliente que sumiu, contra o concorrente que respondeu mais rápido, contra a planilha que ninguém atualizou. Não falta esforço, falta um time de tecnologia jogando ao seu lado.
           </BodyCopy>
         </div>
       </SlideShell>
@@ -1162,7 +1162,7 @@ const SLIDES: SlideDef[] = [
     title: "E se existisse outro jeito?",
     pdf: {
       title: "E se existisse um jeito completamente diferente de ser corretor?",
-      body: "E se o sistema avisasse você no segundo certo? E se cada visita, cada chave, cada conversa ficasse registrada sem esforço? E se você tivesse uma assistente trabalhando 24 horas, só para você? Não estamos falando de uma melhoria — estamos falando de uma virada. Algo que esse mercado, até agora, nunca viu.",
+      body: "E se o sistema avisasse você no segundo certo? E se cada visita, cada chave, cada conversa ficasse registrada sem esforço? E se você tivesse uma assistente trabalhando 24 horas, só para você? Não estamos falando de uma melhoria, estamos falando de uma virada. Algo que esse mercado, até agora, nunca viu.",
     },
     render: () => (
       <SlideShell>
@@ -1175,7 +1175,7 @@ const SLIDES: SlideDef[] = [
             um jeito <span style={{ color: GOLD }}>completamente<br />diferente</span> de ser corretor?
           </h2>
           <BodyCopy className="mx-auto text-center">
-            E se o sistema avisasse você no segundo certo? E se cada visita, cada chave, cada conversa ficasse registrada sem esforço? E se você tivesse uma assistente trabalhando 24 horas, só para você? Não é melhoria — é uma virada.
+            E se o sistema avisasse você no segundo certo? E se cada visita, cada chave, cada conversa ficasse registrada sem esforço? E se você tivesse uma assistente trabalhando 24 horas, só para você? Não é melhoria, é uma virada.
           </BodyCopy>
           <div className="pt-2">
             <IllusBeforeAfter />
@@ -1193,7 +1193,7 @@ const SLIDES: SlideDef[] = [
     pdf: {
       eyebrow: "Visão geral",
       title: "Um ecossistema. Uma única experiência.",
-      body: "O Nexus não é uma coleção de ferramentas soltas — é um ecossistema único, onde Agenda, Portfólio, Laura IA, Central Hoje, Desempenho e Time conversam entre si o tempo todo. O que acontece em uma parte alimenta todas as outras automaticamente. Você passa a operar em um só lugar, com a sensação de que tudo finalmente faz sentido junto.",
+      body: "O Nexus não é uma coleção de ferramentas soltas, é um ecossistema único, onde Agenda, Portfólio, Laura IA, Central Hoje, Desempenho e Time conversam entre si o tempo todo. O que acontece em uma parte alimenta todas as outras automaticamente. Você passa a operar em um só lugar, com a sensação de que tudo finalmente faz sentido junto.",
       cards: [
         { title: "Agenda", body: "Você no controle do seu tempo." },
         { title: "Portfólio", body: "Todo o catálogo no bolso." },
@@ -1210,7 +1210,7 @@ const SLIDES: SlideDef[] = [
             Um ecossistema.<br /><span style={{ color: GOLD }}>Uma única experiência</span>.
           </Headline>
           <BodyCopy>
-            O Nexus não é uma coleção de ferramentas soltas — é um ecossistema único, onde Agenda, Portfólio, Laura IA, Central Hoje, Desempenho e Time conversam entre si o tempo todo. O que acontece em uma parte alimenta todas as outras automaticamente.
+            O Nexus não é uma coleção de ferramentas soltas, é um ecossistema único, onde Agenda, Portfólio, Laura IA, Central Hoje, Desempenho e Time conversam entre si o tempo todo. O que acontece em uma parte alimenta todas as outras automaticamente.
           </BodyCopy>
           <IllusEcosystem />
 
@@ -1226,7 +1226,7 @@ const SLIDES: SlideDef[] = [
     pdf: {
       eyebrow: "Autonomia",
       title: "Você define quando está disponível. O sistema respeita.",
-      body: "Funciona assim: você marca na sua Agenda os horários em que está disponível para atender. Quando um lead novo chega, o sistema verifica essa disponibilidade automaticamente — e só te entrega a oportunidade se você estiver dentro da sua janela. Nada de invasão fora de hora, nada de lead apodrecendo porque ninguém viu. É a primeira vez que distribuição de leads respeita a sua vida, e não o contrário.",
+      body: "Funciona assim: você marca na sua Agenda os horários em que está disponível para atender. Quando um lead novo chega, o sistema verifica essa disponibilidade automaticamente, e só te entrega a oportunidade se você estiver dentro da sua janela. Nada de invasão fora de hora, nada de lead apodrecendo porque ninguém viu. É a primeira vez que distribuição de leads respeita a sua vida, e não o contrário.",
     },
     render: () => (
       <SlideShell eyebrow="Autonomia">
@@ -1237,7 +1237,7 @@ const SLIDES: SlideDef[] = [
                 Sua agenda,<br /><span style={{ color: GOLD }}>suas regras</span>.
               </Headline>
               <BodyCopy>
-                Você marca na Agenda os horários em que está disponível. Quando um lead novo chega, o sistema verifica essa disponibilidade — e só te entrega a oportunidade se você estiver dentro da sua janela. Nada de invasão fora de hora, nada de lead apodrecendo porque ninguém viu.
+                Você marca na Agenda os horários em que está disponível. Quando um lead novo chega, o sistema verifica essa disponibilidade, e só te entrega a oportunidade se você estiver dentro da sua janela. Nada de invasão fora de hora, nada de lead apodrecendo porque ninguém viu.
               </BodyCopy>
             </div>
             <div className="flex justify-center"><MockAgendaCard /></div>
@@ -1264,7 +1264,7 @@ const SLIDES: SlideDef[] = [
     pdf: {
       eyebrow: "Prova real",
       title: "Seus leads, organizados para você.",
-      body: "Esta é a tela real que o corretor vê todos os dias. Cada lead recebido aparece com origem, horário e status — sem precisar abrir três telas, sem precisar perguntar para ninguém. Você abre o app e, em poucos segundos, sabe exatamente o que precisa fazer agora.",
+      body: "Esta é a tela real que o corretor vê todos os dias. Cada lead recebido aparece com origem, horário e status, sem precisar abrir três telas, sem precisar perguntar para ninguém. Você abre o app e, em poucos segundos, sabe exatamente o que precisa fazer agora.",
     },
     render: () => (
       <SlideShell eyebrow="Prova real">
@@ -1291,7 +1291,7 @@ const SLIDES: SlideDef[] = [
     pdf: {
       eyebrow: "Portfólio",
       title: "Todo o catálogo, sempre atualizado, no seu bolso.",
-      body: "Cada imóvel, com fotos, descrição completa, valor e disponibilidade — atualizado em tempo real e sempre na palma da sua mão. Você pode filtrar por bairro, faixa de preço, número de quartos ou características específicas em segundos. Nunca mais aquela cena de perder uma venda porque você não tinha o imóvel certo na hora em que o cliente perguntou.",
+      body: "Cada imóvel, com fotos, descrição completa, valor e disponibilidade, atualizado em tempo real e sempre na palma da sua mão. Você pode filtrar por bairro, faixa de preço, número de quartos ou características específicas em segundos. Nunca mais aquela cena de perder uma venda porque você não tinha o imóvel certo na hora em que o cliente perguntou.",
     },
     render: () => (
       <SlideShell eyebrow="Portfólio">
@@ -1300,7 +1300,7 @@ const SLIDES: SlideDef[] = [
             Todo o catálogo<br /><span style={{ color: GOLD }}>no seu bolso</span>.
           </Headline>
           <BodyCopy>
-            Cada imóvel, com fotos, descrição, valor e disponibilidade — atualizado em tempo real, sempre na palma da sua mão. Você filtra por bairro, faixa de preço, quartos ou características em segundos. Nunca mais perder uma venda por não ter o imóvel certo na hora certa.
+            Cada imóvel, com fotos, descrição, valor e disponibilidade, atualizado em tempo real, sempre na palma da sua mão. Você filtra por bairro, faixa de preço, quartos ou características em segundos. Nunca mais perder uma venda por não ter o imóvel certo na hora certa.
           </BodyCopy>
           <div className="flex gap-3 pt-2">
             {[Search, MapPin, Layers, ImageIcon].map((I, i) => (
@@ -1321,7 +1321,7 @@ const SLIDES: SlideDef[] = [
     pdf: {
       eyebrow: "Prova real",
       title: "Cada imóvel, pronto para impressionar.",
-      body: "Esta é a ficha real de um imóvel do portfólio. Foto de capa, características, localização, valor — tudo apresentado de forma que o cliente entenda na primeira olhada. É a diferença entre mandar um print desbotado num grupo e enviar uma apresentação à altura da sua marca.",
+      body: "Esta é a ficha real de um imóvel do portfólio. Foto de capa, características, localização, valor, tudo apresentado de forma que o cliente entenda na primeira olhada. É a diferença entre mandar um print desbotado num grupo e enviar uma apresentação à altura da sua marca.",
     },
     render: () => (
       <SlideShell eyebrow="Prova real">
@@ -1332,7 +1332,7 @@ const SLIDES: SlideDef[] = [
               Cada imóvel,<br />pronto para <span style={{ color: GOLD }}>impressionar</span>.
             </h3>
             <BodyCopy>
-              Foto, características, localização, valor — tudo apresentado de forma que o cliente entenda na primeira olhada. A diferença entre mandar um print desbotado e enviar uma apresentação à altura da sua marca.
+              Foto, características, localização, valor, tudo apresentado de forma que o cliente entenda na primeira olhada. A diferença entre mandar um print desbotado e enviar uma apresentação à altura da sua marca.
             </BodyCopy>
           </div>
           <div className="flex justify-center scale-105"><MockImovelCard /></div>
@@ -1348,7 +1348,7 @@ const SLIDES: SlideDef[] = [
     pdf: {
       eyebrow: "Compartilhamento",
       title: "Impressione o cliente na hora. Em um toque.",
-      body: "Você está em uma conversa e o cliente pede mais um imóvel parecido? Um toque no botão de compartilhar e o anúncio completo — foto, descrição e valor — vai direto para o WhatsApp dele, com a sua marca. Sem copiar e colar, sem montar mensagem na mão, sem fricção. A velocidade de resposta vira o seu maior diferencial.",
+      body: "Você está em uma conversa e o cliente pede mais um imóvel parecido? Um toque no botão de compartilhar e o anúncio completo, foto, descrição e valor, vai direto para o WhatsApp dele, com a sua marca. Sem copiar e colar, sem montar mensagem na mão, sem fricção. A velocidade de resposta vira o seu maior diferencial.",
     },
     render: () => (
       <SlideShell eyebrow="Compartilhamento">
@@ -1366,7 +1366,7 @@ const SLIDES: SlideDef[] = [
             Impressione o cliente<br /><span style={{ color: GOLD }}>na hora</span>.
           </Headline>
           <BodyCopy className="mx-auto text-center">
-            Um toque e o anúncio completo — foto, descrição, valor — vai direto para o WhatsApp do cliente, com a sua marca. Sem copiar e colar, sem montar mensagem na mão. A velocidade de resposta vira o seu maior diferencial.
+            Um toque e o anúncio completo, foto, descrição, valor, vai direto para o WhatsApp do cliente, com a sua marca. Sem copiar e colar, sem montar mensagem na mão. A velocidade de resposta vira o seu maior diferencial.
           </BodyCopy>
         </div>
       </SlideShell>
@@ -1379,7 +1379,7 @@ const SLIDES: SlideDef[] = [
     title: "Conheça a Laura",
     pdf: {
       title: "Conheça a Laura.",
-      body: "Laura é uma Inteligência Artificial criada para trabalhar do seu lado, 24 horas por dia. Ela conhece o seu portfólio, a sua agenda, os seus leads e o seu jeito de operar. Você conversa com ela em linguagem natural — como conversa com um colega de equipe — e ela responde, registra, organiza e age. É como ter um braço direito que nunca dorme, nunca falha em lembrar de uma tarefa, e só age depois que você confirma.",
+      body: "Laura é uma Inteligência Artificial criada para trabalhar do seu lado, 24 horas por dia. Ela conhece o seu portfólio, a sua agenda, os seus leads e o seu jeito de operar. Você conversa com ela em linguagem natural, como conversa com um colega de equipe, e ela responde, registra, organiza e age. É como ter um braço direito que nunca dorme, nunca falha em lembrar de uma tarefa, e só age depois que você confirma.",
     },
     render: () => (
       <SlideShell>
@@ -1392,7 +1392,7 @@ const SLIDES: SlideDef[] = [
               Conheça a<br /><span style={{ color: GOLD }}>Laura</span>.
             </h2>
             <BodyCopy>
-              Laura é uma Inteligência Artificial criada para trabalhar do seu lado, 24 horas por dia. Ela conhece seu portfólio, sua agenda, seus leads e o seu jeito de operar. Você conversa em linguagem natural — como conversa com um colega — e ela responde, registra e age.
+              Laura é uma Inteligência Artificial criada para trabalhar do seu lado, 24 horas por dia. Ela conhece seu portfólio, sua agenda, seus leads e o seu jeito de operar. Você conversa em linguagem natural, como conversa com um colega, e ela responde, registra e age.
             </BodyCopy>
           </div>
           <div className="flex justify-center">
@@ -1411,7 +1411,7 @@ const SLIDES: SlideDef[] = [
     pdf: {
       eyebrow: "Laura · Consulta",
       title: "Pergunte com suas palavras.",
-      body: "Você não precisa decorar comando, abrir tela, lembrar onde clicar. Pergunta como falaria com um colega — em português natural — e a Laura responde com o dado certo, na hora. Ela consulta portfólio, agenda, leads e metas em segundos, e devolve resposta direta, sem rodeio. O sistema deixa de ser um lugar onde você procura e passa a ser uma conversa.",
+      body: "Você não precisa decorar comando, abrir tela, lembrar onde clicar. Pergunta como falaria com um colega, em português natural, e a Laura responde com o dado certo, na hora. Ela consulta portfólio, agenda, leads e metas em segundos, e devolve resposta direta, sem rodeio. O sistema deixa de ser um lugar onde você procura e passa a ser uma conversa.",
       bullets: [
         "Temos apartamento na Barra até R$ 2.500?",
         "Qual minha meta esse mês?",
@@ -1425,7 +1425,7 @@ const SLIDES: SlideDef[] = [
             Pergunte com<br /><span style={{ color: GOLD }}>suas palavras</span>.
           </Headline>
           <BodyCopy>
-            Você não precisa decorar comando nem lembrar onde clicar. Pergunta como falaria com um colega — em português natural — e a Laura responde com o dado certo, na hora. Ela consulta portfólio, agenda, leads e metas em segundos.
+            Você não precisa decorar comando nem lembrar onde clicar. Pergunta como falaria com um colega, em português natural, e a Laura responde com o dado certo, na hora. Ela consulta portfólio, agenda, leads e metas em segundos.
           </BodyCopy>
           <IllusLauraQuery />
 
@@ -1441,11 +1441,11 @@ const SLIDES: SlideDef[] = [
     pdf: {
       eyebrow: "Laura · Ação",
       title: "Diga o que aconteceu. Ela registra.",
-      body: "Você terminou uma visita, retirou uma chave, mudou sua disponibilidade — basta contar para a Laura, do jeito que você falaria para um colega. Ela entende, transforma em registro no sistema e devolve uma confirmação para você revisar. Você nunca mais perde tempo preenchendo formulário no fim do dia tentando lembrar o que aconteceu de manhã.",
+      body: "Você terminou uma visita, retirou uma chave, mudou sua disponibilidade, basta contar para a Laura, do jeito que você falaria para um colega. Ela entende, transforma em registro no sistema e devolve uma confirmação para você revisar. Você nunca mais perde tempo preenchendo formulário no fim do dia tentando lembrar o que aconteceu de manhã.",
       bullets: [
         "A visita com o João foi realizada.",
         "Estou retirando a chave do apto 304 (com foto).",
-        "Estou disponível segunda a sexta, 10h às 18h — atualize minha agenda.",
+        "Estou disponível segunda a sexta, 10h às 18h, atualize minha agenda.",
       ],
     },
     render: () => (
@@ -1455,7 +1455,7 @@ const SLIDES: SlideDef[] = [
             Diga o que aconteceu.<br /><span style={{ color: GOLD }}>Ela registra</span>.
           </Headline>
           <BodyCopy>
-            Você terminou uma visita, retirou uma chave, mudou sua disponibilidade — basta contar para a Laura. Ela entende, transforma em registro no sistema e devolve confirmação para você revisar. Acabou aquela história de preencher formulário no fim do dia.
+            Você terminou uma visita, retirou uma chave, mudou sua disponibilidade, basta contar para a Laura. Ela entende, transforma em registro no sistema e devolve confirmação para você revisar. Acabou aquela história de preencher formulário no fim do dia.
           </BodyCopy>
           <IllusLauraAction />
 
@@ -1471,7 +1471,7 @@ const SLIDES: SlideDef[] = [
     pdf: {
       eyebrow: "Laura · Confiança",
       title: "Ela só age depois que você confirma.",
-      body: "Toda ação sensível — registrar visita, atualizar disponibilidade, encerrar atendimento — passa por uma confirmação sua antes de virar realidade no sistema. A Laura nunca decide sozinha pelo que é seu. Ela trabalha 24 horas, sem fila e sem espera, mas a última palavra é sempre do corretor. É inteligência artificial com o seu lado — não no lugar do seu lado.",
+      body: "Toda ação sensível, registrar visita, atualizar disponibilidade, encerrar atendimento, passa por uma confirmação sua antes de virar realidade no sistema. A Laura nunca decide sozinha pelo que é seu. Ela trabalha 24 horas, sem fila e sem espera, mas a última palavra é sempre do corretor. É inteligência artificial com o seu lado, não no lugar do seu lado.",
     },
     render: () => (
       <SlideShell eyebrow="Laura · Confiança">
@@ -1481,7 +1481,7 @@ const SLIDES: SlideDef[] = [
               Ela só age depois<br />que <span style={{ color: GOLD }}>você confirma</span>.
             </Headline>
             <BodyCopy>
-              Toda ação sensível passa por uma confirmação sua antes de virar realidade no sistema. A Laura nunca decide sozinha pelo que é seu. Trabalha 24 horas, sem fila e sem espera — mas a última palavra é sempre do corretor.
+              Toda ação sensível passa por uma confirmação sua antes de virar realidade no sistema. A Laura nunca decide sozinha pelo que é seu. Trabalha 24 horas, sem fila e sem espera, mas a última palavra é sempre do corretor.
             </BodyCopy>
             <div className="space-y-2.5 pt-1">
               {[
@@ -1511,7 +1511,7 @@ const SLIDES: SlideDef[] = [
     pdf: {
       eyebrow: "Central Hoje",
       title: "Tudo que importa, sem esforço de organizar.",
-      body: "A Central Hoje é a primeira tela que você vê quando abre o app: uma curadoria automática do que precisa da sua atenção agora. Leads sem primeiro contato, visitas marcadas para o dia, follow-ups vencendo, chaves para devolver — tudo reunido em uma só tela, sem você precisar ir atrás. O sistema organiza a sua manhã antes de você sentar.",
+      body: "A Central Hoje é a primeira tela que você vê quando abre o app: uma curadoria automática do que precisa da sua atenção agora. Leads sem primeiro contato, visitas marcadas para o dia, follow-ups vencendo, chaves para devolver, tudo reunido em uma só tela, sem você precisar ir atrás. O sistema organiza a sua manhã antes de você sentar.",
     },
     render: () => (
       <SlideShell eyebrow="Central Hoje">
@@ -1520,7 +1520,7 @@ const SLIDES: SlideDef[] = [
             Tudo que importa,<br /><span style={{ color: GOLD }}>em uma tela só</span>.
           </Headline>
           <BodyCopy>
-            A Central Hoje é a primeira tela quando você abre o app: uma curadoria automática do que precisa da sua atenção agora. Leads sem primeiro contato, visitas do dia, follow-ups vencendo, chaves para devolver — tudo reunido sem você precisar ir atrás. O sistema organiza a sua manhã antes de você sentar.
+            A Central Hoje é a primeira tela quando você abre o app: uma curadoria automática do que precisa da sua atenção agora. Leads sem primeiro contato, visitas do dia, follow-ups vencendo, chaves para devolver, tudo reunido sem você precisar ir atrás. O sistema organiza a sua manhã antes de você sentar.
           </BodyCopy>
         </div>
       </SlideShell>
@@ -1561,7 +1561,7 @@ const SLIDES: SlideDef[] = [
     pdf: {
       eyebrow: "Desempenho",
       title: "Seu funil. Seu tempo de resposta. Sua evolução.",
-      body: "Cada lead que entra, cada contato feito, cada visita realizada — tudo é medido em tempo real e devolvido para você de forma simples e visual. Você vê o seu próprio funil, o seu tempo médio de resposta, e como está evoluindo de uma semana para a outra. É a primeira vez que o esforço do corretor vira informação útil — para o próprio corretor, primeiro.",
+      body: "Cada lead que entra, cada contato feito, cada visita realizada, tudo é medido em tempo real e devolvido para você de forma simples e visual. Você vê o seu próprio funil, o seu tempo médio de resposta, e como está evoluindo de uma semana para a outra. É a primeira vez que o esforço do corretor vira informação útil, para o próprio corretor, primeiro.",
     },
     render: () => (
       <SlideShell eyebrow="Desempenho">
@@ -1570,7 +1570,7 @@ const SLIDES: SlideDef[] = [
             Seu funil. Seu tempo.<br /><span style={{ color: GOLD }}>Sua evolução</span>.
           </Headline>
           <BodyCopy>
-            Cada lead que entra, cada contato feito, cada visita realizada é medido em tempo real e devolvido de forma simples e visual. Você vê o próprio funil, o tempo médio de resposta, e como evolui de uma semana para a outra. Pela primeira vez, o esforço do corretor vira informação útil — para o próprio corretor, primeiro.
+            Cada lead que entra, cada contato feito, cada visita realizada é medido em tempo real e devolvido de forma simples e visual. Você vê o próprio funil, o tempo médio de resposta, e como evolui de uma semana para a outra. Pela primeira vez, o esforço do corretor vira informação útil, para o próprio corretor, primeiro.
           </BodyCopy>
           <div className="flex gap-3 pt-2">
             {[TrendingUp, BarChart3, Target, Clock].map((I, i) => (
@@ -1591,7 +1591,7 @@ const SLIDES: SlideDef[] = [
     pdf: {
       eyebrow: "Prova real",
       title: "Sua performance, em uma olhada.",
-      body: "Esta é a tela real do seu relatório pessoal. Em uma única olhada você entende como está o seu mês: leads atendidos, taxa de conversão, evolução em relação ao período anterior. Nada de planilha complicada — informação direta, da forma como o corretor precisa enxergar.",
+      body: "Esta é a tela real do seu relatório pessoal. Em uma única olhada você entende como está o seu mês: leads atendidos, taxa de conversão, evolução em relação ao período anterior. Nada de planilha complicada, informação direta, da forma como o corretor precisa enxergar.",
     },
     render: () => (
       <SlideShell eyebrow="Prova real">
@@ -1601,7 +1601,7 @@ const SLIDES: SlideDef[] = [
             Sua performance, <span style={{ color: GOLD }}>em uma olhada</span>.
           </h3>
           <BodyCopy className="mx-auto text-center">
-            Em uma única olhada você entende o seu mês: leads atendidos, taxa de conversão, evolução em relação ao período anterior. Nada de planilha — informação direta, do jeito que o corretor precisa enxergar.
+            Em uma única olhada você entende o seu mês: leads atendidos, taxa de conversão, evolução em relação ao período anterior. Nada de planilha, informação direta, do jeito que o corretor precisa enxergar.
           </BodyCopy>
           <div className="flex justify-center pt-3">
             <div className="w-full max-w-3xl"><MockDashboard /></div>
@@ -1618,7 +1618,7 @@ const SLIDES: SlideDef[] = [
     pdf: {
       eyebrow: "Metas e Conquistas",
       title: "Cada esforço seu, finalmente reconhecido.",
-      body: "O sistema acompanha suas metas em tempo real e celebra suas conquistas automaticamente: resposta relâmpago, top de visitas da semana, sequência de atendimentos sem falha. Cada marco vira uma badge no seu perfil e uma postagem no feed do time. É a transformação do esforço silencioso em conquista visível — primeiro para você, depois para o grupo.",
+      body: "O sistema acompanha suas metas em tempo real e celebra suas conquistas automaticamente: resposta relâmpago, top de visitas da semana, sequência de atendimentos sem falha. Cada marco vira uma badge no seu perfil e uma postagem no feed do time. É a transformação do esforço silencioso em conquista visível, primeiro para você, depois para o grupo.",
       cards: [
         { title: "Metas", body: "Progresso em tempo real." },
         { title: "Badges", body: "Resposta relâmpago, top do mês, mais visitas." },
@@ -1659,7 +1659,7 @@ const SLIDES: SlideDef[] = [
     pdf: {
       eyebrow: "Cultura",
       title: "Você não vende sozinho. Você é parte de um time.",
-      body: "O Nexus tem um feed interno e stories, no estilo das redes sociais que você já usa. Cada conquista, cada visita marcante, cada chave entregue pode virar um post para o time inteiro ver. Não é vitrine — é cultura viva: corretor reconhece corretor, todo dia, sem depender de reunião mensal para sentir que pertence.",
+      body: "O Nexus tem um feed interno e stories, no estilo das redes sociais que você já usa. Cada conquista, cada visita marcante, cada chave entregue pode virar um post para o time inteiro ver. Não é vitrine, é cultura viva: corretor reconhece corretor, todo dia, sem depender de reunião mensal para sentir que pertence.",
     },
     render: () => (
       <SlideShell eyebrow="Cultura">
@@ -1668,7 +1668,7 @@ const SLIDES: SlideDef[] = [
             Você não vende sozinho.<br /><span style={{ color: GOLD }}>Você é time</span>.
           </Headline>
           <BodyCopy>
-            O Nexus tem feed interno e stories, no estilo das redes que você já usa. Cada conquista, visita marcante, chave entregue pode virar post para o time ver. Não é vitrine — é cultura viva: corretor reconhece corretor, todo dia.
+            O Nexus tem feed interno e stories, no estilo das redes que você já usa. Cada conquista, visita marcante, chave entregue pode virar post para o time ver. Não é vitrine, é cultura viva: corretor reconhece corretor, todo dia.
           </BodyCopy>
           <div className="flex gap-3 pt-2">
             {[Newspaper, Heart, MessageCircle, Trophy].map((I, i) => (
@@ -1689,7 +1689,7 @@ const SLIDES: SlideDef[] = [
     pdf: {
       eyebrow: "Prova real",
       title: "Conquistas compartilhadas. Time conectado.",
-      body: "Esta é a tela real do feed do time. Quando alguém bate meta, fecha venda, recebe uma badge, o sistema avisa todo mundo de forma natural — não é spam, é vibração de equipe. O resultado: um clima de time forte, mesmo entre corretores que quase não se cruzam no escritório.",
+      body: "Esta é a tela real do feed do time. Quando alguém bate meta, fecha venda, recebe uma badge, o sistema avisa todo mundo de forma natural, não é spam, é vibração de equipe. O resultado: um clima de time forte, mesmo entre corretores que quase não se cruzam no escritório.",
     },
     render: () => (
       <SlideShell eyebrow="Prova real">
@@ -1700,7 +1700,7 @@ const SLIDES: SlideDef[] = [
               Conquista de um,<br /><span style={{ color: GOLD }}>orgulho de todos</span>.
             </h3>
             <BodyCopy>
-              Quando alguém bate meta, fecha venda, recebe uma badge, o sistema avisa todo mundo de forma natural — não é spam, é vibração de equipe. Clima de time forte, mesmo entre quem quase não se cruza no escritório.
+              Quando alguém bate meta, fecha venda, recebe uma badge, o sistema avisa todo mundo de forma natural, não é spam, é vibração de equipe. Clima de time forte, mesmo entre quem quase não se cruza no escritório.
             </BodyCopy>
           </div>
           <div className="flex justify-center scale-105"><MockFeedPost /></div>
@@ -1716,7 +1716,7 @@ const SLIDES: SlideDef[] = [
     pdf: {
       eyebrow: "Mobile",
       title: "No celular. Como app de verdade. Em qualquer lugar.",
-      body: "O Nexus funciona como um aplicativo de verdade no seu celular: ícone na tela inicial, notificações, abertura instantânea — sem precisar entrar em loja de aplicativos nem passar por instalação demorada. Em poucos segundos, está pronto para usar no Android, iPhone ou tablet. A liberdade de trabalhar de qualquer lugar, com a fluidez de um app nativo.",
+      body: "O Nexus funciona como um aplicativo de verdade no seu celular: ícone na tela inicial, notificações, abertura instantânea, sem precisar entrar em loja de aplicativos nem passar por instalação demorada. Em poucos segundos, está pronto para usar no Android, iPhone ou tablet. A liberdade de trabalhar de qualquer lugar, com a fluidez de um app nativo.",
     },
     render: () => (
       <SlideShell eyebrow="Mobile">
@@ -1726,7 +1726,7 @@ const SLIDES: SlideDef[] = [
               No celular.<br /><span style={{ color: GOLD }}>Em qualquer lugar</span>.
             </Headline>
             <BodyCopy>
-              Funciona como app de verdade: ícone na tela inicial, notificações, abertura instantânea — sem loja, sem instalação demorada. Em segundos, pronto para usar no Android, iPhone ou tablet. Liberdade de trabalhar de qualquer lugar, com fluidez de app nativo.
+              Funciona como app de verdade: ícone na tela inicial, notificações, abertura instantânea, sem loja, sem instalação demorada. Em segundos, pronto para usar no Android, iPhone ou tablet. Liberdade de trabalhar de qualquer lugar, com fluidez de app nativo.
             </BodyCopy>
             <div className="flex items-center gap-2 text-xs opacity-70 pt-1">
               <Smartphone className="h-4 w-4" /> Android · iPhone · Tablet
@@ -1744,7 +1744,7 @@ const SLIDES: SlideDef[] = [
     title: "Você é um dos próximos?",
     pdf: {
       title: "Isso não é mais uma ferramenta. É uma forma diferente de ser corretor.",
-      body: "O Ecossistema Nexus não nasceu para substituir o corretor — nasceu para devolver a ele o tempo, o reconhecimento e a tranquilidade que esse mercado costuma roubar. Quem entra agora não está testando um software: está escolhendo uma forma diferente de exercer a profissão. A pergunta que fica é simples: você é um dos próximos?",
+      body: "O Ecossistema Nexus não nasceu para substituir o corretor, nasceu para devolver a ele o tempo, o reconhecimento e a tranquilidade que esse mercado costuma roubar. Quem entra agora não está testando um software: está escolhendo uma forma diferente de exercer a profissão. A pergunta que fica é simples: você é um dos próximos?",
     },
     render: () => (
       <SlideShell>
@@ -1757,7 +1757,7 @@ const SLIDES: SlideDef[] = [
             <span style={{ color: GOLD }}>É uma forma diferente<br />de ser corretor.</span>
           </h2>
           <BodyCopy className="mx-auto text-center">
-            O Nexus não nasceu para substituir o corretor — nasceu para devolver o tempo, o reconhecimento e a tranquilidade que esse mercado costuma roubar. Quem entra agora não está testando um software: está escolhendo uma forma diferente de exercer a profissão.
+            O Nexus não nasceu para substituir o corretor, nasceu para devolver o tempo, o reconhecimento e a tranquilidade que esse mercado costuma roubar. Quem entra agora não está testando um software: está escolhendo uma forma diferente de exercer a profissão.
           </BodyCopy>
           <IllusFinale />
           <p className="text-3xl md:text-4xl opacity-95 font-light" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
@@ -1991,7 +1991,7 @@ function generateGuide() {
   // 1
   newPage();
   h1("1. Visão Geral");
-  p("O Ecossistema Nexus é a plataforma proprietária da Iuri Rodrigues Imóveis que centraliza captação, atendimento, agenda, portfólio, gestão de chaves, relatórios e cultura de equipe — tudo conectado e operado também pela assistente de IA Laura.");
+  p("O Ecossistema Nexus é a plataforma proprietária da Iuri Rodrigues Imóveis que centraliza captação, atendimento, agenda, portfólio, gestão de chaves, relatórios e cultura de equipe, tudo conectado e operado também pela assistente de IA Laura.");
   p("O Nexus foi desenhado para que o corretor passe menos tempo preenchendo sistemas e mais tempo fechando negócios. Cada módulo conversa com o próximo: o lead que chega no Plantão vira visita na Agenda, retira chave na Gestão de Chaves, gera fechamento nos Relatórios e celebração no Feed.");
 
   // 2
@@ -2019,7 +2019,7 @@ function generateGuide() {
     "Pesquisa o portfólio por região, preço e tipo",
     "Disponível 24h, com confirmação antes de agir",
   ]);
-  p("Importante: a Laura não gerencia escalas de plantão. Ela atua como camada de produtividade — você fala, ela faz a parte operacional para você.");
+  p("Importante: a Laura não gerencia escalas de plantão. Ela atua como camada de produtividade, você fala, ela faz a parte operacional para você.");
 
   h2("Gestão de Chaves");
   p("Controle de retirada e devolução por foto, com histórico em tempo real. Reduz perdas e dá rastreabilidade total.");
@@ -2035,14 +2035,14 @@ function generateGuide() {
   bullets(["Barra de progresso da meta", "Badges automáticas (ex: resposta relâmpago)", "Ranking da equipe"]);
 
   h2("Feed Interno");
-  p("Rede social interna com stories de 24h, curtidas e comentários — para reconhecer conquistas, compartilhar bastidores e manter o time conectado.");
+  p("Rede social interna com stories de 24h, curtidas e comentários, para reconhecer conquistas, compartilhar bastidores e manter o time conectado.");
   bullets(["Posts de foto, vídeo, áudio e texto", "Stories de 24h", "Curtidas e comentários"]);
 
   // 3
   newPage();
   h1("3. Benefícios para o Corretor");
   bullets([
-    "Nunca mais perder uma oportunidade — leads chegam atribuídos e com prazo",
+    "Nunca mais perder uma oportunidade, leads chegam atribuídos e com prazo",
     "Mais tempo vendendo, menos preenchendo sistemas",
     "Agenda organizada num único lugar",
     "Portfólio sempre atualizado, no bolso",
@@ -2066,7 +2066,7 @@ function generateGuide() {
   h1("5. Perguntas Frequentes");
 
   h2("A Laura pode mexer no meu plantão?");
-  p("Não. A Laura é uma camada de produtividade. Ela atualiza disponibilidade, registra visitas, pesquisa portfólio e organiza prioridades — não altera escalas de plantão.");
+  p("Não. A Laura é uma camada de produtividade. Ela atualiza disponibilidade, registra visitas, pesquisa portfólio e organiza prioridades, não altera escalas de plantão.");
 
   h2("Preciso instalar algum aplicativo?");
   p("Não. O Nexus funciona como PWA: você instala direto pelo navegador, no Android ou iPhone, sem passar por loja de aplicativos.");
@@ -2078,7 +2078,7 @@ function generateGuide() {
   p("Sim. Cada perfil enxerga apenas o que é seu (RLS no banco), e a Laura confirma antes de qualquer ação sensível.");
 
   h2("Posso pedir para a Laura por áudio ou foto?");
-  p("Sim. A Laura aceita texto, áudio e imagem — por exemplo, foto da chave retirada para registrar automaticamente.");
+  p("Sim. A Laura aceita texto, áudio e imagem, por exemplo, foto da chave retirada para registrar automaticamente.");
 
   // Footer numbering pass
   const total = pdf.getNumberOfPages();
