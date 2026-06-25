@@ -184,8 +184,8 @@ function CandidatoCard({ candidato: c, expanded, onToggle, onChanged }: { candid
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant={c.status === "arquivado" ? "secondary" : "default"}>
-              {c.status === "arquivado" ? "Arquivado" : "Pendente"}
+            <Badge variant={c.status === "arquivado" ? "secondary" : c.status === "recebido_confirmado" ? "outline" : "default"} className={c.status === "recebido_confirmado" ? "border-emerald-500/40 text-emerald-700 dark:text-emerald-400" : undefined}>
+              {c.status === "arquivado" ? "Arquivado" : c.status === "recebido_confirmado" ? "Recebido" : "Pendente"}
             </Badge>
             <span className="text-xs text-muted-foreground">
               Enviado em {new Date(c.created_at).toLocaleDateString("pt-BR")}
