@@ -11,6 +11,28 @@ import {
   type CaptacaoExecutivo,
 } from "@/lib/captacao.constants";
 import logoAsset from "@/assets/logo_iuri_rodrigues_v2.png.asset.json";
+import { ShieldCheck, Cpu, Scale } from "lucide-react";
+
+const PILARES = [
+  {
+    icon: ShieldCheck,
+    titulo: "Força de uma marca que já conquistou o mercado",
+    texto:
+      "Anos de atuação consolidada no Rio de Janeiro e Baixada Fluminense construíram uma reputação que abre portas. Clientes reconhecem o nome, indicam para outros e voltam a fechar negócio com a Iuri Rodrigues Imóveis. Trabalhar com uma marca respeitada muda completamente a forma como você é recebido em cada negociação.",
+  },
+  {
+    icon: Cpu,
+    titulo: "Tecnologia que nenhuma outra imobiliária da região tem",
+    texto:
+      "Desenvolvemos o Sistema Nexus, nosso próprio ecossistema digital com inteligência artificial integrada, a Laura. Gerencie seus leads, consulte o portfólio completo de imóveis, acompanhe sua agenda e organize toda sua rotina em um só lugar, direto do celular. Enquanto outros corretores ainda usam planilha e WhatsApp pessoal para tudo, você trabalha com tecnologia de ponta.",
+  },
+  {
+    icon: Scale,
+    titulo: "Oportunidades distribuídas com justiça",
+    texto:
+      "Aqui, leads não ficam perdidos em grupo de WhatsApp nem favorecem quem grita mais alto. Nosso sistema distribui oportunidades de forma automática e equilibrada, e acompanha seu desempenho com metas e conquistas reconhecidas por todo o time. Seu crescimento aqui depende do seu esforço, não de sorte.",
+  },
+];
 
 const searchSchema = z.object({
   ref: z.enum(["barra", "recreio", "belford", "mesquita"]).optional(),
