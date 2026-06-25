@@ -285,6 +285,91 @@ export function useHojeData() {
     },
   });
 
+  // === Administrativo (Larissa) ===
+  const contratosVencendo = useQuery({
+    queryKey: ["hoje-admin-contratos", uid, isAdministrativo],
+    enabled: !!uid && isAdministrativo,
+    queryFn: async (): Promise<ContratoVencendo[]> => {
+      const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+      const limite = new Date(hoje); limite.setDate(limite.getDate() + 90);
+      const toIso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      const { data } = await supabase
+        .from("contratos")
+        .select("id, locatario_nome, data_fim, valor_aluguel, status")
+        .gte("data_fim", toIso(hoje))
+        .lte("data_fim", toIso(limite))
+        .order("data_fim", { ascending: true });
+      return ((data ?? []) as Array<{ id: string; locatario_nome: string | null; data_fim: string; valor_aluguel: number | null; status: string | null }>)
+        .filter((c) => (c.status ?? "ativo") !== "encerrado" && (c.status ?? "ativo") !== "cancelado")
+        .map((c) => {
+          const fim = new Date(c.data_fim + "T00:00:00");
+          const dias = Math.max(0, Math.round((fim.getTime() - hoje.getTime()) / 86400_000));
+          return { id: c.id, locatario_nome: c.locatario_nome, data_fim: c.data_fim, valor_aluguel: c.valor_aluguel, dias_para_vencer: dias };
+        });
+    },
+  });
+
+  const pagamentosPendentes = useQuery({
+    queryKey: ["hoje-admin-pagamentos", uid, isAdministrativo],
+    enabled: !!uid && isAdministrativo,
+    queryFn: async (): Promise<PagamentoPendente[]> => {
+      const hoje = new Date();
+      const fimMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+      const fimMesIso = `${fimMes.getFullYear()}-${String(fimMes.getMonth() + 1).padStart(2, "0")}-${String(fimMes.getDate()).padStart(2, "0")}`;
+      const { data } = await (supabase as unknown as { from: (t: string) => any }).from("pagamentos")
+        .select("id, contrato_id, mes_referencia, valor_previsto, status")
+        .in("status", ["pendente", "atrasado"])
+        .lte("mes_referencia", fimMesIso)
+        .order("mes_referencia", { ascending: true });
+      const rows = (data ?? []) as Array<{ id: string; contrato_id: string; mes_referencia: string; valor_previsto: number; status: string }>;
+      if (!rows.length) return [];
+      const contratoIds = Array.from(new Set(rows.map((r) => r.contrato_id)));
+      const { data: cs } = await supabase
+        .from("contratos")
+        .select("id, locatario_nome")
+        .in("id", contratoIds);
+      const nameMap = new Map<string, string | null>(((cs ?? []) as Array<{ id: string; locatario_nome: string | null }>).map((c) => [c.id, c.locatario_nome]));
+      return rows.map((r) => ({ ...r, locatario_nome: nameMap.get(r.contrato_id) ?? null }));
+    },
+  });
+
+  const candidatosPendentesAdmin = useQuery({
+    queryKey: ["hoje-admin-candidatos", uid, isAdministrativo],
+    enabled: !!uid && isAdministrativo,
+    queryFn: async (): Promise<CandidatoPendenteAdmin[]> => {
+      const { data } = await supabase
+        .from("candidatos")
+        .select("id, nome, telefone, regiao, created_at, status")
+        .eq("status", "pendente_revisao")
+        .order("created_at", { ascending: true })
+        .limit(100);
+      return ((data ?? []) as Array<{ id: string; nome: string; telefone: string | null; regiao: string | null; created_at: string }>).map((c) => ({
+        id: c.id, nome: c.nome, telefone: c.telefone, regiao: c.regiao, created_at: c.created_at,
+      }));
+    },
+  });
+
+  const chavesAdmin = useQuery({
+    queryKey: ["hoje-admin-chaves", uid, isAdministrativo],
+    enabled: !!uid && isAdministrativo,
+    queryFn: async (): Promise<ChaveAtrasada[]> => {
+      const { data: cfg } = await supabase
+        .from("configuracoes")
+        .select("valor")
+        .eq("chave", "chaves_atraso_horas")
+        .maybeSingle();
+      const horasLimite = typeof cfg?.valor === "number" ? cfg!.valor : 24;
+      const limite = new Date(Date.now() - horasLimite * 3600_000).toISOString();
+      const { data } = await supabase
+        .from("imoveis")
+        .select("id, codigo, rua, numero, bairro, chave_retirada_em")
+        .not("chave_retirada_em", "is", null)
+        .lt("chave_retirada_em", limite)
+        .limit(100);
+      return (data ?? []) as ChaveAtrasada[];
+    },
+  });
+
   // Realtime — invalidação leve por tabela
   // Nome de canal único por montagem (evita colisão entre múltiplas
   // instâncias do hook — ex.: HojeIconButton no header + rota /hoje).
