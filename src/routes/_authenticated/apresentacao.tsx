@@ -1091,19 +1091,8 @@ const SLIDES: SlideDef[] = [
           <BodyCopy>
             A rotina virou uma colcha de retalhos: chave numa gaveta, follow-up num caderno, imóveis em três grupos de WhatsApp, visitas em post-its. Cada informação mora em um lugar, e nenhuma conversa entre si. Quando algo escapa — e sempre escapa — quem paga é você.
           </BodyCopy>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { i: Key, t: "Chave numa gaveta" },
-              { i: FileText, t: "Follow-up num caderno" },
-              { i: MessageCircle, t: "Imóvel num grupo" },
-              { i: CalendarDays, t: "Visita num post-it" },
-            ].map((b, i) => (
-              <GlassCard key={i} className="text-center py-6">
-                <b.i className="h-9 w-9 mx-auto mb-3 opacity-60" />
-                <div className="text-sm opacity-80">{b.t}</div>
-              </GlassCard>
-            ))}
-          </div>
+          <IllusChaos />
+
         </div>
       </SlideShell>
     ),
