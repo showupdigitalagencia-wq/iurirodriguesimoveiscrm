@@ -341,7 +341,7 @@ export type CandidatoRow = {
   cpf_path: string | null;
   creci_path: string | null;
   comprovante_path: string | null;
-  status: "pendente_revisao" | "arquivado";
+  status: "pendente_revisao" | "recebido_confirmado" | "arquivado";
   lead_id: string | null;
   responsavel_id: string | null;
   drive_folder_id: string | null;
