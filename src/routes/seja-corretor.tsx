@@ -311,12 +311,90 @@ function SejaCorretorPage() {
           <div
             className={
               execsToShow.length === 1
-                ? "max-w-xl mx-auto"
+                ? "max-w-4xl mx-auto"
                 : "grid grid-cols-1 sm:grid-cols-2 gap-5"
             }
           >
             {execsToShow.map((exec) => {
               const photoUrl = execPhotos[exec.ref] ?? null;
+              const isSolo = execsToShow.length === 1;
+
+              if (isSolo) {
+                return (
+                  <div
+                    key={exec.ref}
+                    className="rounded-3xl overflow-hidden grid grid-cols-1 md:grid-cols-[minmax(0,42%)_1fr]"
+                    style={{
+                      background: "#0F1626",
+                      border: `1px solid ${GOLD}44`,
+                      boxShadow: `0 40px 100px -40px ${GOLD}33, 0 20px 60px -30px rgba(0,0,0,0.9)`,
+                    }}
+                  >
+                    {/* FOTO — coluna esquerda */}
+                    <div className="relative p-6 md:p-8 flex items-center justify-center" style={{ background: "#0A0E1A" }}>
+                      <div
+                        className="pointer-events-none absolute inset-0"
+                        style={{
+                          background: `radial-gradient(60% 50% at 50% 50%, ${GOLD}22, transparent 70%)`,
+                        }}
+                      />
+                      <div
+                        className="relative w-full max-w-[360px] aspect-[3/4] rounded-2xl overflow-hidden flex items-center justify-center"
+                        style={{
+                          background: "#141B2E",
+                          border: `2px solid ${GOLD}`,
+                          boxShadow: `0 0 0 1px ${GOLD}33, 0 30px 70px -20px ${GOLD}55, 0 20px 60px -20px rgba(0,0,0,0.8)`,
+                        }}
+                      >
+                        {photoUrl ? (
+                          <img src={photoUrl} alt={exec.nome} className="w-full h-full object-cover" />
+                        ) : (
+                          <span
+                            style={{
+                              color: GOLD,
+                              fontFamily: SERIF,
+                              fontSize: 96,
+                              fontWeight: 500,
+                              letterSpacing: "-0.02em",
+                            }}
+                          >
+                            {initials(exec.nome)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* TEXTO — coluna direita */}
+                    <div className="p-7 md:p-10 flex flex-col justify-center space-y-5">
+                      <div>
+                        <div className="text-[10px] md:text-xs uppercase tracking-[0.45em] text-white/50 mb-2">
+                          {exec.regiao}
+                        </div>
+                        <h3
+                          className="text-3xl md:text-5xl leading-[1.05]"
+                          style={{ fontFamily: SERIF, color: GOLD, fontWeight: 500, letterSpacing: "-0.01em" }}
+                        >
+                          {exec.nome}
+                        </h3>
+                      </div>
+                      <div className="h-px w-16" style={{ background: `${GOLD}66` }} />
+                      <p className="text-white/75 text-base md:text-lg leading-relaxed">
+                        {exec.descricao}
+                      </p>
+                      <a
+                        href={whatsappLink(exec)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-md font-semibold text-sm uppercase tracking-[0.2em] transition-transform hover:scale-[1.02] self-start"
+                        style={{ background: GOLD, color: "#0A0E1A", boxShadow: `0 18px 50px -18px ${GOLD}99` }}
+                      >
+                        Falar no WhatsApp →
+                      </a>
+                    </div>
+                  </div>
+                );
+              }
+
               return (
               <div
                 key={exec.ref}
@@ -327,14 +405,15 @@ function SejaCorretorPage() {
                   <div
                     className="shrink-0 rounded-full overflow-hidden flex items-center justify-center"
                     style={{
-                      width: 72,
-                      height: 72,
+                      width: 96,
+                      height: 96,
                       background: "#141B2E",
-                      border: `1px solid ${GOLD}55`,
+                      border: `2px solid ${GOLD}`,
                       color: GOLD,
                       fontFamily: SERIF,
-                      fontSize: 24,
+                      fontSize: 30,
                       fontWeight: 500,
+                      boxShadow: `0 0 0 1px ${GOLD}33, 0 18px 40px -15px ${GOLD}66`,
                     }}
                   >
                     {photoUrl ? (
@@ -371,6 +450,7 @@ function SejaCorretorPage() {
               );
             })}
           </div>
+
         </div>
       </section>
 
