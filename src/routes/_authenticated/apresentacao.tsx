@@ -7,7 +7,7 @@ import {
   CalendarDays, Key, BarChart3, Trophy, Newspaper, Smartphone,
   Target, CheckCircle2, Sparkles, Heart, Users,
   Bed, Bath, Car, MapPin, Image as ImageIcon, MessageCircle, Share2,
-  Zap, Flame, TrendingUp, Clock, Bell, ArrowRight, ArrowDown, X, Check,
+  Zap, Flame, TrendingUp, Clock, Bell, ArrowRight, X, Check,
   Camera, Search, Video, FileText, Award, BookOpen,
 } from "lucide-react";
 import jsPDF from "jspdf";
