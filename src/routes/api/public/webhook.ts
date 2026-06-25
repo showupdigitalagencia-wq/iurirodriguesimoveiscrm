@@ -307,7 +307,7 @@ export const Route = createFileRoute("/api/public/webhook")({
 
         const { data: lead, error } = await supabaseAdmin.from("leads").insert({
           nome,
-          telefone: telefone.replace(/\D/g, ""),
+          telefone: normalizePhoneBR(telefone) ?? telefone.replace(/\D/g, ""),
           email: email ?? null,
           is_corretor: isCaptacaoCorretor,
           regiao,
