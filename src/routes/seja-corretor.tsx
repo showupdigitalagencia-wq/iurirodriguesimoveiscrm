@@ -267,7 +267,7 @@ function SejaCorretorPage() {
           </h2>
           <p className="text-white/70 text-base md:text-lg leading-relaxed">
             Aqui dentro tem método, leads, mentoria e tecnologia. Por isso seguimos um padrão.
-            Quem entra, entra para crescer — não para tentar. Se você quer apenas plantão e
+            Quem entra, entra para crescer, não para tentar. Se você quer apenas plantão e
             placa em poste, este lugar não é para você.
           </p>
           <p className="text-white/70 text-base md:text-lg leading-relaxed">
