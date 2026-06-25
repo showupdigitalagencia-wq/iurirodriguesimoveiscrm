@@ -76,7 +76,11 @@ function HojePage() {
     data.followup.length === 0 &&
     data.chaves.length === 0 &&
     data.candidatos.length === 0 &&
-    data.reunioes.length === 0;
+    data.reunioes.length === 0 &&
+    data.contratosVencendo.length === 0 &&
+    data.pagamentosPendentes.length === 0 &&
+    data.candidatosPendentesAdmin.length === 0 &&
+    data.chavesAdmin.length === 0;
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-6 space-y-5">
