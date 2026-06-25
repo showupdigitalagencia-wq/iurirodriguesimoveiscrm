@@ -154,19 +154,6 @@ function SejaCorretorPage() {
             para você vender mais — com método, respaldo e presença real em cada negociação.
           </p>
 
-          <div className="pt-2">
-            <a
-              href="#executivos"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-md font-semibold text-sm md:text-base uppercase tracking-[0.2em] transition-transform hover:scale-[1.03]"
-              style={{
-                background: GOLD,
-                color: "#0A0E1A",
-                boxShadow: `0 18px 50px -18px ${GOLD}99`,
-              }}
-            >
-              Quero fazer parte →
-            </a>
-          </div>
         </div>
       </section>
 
