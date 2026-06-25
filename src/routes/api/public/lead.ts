@@ -56,7 +56,7 @@ export const Route = createFileRoute("/api/public/lead")({
           .from("responsaveis").select("id, whatsapp, nome").eq("canal", canal).maybeSingle();
 
         const { data: lead, error } = await supabaseAdmin.from("leads").insert({
-          nome: data.nome, telefone: data.telefone.replace(/\D/g, ""),
+          nome: data.nome, telefone: normalizePhoneBR(data.telefone) ?? data.telefone.replace(/\D/g, ""),
           email: data.email ?? null, is_corretor: data.is_corretor ?? false,
           creci: data.creci ?? null, regiao: data.regiao,
           tipo_imovel: data.tipo_imovel ?? null, faixa_valor: data.faixa_valor ?? null,
