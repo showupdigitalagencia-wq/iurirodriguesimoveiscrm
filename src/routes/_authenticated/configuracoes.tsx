@@ -29,6 +29,7 @@ import { exportSistemaZip } from "@/lib/export-sistema.functions";
 import { listarBackups, gerarUrlBackup, rodarBackupManual } from "@/lib/backups.functions";
 import { Download, Archive, RefreshCcw } from "lucide-react";
 import { FotoPerfilSection } from "@/components/foto-perfil-section";
+import { listResponsaveisWhatsapp, updateResponsavelWhatsapp } from "@/lib/responsaveis-admin.functions";
 
 type Resp = { id: string; canal: string; nome: string; whatsapp: string };
 type Mapping = {
@@ -622,21 +623,25 @@ function MinhaContaSection() {
 function ResponsaveisSection() {
   const [resps, setResps] = useState<Resp[]>([]);
   const [saving, setSaving] = useState<string | null>(null);
+  const listResp = useServerFn(listResponsaveisWhatsapp);
+  const updateResp = useServerFn(updateResponsavelWhatsapp);
 
   useEffect(() => {
-    supabase.from("responsaveis").select("id, canal, nome, whatsapp").then(({ data }) => {
-      setResps((data as Resp[]) ?? []);
-    });
-  }, []);
+    listResp({} as never)
+      .then((data: unknown) => setResps((data as Resp[]) ?? []))
+      .catch((e: Error) => toast.error(e.message));
+  }, [listResp]);
 
   async function save(r: Resp) {
     setSaving(r.id);
-    const { error } = await supabase.from("responsaveis")
-      .update({ nome: r.nome, whatsapp: r.whatsapp.replace(/\D/g, "") })
-      .eq("id", r.id);
-    setSaving(null);
-    if (error) toast.error(error.message);
-    else toast.success("Salvo");
+    try {
+      await updateResp({ data: { id: r.id, nome: r.nome, whatsapp: r.whatsapp } });
+      toast.success("Salvo");
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setSaving(null);
+    }
   }
 
   return (
