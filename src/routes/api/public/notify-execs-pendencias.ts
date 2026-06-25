@@ -7,7 +7,7 @@ import { sendOneSignalPush } from "@/lib/onesignal.server";
 //   - "morning"  → "☀️ Bom dia! Você tem N itens..."
 //   - "evening"  → "🌙 Ainda restam N pendências..."
 //   - "manual"   → versão neutra (pra disparo sob demanda)
-// Regra: NÃO envia quando o total é 0 (não incomodar sem motivo).
+// Regra: TODOS recebem (quem está zerado recebe mensagem positiva "em dia").
 // POST https://sistemanexus.app/api/public/notify-execs-pendencias
 // body opcional: { mode?: "manual"|"morning"|"evening", dryRun?: bool, uids?: string[] }
 
@@ -174,13 +174,7 @@ export const Route = createFileRoute("/api/public/notify-execs-pendencias")({
             total,
           };
 
-          // Regra: NÃO envia quando total = 0
-          if (total === 0) {
-            results.push({ user: r.nome, skipped: "sem pendências", detalhe });
-            continue;
-          }
-
-          // Monta a mensagem por modo
+          // Monta a mensagem por modo (todos recebem, mesmo zerados)
           const partes: string[] = [];
           if (captacao) partes.push(`${captacao} em Captação`);
           if (vendas) partes.push(`${vendas} em Vendas`);
@@ -189,7 +183,18 @@ export const Route = createFileRoute("/api/public/notify-execs-pendencias")({
 
           let title: string;
           let message: string;
-          if (mode === "morning") {
+          if (total === 0) {
+            if (mode === "morning") {
+              title = "☀️ Bom dia!";
+              message = "✅ Você está em dia — sem pendências hoje. Bom trabalho!";
+            } else if (mode === "evening") {
+              title = "🌙 Dia tranquilo";
+              message = "✅ Você está em dia — sem pendências pendentes. Boa noite!";
+            } else {
+              title = "📋 Tudo certo";
+              message = "✅ Você está em dia — sem pendências hoje.";
+            }
+          } else if (mode === "morning") {
             title = "☀️ Bom dia! Resumo de hoje";
             message = `Você tem ${total} ${total === 1 ? "item" : "itens"} pra hoje: ${resumo}. Toque para ver.`;
           } else if (mode === "evening") {
@@ -199,6 +204,7 @@ export const Route = createFileRoute("/api/public/notify-execs-pendencias")({
             title = "📋 Suas pendências";
             message = `Você tem ${total} ${total === 1 ? "item" : "itens"}: ${resumo}. Toque para abrir a Central Hoje.`;
           }
+
 
           if (dryRun) {
             results.push({ user: r.nome, dryRun: true, title, message, detalhe, external_id: r.external_id });
