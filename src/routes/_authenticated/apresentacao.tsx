@@ -9,6 +9,7 @@ import {
   Bed, Bath, Car, MapPin, Image as ImageIcon, MessageCircle, Share2,
   Zap, Flame, TrendingUp, Clock, Bell, ArrowRight, X, Check,
   Camera, Search, Video, FileText, Award, BookOpen,
+  AlertTriangle, EyeOff, UserX, ShieldCheck, Lightbulb, Send, Layers,
 } from "lucide-react";
 import jsPDF from "jspdf";
 
@@ -434,581 +435,783 @@ const SLIDES: SlideDef[] = [
   {
     id: 1,
     title: "Capa",
-    pdf: { title: "Ecossistema Nexus", subtitle: "A tecnologia que trabalha para você", bullets: ["Iuri Rodrigues Imóveis"] },
-    render: () => (
-      <SlideShell>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-          <div className="space-y-7">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] tracking-[0.35em] uppercase" style={{ background: "rgba(212,175,55,0.12)", color: GOLD_SOFT, border: `1px solid ${GOLD}55` }}>
-              <Sparkles className="h-3.5 w-3.5" /> Apresentação institucional
-            </div>
-            <h1 className="text-7xl md:text-8xl font-bold tracking-tight leading-[0.95]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-              Ecossistema<br /><span style={{ color: GOLD }}>Nexus</span>
-            </h1>
-            <p className="text-2xl md:text-3xl opacity-90 font-light" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-              A tecnologia que <span style={{ color: GOLD_SOFT }}>trabalha para você</span>.
-            </p>
-            <div className="text-xs tracking-[0.35em] uppercase opacity-60 pt-4">Iuri Rodrigues Imóveis</div>
-          </div>
-          <div className="hidden md:flex items-center justify-center gap-6">
-            <div className="opacity-90"><MockPhoneFrame /></div>
-            <div className="space-y-4 self-end">
-              <div className="scale-90 origin-top-right"><MockHojeCard /></div>
-            </div>
-          </div>
-        </div>
-      </SlideShell>
-    ),
-  },
-
-  // 2 — Antes x Depois
-  {
-    id: 2,
-    title: "Antes x Depois",
-    pdf: {
-      eyebrow: "Antes x Depois",
-      title: "A virada de chave.",
-      cards: [
-        { title: "ANTES", body: "Leads perdidos · WhatsApp caótico · Agenda confusa · Sem acompanhamento" },
-        { title: "DEPOIS", body: "Tudo centralizado · IA auxiliando · Plantão automatizado · Relatórios em tempo real" },
-      ],
-    },
-    render: () => (
-      <SlideShell eyebrow="A virada de chave">
-        <div className="space-y-8">
-          <Headline>Antes <span style={{ color: GOLD }}>x</span> Depois.</Headline>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="rounded-2xl border p-7 space-y-3" style={{ background: "rgba(239,68,68,0.06)", borderColor: "rgba(239,68,68,0.3)" }}>
-              <div className="flex items-center gap-2 text-[11px] tracking-[0.3em] uppercase font-semibold" style={{ color: "#fca5a5" }}>Antes</div>
-              <ul className="space-y-3 text-base">
-                {["Leads perdidos no WhatsApp", "Agenda confusa e dispersa", "Falta de acompanhamento", "Sem visão de performance"].map((t, i) => (
-                  <li key={i} className="flex items-center gap-3"><X className="h-5 w-5 flex-shrink-0" style={{ color: "#ef4444" }} /><span className="opacity-90">{t}</span></li>
-                ))}
-              </ul>
-            </div>
-            <div className="rounded-2xl border p-7 space-y-3" style={{ background: "rgba(212,175,55,0.08)", borderColor: `${GOLD}55` }}>
-              <div className="flex items-center gap-2 text-[11px] tracking-[0.3em] uppercase font-semibold" style={{ color: GOLD_SOFT }}>Depois · Nexus</div>
-              <ul className="space-y-3 text-base">
-                {["Tudo centralizado em um só lugar", "IA Laura auxiliando 24h", "Plantão automatizado", "Relatórios em tempo real"].map((t, i) => (
-                  <li key={i} className="flex items-center gap-3"><Check className="h-5 w-5 flex-shrink-0" style={{ color: GOLD }} /><span>{t}</span></li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      </SlideShell>
-    ),
-  },
-
-  // 3 — Fluxograma
-  {
-    id: 3,
-    title: "Como funciona",
-    pdf: {
-      eyebrow: "Como funciona",
-      title: "Do lead ao fechamento, sem fricção.",
-      bullets: ["Lead → Plantão → Corretor → Agenda → Visita → Proposta → Fechamento"],
-    },
-    render: () => (
-      <SlideShell eyebrow="Como o Nexus funciona">
-        <div className="space-y-10">
-          <Headline>Do lead ao <span style={{ color: GOLD }}>fechamento</span>.</Headline>
-          <div className="flex flex-wrap items-center justify-center gap-3 md:gap-2">
-            {[
-              { i: Users, t: "Lead" },
-              { i: Radio, t: "Plantão" },
-              { i: Bot, t: "Corretor" },
-              { i: CalendarDays, t: "Agenda" },
-              { i: MapPin, t: "Visita" },
-              { i: FileText, t: "Proposta" },
-              { i: Trophy, t: "Fechamento" },
-            ].map((s, i, arr) => (
-              <React.Fragment key={i}>
-                <div className="flex flex-col items-center gap-2 px-3">
-                  <div className="h-16 w-16 rounded-2xl flex items-center justify-center border" style={{ background: "rgba(212,175,55,0.1)", borderColor: `${GOLD}66` }}>
-                    <s.i className="h-7 w-7" style={{ color: GOLD }} />
-                  </div>
-                  <div className="text-sm font-medium">{s.t}</div>
-                </div>
-                {i < arr.length - 1 && <ArrowRight className="h-5 w-5 opacity-50" style={{ color: GOLD }} />}
-              </React.Fragment>
-            ))}
-          </div>
-          <p className="text-center text-lg opacity-80">Cada etapa, conectada. <span style={{ color: GOLD_SOFT }}>Nada se perde no caminho</span>.</p>
-        </div>
-      </SlideShell>
-    ),
-  },
-
-  // 4 — Plantão
-  {
-    id: 4,
-    title: "Plantão",
-    pdf: {
-      eyebrow: "Sistema de Plantão",
-      title: "Mais velocidade = mais conversão.",
-      bullets: ["Distribuição automática", "10 minutos para atendimento", "Escalonamento automático", "Nenhuma oportunidade perdida"],
-    },
-    render: () => (
-      <SlideShell eyebrow="Sistema de Plantão">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-10 items-center">
-          <div className="md:col-span-2 space-y-5">
-            <Headline>Mais velocidade,<br /><span style={{ color: GOLD }}>mais conversão</span>.</Headline>
-            <ul className="space-y-2.5 text-base opacity-90">
-              {["Distribuição automática", "10 min para atendimento", "Escalonamento se demorar", "Nenhuma oportunidade perdida"].map((t, i) => (
-                <li key={i} className="flex items-start gap-2"><CheckCircle2 className="h-5 w-5 mt-0.5 flex-shrink-0" style={{ color: GOLD }} />{t}</li>
-              ))}
-            </ul>
-          </div>
-          <div className="md:col-span-3 flex justify-center">
-            <MockPlantaoCard />
-          </div>
-        </div>
-      </SlideShell>
-    ),
-  },
-
-  // 5 — Portfólio
-  {
-    id: 5,
-    title: "Portfólio",
-    pdf: {
-      eyebrow: "Portfólio Inteligente",
-      title: "Imóveis no seu bolso.",
-      bullets: ["Fotos profissionais", "Busca por região e preço", "Compartilhamento em um toque"],
-    },
-    render: () => (
-      <SlideShell eyebrow="Portfólio Inteligente">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-10 items-center">
-          <div className="md:col-span-2 space-y-5">
-            <Headline>Imóveis <span style={{ color: GOLD }}>no seu bolso</span>.</Headline>
-            <ul className="space-y-2.5 text-base opacity-90">
-              {[
-                { i: ImageIcon, t: "Fotos profissionais" },
-                { i: Search, t: "Busca por região e preço" },
-                { i: Share2, t: "Compartilhar em 1 toque" },
-              ].map((t, i) => (
-                <li key={i} className="flex items-start gap-2"><t.i className="h-5 w-5 mt-0.5 flex-shrink-0" style={{ color: GOLD }} />{t.t}</li>
-              ))}
-            </ul>
-          </div>
-          <div className="md:col-span-3 flex justify-center">
-            <MockImovelCard />
-          </div>
-        </div>
-      </SlideShell>
-    ),
-  },
-
-  // 6 — Agenda
-  {
-    id: 6,
-    title: "Agenda Nexus",
-    pdf: {
-      eyebrow: "Agenda Nexus",
-      title: "Seu dia organizado em um único lugar.",
-      bullets: ["Visitas e reuniões", "Integração Google Meet", "Organização diária automática"],
-    },
-    render: () => (
-      <SlideShell eyebrow="Agenda Nexus">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-10 items-center">
-          <div className="md:col-span-2 space-y-5">
-            <Headline>Seu dia <span style={{ color: GOLD }}>organizado</span>.</Headline>
-            <p className="text-lg opacity-80">Visitas, reuniões e Google Meet — tudo num único lugar.</p>
-            <ul className="space-y-2.5 text-base opacity-90">
-              {["Visitas e reuniões", "Google Meet integrado", "Organização automática"].map((t, i) => (
-                <li key={i} className="flex items-start gap-2"><CheckCircle2 className="h-5 w-5 mt-0.5 flex-shrink-0" style={{ color: GOLD }} />{t}</li>
-              ))}
-            </ul>
-          </div>
-          <div className="md:col-span-3 flex justify-center">
-            <MockAgendaCard />
-          </div>
-        </div>
-      </SlideShell>
-    ),
-  },
-
-  // 7 — Laura IA (chat real)
-  {
-    id: 7,
-    title: "Laura IA",
-    pdf: {
-      eyebrow: "Laura IA",
-      title: "Sua assistente de produtividade.",
-      bullets: [
-        "\"Estou disponível seg a sex, 10h–18h. Atualize minha disponibilidade.\" → Laura ajusta a agenda.",
-        "\"A visita com o João foi realizada.\" → Laura registra no sistema.",
-        "\"Quais são meus leads mais urgentes hoje?\" → Laura mostra prioridades.",
-        "\"Quais imóveis disponíveis na Barra até R$ 700 mil?\" → Laura busca no portfólio.",
-      ],
-    },
-    render: () => (
-      <SlideShell eyebrow="Laura IA · Sua assistente">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-          <div className="space-y-5">
-            <div className="flex items-center gap-3">
-              <div className="h-14 w-14 rounded-2xl flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${GOLD}, ${GOLD_SOFT})`, color: NAVY }}>
-                <Bot className="h-7 w-7" />
-              </div>
-              <Headline>Laura <span style={{ color: GOLD }}>IA</span></Headline>
-            </div>
-            <p className="text-lg opacity-85">Você fala. Ela <span style={{ color: GOLD_SOFT }}>faz direto no sistema</span>.</p>
-            <p className="text-sm opacity-70 italic border-l-2 pl-3" style={{ borderColor: GOLD }}>
-              "A Laura não substitui você. Ela elimina tarefas operacionais para que você tenha mais tempo para vender."
-            </p>
-          </div>
-          <div className="space-y-2.5">
-            {[
-              { q: "Estou disponível esta semana, seg a sex, das 10h às 18h. Atualize minha disponibilidade.", a: "Disponibilidade atualizada na sua agenda." },
-              { q: "A visita com o João foi realizada.", a: "Visita registrada. Quer agendar follow-up?" },
-              { q: "Quais meus leads mais urgentes hoje?", a: "3 follow-ups vencendo e 2 visitas confirmadas." },
-              { q: "Quais imóveis na Barra até R$ 700 mil?", a: "Encontrei 5 opções. Vou te mandar agora." },
-            ].map((m, i) => (
-              <div key={i} className="space-y-1">
-                <div className="rounded-2xl rounded-br-sm px-3.5 py-2 ml-auto max-w-[88%] text-[13px]" style={{ background: `${GOLD}22`, border: `1px solid ${GOLD}55` }}>
-                  {m.q}
-                </div>
-                <div className="rounded-2xl rounded-bl-sm px-3.5 py-2 max-w-[88%] text-[13px] flex gap-2" style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}>
-                  <Bot className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" style={{ color: GOLD_SOFT }} />
-                  <span>{m.a}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </SlideShell>
-    ),
-  },
-
-  // 8 — Laura na prática
-  {
-    id: 8,
-    title: "Laura na prática",
-    pdf: {
-      eyebrow: "Laura IA · Na prática",
-      title: "Menos tempo preenchendo. Mais tempo vendendo.",
-      cards: [
-        { title: "Agenda", body: "Organiza sua disponibilidade." },
-        { title: "Sistema", body: "Atualiza sem você navegar." },
-        { title: "Informação", body: "Encontra o que você precisa." },
-        { title: "Prioridades", body: "Mostra o que importa hoje." },
-        { title: "24/7", body: "Disponível a qualquer hora." },
-      ],
-    },
-    render: () => (
-      <SlideShell eyebrow="Laura na prática">
-        <div className="space-y-8">
-          <Headline>Menos preenchimento.<br /><span style={{ color: GOLD }}>Mais fechamento</span>.</Headline>
-          {/* Flow */}
-          <div className="flex items-center justify-center gap-4 md:gap-6 py-2">
-            {[
-              { i: Users, t: "Corretor" },
-              { i: Bot, t: "Laura" },
-              { i: Sparkles, t: "Nexus" },
-              { i: Trophy, t: "Resultado" },
-            ].map((s, i, arr) => (
-              <React.Fragment key={i}>
-                <div className="flex flex-col items-center gap-2">
-                  <div className="h-14 w-14 rounded-full flex items-center justify-center border-2" style={{ background: NAVY_2, borderColor: GOLD }}>
-                    <s.i className="h-6 w-6" style={{ color: GOLD }} />
-                  </div>
-                  <div className="text-xs uppercase tracking-wider">{s.t}</div>
-                </div>
-                {i < arr.length - 1 && <ArrowRight className="h-5 w-5" style={{ color: GOLD }} />}
-              </React.Fragment>
-            ))}
-          </div>
-          {/* Benefits */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-            {[
-              { i: CalendarDays, t: "Organiza sua agenda" },
-              { i: Sparkles, t: "Atualiza sem navegar" },
-              { i: Search, t: "Encontra rápido" },
-              { i: Target, t: "Prioriza o seu dia" },
-              { i: Clock, t: "Disponível 24h" },
-            ].map((b, i) => (
-              <GlassCard key={i} className="flex flex-col items-center text-center py-4">
-                <b.i className="h-6 w-6 mb-2" style={{ color: GOLD }} />
-                <div className="text-xs leading-tight">{b.t}</div>
-              </GlassCard>
-            ))}
-          </div>
-        </div>
-      </SlideShell>
-    ),
-  },
-
-  // 9 — Gestão de Chaves
-  {
-    id: 9,
-    title: "Gestão de Chaves",
-    pdf: {
-      eyebrow: "Gestão de Chaves",
-      title: "Controle total, sem perdas.",
-      bullets: ["Retirada por foto", "Devolução por foto", "Controle em tempo real"],
-    },
-    render: () => (
-      <SlideShell eyebrow="Gestão de Chaves">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-10 items-center">
-          <div className="md:col-span-2 space-y-5">
-            <Headline>Chave certa,<br />na <span style={{ color: GOLD }}>hora certa</span>.</Headline>
-            <ul className="space-y-2.5 text-base opacity-90">
-              {[
-                { i: Camera, t: "Retirada por foto" },
-                { i: Camera, t: "Devolução por foto" },
-                { i: Clock, t: "Controle em tempo real" },
-                { i: CheckCircle2, t: "Menos perdas, mais segurança" },
-              ].map((t, i) => (
-                <li key={i} className="flex items-start gap-2"><t.i className="h-5 w-5 mt-0.5 flex-shrink-0" style={{ color: GOLD }} />{t.t}</li>
-              ))}
-            </ul>
-          </div>
-          <div className="md:col-span-3 flex justify-center">
-            <MockChaveCard />
-          </div>
-        </div>
-      </SlideShell>
-    ),
-  },
-
-  // 10 — Central de Comando
-  {
-    id: 10,
-    title: "Central de Comando",
-    pdf: {
-      eyebrow: "Central Hoje",
-      title: "Você sempre sabe o que fazer a seguir.",
-      bullets: ["Follow-ups · Visitas · Pendências · Prioridades"],
-    },
-    render: () => (
-      <SlideShell eyebrow="Central de Comando">
-        <div className="space-y-7">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-            <div className="space-y-4">
-              <Headline>Você sempre sabe<br /><span style={{ color: GOLD }}>o que fazer a seguir</span>.</Headline>
-              <p className="text-lg opacity-85">Follow-ups, visitas, pendências e prioridades — numa única tela, sempre atualizada.</p>
-            </div>
-            <div className="flex justify-center">
-              <MockHojeCard />
-            </div>
-          </div>
-        </div>
-      </SlideShell>
-    ),
-  },
-
-  // 11 — Relatórios e Performance
-  {
-    id: 11,
-    title: "Relatórios",
-    pdf: {
-      eyebrow: "Relatórios e Performance",
-      title: "O que não é medido, não pode ser melhorado.",
-      bullets: ["Conversão · Leads · Visitas · Tempo de resposta · Fechamentos"],
-    },
-    render: () => (
-      <SlideShell eyebrow="Relatórios e Performance">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-8 items-center">
-          <div className="md:col-span-2 space-y-5">
-            <Headline>O que não é medido,<br /><span style={{ color: GOLD }}>não pode ser melhorado</span>.</Headline>
-            <ul className="space-y-2 text-sm opacity-90">
-              {["Conversão por etapa", "Leads e visitas", "Tempo de resposta", "Fechamentos do mês"].map((t, i) => (
-                <li key={i} className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 flex-shrink-0" style={{ color: GOLD }} />{t}</li>
-              ))}
-            </ul>
-          </div>
-          <div className="md:col-span-3 flex justify-center">
-            <MockDashboard />
-          </div>
-        </div>
-      </SlideShell>
-    ),
-  },
-
-  // 12 — Metas e Conquistas
-  {
-    id: 12,
-    title: "Metas e Conquistas",
-    pdf: {
-      eyebrow: "Metas e Conquistas",
-      title: "Seu crescimento, reconhecido.",
-      bullets: ["Barras de progresso", "Badges automáticas", "Ranking da equipe"],
-    },
-    render: () => (
-      <SlideShell eyebrow="Metas e Conquistas">
-        <div className="space-y-7">
-          <Headline>Seu esforço, <span style={{ color: GOLD }}>reconhecido</span>.</Headline>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {/* Meta */}
-            <GlassCard>
-              <div className="flex items-center gap-2 mb-4"><Target className="h-5 w-5" style={{ color: GOLD }} /><span className="text-sm uppercase tracking-wider opacity-70">Meta do mês</span></div>
-              <div className="text-4xl font-bold mb-2" style={{ color: GOLD }}>72%</div>
-              <div className="h-2.5 rounded-full overflow-hidden mb-2" style={{ background: "rgba(255,255,255,0.08)" }}>
-                <div className="h-full rounded-full" style={{ width: "72%", background: `linear-gradient(90deg, ${GOLD}, ${GOLD_SOFT})` }} />
-              </div>
-              <div className="text-xs opacity-60">R$ 18.000 de R$ 25.000</div>
-            </GlassCard>
-            {/* Badges */}
-            <GlassCard>
-              <div className="flex items-center gap-2 mb-4"><Award className="h-5 w-5" style={{ color: GOLD }} /><span className="text-sm uppercase tracking-wider opacity-70">Conquistas</span></div>
-              <div className="space-y-2.5">
-                {[
-                  { i: Trophy, t: "1ª venda do mês" },
-                  { i: Zap, t: "Resposta relâmpago" },
-                  { i: Flame, t: "3 visitas em 1 dia" },
-                ].map((b, i) => (
-                  <div key={i} className="flex items-center gap-3 rounded-lg p-2" style={{ background: "rgba(255,255,255,0.04)" }}>
-                    <div className="h-9 w-9 rounded-full flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${GOLD}, ${GOLD_SOFT})`, color: NAVY }}>
-                      <b.i className="h-4 w-4" />
-                    </div>
-                    <span className="text-sm">{b.t}</span>
-                  </div>
-                ))}
-              </div>
-            </GlassCard>
-            {/* Ranking */}
-            <GlassCard>
-              <div className="flex items-center gap-2 mb-4"><TrendingUp className="h-5 w-5" style={{ color: GOLD }} /><span className="text-sm uppercase tracking-wider opacity-70">Ranking</span></div>
-              <div className="space-y-2">
-                {[
-                  { p: 1, n: "Mariana S.", v: "R$ 32k" },
-                  { p: 2, n: "Pedro R.", v: "R$ 27k" },
-                  { p: 3, n: "Carlos L.", v: "R$ 19k" },
-                ].map((r, i) => (
-                  <div key={i} className="flex items-center gap-3 text-sm">
-                    <div className="h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: r.p === 1 ? GOLD : "rgba(255,255,255,0.1)", color: r.p === 1 ? NAVY : "white" }}>{r.p}</div>
-                    <span className="flex-1">{r.n}</span>
-                    <span style={{ color: GOLD_SOFT }} className="font-semibold">{r.v}</span>
-                  </div>
-                ))}
-              </div>
-            </GlassCard>
-          </div>
-        </div>
-      </SlideShell>
-    ),
-  },
-
-  // 13 — Feed Interno
-  {
-    id: 13,
-    title: "Feed Interno",
-    pdf: {
-      eyebrow: "Feed Interno",
-      title: "Um time conectado vende mais.",
-      bullets: ["Stories de 24h", "Curtidas e comentários", "Reconhecimento da equipe"],
-    },
-    render: () => (
-      <SlideShell eyebrow="Feed Interno">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-10 items-center">
-          <div className="md:col-span-2 space-y-5">
-            <Headline>Um time conectado,<br /><span style={{ color: GOLD }}>vende mais</span>.</Headline>
-            <ul className="space-y-2.5 text-base opacity-90">
-              {["Stories de 24h", "Curtidas e comentários", "Reconhecimento da equipe", "Cultura forte, todo dia"].map((t, i) => (
-                <li key={i} className="flex items-start gap-2"><CheckCircle2 className="h-5 w-5 mt-0.5 flex-shrink-0" style={{ color: GOLD }} />{t}</li>
-              ))}
-            </ul>
-          </div>
-          <div className="md:col-span-3 flex justify-center">
-            <MockFeedPost />
-          </div>
-        </div>
-      </SlideShell>
-    ),
-  },
-
-  // 14 — Mobile
-  {
-    id: 14,
-    title: "Mobile",
-    pdf: {
-      eyebrow: "Mobile Experience",
-      title: "Sua carreira no seu bolso.",
-      bullets: ["Android e iPhone", "Notificações em tempo real", "Instala como app, sem loja"],
-    },
-    render: () => (
-      <SlideShell eyebrow="Mobile Experience">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-          <div className="space-y-5">
-            <Headline>Sua carreira <span style={{ color: GOLD }}>no seu bolso</span>.</Headline>
-            <ul className="space-y-2.5 text-base opacity-90">
-              {[
-                { i: Smartphone, t: "Android e iPhone" },
-                { i: Bell, t: "Notificações em tempo real" },
-                { i: Download, t: "Instala como app, sem loja" },
-              ].map((t, i) => (
-                <li key={i} className="flex items-start gap-2"><t.i className="h-5 w-5 mt-0.5 flex-shrink-0" style={{ color: GOLD }} />{t.t}</li>
-              ))}
-            </ul>
-          </div>
-          <div className="flex justify-center gap-6">
-            <MockPhoneFrame variant="dashboard" />
-            <div className="hidden md:block"><MockPhoneFrame variant="chat" /></div>
-          </div>
-        </div>
-      </SlideShell>
-    ),
-  },
-
-  // 15 — Quanto tempo devolve
-  {
-    id: 15,
-    title: "Tempo que o Nexus devolve",
-    pdf: {
-      eyebrow: "O que o Nexus devolve para você",
-      title: "Quanto tempo o Nexus devolve para você?",
-      cards: [
-        { title: "−70%", body: "Retrabalho" },
-        { title: "−80%", body: "Esquecimentos" },
-        { title: "+3h", body: "Por dia" },
-        { title: "+40%", body: "Oportunidades atendidas" },
-      ],
-    },
-    render: () => (
-      <SlideShell eyebrow="O que o Nexus devolve para você">
-        <div className="space-y-8">
-          <Headline>Quanto tempo o Nexus<br /><span style={{ color: GOLD }}>devolve para você</span>?</Headline>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-            {[
-              { n: "−70%", t: "Retrabalho" },
-              { n: "−80%", t: "Esquecimentos" },
-              { n: "+3h", t: "Por dia" },
-              { n: "+40%", t: "Oportunidades" },
-            ].map((s, i) => (
-              <GlassCard key={i} className="text-center py-7">
-                <div className="text-5xl md:text-6xl font-bold mb-1" style={{ color: GOLD, fontFamily: "'Cormorant Garamond', serif" }}>{s.n}</div>
-                <div className="text-sm uppercase tracking-wider opacity-80">{s.t}</div>
-              </GlassCard>
-            ))}
-          </div>
-          <p className="text-center text-lg opacity-85">Mais tempo. Mais foco. <span style={{ color: GOLD_SOFT }}>Mais vendas</span>.</p>
-        </div>
-      </SlideShell>
-    ),
-  },
-
-  // 16 — Fechamento
-  {
-    id: 16,
-    title: "O futuro já chegou",
-    pdf: {
-      title: "O futuro da imobiliária já chegou.",
-      subtitle: "O Ecossistema Nexus não substitui o corretor. Ele potencializa o corretor.",
-    },
+    pdf: { title: "Ecossistema Nexus", subtitle: "A tecnologia que trabalha por você." },
     render: () => (
       <SlideShell>
         <div className="space-y-10 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] tracking-[0.35em] uppercase mx-auto" style={{ background: "rgba(212,175,55,0.12)", color: GOLD_SOFT, border: `1px solid ${GOLD}55` }}>
-            <Sparkles className="h-3.5 w-3.5" /> O futuro já chegou
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] tracking-[0.4em] uppercase mx-auto" style={{ background: "rgba(212,175,55,0.12)", color: GOLD_SOFT, border: `1px solid ${GOLD}55` }}>
+            <Sparkles className="h-3.5 w-3.5" /> Iuri Rodrigues Imóveis
+          </div>
+          <h1 className="text-7xl md:text-9xl font-semibold leading-[0.95]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+            Ecossistema<br /><span style={{ color: GOLD }}>Nexus</span>
+          </h1>
+          <p className="text-2xl md:text-3xl opacity-85 max-w-3xl mx-auto font-light" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+            A tecnologia que trabalha <span style={{ color: GOLD_SOFT }}>por você</span>.
+          </p>
+        </div>
+      </SlideShell>
+    ),
+  },
+
+  // 2 — Abertura
+  {
+    id: 2,
+    title: "Antes de falar de tecnologia",
+    pdf: {
+      eyebrow: "Abertura",
+      title: "Antes de falar de tecnologia, vamos falar de você.",
+      subtitle: "Do corretor que acorda cedo, atende em qualquer horário, e segura tudo nas próprias mãos.",
+    },
+    render: () => (
+      <SlideShell eyebrow="Abertura">
+        <div className="space-y-8 max-w-5xl">
+          <Headline>
+            Antes de falar de tecnologia,<br /><span style={{ color: GOLD }}>vamos falar de você</span>.
+          </Headline>
+          <p className="text-2xl opacity-85 font-light leading-relaxed" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+            Do corretor que acorda cedo. Atende a qualquer hora.<br />
+            Segura tudo nas próprias mãos.
+          </p>
+        </div>
+      </SlideShell>
+    ),
+  },
+
+  // 3 — Dor 1
+  {
+    id: 3,
+    title: "A oportunidade que esfriou",
+    pdf: {
+      eyebrow: "A realidade · 1 de 4",
+      title: "O lead chegou. Você demorou 20 minutos. Ele já estava com outro.",
+      subtitle: "Toda oportunidade tem um relógio rodando. E ninguém te avisa.",
+    },
+    render: () => (
+      <SlideShell eyebrow="A realidade · 1 de 4">
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div className="space-y-6">
+            <div className="inline-flex items-center gap-2 text-[11px] tracking-[0.3em] uppercase" style={{ color: "#fca5a5" }}>
+              <AlertTriangle className="h-4 w-4" /> Oportunidade perdida
+            </div>
+            <Headline>
+              O lead chegou.<br />
+              Você demorou <span style={{ color: GOLD }}>20 minutos</span>.<br />
+              Ele já estava <span style={{ color: GOLD }}>com outro</span>.
+            </Headline>
+            <p className="text-lg opacity-75 max-w-md">Toda oportunidade tem um relógio rodando. E ninguém te avisa.</p>
+          </div>
+          <div className="flex justify-center">
+            <div className="relative">
+              <div className="absolute inset-0 rounded-full blur-3xl opacity-30" style={{ background: "#ef4444" }} />
+              <div className="relative w-64 h-64 rounded-full border-4 flex flex-col items-center justify-center" style={{ borderColor: "#ef4444" }}>
+                <Clock className="h-16 w-16 mb-2" style={{ color: "#ef4444" }} />
+                <div className="text-5xl font-bold" style={{ color: "#ef4444" }}>20:00</div>
+                <div className="text-xs uppercase tracking-widest opacity-70 mt-1">tarde demais</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </SlideShell>
+    ),
+  },
+
+  // 4 — Dor 2
+  {
+    id: 4,
+    title: "O caos da rotina",
+    pdf: {
+      eyebrow: "A realidade · 2 de 4",
+      title: "Chave em uma gaveta. Follow-up num caderno. Imóvel num grupo de WhatsApp.",
+      subtitle: "Tudo espalhado. Tudo na sua cabeça. Tudo prestes a escapar.",
+    },
+    render: () => (
+      <SlideShell eyebrow="A realidade · 2 de 4">
+        <div className="space-y-10">
+          <Headline>
+            <span style={{ color: GOLD }}>Tudo espalhado.</span><br />
+            Tudo na sua cabeça.
+          </Headline>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { i: Key, t: "Chave numa gaveta" },
+              { i: FileText, t: "Follow-up num caderno" },
+              { i: MessageCircle, t: "Imóvel num grupo" },
+              { i: CalendarDays, t: "Visita num post-it" },
+            ].map((b, i) => (
+              <GlassCard key={i} className="text-center py-8">
+                <b.i className="h-9 w-9 mx-auto mb-3 opacity-60" />
+                <div className="text-sm opacity-80">{b.t}</div>
+              </GlassCard>
+            ))}
+          </div>
+          <p className="text-xl opacity-75 text-center font-light" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+            E quando algo escapa, <span style={{ color: GOLD_SOFT }}>quem paga é você</span>.
+          </p>
+        </div>
+      </SlideShell>
+    ),
+  },
+
+  // 5 — Dor 3
+  {
+    id: 5,
+    title: "O esforço que ninguém vê",
+    pdf: {
+      eyebrow: "A realidade · 3 de 4",
+      title: "Você trabalhou o mês inteiro. E ninguém viu.",
+      subtitle: "Sem registro. Sem ranking. Sem reconhecimento.",
+    },
+    render: () => (
+      <SlideShell eyebrow="A realidade · 3 de 4">
+        <div className="grid md:grid-cols-5 gap-10 items-center">
+          <div className="md:col-span-3 space-y-6">
+            <div className="inline-flex items-center gap-2 text-[11px] tracking-[0.3em] uppercase opacity-70">
+              <EyeOff className="h-4 w-4" /> Esforço invisível
+            </div>
+            <Headline>
+              Você trabalhou o mês inteiro.<br />
+              E <span style={{ color: GOLD }}>ninguém viu</span>.
+            </Headline>
+            <p className="text-lg opacity-75 max-w-lg">Sem registro do que foi feito. Sem ranking. Sem reconhecimento.</p>
+          </div>
+          <div className="md:col-span-2 flex justify-center">
+            <div className="relative w-56 h-56">
+              <div className="absolute inset-0 rounded-full border-2 border-dashed opacity-30" style={{ borderColor: GOLD }} />
+              <div className="absolute inset-6 rounded-full border opacity-20" style={{ borderColor: GOLD }} />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <EyeOff className="h-20 w-20 opacity-40" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </SlideShell>
+    ),
+  },
+
+  // 6 — Dor 4
+  {
+    id: 6,
+    title: "Sozinho contra o mercado",
+    pdf: {
+      eyebrow: "A realidade · 4 de 4",
+      title: "Você está sozinho contra o mercado.",
+      subtitle: "Sem time por perto. Sem ferramenta que ajude. Só você.",
+    },
+    render: () => (
+      <SlideShell eyebrow="A realidade · 4 de 4">
+        <div className="space-y-10 text-center max-w-4xl mx-auto">
+          <UserX className="h-16 w-16 mx-auto opacity-50" />
+          <Headline>
+            Você está <span style={{ color: GOLD }}>sozinho</span><br />
+            contra o mercado.
+          </Headline>
+          <p className="text-xl opacity-80 font-light" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+            Sem time por perto. Sem ferramenta que ajude.<br />
+            Só você — e a próxima ligação.
+          </p>
+        </div>
+      </SlideShell>
+    ),
+  },
+
+  // 7 — A virada
+  {
+    id: 7,
+    title: "E se existisse outro jeito?",
+    pdf: {
+      title: "E se existisse um jeito completamente diferente de ser corretor?",
+      subtitle: "Não uma melhoria. Uma virada. Algo que esse mercado nunca viu.",
+    },
+    render: () => (
+      <SlideShell>
+        <div className="space-y-12 text-center max-w-5xl mx-auto">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] tracking-[0.4em] uppercase mx-auto" style={{ background: `${GOLD}15`, color: GOLD_SOFT, border: `1px solid ${GOLD}55` }}>
+            <Lightbulb className="h-3.5 w-3.5" /> A virada
           </div>
           <h2 className="text-6xl md:text-8xl font-semibold leading-[1]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-            O futuro da imobiliária<br /><span style={{ color: GOLD }}>já chegou</span>.
+            E se existisse<br />
+            um jeito <span style={{ color: GOLD }}>completamente<br />diferente</span> de ser corretor?
           </h2>
-          <p className="text-2xl md:text-3xl opacity-90 max-w-4xl mx-auto font-light" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-            O Ecossistema Nexus não substitui o corretor.<br /><span style={{ color: GOLD_SOFT }}>Ele potencializa o corretor.</span>
+          <p className="text-2xl opacity-80 font-light" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+            Não uma melhoria.<br /><span style={{ color: GOLD_SOFT }}>Uma virada.</span>
           </p>
-          <div className="pt-6 text-xs tracking-[0.35em] uppercase opacity-60">Iuri Rodrigues Imóveis</div>
+        </div>
+      </SlideShell>
+    ),
+  },
+
+  // 8 — Visão geral do Ecossistema
+  {
+    id: 8,
+    title: "Ecossistema Nexus",
+    pdf: {
+      eyebrow: "Visão geral",
+      title: "Um ecossistema. Uma única experiência.",
+      cards: [
+        { title: "Agenda", body: "Você no controle do seu tempo." },
+        { title: "Portfólio", body: "Todo o catálogo no bolso." },
+        { title: "Laura IA", body: "Sua assistente pessoal." },
+        { title: "Hoje", body: "O que importa, sem esforço." },
+        { title: "Desempenho", body: "Seu funil, em tempo real." },
+        { title: "Time", body: "Feed, stories, conquistas." },
+      ],
+    },
+    render: () => (
+      <SlideShell eyebrow="Visão geral">
+        <div className="space-y-8">
+          <Headline>
+            Um ecossistema.<br /><span style={{ color: GOLD }}>Uma única experiência</span>.
+          </Headline>
+          <div className="grid grid-cols-3 gap-4">
+            {[
+              { i: CalendarDays, t: "Agenda", d: "Você no controle do seu tempo" },
+              { i: Building2, t: "Portfólio", d: "Todo o catálogo no bolso" },
+              { i: Bot, t: "Laura IA", d: "Sua assistente pessoal" },
+              { i: Sparkles, t: "Hoje", d: "O que importa, sem esforço" },
+              { i: BarChart3, t: "Desempenho", d: "Seu funil, em tempo real" },
+              { i: Newspaper, t: "Time", d: "Feed, stories, conquistas" },
+            ].map((m, i) => (
+              <GlassCard key={i}>
+                <m.i className="h-7 w-7 mb-3" style={{ color: GOLD }} />
+                <div className="text-lg font-semibold mb-1">{m.t}</div>
+                <div className="text-xs opacity-70">{m.d}</div>
+              </GlassCard>
+            ))}
+          </div>
+        </div>
+      </SlideShell>
+    ),
+  },
+
+  // 9 — Autonomia na distribuição de leads
+  {
+    id: 9,
+    title: "Sua agenda, suas regras",
+    pdf: {
+      eyebrow: "Autonomia",
+      title: "Você define quando está disponível. O sistema respeita.",
+      subtitle: "Lead novo só chega nos momentos que você escolheu. Sem invasão. Sem desperdício.",
+    },
+    render: () => (
+      <SlideShell eyebrow="Autonomia">
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div className="space-y-6">
+            <Headline>
+              Sua agenda,<br /><span style={{ color: GOLD }}>suas regras</span>.
+            </Headline>
+            <p className="text-lg opacity-85 max-w-md">
+              Você marca quando está disponível.<br />
+              O sistema só te envia leads nesses momentos.
+            </p>
+            <div className="space-y-2 pt-2">
+              {["Sem invasão fora do horário", "Sem desperdício de oportunidade", "Você no comando do seu tempo"].map((b, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <CheckCircle2 className="h-5 w-5 flex-shrink-0" style={{ color: GOLD }} />
+                  <span className="text-sm opacity-90">{b}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="flex justify-center"><MockAgendaCard /></div>
+        </div>
+      </SlideShell>
+    ),
+  },
+
+  // 10 — PROVA REAL: Leads recebidos
+  {
+    id: 10,
+    title: "Prova real · Leads",
+    pdf: {
+      eyebrow: "Prova real",
+      title: "Seus leads, organizados para você.",
+    },
+    render: () => (
+      <SlideShell eyebrow="Prova real">
+        <div className="grid md:grid-cols-5 gap-8 items-center">
+          <div className="md:col-span-2 space-y-4">
+            <div className="text-[11px] tracking-[0.35em] uppercase" style={{ color: GOLD_SOFT }}>Tela real</div>
+            <h3 className="text-4xl md:text-5xl font-semibold leading-tight" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+              Seus leads,<br /><span style={{ color: GOLD }}>organizados</span> para você.
+            </h3>
+          </div>
+          <div className="md:col-span-3 flex justify-center scale-110"><MockPlantaoCard /></div>
+        </div>
+      </SlideShell>
+    ),
+  },
+
+  // 11 — Portfólio
+  {
+    id: 11,
+    title: "Portfólio no bolso",
+    pdf: {
+      eyebrow: "Portfólio",
+      title: "Todo o catálogo, sempre atualizado, no seu bolso.",
+      subtitle: "Você nunca mais perde uma venda por não ter o imóvel certo na hora certa.",
+    },
+    render: () => (
+      <SlideShell eyebrow="Portfólio">
+        <div className="space-y-8 max-w-5xl">
+          <Headline>
+            Todo o catálogo<br /><span style={{ color: GOLD }}>no seu bolso</span>.
+          </Headline>
+          <p className="text-xl opacity-85 max-w-2xl font-light" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+            Sempre atualizado. Sempre com você.<br />
+            Você nunca mais perde uma venda por não ter o imóvel certo na hora certa.
+          </p>
+          <div className="flex gap-3 pt-2">
+            {[Search, MapPin, Layers, ImageIcon].map((I, i) => (
+              <div key={i} className="h-12 w-12 rounded-xl flex items-center justify-center" style={{ background: `${GOLD}15`, border: `1px solid ${GOLD}44` }}>
+                <I className="h-5 w-5" style={{ color: GOLD }} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </SlideShell>
+    ),
+  },
+
+  // 12 — PROVA REAL: Imóvel
+  {
+    id: 12,
+    title: "Prova real · Imóvel",
+    pdf: { eyebrow: "Prova real", title: "Cada imóvel, pronto para impressionar." },
+    render: () => (
+      <SlideShell eyebrow="Prova real">
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div className="space-y-4">
+            <div className="text-[11px] tracking-[0.35em] uppercase" style={{ color: GOLD_SOFT }}>Tela real</div>
+            <h3 className="text-4xl md:text-5xl font-semibold leading-tight" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+              Cada imóvel,<br />pronto para <span style={{ color: GOLD }}>impressionar</span>.
+            </h3>
+          </div>
+          <div className="flex justify-center scale-110"><MockImovelCard /></div>
+        </div>
+      </SlideShell>
+    ),
+  },
+
+  // 13 — Compartilhar em 1 toque
+  {
+    id: 13,
+    title: "Compartilhar em 1 toque",
+    pdf: {
+      eyebrow: "Compartilhamento",
+      title: "Impressione o cliente na hora. Em um toque.",
+      subtitle: "Foto, descrição, valor — tudo pronto. Você só envia.",
+    },
+    render: () => (
+      <SlideShell eyebrow="Compartilhamento">
+        <div className="space-y-10 text-center max-w-4xl mx-auto">
+          <div className="flex items-center justify-center gap-6">
+            <div className="h-20 w-20 rounded-2xl flex items-center justify-center shadow-2xl" style={{ background: `linear-gradient(135deg, ${GOLD}, ${GOLD_SOFT})`, color: NAVY }}>
+              <Share2 className="h-10 w-10" />
+            </div>
+            <ArrowRight className="h-8 w-8 opacity-60" />
+            <div className="h-20 w-20 rounded-2xl flex items-center justify-center shadow-2xl" style={{ background: "#25D366", color: "#fff" }}>
+              <MessageCircle className="h-10 w-10" />
+            </div>
+          </div>
+          <Headline>
+            Impressione o cliente<br /><span style={{ color: GOLD }}>na hora</span>.
+          </Headline>
+          <p className="text-xl opacity-80 font-light" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+            Foto, descrição, valor — tudo pronto.<br />Você só envia.
+          </p>
+        </div>
+      </SlideShell>
+    ),
+  },
+
+  // 14 — Conheça a Laura (impacto)
+  {
+    id: 14,
+    title: "Conheça a Laura",
+    pdf: {
+      title: "Conheça a Laura.",
+      subtitle: "Sua assistente pessoal de Inteligência Artificial. Disponível 24 horas. Só para você.",
+    },
+    render: () => (
+      <SlideShell>
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div className="space-y-8">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] tracking-[0.4em] uppercase" style={{ background: `${GOLD}15`, color: GOLD_SOFT, border: `1px solid ${GOLD}55` }}>
+              <Sparkles className="h-3.5 w-3.5" /> O diferencial
+            </div>
+            <h2 className="text-7xl md:text-8xl font-semibold leading-[0.95]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+              Conheça a<br /><span style={{ color: GOLD }}>Laura</span>.
+            </h2>
+            <p className="text-xl opacity-85 font-light max-w-md" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+              Sua assistente pessoal de Inteligência Artificial.<br />
+              <span style={{ color: GOLD_SOFT }}>Disponível 24 horas. Só para você.</span>
+            </p>
+          </div>
+          <div className="flex justify-center">
+            <div className="relative">
+              <div className="absolute inset-0 rounded-full blur-3xl opacity-40" style={{ background: GOLD }} />
+              <div className="relative h-72 w-72 rounded-full flex items-center justify-center" style={{ background: `radial-gradient(circle, ${GOLD}33, transparent 70%)`, border: `2px solid ${GOLD}55` }}>
+                <Bot className="h-40 w-40" style={{ color: GOLD }} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </SlideShell>
+    ),
+  },
+
+  // 15 — Laura entende você (consulta)
+  {
+    id: 15,
+    title: "Laura entende você",
+    pdf: {
+      eyebrow: "Laura · Consulta",
+      title: "Pergunte com suas palavras.",
+      bullets: [
+        "Temos apartamento na Barra até R$ 2.500?",
+        "Qual minha meta esse mês?",
+        "Quais leads ainda não atendi hoje?",
+      ],
+    },
+    render: () => (
+      <SlideShell eyebrow="Laura · Consulta">
+        <div className="space-y-8">
+          <Headline>
+            Pergunte com<br /><span style={{ color: GOLD }}>suas palavras</span>.
+          </Headline>
+          <div className="space-y-3 max-w-3xl">
+            {[
+              "Temos apartamento na Barra até R$ 2.500?",
+              "Qual minha meta esse mês?",
+              "Quais leads ainda não atendi hoje?",
+            ].map((q, i) => (
+              <div key={i} className="flex items-start gap-3 rounded-2xl px-5 py-4" style={{ background: `${GOLD}15`, border: `1px solid ${GOLD}44` }}>
+                <MessageCircle className="h-5 w-5 flex-shrink-0 mt-0.5" style={{ color: GOLD }} />
+                <div className="text-lg" style={{ fontFamily: "'Cormorant Garamond', serif" }}>"{q}"</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </SlideShell>
+    ),
+  },
+
+  // 16 — Laura trabalha por você (ação)
+  {
+    id: 16,
+    title: "Laura trabalha por você",
+    pdf: {
+      eyebrow: "Laura · Ação",
+      title: "Diga o que aconteceu. Ela registra.",
+      bullets: [
+        "A visita com o João foi realizada.",
+        "Estou retirando a chave do apto 304 (com foto).",
+        "Atualize minha agenda: seg a sex, 10h às 18h.",
+      ],
+    },
+    render: () => (
+      <SlideShell eyebrow="Laura · Ação">
+        <div className="space-y-8">
+          <Headline>
+            Diga o que aconteceu.<br /><span style={{ color: GOLD }}>Ela registra</span>.
+          </Headline>
+          <div className="grid md:grid-cols-3 gap-4">
+            {[
+              { i: CheckCircle2, q: "A visita com o João foi realizada." },
+              { i: Camera, q: "Estou retirando a chave do apto 304." },
+              { i: CalendarDays, q: "Atualize minha agenda: seg-sex, 10-18h." },
+            ].map((c, i) => (
+              <GlassCard key={i}>
+                <c.i className="h-7 w-7 mb-3" style={{ color: GOLD }} />
+                <div className="text-base leading-snug" style={{ fontFamily: "'Cormorant Garamond', serif" }}>"{c.q}"</div>
+              </GlassCard>
+            ))}
+          </div>
+          <p className="text-center text-lg opacity-80 font-light pt-2" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+            Você fala. <span style={{ color: GOLD_SOFT }}>Ela faz</span>.
+          </p>
+        </div>
+      </SlideShell>
+    ),
+  },
+
+  // 17 — Laura tem o seu lado
+  {
+    id: 17,
+    title: "Laura tem o seu lado",
+    pdf: {
+      eyebrow: "Laura · Confiança",
+      title: "Ela só age depois que você confirma.",
+      bullets: [
+        "Confirma toda ação sensível antes de executar.",
+        "Respeita o que é seu — não cruza limites.",
+        "Disponível 24h, sem fila, sem espera.",
+      ],
+    },
+    render: () => (
+      <SlideShell eyebrow="Laura · Confiança">
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div className="space-y-6">
+            <Headline>
+              Ela só age depois<br />que <span style={{ color: GOLD }}>você confirma</span>.
+            </Headline>
+            <div className="space-y-3 pt-2">
+              {[
+                { i: ShieldCheck, t: "Confirma antes de executar" },
+                { i: CheckCircle2, t: "Respeita o que é seu" },
+                { i: Clock, t: "Disponível 24h, sem fila" },
+              ].map((b, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg flex items-center justify-center" style={{ background: `${GOLD}15`, border: `1px solid ${GOLD}44` }}>
+                    <b.i className="h-5 w-5" style={{ color: GOLD }} />
+                  </div>
+                  <span className="text-base opacity-90">{b.t}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="flex justify-center"><MockPhoneFrame variant="chat" /></div>
+        </div>
+      </SlideShell>
+    ),
+  },
+
+  // 18 — Central Hoje
+  {
+    id: 18,
+    title: "Central Hoje",
+    pdf: {
+      eyebrow: "Central Hoje",
+      title: "Tudo que importa, sem esforço de organizar.",
+      subtitle: "O que precisa da sua atenção agora — em uma só tela.",
+    },
+    render: () => (
+      <SlideShell eyebrow="Central Hoje">
+        <div className="space-y-8 max-w-4xl">
+          <Headline>
+            Tudo que importa,<br /><span style={{ color: GOLD }}>em uma tela só</span>.
+          </Headline>
+          <p className="text-xl opacity-85 max-w-2xl font-light" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+            O que precisa da sua atenção agora.<br />
+            Sem você ter que procurar.
+          </p>
+        </div>
+      </SlideShell>
+    ),
+  },
+
+  // 19 — PROVA REAL: Hoje
+  {
+    id: 19,
+    title: "Prova real · Hoje",
+    pdf: { eyebrow: "Prova real", title: "O seu dia, pronto quando você abre o app." },
+    render: () => (
+      <SlideShell eyebrow="Prova real">
+        <div className="space-y-4">
+          <div className="text-[11px] tracking-[0.35em] uppercase text-center" style={{ color: GOLD_SOFT }}>Tela real</div>
+          <h3 className="text-3xl md:text-4xl font-semibold text-center" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+            O seu dia, <span style={{ color: GOLD }}>pronto</span> quando você abre o app.
+          </h3>
+          <div className="flex justify-center pt-4">
+            <div className="w-full max-w-3xl"><MockHojeCard /></div>
+          </div>
+        </div>
+      </SlideShell>
+    ),
+  },
+
+  // 20 — Desempenho
+  {
+    id: 20,
+    title: "Seu desempenho, visível",
+    pdf: {
+      eyebrow: "Desempenho",
+      title: "Seu funil. Seu tempo de resposta. Sua evolução.",
+      subtitle: "Tudo medido, em tempo real, só para você ver.",
+    },
+    render: () => (
+      <SlideShell eyebrow="Desempenho">
+        <div className="space-y-8 max-w-5xl">
+          <Headline>
+            Seu funil. Seu tempo.<br /><span style={{ color: GOLD }}>Sua evolução</span>.
+          </Headline>
+          <p className="text-xl opacity-85 max-w-2xl font-light" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+            Tudo medido, em tempo real,<br />
+            só para você acompanhar.
+          </p>
+          <div className="flex gap-3 pt-2">
+            {[TrendingUp, BarChart3, Target, Clock].map((I, i) => (
+              <div key={i} className="h-12 w-12 rounded-xl flex items-center justify-center" style={{ background: `${GOLD}15`, border: `1px solid ${GOLD}44` }}>
+                <I className="h-5 w-5" style={{ color: GOLD }} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </SlideShell>
+    ),
+  },
+
+  // 21 — PROVA REAL: Dashboard
+  {
+    id: 21,
+    title: "Prova real · Relatório",
+    pdf: { eyebrow: "Prova real", title: "Sua performance, em uma olhada." },
+    render: () => (
+      <SlideShell eyebrow="Prova real">
+        <div className="space-y-4">
+          <div className="text-[11px] tracking-[0.35em] uppercase text-center" style={{ color: GOLD_SOFT }}>Tela real</div>
+          <h3 className="text-3xl md:text-4xl font-semibold text-center" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+            Sua performance, <span style={{ color: GOLD }}>em uma olhada</span>.
+          </h3>
+          <div className="flex justify-center pt-4">
+            <div className="w-full max-w-3xl"><MockDashboard /></div>
+          </div>
+        </div>
+      </SlideShell>
+    ),
+  },
+
+  // 22 — Esforço reconhecido
+  {
+    id: 22,
+    title: "Esforço reconhecido",
+    pdf: {
+      eyebrow: "Metas e Conquistas",
+      title: "Cada esforço seu, finalmente reconhecido.",
+      cards: [
+        { title: "Metas", body: "Progresso em tempo real." },
+        { title: "Badges", body: "Resposta relâmpago, top do mês, mais visitas." },
+        { title: "Ranking", body: "Saudável, transparente, para crescer junto." },
+      ],
+    },
+    render: () => (
+      <SlideShell eyebrow="Metas e Conquistas">
+        <div className="space-y-8">
+          <Headline>
+            Cada esforço seu,<br /><span style={{ color: GOLD }}>reconhecido</span>.
+          </Headline>
+          <div className="grid grid-cols-3 gap-4">
+            {[
+              { i: Target, t: "Metas", d: "Progresso em tempo real" },
+              { i: Award, t: "Badges", d: "Conquistas automáticas" },
+              { i: Trophy, t: "Ranking", d: "Time crescendo junto" },
+            ].map((c, i) => (
+              <GlassCard key={i} className="text-center py-7">
+                <c.i className="h-10 w-10 mx-auto mb-3" style={{ color: GOLD }} />
+                <div className="text-xl font-semibold mb-1">{c.t}</div>
+                <div className="text-xs opacity-70">{c.d}</div>
+              </GlassCard>
+            ))}
+          </div>
+        </div>
+      </SlideShell>
+    ),
+  },
+
+  // 23 — Time
+  {
+    id: 23,
+    title: "Você faz parte de um time",
+    pdf: {
+      eyebrow: "Cultura",
+      title: "Você não vende sozinho. Você é parte de um time.",
+      subtitle: "Feed, stories, conquistas — cultura viva, todos os dias.",
+    },
+    render: () => (
+      <SlideShell eyebrow="Cultura">
+        <div className="space-y-8 max-w-5xl">
+          <Headline>
+            Você não vende sozinho.<br /><span style={{ color: GOLD }}>Você é time</span>.
+          </Headline>
+          <p className="text-xl opacity-85 max-w-2xl font-light" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+            Feed, stories, conquistas compartilhadas.<br />
+            Cultura viva — todos os dias.
+          </p>
+          <div className="flex gap-3 pt-2">
+            {[Newspaper, Heart, MessageCircle, Trophy].map((I, i) => (
+              <div key={i} className="h-12 w-12 rounded-xl flex items-center justify-center" style={{ background: `${GOLD}15`, border: `1px solid ${GOLD}44` }}>
+                <I className="h-5 w-5" style={{ color: GOLD }} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </SlideShell>
+    ),
+  },
+
+  // 24 — PROVA REAL: Feed
+  {
+    id: 24,
+    title: "Prova real · Feed",
+    pdf: { eyebrow: "Prova real", title: "Conquistas compartilhadas. Time conectado." },
+    render: () => (
+      <SlideShell eyebrow="Prova real">
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div className="space-y-4">
+            <div className="text-[11px] tracking-[0.35em] uppercase" style={{ color: GOLD_SOFT }}>Tela real</div>
+            <h3 className="text-4xl md:text-5xl font-semibold leading-tight" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+              Conquista de um,<br /><span style={{ color: GOLD }}>orgulho de todos</span>.
+            </h3>
+          </div>
+          <div className="flex justify-center scale-110"><MockFeedPost /></div>
+        </div>
+      </SlideShell>
+    ),
+  },
+
+  // 25 — Liberdade total (mobile)
+  {
+    id: 25,
+    title: "Liberdade total",
+    pdf: {
+      eyebrow: "Mobile",
+      title: "No celular. Como app de verdade. Em qualquer lugar.",
+      subtitle: "Sem instalar pela loja. Em segundos. Pronto para usar.",
+    },
+    render: () => (
+      <SlideShell eyebrow="Mobile">
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div className="space-y-6">
+            <Headline>
+              No celular.<br /><span style={{ color: GOLD }}>Em qualquer lugar</span>.
+            </Headline>
+            <p className="text-lg opacity-85 max-w-md font-light" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+              Funciona como app de verdade.<br />
+              Sem loja, sem instalação complicada.<br />
+              Em segundos — pronto para usar.
+            </p>
+            <div className="flex items-center gap-2 text-xs opacity-70">
+              <Smartphone className="h-4 w-4" /> Android · iPhone · Tablet
+            </div>
+          </div>
+          <div className="flex justify-center"><MockPhoneFrame variant="dashboard" /></div>
+        </div>
+      </SlideShell>
+    ),
+  },
+
+  // 26 — Fechamento disruptivo
+  {
+    id: 26,
+    title: "Você é um dos próximos?",
+    pdf: {
+      title: "Isso não é mais uma ferramenta. É uma forma diferente de ser corretor.",
+      subtitle: "Você é um dos próximos?",
+    },
+    render: () => (
+      <SlideShell>
+        <div className="space-y-12 text-center max-w-5xl mx-auto">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[11px] tracking-[0.4em] uppercase mx-auto" style={{ background: "rgba(212,175,55,0.12)", color: GOLD_SOFT, border: `1px solid ${GOLD}55` }}>
+            <Sparkles className="h-3.5 w-3.5" /> Ecossistema Nexus
+          </div>
+          <h2 className="text-5xl md:text-7xl font-semibold leading-[1.05]" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+            Isso não é mais uma ferramenta.<br />
+            <span style={{ color: GOLD }}>É uma forma diferente<br />de ser corretor.</span>
+          </h2>
+          <p className="text-3xl md:text-4xl opacity-95 font-light" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+            Você é um dos <span style={{ color: GOLD_SOFT }}>próximos</span>?
+          </p>
+          <div className="pt-4 text-xs tracking-[0.35em] uppercase opacity-60">Iuri Rodrigues Imóveis</div>
         </div>
       </SlideShell>
     ),
