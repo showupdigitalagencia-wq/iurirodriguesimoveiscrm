@@ -32,6 +32,12 @@ const PILARES = [
     texto:
       "Aqui, leads não ficam perdidos em grupo de WhatsApp nem favorecem quem grita mais alto. Nosso sistema distribui oportunidades de forma automática e equilibrada, e acompanha seu desempenho com metas e conquistas reconhecidas por todo o time. Seu crescimento aqui depende do seu esforço, não de sorte.",
   },
+  {
+    icon: GraduationCap,
+    titulo: "Mentoria e treinamento que formam referências",
+    texto:
+      "Investimos continuamente na formação de cada corretor através de mentorias presenciais, treinamentos práticos e acompanhamento próximo da liderança executiva. Não entregamos apenas ferramentas. Entregamos conhecimento, técnica e direcionamento estratégico construídos a partir de anos de experiência real no mercado imobiliário. É esse compromisso com o desenvolvimento contínuo que faz da Iuri Rodrigues Imóveis uma referência reconhecida.",
+  },
 ];
 
 const searchSchema = z.object({
