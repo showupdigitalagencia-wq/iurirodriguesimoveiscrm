@@ -15,7 +15,7 @@ export const CAPTACAO_EXECUTIVOS: CaptacaoExecutivo[] = [
     nome: "Robson",
     regiao: "Barra da Tijuca",
     descricao:
-      "Especialista em alto padrão na Barra. Acompanha cada corretor de perto para destravar resultados consistentes.",
+      "Especialista no Rio de Janeiro. Acompanha cada corretor de perto para destravar resultados consistentes.",
     whatsapp: "5521980893621",
   },
   {
