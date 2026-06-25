@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { normalizePhoneBR } from "@/lib/phone";
+
 
 const LeadEtapa = z.enum([
   "novos_leads", "em_atendimento", "reuniao_agendada",
