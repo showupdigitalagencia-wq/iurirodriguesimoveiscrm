@@ -628,7 +628,7 @@ function ResponsaveisSection() {
 
   useEffect(() => {
     listResp({} as never)
-      .then((data) => setResps((data as Resp[]) ?? []))
+      .then((data: unknown) => setResps((data as Resp[]) ?? []))
       .catch((e: Error) => toast.error(e.message));
   }, [listResp]);
 
