@@ -154,6 +154,19 @@ function CandidatoCard({ candidato: c, expanded, onToggle, onChanged }: { candid
     }
   }
 
+  async function handleConfirmar() {
+    setConfirming(true);
+    try {
+      await confirmar({ data: { candidatoId: c.id } });
+      toast.success("Recebimento confirmado.");
+      onChanged();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao confirmar");
+    } finally {
+      setConfirming(false);
+    }
+  }
+
   const slots = ["rg", "cpf", "creci", "comprovante"] as const;
   const recebidos = urls ? slots.filter((s) => urls[s]).length : 0;
 
