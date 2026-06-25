@@ -1359,6 +1359,15 @@ function ApresentacaoPage() {
 
   const slide = SLIDES[idx];
 
+  const touchX = useRef<number | null>(null);
+  const onTouchStart = (e: React.TouchEvent) => { touchX.current = e.touches[0].clientX; };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (touchX.current == null) return;
+    const dx = e.changedTouches[0].clientX - touchX.current;
+    if (Math.abs(dx) > 50) (dx < 0 ? next : prev)();
+    touchX.current = null;
+  };
+
   return (
     <div className={fullscreen ? "fixed inset-0 z-[9999] bg-black flex flex-col" : "min-h-screen flex flex-col bg-black"}>
       {!fullscreen && (
