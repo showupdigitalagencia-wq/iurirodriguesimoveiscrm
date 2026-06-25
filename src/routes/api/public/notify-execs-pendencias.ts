@@ -7,7 +7,7 @@ import { sendOneSignalPush } from "@/lib/onesignal.server";
 //   - "morning"  → "☀️ Bom dia! Você tem N itens..."
 //   - "evening"  → "🌙 Ainda restam N pendências..."
 //   - "manual"   → versão neutra (pra disparo sob demanda)
-// Regra: NÃO envia quando o total é 0 (não incomodar sem motivo).
+// Regra: TODOS recebem (quem está zerado recebe mensagem positiva "em dia").
 // POST https://sistemanexus.app/api/public/notify-execs-pendencias
 // body opcional: { mode?: "manual"|"morning"|"evening", dryRun?: bool, uids?: string[] }
 
