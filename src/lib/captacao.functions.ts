@@ -239,7 +239,7 @@ export const removeCaptacaoTeamPhoto = createServerFn({ method: "POST" })
 // ============================================================
 // ADMIN helpers
 // ============================================================
-async function assertAdmin(context: { supabase: { rpc: (n: string, p: unknown) => Promise<{ data: unknown }> }; userId: string }) {
+async function assertAdmin(context: { supabase: { rpc: (n: "has_role", p: { _user_id: string; _role: "admin" }) => Promise<{ data: unknown }> }; userId: string }) {
   const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
   if (!isAdmin) throw new Error("Forbidden");
 }
