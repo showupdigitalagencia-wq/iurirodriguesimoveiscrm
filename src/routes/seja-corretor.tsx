@@ -61,18 +61,26 @@ function SejaCorretorPage() {
   const [photos, setPhotos] = useState<
     Array<{ url: string | null; nome: string; cargo: string }>
   >([]);
+  const [groupUrl, setGroupUrl] = useState<string | null>(null);
+  const [execPhotos, setExecPhotos] = useState<Record<string, string | null>>({});
 
   useEffect(() => {
     getConfig({})
       .then((r) => {
         setVslId(youtubeId(r.vslUrl));
         setPhotos(r.photos);
+        setGroupUrl(r.groupUrl);
+        setExecPhotos(r.execPhotos);
       })
       .catch(() => null);
   }, [getConfig]);
 
   const filteredExec = findExecutivoByRef(ref ?? null);
   const execsToShow = filteredExec ? [filteredExec] : CAPTACAO_EXECUTIVOS;
+
+  function initials(nome: string): string {
+    return nome.split(/\s+/).filter(Boolean).slice(0, 2).map((s) => s[0]?.toUpperCase() ?? "").join("");
+  }
 
   return (
     <div className="min-h-screen" style={{ background: "#0A0E1A", color: "white", fontFamily: "var(--font-sans)" }}>
@@ -163,6 +171,62 @@ function SejaCorretorPage() {
           </div>
         </div>
       </section>
+
+      {/* CTA + FOTO DO TIME (grupo) */}
+      <section className="px-6 py-16 md:py-20" style={{ background: "#0A0E1A" }}>
+        <div className="max-w-5xl mx-auto space-y-10 text-center">
+          <div className="flex flex-col items-center gap-5">
+            <div className="text-[10px] md:text-xs uppercase tracking-[0.45em]" style={{ color: GOLD }}>
+              Próximo passo
+            </div>
+            <h2
+              className="text-3xl md:text-5xl leading-[1.1] max-w-2xl"
+              style={{ fontFamily: SERIF, fontWeight: 500, letterSpacing: "-0.01em" }}
+            >
+              Faça parte do <em style={{ color: GOLD, fontStyle: "italic", fontWeight: 500 }}>nosso time</em>
+            </h2>
+            <a
+              href="#executivos"
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-md font-semibold text-sm md:text-base uppercase tracking-[0.2em] transition-transform hover:scale-[1.03]"
+              style={{ background: GOLD, color: "#0A0E1A", boxShadow: `0 18px 50px -18px ${GOLD}99` }}
+            >
+              Quero fazer parte →
+            </a>
+          </div>
+
+          <figure
+            className="relative overflow-hidden rounded-2xl mx-auto"
+            style={{ border: `1px solid ${GOLD}33`, boxShadow: "0 30px 80px -40px rgba(0,0,0,0.9)" }}
+          >
+            <div className="aspect-[16/9] w-full bg-black/40 flex items-center justify-center">
+              {groupUrl ? (
+                <img
+                  src={groupUrl}
+                  alt="Equipe Iuri Rodrigues Imóveis"
+                  loading="lazy"
+                  className="w-full h-full object-cover"
+                  style={{ filter: "saturate(0.9) contrast(1.05)" }}
+                />
+              ) : (
+                <div className="text-center text-white/40 text-xs uppercase tracking-[0.4em] px-6">
+                  Foto da equipe em breve
+                </div>
+              )}
+            </div>
+            {groupUrl && (
+              <div
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  background:
+                    "linear-gradient(180deg, rgba(10,14,26,0) 55%, rgba(10,14,26,0.75) 100%)",
+                }}
+              />
+            )}
+          </figure>
+        </div>
+      </section>
+
+
 
 
       {/* MARQUEE de regiões */}
@@ -414,22 +478,45 @@ function SejaCorretorPage() {
                 : "grid grid-cols-1 sm:grid-cols-2 gap-5"
             }
           >
-            {execsToShow.map((exec) => (
+            {execsToShow.map((exec) => {
+              const photoUrl = execPhotos[exec.ref] ?? null;
+              return (
               <div
                 key={exec.ref}
                 className="rounded-2xl p-7 space-y-5 flex flex-col"
                 style={{ background: "#0F1626", border: `1px solid ${GOLD}33` }}
               >
-                <div>
-                  <div className="text-[10px] md:text-xs uppercase tracking-[0.45em] text-white/50 mb-2">
-                    {exec.regiao}
-                  </div>
-                  <h3
-                    className="text-3xl md:text-4xl leading-[1.1]"
-                    style={{ fontFamily: SERIF, color: GOLD, fontWeight: 500, letterSpacing: "-0.01em" }}
+                <div className="flex items-center gap-4">
+                  <div
+                    className="shrink-0 rounded-full overflow-hidden flex items-center justify-center"
+                    style={{
+                      width: 72,
+                      height: 72,
+                      background: "#141B2E",
+                      border: `1px solid ${GOLD}55`,
+                      color: GOLD,
+                      fontFamily: SERIF,
+                      fontSize: 24,
+                      fontWeight: 500,
+                    }}
                   >
-                    {exec.nome}
-                  </h3>
+                    {photoUrl ? (
+                      <img src={photoUrl} alt={exec.nome} className="w-full h-full object-cover" />
+                    ) : (
+                      <span>{initials(exec.nome)}</span>
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-[10px] md:text-xs uppercase tracking-[0.45em] text-white/50 mb-1">
+                      {exec.regiao}
+                    </div>
+                    <h3
+                      className="text-2xl md:text-3xl leading-[1.1] truncate"
+                      style={{ fontFamily: SERIF, color: GOLD, fontWeight: 500, letterSpacing: "-0.01em" }}
+                    >
+                      {exec.nome}
+                    </h3>
+                  </div>
                 </div>
                 <p className="text-white/70 text-sm md:text-base leading-relaxed flex-1">
                   {exec.descricao}
@@ -444,7 +531,8 @@ function SejaCorretorPage() {
                   Falar no WhatsApp →
                 </a>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

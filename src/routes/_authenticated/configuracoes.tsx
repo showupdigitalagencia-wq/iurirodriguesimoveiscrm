@@ -19,7 +19,12 @@ import {
   uploadCaptacaoTeamPhoto,
   updateCaptacaoTeamMeta,
   removeCaptacaoTeamPhoto,
+  uploadCaptacaoGroupPhoto,
+  removeCaptacaoGroupPhoto,
+  uploadCaptacaoExecutivoPhoto,
+  removeCaptacaoExecutivoPhoto,
 } from "@/lib/captacao.functions";
+import { CAPTACAO_EXECUTIVOS } from "@/lib/captacao.constants";
 import { exportSistemaZip } from "@/lib/export-sistema.functions";
 import { listarBackups, gerarUrlBackup, rodarBackupManual } from "@/lib/backups.functions";
 import { Download, Archive, RefreshCcw } from "lucide-react";
@@ -106,6 +111,8 @@ function ConfigPage() {
           <ModuloAdministrativoToggle />
           <VslUrlSection />
           <VslCaptacaoSection />
+          <GroupPhotoSection />
+          <ExecutivoPhotosSection />
           <TeamPhotosSection />
           <ReativacaoLeadsConfig />
           <FollowupLeadsConfig />
@@ -1450,5 +1457,204 @@ function MensagemTemplatesSection() {
         </ul>
       )}
     </section>
+  );
+}
+
+// ============================================================
+// Foto do grupo — LP /seja-corretor
+// ============================================================
+function GroupPhotoSection() {
+  const fnGet = useServerFn(getCaptacaoConfig);
+  const fnUpload = useServerFn(uploadCaptacaoGroupPhoto);
+  const fnRemove = useServerFn(removeCaptacaoGroupPhoto);
+  const [url, setUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+
+  async function reload() {
+    setLoading(true);
+    try {
+      const r = await fnGet({});
+      setUrl(r.groupUrl);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { reload(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
+
+  async function onPick(file: File) {
+    setBusy(true);
+    try {
+      const arquivo = await fileToB64(file);
+      await fnUpload({ data: { arquivo } });
+      toast.success("Foto do grupo enviada");
+      await reload();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao enviar");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function remove() {
+    if (!confirm("Remover foto do grupo?")) return;
+    setBusy(true);
+    try {
+      await fnRemove({});
+      toast.success("Foto removida");
+      await reload();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao remover");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="rounded-lg border p-5 space-y-4">
+      <div>
+        <h3 className="font-semibold">Foto da Equipe (grupo) — LP /seja-corretor</h3>
+        <p className="text-sm text-muted-foreground mt-1">
+          Uma única foto de grupo exibida abaixo do botão &quot;Quero fazer parte&quot;. Formato horizontal (16:9) recomendado.
+        </p>
+      </div>
+      {loading ? (
+        <div className="text-sm text-muted-foreground">Carregando...</div>
+      ) : (
+        <div className="space-y-3">
+          <div className="aspect-[16/9] w-full max-w-2xl bg-muted rounded overflow-hidden flex items-center justify-center text-xs text-muted-foreground">
+            {url ? <img src={url} alt="Equipe" className="w-full h-full object-cover" /> : "Sem foto"}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Label className="inline-flex items-center gap-2 cursor-pointer rounded-md border px-3 py-1.5 text-sm hover:bg-accent">
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                disabled={busy}
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) onPick(f);
+                  e.target.value = "";
+                }}
+              />
+              {url ? "Trocar foto" : "Enviar foto"}
+            </Label>
+            {url && (
+              <Button size="sm" variant="ghost" disabled={busy} onClick={remove}>
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================================
+// Fotos dos Executivos — LP /seja-corretor (Robson, Fabíola, Renata, Denise)
+// ============================================================
+function ExecutivoPhotosSection() {
+  const fnGet = useServerFn(getCaptacaoConfig);
+  const fnUpload = useServerFn(uploadCaptacaoExecutivoPhoto);
+  const fnRemove = useServerFn(removeCaptacaoExecutivoPhoto);
+  const [photos, setPhotos] = useState<Record<string, string | null>>({});
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState<string | null>(null);
+
+  async function reload() {
+    setLoading(true);
+    try {
+      const r = await fnGet({});
+      setPhotos(r.execPhotos);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { reload(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
+
+  async function onPick(ref: "barra" | "recreio" | "belford" | "mesquita", file: File) {
+    setBusy(ref);
+    try {
+      const arquivo = await fileToB64(file);
+      await fnUpload({ data: { ref, arquivo } });
+      toast.success("Foto enviada");
+      await reload();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao enviar");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function remove(ref: "barra" | "recreio" | "belford" | "mesquita") {
+    if (!confirm("Remover foto deste executivo?")) return;
+    setBusy(ref);
+    try {
+      await fnRemove({ data: { ref } });
+      toast.success("Foto removida");
+      await reload();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao remover");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  return (
+    <div className="rounded-lg border p-5 space-y-4">
+      <div>
+        <h3 className="font-semibold">Fotos dos Executivos — LP /seja-corretor</h3>
+        <p className="text-sm text-muted-foreground mt-1">
+          Uma foto para cada executivo. A LP exibe a foto correta conforme o link <code>?ref=</code> usado. Formato quadrado recomendado.
+        </p>
+      </div>
+      {loading ? (
+        <div className="text-sm text-muted-foreground">Carregando...</div>
+      ) : (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {CAPTACAO_EXECUTIVOS.map((exec) => {
+            const url = photos[exec.ref] ?? null;
+            return (
+              <div key={exec.ref} className="rounded-md border p-3 space-y-2 bg-muted/30">
+                <div className="aspect-square w-full bg-muted rounded-full overflow-hidden flex items-center justify-center text-xs text-muted-foreground mx-auto" style={{ maxWidth: 160 }}>
+                  {url ? (
+                    <img src={url} alt={exec.nome} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-base font-semibold">{exec.nome.split(/\s+/).slice(0, 2).map((s) => s[0]).join("")}</span>
+                  )}
+                </div>
+                <div className="text-center text-sm font-medium">{exec.nome}</div>
+                <div className="text-center text-xs text-muted-foreground">{exec.regiao}</div>
+                <div className="flex flex-wrap gap-2 justify-center">
+                  <Label className="inline-flex items-center gap-2 cursor-pointer rounded-md border px-2 py-1 text-xs hover:bg-accent">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      disabled={busy === exec.ref}
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) onPick(exec.ref, f);
+                        e.target.value = "";
+                      }}
+                    />
+                    {url ? "Trocar" : "Enviar"}
+                  </Label>
+                  {url && (
+                    <Button size="sm" variant="ghost" disabled={busy === exec.ref} onClick={() => remove(exec.ref)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }
