@@ -256,6 +256,11 @@ function CandidatoCard({ candidato: c, expanded, onToggle, onChanged }: { candid
               </Link>
             )}
             <div className="ml-auto flex flex-wrap items-center gap-2">
+              {c.status === "pendente_revisao" && (
+                <Button onClick={handleConfirmar} disabled={confirming} variant="outline" className="border-emerald-500/50 text-emerald-700 hover:bg-emerald-500/10 dark:text-emerald-400">
+                  {confirming ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Confirmando...</> : <><Check className="h-4 w-4 mr-2" /> Confirmar Recebimento</>}
+                </Button>
+              )}
               {c.status !== "arquivado" && (
                 <Button onClick={handleSalvarDrive} disabled={saving} className="bg-gold text-black hover:bg-gold/90">
                   {saving ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Salvando...</> : <><FolderUp className="h-4 w-4 mr-2" /> Salvar no Google Drive</>}
