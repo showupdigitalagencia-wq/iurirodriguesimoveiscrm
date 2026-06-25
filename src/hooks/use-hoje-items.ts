@@ -105,18 +105,21 @@ export function useHojeData() {
     queryKey: ["hoje-profile", uid],
     enabled: !!uid,
     queryFn: async () => {
-      const [{ data: p }, { data: exec }] = await Promise.all([
+      const [{ data: p }, { data: exec }, { data: adm }] = await Promise.all([
         supabase.from("profiles").select("responsavel_id").eq("id", uid!).maybeSingle(),
         supabase.rpc("current_user_is_executivo"),
+        supabase.rpc("is_administrativo", { _user_id: uid! }),
       ]);
       return {
         responsavel_id:
           (p as { responsavel_id?: string | null } | null)?.responsavel_id ?? null,
         isExec: exec === true,
+        isAdministrativo: adm === true,
       };
     },
   });
   const isExec = profile.data?.isExec ?? false;
+  const isAdministrativo = profile.data?.isAdministrativo ?? false;
   const responsavelId = profile.data?.responsavel_id ?? null;
 
   const plantao = useQuery({
