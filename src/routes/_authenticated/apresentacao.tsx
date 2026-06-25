@@ -716,15 +716,9 @@ const SLIDES: SlideDef[] = [
             </BodyCopy>
           </div>
           <div className="flex justify-center">
-            <div className="relative">
-              <div className="absolute inset-0 rounded-full blur-3xl opacity-30" style={{ background: "#ef4444" }} />
-              <div className="relative w-64 h-64 rounded-full border-4 flex flex-col items-center justify-center" style={{ borderColor: "#ef4444" }}>
-                <Clock className="h-16 w-16 mb-2" style={{ color: "#ef4444" }} />
-                <div className="text-5xl font-bold" style={{ color: "#ef4444" }}>20:00</div>
-                <div className="text-xs uppercase tracking-widest opacity-70 mt-1">tarde demais</div>
-              </div>
-            </div>
+            <IllusLeadCooling />
           </div>
+
         </div>
       </SlideShell>
     ),
