@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { normalizeOrigem, shouldUsePlantao } from "@/lib/plantao-shared";
 import { withWebhookLog } from "@/lib/webhook-log.server";
+import { normalizePhoneBR } from "@/lib/phone";
+
 
 
 
@@ -210,7 +212,7 @@ export const Route = createFileRoute("/api/public/webhook")({
           const { data: vlead, error: vlErr } = await supabaseAdmin
             .from("vendas_leads").insert({
               nome,
-              telefone: telefone.replace(/\D/g, ""),
+              telefone: normalizePhoneBR(telefone) ?? telefone.replace(/\D/g, ""),
               email: email ?? null,
               regiao: regiao as never,
               etapa: "novo_lead" as never,
@@ -305,7 +307,7 @@ export const Route = createFileRoute("/api/public/webhook")({
 
         const { data: lead, error } = await supabaseAdmin.from("leads").insert({
           nome,
-          telefone: telefone.replace(/\D/g, ""),
+          telefone: normalizePhoneBR(telefone) ?? telefone.replace(/\D/g, ""),
           email: email ?? null,
           is_corretor: isCaptacaoCorretor,
           regiao,

@@ -2291,6 +2291,7 @@ export type Database = {
         Returns: string
       }
       normalize_cpf: { Args: { _cpf: string }; Returns: string }
+      normalize_phone_br: { Args: { p: string }; Returns: string }
       normalize_telefone: { Args: { _tel: string }; Returns: string }
       plantonista_do_dia: { Args: { _data: string }; Returns: string }
       recalcular_conquistas_todos: { Args: never; Returns: number }

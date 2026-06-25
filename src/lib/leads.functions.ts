@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { normalizePhoneBR } from "@/lib/phone";
+
 
 const LeadEtapa = z.enum([
   "novos_leads", "em_atendimento", "reuniao_agendada",
@@ -59,6 +61,9 @@ export const updateLead = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ data, context }) => {
     const patch = { ...data.patch } as Record<string, unknown>;
+    if (typeof patch.telefone === "string") {
+      patch.telefone = normalizePhoneBR(patch.telefone) ?? patch.telefone;
+    }
     if (data.patch.etapa === "fechado" || data.patch.etapa === "descartado") {
       patch.fechado_em = new Date().toISOString();
     }

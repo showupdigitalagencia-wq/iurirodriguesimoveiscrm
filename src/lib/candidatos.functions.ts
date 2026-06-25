@@ -2,6 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { normalizePhoneBR } from "@/lib/phone";
+
 
 const REGIOES = [
   "barra_da_tijuca",
@@ -114,7 +116,7 @@ export const submeterCandidato = createServerFn({ method: "POST" })
     const responsavelId = (mapa as { responsavel_id: string } | null)?.responsavel_id ?? null;
 
     // 2) Procura lead existente por telefone OU CPF
-    const telefoneClean = data.telefone.replace(/\D/g, "");
+    const telefoneClean = normalizePhoneBR(data.telefone) ?? data.telefone.replace(/\D/g, "");
     const cpfClean = data.cpf.replace(/\D/g, "");
 
     type LeadRow = {
@@ -161,7 +163,7 @@ export const submeterCandidato = createServerFn({ method: "POST" })
         .from("leads")
         .update({
           nome: data.nome,
-          telefone: data.telefone,
+          telefone: telefoneClean,
           email: data.email || null,
           creci: data.creci || null,
           regiao: data.regiao,
@@ -180,7 +182,7 @@ export const submeterCandidato = createServerFn({ method: "POST" })
         .from("leads")
         .insert({
           nome: data.nome,
-          telefone: data.telefone,
+          telefone: telefoneClean,
           email: data.email || null,
           creci: data.creci || null,
           regiao: data.regiao,
@@ -229,7 +231,7 @@ export const submeterCandidato = createServerFn({ method: "POST" })
       .insert({
         nome: data.nome,
         cpf: cpfClean,
-        telefone: data.telefone,
+        telefone: telefoneClean,
         email: data.email || null,
         creci: data.creci || null,
         regiao: data.regiao,
