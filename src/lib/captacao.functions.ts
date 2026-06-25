@@ -235,3 +235,122 @@ export const removeCaptacaoTeamPhoto = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+// ============================================================
+// ADMIN helpers
+// ============================================================
+async function assertAdmin(context: { supabase: { rpc: (n: string, p: unknown) => Promise<{ data: unknown }> }; userId: string }) {
+  const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+  if (!isAdmin) throw new Error("Forbidden");
+}
+
+function decodeFile(b64: string): Uint8Array {
+  return Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+}
+
+const arquivoSchema = z.object({
+  nome: z.string().min(1).max(255),
+  mimeType: z.string().min(1).max(150),
+  base64: z.string().min(1),
+});
+
+// ============================================================
+// ADMIN: foto de grupo do time (única)
+// ============================================================
+export const uploadCaptacaoGroupPhoto = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { arquivo: { nome: string; mimeType: string; base64: string } }) =>
+    z.object({ arquivo: arquivoSchema }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: cfg } = await supabaseAdmin.from("configuracoes").select("valor").eq("chave", "captacao_group_photo").maybeSingle();
+    const old = cfg?.valor as { path?: string } | string | null;
+    const oldPath = typeof old === "string" ? old : old?.path;
+
+    const safeName = data.arquivo.nome.replace(/[^\w.\-]/g, "_");
+    const path = `group/${Date.now()}-${safeName}`;
+    const { error: upErr } = await supabaseAdmin.storage
+      .from("captacao-assets")
+      .upload(path, decodeFile(data.arquivo.base64), { contentType: data.arquivo.mimeType, upsert: false });
+    if (upErr) throw new Error(`Falha no upload: ${upErr.message}`);
+    if (oldPath) await supabaseAdmin.storage.from("captacao-assets").remove([oldPath]).catch(() => null);
+    const { error } = await supabaseAdmin.from("configuracoes").upsert(
+      { chave: "captacao_group_photo", valor: { path } as never, updated_at: new Date().toISOString() },
+      { onConflict: "chave" },
+    );
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const removeCaptacaoGroupPhoto = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: cfg } = await supabaseAdmin.from("configuracoes").select("valor").eq("chave", "captacao_group_photo").maybeSingle();
+    const old = cfg?.valor as { path?: string } | string | null;
+    const oldPath = typeof old === "string" ? old : old?.path;
+    if (oldPath) await supabaseAdmin.storage.from("captacao-assets").remove([oldPath]).catch(() => null);
+    await supabaseAdmin.from("configuracoes").upsert(
+      { chave: "captacao_group_photo", valor: null as never, updated_at: new Date().toISOString() },
+      { onConflict: "chave" },
+    );
+    return { ok: true };
+  });
+
+// ============================================================
+// ADMIN: foto por executivo (4 slots fixos pelo ref)
+// ============================================================
+const execRefSchema = z.enum(CAPTACAO_EXEC_REFS);
+
+export const uploadCaptacaoExecutivoPhoto = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { ref: CaptacaoExecRef; arquivo: { nome: string; mimeType: string; base64: string } }) =>
+    z.object({ ref: execRefSchema, arquivo: arquivoSchema }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: cfg } = await supabaseAdmin.from("configuracoes").select("valor").eq("chave", "captacao_executivo_photos").maybeSingle();
+    const current = (cfg?.valor && typeof cfg.valor === "object" && !Array.isArray(cfg.valor) ? cfg.valor : {}) as Record<string, { path?: string } | string>;
+    const oldEntry = current[data.ref];
+    const oldPath = typeof oldEntry === "string" ? oldEntry : oldEntry?.path;
+
+    const safeName = data.arquivo.nome.replace(/[^\w.\-]/g, "_");
+    const path = `executivos/${data.ref}-${Date.now()}-${safeName}`;
+    const { error: upErr } = await supabaseAdmin.storage
+      .from("captacao-assets")
+      .upload(path, decodeFile(data.arquivo.base64), { contentType: data.arquivo.mimeType, upsert: false });
+    if (upErr) throw new Error(`Falha no upload: ${upErr.message}`);
+    if (oldPath) await supabaseAdmin.storage.from("captacao-assets").remove([oldPath]).catch(() => null);
+
+    const next = { ...current, [data.ref]: { path } };
+    const { error } = await supabaseAdmin.from("configuracoes").upsert(
+      { chave: "captacao_executivo_photos", valor: next as never, updated_at: new Date().toISOString() },
+      { onConflict: "chave" },
+    );
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const removeCaptacaoExecutivoPhoto = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { ref: CaptacaoExecRef }) => z.object({ ref: execRefSchema }).parse(input))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: cfg } = await supabaseAdmin.from("configuracoes").select("valor").eq("chave", "captacao_executivo_photos").maybeSingle();
+    const current = (cfg?.valor && typeof cfg.valor === "object" && !Array.isArray(cfg.valor) ? cfg.valor : {}) as Record<string, { path?: string } | string>;
+    const entry = current[data.ref];
+    const oldPath = typeof entry === "string" ? entry : entry?.path;
+    if (oldPath) await supabaseAdmin.storage.from("captacao-assets").remove([oldPath]).catch(() => null);
+    const next = { ...current };
+    delete next[data.ref];
+    await supabaseAdmin.from("configuracoes").upsert(
+      { chave: "captacao_executivo_photos", valor: next as never, updated_at: new Date().toISOString() },
+      { onConflict: "chave" },
+    );
+    return { ok: true };
+  });
