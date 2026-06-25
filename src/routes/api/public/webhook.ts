@@ -112,18 +112,31 @@ export const Route = createFileRoute("/api/public/webhook")({
         const disponibilidade_video = pick(flat, ["disponibilidade_video","disponibilidade videochamada","disponibilidade_para_videochamada_diariamente","disponibilidade para videochamada diariamente","videochamada","video_diaria"]);
         const possui_veiculo = pick(flat, ["possui_veiculo","possui veículo","possui veiculo","possui_veiculo_para_locomocao","possui veículo para locomoção","possui veiculo para locomocao","veiculo","veículo"]);
 
+        // Normaliza labels que às vezes chegam em formato "slug" (ex.: "sim,_tenho_disponibilidade_")
+        // garantindo texto limpo e consistente independente do formato do payload da Meta.
+        const cleanLabel = (v: string | undefined): string | null => {
+          if (v == null) return null;
+          let s = String(v).replace(/_/g, " ").replace(/\s+/g, " ").trim();
+          s = s.replace(/^[.,;:\s]+|[.,;:\s]+$/g, "");
+          if (!s) return null;
+          // Capitaliza só a primeira letra se a string parecer ter vindo em minúsculas
+          if (s === s.toLowerCase()) s = s[0].toUpperCase() + s.slice(1);
+          return s;
+        };
+
         const isCaptacaoCorretor = !!(ja_corretor || creci_ativo || numero_creci || disponibilidade_barra || disponibilidade_recreio || disponibilidade_belford || disponibilidade_mesquita || disponibilidade_video || possui_veiculo);
         const dados_corretor = isCaptacaoCorretor ? {
-          ja_corretor: ja_corretor ?? null,
-          creci_ativo: creci_ativo ?? null,
-          numero_creci: numero_creci ?? null,
-          disponibilidade_barra: disponibilidade_barra ?? null,
-          disponibilidade_recreio: disponibilidade_recreio ?? null,
-          disponibilidade_belford: disponibilidade_belford ?? null,
-          disponibilidade_mesquita: disponibilidade_mesquita ?? null,
-          disponibilidade_video: disponibilidade_video ?? null,
-          possui_veiculo: possui_veiculo ?? null,
+          ja_corretor: cleanLabel(ja_corretor),
+          creci_ativo: cleanLabel(creci_ativo),
+          numero_creci: cleanLabel(numero_creci),
+          disponibilidade_barra: cleanLabel(disponibilidade_barra),
+          disponibilidade_recreio: cleanLabel(disponibilidade_recreio),
+          disponibilidade_belford: cleanLabel(disponibilidade_belford),
+          disponibilidade_mesquita: cleanLabel(disponibilidade_mesquita),
+          disponibilidade_video: cleanLabel(disponibilidade_video),
+          possui_veiculo: cleanLabel(possui_veiculo),
         } : null;
+
 
         if (!telefone) {
           return new Response(JSON.stringify({ error: "Telefone obrigatório (campos aceitos: telefone, phone, celular, whatsapp)" }), {
