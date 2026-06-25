@@ -9,6 +9,7 @@ import {
   Bed, Bath, Car, MapPin, Image as ImageIcon, MessageCircle, Share2,
   Zap, Flame, TrendingUp, Clock, Bell, ArrowRight, X, Check,
   Camera, Search, Video, FileText, Award, BookOpen,
+  AlertTriangle, EyeOff, UserX, ShieldCheck, Lightbulb, Send, Layers,
 } from "lucide-react";
 import jsPDF from "jspdf";
 
