@@ -1457,18 +1457,8 @@ const SLIDES: SlideDef[] = [
           <BodyCopy>
             Você terminou uma visita, retirou uma chave, mudou sua disponibilidade — basta contar para a Laura. Ela entende, transforma em registro no sistema e devolve confirmação para você revisar. Acabou aquela história de preencher formulário no fim do dia.
           </BodyCopy>
-          <div className="grid md:grid-cols-3 gap-4">
-            {[
-              { i: CheckCircle2, q: "A visita com o João foi realizada." },
-              { i: Camera, q: "Estou retirando a chave do apto 304." },
-              { i: CalendarDays, q: "Disponível seg a sex, 10h-18h — atualize minha agenda." },
-            ].map((c, i) => (
-              <GlassCard key={i}>
-                <c.i className="h-7 w-7 mb-3" style={{ color: GOLD }} />
-                <div className="text-base leading-snug" style={{ fontFamily: "'Cormorant Garamond', serif" }}>"{c.q}"</div>
-              </GlassCard>
-            ))}
-          </div>
+          <IllusLauraAction />
+
         </div>
       </SlideShell>
     ),
