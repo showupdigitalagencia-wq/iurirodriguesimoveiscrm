@@ -8,9 +8,11 @@ import {
   AlarmClock,
   CalendarDays,
   CheckCircle2,
+  FileText,
   KeyRound,
   MessageCircle,
   Phone,
+  Receipt,
   Sparkles,
   Timer,
   UserPlus,
@@ -18,6 +20,14 @@ import {
   XCircle,
   Zap,
 } from "lucide-react";
+
+function fmtMoeda(n: number | null | undefined) {
+  if (n == null) return "—";
+  return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+function fmtDataBR(iso: string) {
+  return new Date(iso + (iso.length === 10 ? "T00:00:00" : "")).toLocaleDateString("pt-BR");
+}
 
 export const Route = createFileRoute("/_authenticated/hoje")({
   component: HojePage,
