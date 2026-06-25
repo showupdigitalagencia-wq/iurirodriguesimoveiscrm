@@ -1498,7 +1498,7 @@ const SLIDES: SlideDef[] = [
               ))}
             </div>
           </div>
-          <div className="flex justify-center"><MockPhoneFrame variant="chat" /></div>
+          <div className="flex justify-center"><IllusLauraTrust /></div>
         </div>
       </SlideShell>
     ),
