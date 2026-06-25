@@ -1212,22 +1212,8 @@ const SLIDES: SlideDef[] = [
           <BodyCopy>
             O Nexus não é uma coleção de ferramentas soltas — é um ecossistema único, onde Agenda, Portfólio, Laura IA, Central Hoje, Desempenho e Time conversam entre si o tempo todo. O que acontece em uma parte alimenta todas as outras automaticamente.
           </BodyCopy>
-          <div className="grid grid-cols-3 gap-4 pt-2">
-            {[
-              { i: CalendarDays, t: "Agenda", d: "Você no controle do seu tempo" },
-              { i: Building2, t: "Portfólio", d: "Todo o catálogo no bolso" },
-              { i: Bot, t: "Laura IA", d: "Sua assistente pessoal" },
-              { i: Sparkles, t: "Hoje", d: "O que importa, sem esforço" },
-              { i: BarChart3, t: "Desempenho", d: "Seu funil, em tempo real" },
-              { i: Newspaper, t: "Time", d: "Feed, stories, conquistas" },
-            ].map((m, i) => (
-              <GlassCard key={i}>
-                <m.i className="h-7 w-7 mb-3" style={{ color: GOLD }} />
-                <div className="text-lg font-semibold mb-1">{m.t}</div>
-                <div className="text-xs opacity-70">{m.d}</div>
-              </GlassCard>
-            ))}
-          </div>
+          <IllusEcosystem />
+
         </div>
       </SlideShell>
     ),
