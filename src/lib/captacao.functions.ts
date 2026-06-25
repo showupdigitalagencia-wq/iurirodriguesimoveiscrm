@@ -8,6 +8,15 @@ export type CaptacaoTeamPhoto = {
   cargo: string;
 };
 
+export const CAPTACAO_EXEC_REFS = ["barra", "recreio", "belford", "mesquita"] as const;
+export type CaptacaoExecRef = (typeof CAPTACAO_EXEC_REFS)[number];
+
+async function signed(supabaseAdmin: { storage: { from: (b: string) => { createSignedUrl: (p: string, t: number) => Promise<{ data: { signedUrl: string } | null }> } } }, path: string | null | undefined): Promise<string | null> {
+  if (!path) return null;
+  const { data } = await supabaseAdmin.storage.from("captacao-assets").createSignedUrl(path, 60 * 60);
+  return data?.signedUrl ?? null;
+}
+
 // ============================================================
 // PÚBLICO: configuração da LP /seja-corretor (VSL + fotos com signed URL)
 // ============================================================
@@ -16,10 +25,17 @@ export const getCaptacaoConfig = createServerFn({ method: "GET" }).handler(async
   const { data } = await supabaseAdmin
     .from("configuracoes")
     .select("chave, valor")
-    .in("chave", ["vsl_captacao_url", "captacao_team_photos"]);
+    .in("chave", [
+      "vsl_captacao_url",
+      "captacao_team_photos",
+      "captacao_group_photo",
+      "captacao_executivo_photos",
+    ]);
 
   let vslUrl = "";
   let photos: CaptacaoTeamPhoto[] = [];
+  let groupPath: string | null = null;
+  let execPaths: Partial<Record<CaptacaoExecRef, string>> = {};
   for (const row of data ?? []) {
     if (row.chave === "vsl_captacao_url") {
       const v = row.valor as string | { url?: string } | null;
@@ -27,21 +43,31 @@ export const getCaptacaoConfig = createServerFn({ method: "GET" }).handler(async
     } else if (row.chave === "captacao_team_photos") {
       const v = row.valor as CaptacaoTeamPhoto[] | null;
       if (Array.isArray(v)) photos = v.slice(0, 4);
+    } else if (row.chave === "captacao_group_photo") {
+      const v = row.valor as { path?: string } | string | null;
+      groupPath = typeof v === "string" ? v : v?.path ?? null;
+    } else if (row.chave === "captacao_executivo_photos") {
+      const v = row.valor as Record<string, { path?: string } | string> | null;
+      if (v && typeof v === "object") {
+        for (const ref of CAPTACAO_EXEC_REFS) {
+          const e = v[ref];
+          const p = typeof e === "string" ? e : e?.path;
+          if (p) execPaths[ref] = p;
+        }
+      }
     }
   }
 
-  // Gera URLs assinadas (1 hora) para cada foto
   const photosWithUrls = await Promise.all(
-    photos.map(async (p) => {
-      if (!p.path) return { ...p, url: null as string | null };
-      const { data: signed } = await supabaseAdmin.storage
-        .from("captacao-assets")
-        .createSignedUrl(p.path, 60 * 60);
-      return { ...p, url: signed?.signedUrl ?? null };
-    }),
+    photos.map(async (p) => ({ ...p, url: await signed(supabaseAdmin, p.path) })),
   );
+  const groupUrl = await signed(supabaseAdmin, groupPath);
+  const execEntries = await Promise.all(
+    CAPTACAO_EXEC_REFS.map(async (ref) => [ref, await signed(supabaseAdmin, execPaths[ref] ?? null)] as const),
+  );
+  const execPhotos = Object.fromEntries(execEntries) as Record<CaptacaoExecRef, string | null>;
 
-  return { vslUrl, photos: photosWithUrls };
+  return { vslUrl, photos: photosWithUrls, groupUrl, execPhotos };
 });
 
 // ============================================================
