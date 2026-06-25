@@ -478,22 +478,45 @@ function SejaCorretorPage() {
                 : "grid grid-cols-1 sm:grid-cols-2 gap-5"
             }
           >
-            {execsToShow.map((exec) => (
+            {execsToShow.map((exec) => {
+              const photoUrl = execPhotos[exec.ref] ?? null;
+              return (
               <div
                 key={exec.ref}
                 className="rounded-2xl p-7 space-y-5 flex flex-col"
                 style={{ background: "#0F1626", border: `1px solid ${GOLD}33` }}
               >
-                <div>
-                  <div className="text-[10px] md:text-xs uppercase tracking-[0.45em] text-white/50 mb-2">
-                    {exec.regiao}
-                  </div>
-                  <h3
-                    className="text-3xl md:text-4xl leading-[1.1]"
-                    style={{ fontFamily: SERIF, color: GOLD, fontWeight: 500, letterSpacing: "-0.01em" }}
+                <div className="flex items-center gap-4">
+                  <div
+                    className="shrink-0 rounded-full overflow-hidden flex items-center justify-center"
+                    style={{
+                      width: 72,
+                      height: 72,
+                      background: "#141B2E",
+                      border: `1px solid ${GOLD}55`,
+                      color: GOLD,
+                      fontFamily: SERIF,
+                      fontSize: 24,
+                      fontWeight: 500,
+                    }}
                   >
-                    {exec.nome}
-                  </h3>
+                    {photoUrl ? (
+                      <img src={photoUrl} alt={exec.nome} className="w-full h-full object-cover" />
+                    ) : (
+                      <span>{initials(exec.nome)}</span>
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-[10px] md:text-xs uppercase tracking-[0.45em] text-white/50 mb-1">
+                      {exec.regiao}
+                    </div>
+                    <h3
+                      className="text-2xl md:text-3xl leading-[1.1] truncate"
+                      style={{ fontFamily: SERIF, color: GOLD, fontWeight: 500, letterSpacing: "-0.01em" }}
+                    >
+                      {exec.nome}
+                    </h3>
+                  </div>
                 </div>
                 <p className="text-white/70 text-sm md:text-base leading-relaxed flex-1">
                   {exec.descricao}
