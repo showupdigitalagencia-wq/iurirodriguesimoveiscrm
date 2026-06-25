@@ -91,6 +91,51 @@ function Headline({ children }: { children: React.ReactNode }) {
   );
 }
 
+// Parágrafo explicativo: 2 a 4 frases por slide, com peso visual
+function BodyCopy({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return (
+    <p
+      className={`text-[19px] md:text-[21px] leading-[1.55] opacity-90 max-w-[640px] font-light ${className}`}
+      style={{ fontFamily: "'Inter', system-ui, sans-serif", color: "#E8ECF5" }}
+    >
+      {children}
+    </p>
+  );
+}
+
+// Diagrama simples de fluxo (ícones + setas), identidade Navy + Dourado
+function FlowDiagram({
+  steps,
+}: {
+  steps: { icon: React.ComponentType<{ className?: string }>; label: string; sub?: string }[];
+}) {
+  return (
+    <div className="flex items-center justify-center gap-2 md:gap-3 flex-wrap">
+      {steps.map((s, i) => (
+        <React.Fragment key={i}>
+          <div className="flex flex-col items-center text-center w-[150px]">
+            <div
+              className="h-16 w-16 rounded-2xl flex items-center justify-center shadow-xl mb-2"
+              style={{
+                background: `linear-gradient(135deg, ${GOLD}, ${GOLD_SOFT})`,
+                color: NAVY,
+                boxShadow: `0 0 28px ${GOLD}44`,
+              }}
+            >
+              <s.icon className="h-7 w-7" />
+            </div>
+            <div className="text-[13px] font-semibold leading-tight">{s.label}</div>
+            {s.sub && <div className="text-[11px] opacity-65 mt-0.5">{s.sub}</div>}
+          </div>
+          {i < steps.length - 1 && (
+            <ArrowRight className="h-5 w-5 flex-shrink-0 opacity-70" style={{ color: GOLD }} />
+          )}
+        </React.Fragment>
+      ))}
+    </div>
+  );
+}
+
 // ---------------- Mockups (mockups visuais reais da identidade Nexus) ----------------
 
 function MockPlantaoCard() {
