@@ -1391,7 +1391,11 @@ function ApresentacaoPage() {
         </div>
       )}
 
-      <div className={fullscreen ? "flex-1 flex items-center justify-center overflow-hidden" : "flex-1 flex items-center justify-center p-0 md:p-6"}>
+      <div
+        className={fullscreen ? "flex-1 flex items-center justify-center overflow-hidden" : "flex-1 flex items-center justify-center p-0 md:p-6"}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+      >
         <div
           className={fullscreen ? "relative bg-black overflow-hidden" : "relative w-full max-w-[1400px] rounded-xl overflow-hidden shadow-2xl"}
           style={
