@@ -115,13 +115,15 @@ export function useHojeData() {
     queryKey: ["hoje-leads-sem-contato", uid],
     enabled: !!uid,
     queryFn: async (): Promise<LeadSemContato[]> => {
+      // Após a migração para distribuição por disponibilidade na Agenda,
+      // não dependemos mais de `plantao_dia`. Qualquer lead aceito pelo
+      // corretor sem primeiro contato é considerado urgente.
       const { data } = await supabase
         .from("vendas_leads")
         .select("id, nome, telefone, atribuido_em, plantao_dia, first_response_at, atribuicao_status")
         .eq("corretor_id", uid!)
         .eq("atribuicao_status", "aceito")
         .is("first_response_at", null)
-        .not("plantao_dia", "is", null)
         .order("atribuido_em", { ascending: true })
         .limit(50);
       return (data ?? []) as LeadSemContato[];
