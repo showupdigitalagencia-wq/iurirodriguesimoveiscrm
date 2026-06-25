@@ -19,7 +19,12 @@ import {
   uploadCaptacaoTeamPhoto,
   updateCaptacaoTeamMeta,
   removeCaptacaoTeamPhoto,
+  uploadCaptacaoGroupPhoto,
+  removeCaptacaoGroupPhoto,
+  uploadCaptacaoExecutivoPhoto,
+  removeCaptacaoExecutivoPhoto,
 } from "@/lib/captacao.functions";
+import { CAPTACAO_EXECUTIVOS } from "@/lib/captacao.constants";
 import { exportSistemaZip } from "@/lib/export-sistema.functions";
 import { listarBackups, gerarUrlBackup, rodarBackupManual } from "@/lib/backups.functions";
 import { Download, Archive, RefreshCcw } from "lucide-react";
