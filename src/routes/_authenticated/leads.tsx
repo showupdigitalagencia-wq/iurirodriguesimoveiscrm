@@ -328,6 +328,7 @@ function LeadsPage() {
               <TableHead>Região</TableHead>
               <TableHead>Canal</TableHead>
               <TableHead>Etapa</TableHead>
+              <TableHead>Temp.</TableHead>
               <TableHead>Criado em</TableHead>
             </TableRow>
           </TableHeader>
