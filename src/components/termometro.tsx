@@ -51,6 +51,7 @@ const COLORS: Record<Temperatura, { fill: string; track: string; text: string; r
 type Props = {
   score?: number | null;
   temperatura?: Temperatura | null;
+  tendencia?: Tendencia;
   size?: "sm" | "md" | "lg";
   showLabel?: boolean;
   className?: string;
