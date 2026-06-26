@@ -1,0 +1,1 @@
+UPDATE public.leads SET dados_corretor = dados_corretor;

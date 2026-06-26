@@ -12,6 +12,7 @@ import { ptBR } from "date-fns/locale";
 import { Download, FileSpreadsheet, Upload, Trash2 } from "lucide-react";
 import { LeadDetailSheet } from "@/components/lead-detail-sheet";
 import { CreateLeadDialog } from "@/components/create-lead-dialog";
+import { Termometro } from "@/components/termometro";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
@@ -54,6 +55,7 @@ function LeadsPage() {
   const [openLead, setOpenLead] = useState<string | null>(search.open ?? null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [respFilter, setRespFilter] = useState<string>("all");
+  const [tempFilter, setTempFilter] = useState<string>("all");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -81,7 +83,16 @@ function LeadsPage() {
   const filtered = leads.filter((l) => {
     if (isAdmin && respFilter !== "all" && l.responsavel_id !== respFilter) return false;
     if (q && !l.nome.toLowerCase().includes(q.toLowerCase()) && !l.telefone.includes(q)) return false;
+    if (tempFilter !== "all") {
+      const t = (l as unknown as { temperatura: string | null }).temperatura;
+      if (t !== tempFilter) return false;
+    }
     return true;
+  }).sort((a, b) => {
+    const sa = (a as unknown as { score_temperatura: number | null }).score_temperatura ?? -1;
+    const sb = (b as unknown as { score_temperatura: number | null }).score_temperatura ?? -1;
+    if (tempFilter !== "all" || sb !== sa) return sb - sa;
+    return 0;
   });
   const respFilterName = respFilter !== "all" ? resps.find((r) => r.id === respFilter)?.nome : null;
 
@@ -219,6 +230,17 @@ function LeadsPage() {
               </SelectContent>
             </Select>
           )}
+          <Select value={tempFilter} onValueChange={setTempFilter}>
+            <SelectTrigger className="w-full md:w-44 h-11 md:h-10">
+              <SelectValue placeholder="Temperatura" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas temperaturas</SelectItem>
+              <SelectItem value="quente">🔥 Quente</SelectItem>
+              <SelectItem value="morno">🌤️ Morno</SelectItem>
+              <SelectItem value="frio">❄️ Frio</SelectItem>
+            </SelectContent>
+          </Select>
           <Button variant="outline" onClick={exportCsv} className="h-11 md:h-10 flex-1 md:flex-none"><Download className="h-4 w-4" /> CSV</Button>
           <Button variant="outline" onClick={exportXlsx} className="h-11 md:h-10 flex-1 md:flex-none"><FileSpreadsheet className="h-4 w-4" /> Excel</Button>
           <CreateLeadDialog mode="lead" isAdmin={isAdmin} responsaveis={resps} onCreated={load} />
@@ -268,7 +290,14 @@ function LeadsPage() {
                   <div className="font-semibold truncate">{l.nome}</div>
                   <div className="text-sm text-muted-foreground truncate">{l.telefone}</div>
                 </div>
-                <span className={`shrink-0 text-[11px] px-2 py-1 rounded-full border ${etapaColor(l.etapa).badge}`}>{etapaNome(l.etapa)}</span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Termometro
+                    score={(l as unknown as { score_temperatura: number | null }).score_temperatura}
+                    temperatura={(l as unknown as { temperatura: "frio" | "morno" | "quente" | null }).temperatura}
+                    size="sm"
+                  />
+                  <span className={`text-[11px] px-2 py-1 rounded-full border ${etapaColor(l.etapa).badge}`}>{etapaNome(l.etapa)}</span>
+                </div>
               </div>
               <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
                 <span className="truncate">{regiaoNome(l.regiao)}</span>
@@ -299,6 +328,7 @@ function LeadsPage() {
               <TableHead>Região</TableHead>
               <TableHead>Canal</TableHead>
               <TableHead>Etapa</TableHead>
+              <TableHead>Temp.</TableHead>
               <TableHead>Criado em</TableHead>
             </TableRow>
           </TableHeader>
@@ -317,13 +347,21 @@ function LeadsPage() {
                 <TableCell className="cursor-pointer" onClick={() => setOpenLead(l.id)}>
                   <span className={`text-xs px-2 py-1 rounded-full border ${etapaColor(l.etapa).badge}`}>{etapaNome(l.etapa)}</span>
                 </TableCell>
+                <TableCell className="cursor-pointer" onClick={() => setOpenLead(l.id)}>
+                  <Termometro
+                    score={(l as unknown as { score_temperatura: number | null }).score_temperatura}
+                    temperatura={(l as unknown as { temperatura: "frio" | "morno" | "quente" | null }).temperatura}
+                    size="sm"
+                    showLabel
+                  />
+                </TableCell>
                 <TableCell className="text-muted-foreground text-sm cursor-pointer" onClick={() => setOpenLead(l.id)}>
                   {format(new Date(l.created_at), "dd/MM/yy HH:mm", { locale: ptBR })}
                 </TableCell>
               </TableRow>
             ))}
             {filtered.length === 0 && (
-              <TableRow><TableCell colSpan={isAdmin ? 7 : 6} className="text-center text-muted-foreground py-8">
+              <TableRow><TableCell colSpan={isAdmin ? 8 : 7} className="text-center text-muted-foreground py-8">
                 Nenhum lead encontrado
               </TableCell></TableRow>
             )}
