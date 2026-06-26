@@ -1096,6 +1096,8 @@ export type Database = {
           score_temperatura: number | null
           telefone: string
           temperatura: string | null
+          temperatura_anterior: string | null
+          temperatura_changed_at: string | null
           tipo_imovel: string | null
           updated_at: string
         }
@@ -1125,6 +1127,8 @@ export type Database = {
           score_temperatura?: number | null
           telefone: string
           temperatura?: string | null
+          temperatura_anterior?: string | null
+          temperatura_changed_at?: string | null
           tipo_imovel?: string | null
           updated_at?: string
         }
@@ -1154,6 +1158,8 @@ export type Database = {
           score_temperatura?: number | null
           telefone?: string
           temperatura?: string | null
+          temperatura_anterior?: string | null
+          temperatura_changed_at?: string | null
           tipo_imovel?: string | null
           updated_at?: string
         }
@@ -2239,6 +2245,14 @@ export type Database = {
         Args: { _cpf?: string; _telefone?: string }
         Returns: Json
       }
+      calc_corretor_manual_score: {
+        Args: { _lead_id: string }
+        Returns: number
+      }
+      calc_corretor_perf_score: {
+        Args: { _profile_id: string }
+        Returns: number
+      }
       calc_lead_score_captacao: {
         Args: { _lead: Database["public"]["Tables"]["leads"]["Row"] }
         Returns: number
@@ -2371,6 +2385,17 @@ export type Database = {
       normalize_phone_br: { Args: { p: string }; Returns: string }
       normalize_telefone: { Args: { _tel: string }; Returns: string }
       plantonista_do_dia: { Args: { _data: string }; Returns: string }
+      recalc_captacao_temperatura_cooling: {
+        Args: never
+        Returns: {
+          executivo_id: string
+          lead_id: string
+          nome: string
+          profile_id: string
+          temp_anterior: string
+          temp_nova: string
+        }[]
+      }
       recalc_vendas_temperatura_cooling: {
         Args: never
         Returns: {
