@@ -19,7 +19,7 @@ import { toast } from "sonner";
 import { Plus, MapPin, Video, UserPlus, Check, X, CalendarX2, CalendarCheck2 } from "lucide-react";
 import { VendasLeadDetail } from "@/components/vendas-lead-detail";
 import { VisitasNaoCompareceuList } from "@/components/visitas-nao-compareceu-list";
-import { Termometro } from "@/components/termometro";
+import { Termometro, tendenciaFromTemperaturas } from "@/components/termometro";
 
 type VendasLeadExt = VendasLead & {
   atribuicao_status?: "pendente" | "aceito" | "recusado" | null;
