@@ -347,13 +347,21 @@ function LeadsPage() {
                 <TableCell className="cursor-pointer" onClick={() => setOpenLead(l.id)}>
                   <span className={`text-xs px-2 py-1 rounded-full border ${etapaColor(l.etapa).badge}`}>{etapaNome(l.etapa)}</span>
                 </TableCell>
+                <TableCell className="cursor-pointer" onClick={() => setOpenLead(l.id)}>
+                  <Termometro
+                    score={(l as unknown as { score_temperatura: number | null }).score_temperatura}
+                    temperatura={(l as unknown as { temperatura: "frio" | "morno" | "quente" | null }).temperatura}
+                    size="sm"
+                    showLabel
+                  />
+                </TableCell>
                 <TableCell className="text-muted-foreground text-sm cursor-pointer" onClick={() => setOpenLead(l.id)}>
                   {format(new Date(l.created_at), "dd/MM/yy HH:mm", { locale: ptBR })}
                 </TableCell>
               </TableRow>
             ))}
             {filtered.length === 0 && (
-              <TableRow><TableCell colSpan={isAdmin ? 7 : 6} className="text-center text-muted-foreground py-8">
+              <TableRow><TableCell colSpan={isAdmin ? 8 : 7} className="text-center text-muted-foreground py-8">
                 Nenhum lead encontrado
               </TableCell></TableRow>
             )}
