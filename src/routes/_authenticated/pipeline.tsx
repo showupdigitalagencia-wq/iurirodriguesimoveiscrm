@@ -109,6 +109,8 @@ function Card({ lead, onOpen }: { lead: LeadRow; onOpen: (id: string) => void })
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: lead.id });
   const style = transform ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` } : undefined;
   const hex = etapaHex(lead.etapa);
+  const score = (lead as unknown as { score_temperatura: number | null }).score_temperatura ?? null;
+  const temp = (lead as unknown as { temperatura: "frio" | "morno" | "quente" | null }).temperatura ?? null;
   return (
     <div
       ref={setNodeRef}
@@ -119,7 +121,8 @@ function Card({ lead, onOpen }: { lead: LeadRow; onOpen: (id: string) => void })
       className={`relative bg-card/70 backdrop-blur-sm border border-border/60 border-l-[3px] rounded-lg p-3 cursor-pointer hover:border-primary/40 hover:shadow-[0_8px_24px_-12px_rgba(0,0,0,0.6)] transition-all ${isDragging ? "opacity-50 cursor-grabbing" : ""}`}
     >
       <div className="flex items-start justify-between gap-2">
-        <div className="font-medium text-sm truncate">{lead.nome}</div>
+        <div className="font-medium text-sm truncate flex-1">{lead.nome}</div>
+        {score !== null && <Termometro score={score} temperatura={temp} size="sm" />}
       </div>
       <div className="mt-2 text-xs text-muted-foreground flex items-center gap-1.5">
         <Phone className="h-3 w-3" /> {lead.telefone}
