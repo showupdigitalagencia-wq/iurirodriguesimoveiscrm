@@ -21,7 +21,7 @@ import { LeadTimeline } from "@/components/lead-timeline";
 import { ChecklistVisitaDialog } from "@/components/checklist-visita-dialog";
 import { MensagemTemplatesDialog } from "@/components/mensagem-templates-dialog";
 import { MessagesSquare } from "lucide-react";
-import { Termometro } from "@/components/termometro";
+import { Termometro, tendenciaFromTemperaturas } from "@/components/termometro";
 
 function toLocalInputValue(d: Date) {
   const pad = (n: number) => String(n).padStart(2, "0");
