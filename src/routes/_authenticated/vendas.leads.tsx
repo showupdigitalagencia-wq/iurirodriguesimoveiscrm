@@ -113,7 +113,7 @@ function VendasLeads() {
           </thead>
           <tbody>
             {leads.length === 0 && (
-              <tr><td colSpan={7} className="p-6 text-center text-muted-foreground">Nenhum lead ainda</td></tr>
+              <tr><td colSpan={8} className="p-6 text-center text-muted-foreground">Nenhum lead ainda</td></tr>
             )}
             {leads.map((l) => {
               const info = vendasEtapaInfo(l.etapa);
