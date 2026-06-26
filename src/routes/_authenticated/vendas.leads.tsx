@@ -125,6 +125,10 @@ function VendasLeads() {
                     <Termometro
                       score={(l as unknown as { score_temperatura: number | null }).score_temperatura}
                       temperatura={(l as unknown as { temperatura: "frio" | "morno" | "quente" | null }).temperatura}
+                      tendencia={tendenciaFromTemperaturas(
+                        (l as unknown as { temperatura: string | null }).temperatura,
+                        (l as unknown as { temperatura_anterior: string | null }).temperatura_anterior,
+                      )}
                       size="sm"
                     />
                   </td>
