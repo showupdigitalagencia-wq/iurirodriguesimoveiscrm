@@ -369,6 +369,57 @@ export type Database = {
           },
         ]
       }
+      corretor_avaliacoes: {
+        Row: {
+          avaliado_por: string
+          corretor_profile_id: string | null
+          created_at: string
+          engajamento: number
+          id: string
+          lead_id: string
+          mentoria_presente: boolean
+          observacao: string | null
+          reuniao_alinhamento_presente: boolean
+        }
+        Insert: {
+          avaliado_por: string
+          corretor_profile_id?: string | null
+          created_at?: string
+          engajamento: number
+          id?: string
+          lead_id: string
+          mentoria_presente: boolean
+          observacao?: string | null
+          reuniao_alinhamento_presente: boolean
+        }
+        Update: {
+          avaliado_por?: string
+          corretor_profile_id?: string | null
+          created_at?: string
+          engajamento?: number
+          id?: string
+          lead_id?: string
+          mentoria_presente?: boolean
+          observacao?: string | null
+          reuniao_alinhamento_presente?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "corretor_avaliacoes_corretor_profile_id_fkey"
+            columns: ["corretor_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "corretor_avaliacoes_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       corretor_disponibilidade: {
         Row: {
           corretor_id: string
