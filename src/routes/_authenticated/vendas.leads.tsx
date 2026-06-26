@@ -121,6 +121,13 @@ function VendasLeads() {
               return (
                 <tr key={l.id} className="border-t hover:bg-muted/30 cursor-pointer" onClick={() => setDetailId(l.id)}>
                   <td className="p-3 font-medium underline-offset-2 hover:underline">{l.nome}</td>
+                  <td className="p-3">
+                    <Termometro
+                      score={(l as unknown as { score_temperatura: number | null }).score_temperatura}
+                      temperatura={(l as unknown as { temperatura: "frio" | "morno" | "quente" | null }).temperatura}
+                      size="sm"
+                    />
+                  </td>
                   <td className="p-3">{l.tipo === "compra" ? "Compra" : "Locação"}</td>
                   <td className="p-3">{l.telefone}</td>
                   <td className="p-3">{formatBRL(l.valor != null ? Number(l.valor) : null)}</td>
