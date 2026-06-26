@@ -1,4 +1,20 @@
 import { cn } from "@/lib/utils";
+import { ArrowDown, ArrowUp } from "lucide-react";
+
+export type Tendencia = "subiu" | "desceu" | null;
+
+export function tendenciaFromTemperaturas(
+  atual?: string | null,
+  anterior?: string | null,
+): Tendencia {
+  if (!atual || !anterior || atual === anterior) return null;
+  const rank: Record<string, number> = { frio: 1, morno: 2, quente: 3 };
+  const a = rank[atual] ?? 0;
+  const b = rank[anterior] ?? 0;
+  if (a > b) return "subiu";
+  if (a < b) return "desceu";
+  return null;
+}
 
 export type Temperatura = "frio" | "morno" | "quente";
 
