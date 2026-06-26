@@ -19,6 +19,7 @@ import { Phone, MessageCircle, MapPin, Mail, Clock, MessageSquarePlus, CheckCirc
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { ReuniaoFormDialog } from "@/components/reuniao-form-dialog";
 import { Termometro } from "@/components/termometro";
+import { CorretorAvaliacaoPanel } from "@/components/corretor-avaliacao-panel";
 
 type HistoricoRow = {
   id: string;
