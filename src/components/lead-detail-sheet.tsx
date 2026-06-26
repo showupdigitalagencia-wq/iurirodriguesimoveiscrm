@@ -312,6 +312,13 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
               </TabsList>
 
               <TabsContent value="info" className="space-y-4 mt-4">
+                {lead.etapa === "fechado" && (
+                  <CorretorAvaliacaoPanel
+                    leadId={lead.id}
+                    corretorProfileId={null}
+                    responsavelId={lead.responsavel_id}
+                  />
+                )}
                 <div className="flex justify-between items-center gap-2">
                   <div className="flex flex-wrap gap-2">
                     {isAdmin && !editing && lead.etapa === "fechado" && (
