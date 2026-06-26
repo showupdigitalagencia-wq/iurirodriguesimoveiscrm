@@ -4,7 +4,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { VENDAS_ETAPAS, formatBRL, type VendasLead } from "@/lib/vendas-helpers";
 import { VendasLeadDetail } from "@/components/vendas-lead-detail";
-import { Termometro } from "@/components/termometro";
+import { Termometro, tendenciaFromTemperaturas } from "@/components/termometro";
 
 export const Route = createFileRoute("/_authenticated/vendas/pipeline")({
   component: VendasPipeline,
