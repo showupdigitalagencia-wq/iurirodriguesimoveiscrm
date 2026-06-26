@@ -196,12 +196,16 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
         {(() => {
           const sc = (lead as unknown as { score_temperatura: number | null }).score_temperatura;
           const tp = (lead as unknown as { temperatura: "frio" | "morno" | "quente" | null }).temperatura;
+          const tpAnt = (lead as unknown as { temperatura_anterior: string | null }).temperatura_anterior;
+          const trend = tendenciaFromTemperaturas(tp, tpAnt);
           if (sc == null) return null;
+          const trendMsg = trend === "desceu" ? "Esfriou desde o último cálculo." : trend === "subiu" ? "Esquentou desde o último cálculo." : null;
           return (
             <div className="flex items-center gap-3 rounded-lg border border-border/60 bg-muted/30 p-3">
-              <Termometro score={sc} temperatura={tp} size="lg" showLabel />
+              <Termometro score={sc} temperatura={tp} tendencia={trend} size="lg" showLabel />
               <div className="text-xs text-muted-foreground">
-                Score comportamental do lead. Sobe com imóvel vinculado, visitas, resposta rápida; cai por inatividade.
+                Score por etapa do funil; cai com inatividade (−20 após 14d, −30 após 21d).
+                {trendMsg && <span className="block mt-1 font-medium text-foreground/80">{trendMsg}</span>}
               </div>
             </div>
           );
