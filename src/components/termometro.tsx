@@ -60,23 +60,23 @@ type Props = {
 /**
  * Termômetro visual real: bulbo embaixo + tubo que preenche conforme o score.
  */
-export function Termometro({ score, temperatura, size = "sm", showLabel = false, className }: Props) {
+export function Termometro({ score, temperatura, tendencia = null, size = "sm", showLabel = false, className }: Props) {
   const s = Math.max(0, Math.min(100, Math.round(score ?? 0)));
   const temp = temperatura ?? temperaturaFromScore(s);
   const c = COLORS[temp];
 
   const dims = {
-    sm: { tubeH: 28, tubeW: 6, bulb: 10, fontScore: "text-[10px]", fontLabel: "text-[10px]" },
-    md: { tubeH: 56, tubeW: 10, bulb: 16, fontScore: "text-xs", fontLabel: "text-xs" },
-    lg: { tubeH: 96, tubeW: 14, bulb: 22, fontScore: "text-sm", fontLabel: "text-sm" },
+    sm: { tubeH: 28, tubeW: 6, bulb: 10, fontScore: "text-[10px]", fontLabel: "text-[10px]", arrow: 10 },
+    md: { tubeH: 56, tubeW: 10, bulb: 16, fontScore: "text-xs", fontLabel: "text-xs", arrow: 14 },
+    lg: { tubeH: 96, tubeW: 14, bulb: 22, fontScore: "text-sm", fontLabel: "text-sm", arrow: 18 },
   }[size];
 
   const fillPct = s; // 0–100
+  const trendTitle = tendencia === "subiu" ? "Esquentou desde o último cálculo" : tendencia === "desceu" ? "Esfriou desde o último cálculo" : "";
 
   return (
-    <div className={cn("inline-flex items-center gap-1.5", className)} title={`${c.label} • ${s}/100`}>
+    <div className={cn("inline-flex items-center gap-1.5", className)} title={`${c.label} • ${s}/100${trendTitle ? ` • ${trendTitle}` : ""}`}>
       <div className="relative flex flex-col items-center" style={{ width: dims.bulb }}>
-        {/* tube */}
         <div
           className={cn("relative overflow-hidden rounded-full ring-1", c.track, c.ring)}
           style={{ width: dims.tubeW, height: dims.tubeH }}
@@ -86,12 +86,17 @@ export function Termometro({ score, temperatura, size = "sm", showLabel = false,
             style={{ height: `${fillPct}%` }}
           />
         </div>
-        {/* bulb */}
         <div
           className={cn("rounded-full ring-1 -mt-1", c.fill, c.ring)}
           style={{ width: dims.bulb, height: dims.bulb }}
         />
       </div>
+      {tendencia === "desceu" && (
+        <ArrowDown size={dims.arrow} className="text-red-600 dark:text-red-400" aria-label="esfriou" />
+      )}
+      {tendencia === "subiu" && (
+        <ArrowUp size={dims.arrow} className="text-amber-500 dark:text-amber-300" aria-label="esquentou" />
+      )}
       {showLabel && (
         <div className="flex flex-col leading-tight">
           <span className={cn("font-semibold", dims.fontLabel, c.text)}>{c.label}</span>
