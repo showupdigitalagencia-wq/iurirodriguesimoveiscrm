@@ -475,6 +475,21 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
                         <p className="whitespace-pre-wrap">{lead.observacoes}</p>
                       </div>
                     )}
+                    {(() => {
+                      const sc = (lead as unknown as { score_temperatura: number | null }).score_temperatura;
+                      const tp = (lead as unknown as { temperatura: "frio" | "morno" | "quente" | null }).temperatura;
+                      if (sc === null || sc === undefined) return null;
+                      return (
+                        <div className="rounded-lg border border-border bg-muted/30 p-4 flex items-center gap-4">
+                          <Termometro score={sc} temperatura={tp} size="lg" showLabel />
+                          <div className="flex-1 min-w-0">
+                            <div className="text-muted-foreground text-xs uppercase tracking-wide">Temperatura do lead</div>
+                            <div className="text-2xl font-bold mt-0.5">{sc}<span className="text-sm font-normal text-muted-foreground">/100</span></div>
+                            <div className="text-xs text-muted-foreground mt-1">Calculado a partir das respostas do formulário</div>
+                          </div>
+                        </div>
+                      );
+                    })()}
                     {lead.is_corretor && lead.dados_corretor && (
                       <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
                         <div className="text-muted-foreground text-xs uppercase tracking-wide">Captação de corretor</div>
