@@ -290,7 +290,14 @@ function LeadsPage() {
                   <div className="font-semibold truncate">{l.nome}</div>
                   <div className="text-sm text-muted-foreground truncate">{l.telefone}</div>
                 </div>
-                <span className={`shrink-0 text-[11px] px-2 py-1 rounded-full border ${etapaColor(l.etapa).badge}`}>{etapaNome(l.etapa)}</span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Termometro
+                    score={(l as unknown as { score_temperatura: number | null }).score_temperatura}
+                    temperatura={(l as unknown as { temperatura: "frio" | "morno" | "quente" | null }).temperatura}
+                    size="sm"
+                  />
+                  <span className={`text-[11px] px-2 py-1 rounded-full border ${etapaColor(l.etapa).badge}`}>{etapaNome(l.etapa)}</span>
+                </div>
               </div>
               <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
                 <span className="truncate">{regiaoNome(l.regiao)}</span>
