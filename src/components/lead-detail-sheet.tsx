@@ -19,6 +19,7 @@ import { Phone, MessageCircle, MapPin, Mail, Clock, MessageSquarePlus, CheckCirc
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { ReuniaoFormDialog } from "@/components/reuniao-form-dialog";
 import { Termometro } from "@/components/termometro";
+import { CorretorAvaliacaoPanel } from "@/components/corretor-avaliacao-panel";
 
 type HistoricoRow = {
   id: string;
@@ -311,6 +312,13 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
               </TabsList>
 
               <TabsContent value="info" className="space-y-4 mt-4">
+                {lead.etapa === "fechado" && (
+                  <CorretorAvaliacaoPanel
+                    leadId={lead.id}
+                    corretorProfileId={null}
+                    responsavelId={lead.responsavel_id}
+                  />
+                )}
                 <div className="flex justify-between items-center gap-2">
                   <div className="flex flex-wrap gap-2">
                     {isAdmin && !editing && lead.etapa === "fechado" && (
