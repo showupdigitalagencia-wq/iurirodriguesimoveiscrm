@@ -12,6 +12,7 @@ import { ptBR } from "date-fns/locale";
 import { Download, FileSpreadsheet, Upload, Trash2 } from "lucide-react";
 import { LeadDetailSheet } from "@/components/lead-detail-sheet";
 import { CreateLeadDialog } from "@/components/create-lead-dialog";
+import { Termometro } from "@/components/termometro";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import * as XLSX from "xlsx";
 import { toast } from "sonner";
