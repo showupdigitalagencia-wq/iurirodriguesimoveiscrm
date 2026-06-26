@@ -102,6 +102,7 @@ function VendasLeads() {
           <thead className="bg-muted/50">
             <tr className="text-left">
               <th className="p-3">Nome</th>
+              <th className="p-3">Score</th>
               <th className="p-3">Tipo</th>
               <th className="p-3">Telefone</th>
               <th className="p-3">Valor</th>
