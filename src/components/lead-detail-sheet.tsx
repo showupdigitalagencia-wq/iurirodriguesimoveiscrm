@@ -18,6 +18,7 @@ import { ptBR } from "date-fns/locale";
 import { Phone, MessageCircle, MapPin, Mail, Clock, MessageSquarePlus, CheckCircle2, ArrowLeft, Trash2, CalendarPlus, ShieldOff } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { ReuniaoFormDialog } from "@/components/reuniao-form-dialog";
+import { Termometro } from "@/components/termometro";
 
 type HistoricoRow = {
   id: string;
