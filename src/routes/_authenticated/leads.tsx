@@ -83,7 +83,16 @@ function LeadsPage() {
   const filtered = leads.filter((l) => {
     if (isAdmin && respFilter !== "all" && l.responsavel_id !== respFilter) return false;
     if (q && !l.nome.toLowerCase().includes(q.toLowerCase()) && !l.telefone.includes(q)) return false;
+    if (tempFilter !== "all") {
+      const t = (l as unknown as { temperatura: string | null }).temperatura;
+      if (t !== tempFilter) return false;
+    }
     return true;
+  }).sort((a, b) => {
+    const sa = (a as unknown as { score_temperatura: number | null }).score_temperatura ?? -1;
+    const sb = (b as unknown as { score_temperatura: number | null }).score_temperatura ?? -1;
+    if (tempFilter !== "all" || sb !== sa) return sb - sa;
+    return 0;
   });
   const respFilterName = respFilter !== "all" ? resps.find((r) => r.id === respFilter)?.nome : null;
 
