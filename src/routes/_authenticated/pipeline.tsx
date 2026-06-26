@@ -8,6 +8,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Phone, MessageCircle } from "lucide-react";
 import { LeadDetailSheet } from "@/components/lead-detail-sheet";
+import { Termometro } from "@/components/termometro";
 
 export const Route = createFileRoute("/_authenticated/pipeline")({
   head: () => ({ meta: [{ title: "Negócios — Sistema NEXUS" }] }),
