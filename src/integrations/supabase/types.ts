@@ -1042,7 +1042,9 @@ export type Database = {
           reativacao_sugerida_em: string | null
           regiao: Database["public"]["Enums"]["lead_regiao"]
           responsavel_id: string | null
+          score_temperatura: number | null
           telefone: string
+          temperatura: string | null
           tipo_imovel: string | null
           updated_at: string
         }
@@ -1069,7 +1071,9 @@ export type Database = {
           reativacao_sugerida_em?: string | null
           regiao: Database["public"]["Enums"]["lead_regiao"]
           responsavel_id?: string | null
+          score_temperatura?: number | null
           telefone: string
+          temperatura?: string | null
           tipo_imovel?: string | null
           updated_at?: string
         }
@@ -1096,7 +1100,9 @@ export type Database = {
           reativacao_sugerida_em?: string | null
           regiao?: Database["public"]["Enums"]["lead_regiao"]
           responsavel_id?: string | null
+          score_temperatura?: number | null
           telefone?: string
+          temperatura?: string | null
           tipo_imovel?: string | null
           updated_at?: string
         }
@@ -1855,7 +1861,9 @@ export type Database = {
           reativacao_sugerida_em: string | null
           recusas: Json
           regiao: Database["public"]["Enums"]["lead_regiao"]
+          score_temperatura: number | null
           telefone: string
+          temperatura: string | null
           tipo: Database["public"]["Enums"]["vendas_tipo"]
           ultima_mensagem_em: string | null
           updated_at: string
@@ -1885,7 +1893,9 @@ export type Database = {
           reativacao_sugerida_em?: string | null
           recusas?: Json
           regiao?: Database["public"]["Enums"]["lead_regiao"]
+          score_temperatura?: number | null
           telefone: string
+          temperatura?: string | null
           tipo?: Database["public"]["Enums"]["vendas_tipo"]
           ultima_mensagem_em?: string | null
           updated_at?: string
@@ -1915,7 +1925,9 @@ export type Database = {
           reativacao_sugerida_em?: string | null
           recusas?: Json
           regiao?: Database["public"]["Enums"]["lead_regiao"]
+          score_temperatura?: number | null
           telefone?: string
+          temperatura?: string | null
           tipo?: Database["public"]["Enums"]["vendas_tipo"]
           ultima_mensagem_em?: string | null
           updated_at?: string
@@ -2170,6 +2182,14 @@ export type Database = {
         Args: { _cpf?: string; _telefone?: string }
         Returns: Json
       }
+      calc_lead_score_captacao: {
+        Args: { _lead: Database["public"]["Tables"]["leads"]["Row"] }
+        Returns: number
+      }
+      calc_lead_score_vendas: {
+        Args: { _lead: Database["public"]["Tables"]["vendas_leads"]["Row"] }
+        Returns: number
+      }
       can_user_view_reuniao: { Args: { _reuniao_id: string }; Returns: boolean }
       can_view_candidatos: { Args: { _user_id?: string }; Returns: boolean }
       can_write_imovel_foto: {
@@ -2309,6 +2329,10 @@ export type Database = {
       }
       retirar_chave: {
         Args: { _foto_url: string; _imovel_id: string; _observacao?: string }
+        Returns: string
+      }
+      temperatura_from_score: {
+        Args: { _frio_max?: number; _morno_max?: number; _score: number }
         Returns: string
       }
     }
