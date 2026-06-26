@@ -4,6 +4,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { VENDAS_ETAPAS, formatBRL, type VendasLead } from "@/lib/vendas-helpers";
 import { VendasLeadDetail } from "@/components/vendas-lead-detail";
+import { Termometro } from "@/components/termometro";
 
 export const Route = createFileRoute("/_authenticated/vendas/pipeline")({
   component: VendasPipeline,
@@ -74,19 +75,28 @@ function VendasPipeline() {
                   {items.length === 0 && (
                     <div className="text-xs text-muted-foreground text-center py-6">Vazio</div>
                   )}
-                  {items.map((l) => (
-                    <button
-                      key={l.id}
-                      type="button"
-                      onClick={() => setDetailId(l.id)}
-                      style={{ borderLeftColor: hex }}
-                      className="w-full text-left rounded-md border border-border/60 border-l-[3px] p-2.5 bg-background/60 hover:bg-muted/40 hover:border-primary/40 transition-all"
-                    >
-                      <div className="text-sm font-medium truncate">{l.nome}</div>
-                      <div className="text-xs text-muted-foreground">{l.tipo === "compra" ? "Compra" : "Locação"}</div>
-                      <div className="text-xs mt-1">{formatBRL(l.valor != null ? Number(l.valor) : null)}</div>
-                    </button>
-                  ))}
+                  {items.map((l) => {
+                    const sc = (l as unknown as { score_temperatura: number | null }).score_temperatura ?? null;
+                    const tp = (l as unknown as { temperatura: "frio" | "morno" | "quente" | null }).temperatura ?? null;
+                    return (
+                      <button
+                        key={l.id}
+                        type="button"
+                        onClick={() => setDetailId(l.id)}
+                        style={{ borderLeftColor: hex }}
+                        className="w-full text-left rounded-md border border-border/60 border-l-[3px] p-2.5 bg-background/60 hover:bg-muted/40 hover:border-primary/40 transition-all"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <div className="text-sm font-medium truncate">{l.nome}</div>
+                            <div className="text-xs text-muted-foreground">{l.tipo === "compra" ? "Compra" : "Locação"}</div>
+                            <div className="text-xs mt-1">{formatBRL(l.valor != null ? Number(l.valor) : null)}</div>
+                          </div>
+                          {sc !== null && <Termometro score={sc} temperatura={tp} size="sm" />}
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             );

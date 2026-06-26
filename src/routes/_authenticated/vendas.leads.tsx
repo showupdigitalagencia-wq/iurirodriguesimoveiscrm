@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { Plus, MapPin, Video, UserPlus, Check, X, CalendarX2, CalendarCheck2 } from "lucide-react";
 import { VendasLeadDetail } from "@/components/vendas-lead-detail";
 import { VisitasNaoCompareceuList } from "@/components/visitas-nao-compareceu-list";
+import { Termometro } from "@/components/termometro";
 
 type VendasLeadExt = VendasLead & {
   atribuicao_status?: "pendente" | "aceito" | "recusado" | null;
@@ -101,6 +102,7 @@ function VendasLeads() {
           <thead className="bg-muted/50">
             <tr className="text-left">
               <th className="p-3">Nome</th>
+              <th className="p-3">Score</th>
               <th className="p-3">Tipo</th>
               <th className="p-3">Telefone</th>
               <th className="p-3">Valor</th>
@@ -111,7 +113,7 @@ function VendasLeads() {
           </thead>
           <tbody>
             {leads.length === 0 && (
-              <tr><td colSpan={7} className="p-6 text-center text-muted-foreground">Nenhum lead ainda</td></tr>
+              <tr><td colSpan={8} className="p-6 text-center text-muted-foreground">Nenhum lead ainda</td></tr>
             )}
             {leads.map((l) => {
               const info = vendasEtapaInfo(l.etapa);
@@ -119,6 +121,13 @@ function VendasLeads() {
               return (
                 <tr key={l.id} className="border-t hover:bg-muted/30 cursor-pointer" onClick={() => setDetailId(l.id)}>
                   <td className="p-3 font-medium underline-offset-2 hover:underline">{l.nome}</td>
+                  <td className="p-3">
+                    <Termometro
+                      score={(l as unknown as { score_temperatura: number | null }).score_temperatura}
+                      temperatura={(l as unknown as { temperatura: "frio" | "morno" | "quente" | null }).temperatura}
+                      size="sm"
+                    />
+                  </td>
                   <td className="p-3">{l.tipo === "compra" ? "Compra" : "Locação"}</td>
                   <td className="p-3">{l.telefone}</td>
                   <td className="p-3">{formatBRL(l.valor != null ? Number(l.valor) : null)}</td>
