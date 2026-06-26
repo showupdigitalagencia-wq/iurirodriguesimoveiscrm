@@ -193,6 +193,20 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
           </DialogTitle>
         </DialogHeader>
 
+        {(() => {
+          const sc = (lead as unknown as { score_temperatura: number | null }).score_temperatura;
+          const tp = (lead as unknown as { temperatura: "frio" | "morno" | "quente" | null }).temperatura;
+          if (sc == null) return null;
+          return (
+            <div className="flex items-center gap-3 rounded-lg border border-border/60 bg-muted/30 p-3">
+              <Termometro score={sc} temperatura={tp} size="lg" showLabel />
+              <div className="text-xs text-muted-foreground">
+                Score comportamental do lead. Sobe com imóvel vinculado, visitas, resposta rápida; cai por inatividade.
+              </div>
+            </div>
+          );
+        })()}
+
         <div className="space-y-4 py-2">
           {!editing ? (
             <div className="grid grid-cols-2 gap-3 text-sm">
