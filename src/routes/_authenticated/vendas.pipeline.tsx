@@ -78,6 +78,8 @@ function VendasPipeline() {
                   {items.map((l) => {
                     const sc = (l as unknown as { score_temperatura: number | null }).score_temperatura ?? null;
                     const tp = (l as unknown as { temperatura: "frio" | "morno" | "quente" | null }).temperatura ?? null;
+                    const tpAnt = (l as unknown as { temperatura_anterior: string | null }).temperatura_anterior ?? null;
+                    const trend = tendenciaFromTemperaturas(tp, tpAnt);
                     return (
                       <button
                         key={l.id}
@@ -92,7 +94,7 @@ function VendasPipeline() {
                             <div className="text-xs text-muted-foreground">{l.tipo === "compra" ? "Compra" : "Locação"}</div>
                             <div className="text-xs mt-1">{formatBRL(l.valor != null ? Number(l.valor) : null)}</div>
                           </div>
-                          {sc !== null && <Termometro score={sc} temperatura={tp} size="sm" />}
+                          {sc !== null && <Termometro score={sc} temperatura={tp} tendencia={trend} size="sm" />}
                         </div>
                       </button>
                     );
