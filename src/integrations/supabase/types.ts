@@ -1864,6 +1864,8 @@ export type Database = {
           score_temperatura: number | null
           telefone: string
           temperatura: string | null
+          temperatura_anterior: string | null
+          temperatura_changed_at: string | null
           tipo: Database["public"]["Enums"]["vendas_tipo"]
           ultima_mensagem_em: string | null
           updated_at: string
@@ -1896,6 +1898,8 @@ export type Database = {
           score_temperatura?: number | null
           telefone: string
           temperatura?: string | null
+          temperatura_anterior?: string | null
+          temperatura_changed_at?: string | null
           tipo?: Database["public"]["Enums"]["vendas_tipo"]
           ultima_mensagem_em?: string | null
           updated_at?: string
@@ -1928,6 +1932,8 @@ export type Database = {
           score_temperatura?: number | null
           telefone?: string
           temperatura?: string | null
+          temperatura_anterior?: string | null
+          temperatura_changed_at?: string | null
           tipo?: Database["public"]["Enums"]["vendas_tipo"]
           ultima_mensagem_em?: string | null
           updated_at?: string
@@ -2314,6 +2320,17 @@ export type Database = {
       normalize_phone_br: { Args: { p: string }; Returns: string }
       normalize_telefone: { Args: { _tel: string }; Returns: string }
       plantonista_do_dia: { Args: { _data: string }; Returns: string }
+      recalc_vendas_temperatura_cooling: {
+        Args: never
+        Returns: {
+          corretor_id: string
+          dias_inativo: number
+          lead_id: string
+          nome: string
+          temp_anterior: string
+          temp_nova: string
+        }[]
+      }
       recalcular_conquistas_todos: { Args: never; Returns: number }
       recalcular_conquistas_usuario: {
         Args: { _user_id: string }
