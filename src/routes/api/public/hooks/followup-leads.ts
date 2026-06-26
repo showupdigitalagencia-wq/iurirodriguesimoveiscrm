@@ -232,6 +232,63 @@ export const Route = createFileRoute("/api/public/hooks/followup-leads")({
           erros.push(`recalc cooling: ${e instanceof Error ? e.message : String(e)}`);
         }
 
+        // 9) Recálculo + notificação de esfriamento (Captação — corretores ativos)
+        let capCooledTotal = 0, capCooledPushOk = 0, capCooledPushFail = 0, capCooledSkip = 0;
+        try {
+          const { data: cooledCap, error: rpcErr2 } = await supabaseAdmin
+            .rpc("recalc_captacao_temperatura_cooling" as never);
+          if (rpcErr2) {
+            erros.push(`recalc_captacao_temperatura_cooling: ${rpcErr2.message}`);
+          } else {
+            type CooledCap = {
+              lead_id: string; profile_id: string | null; executivo_id: string | null;
+              nome: string; temp_anterior: string | null; temp_nova: string;
+            };
+            const rows = (cooledCap ?? []) as unknown as CooledCap[];
+            capCooledTotal = rows.length;
+            const profIds = Array.from(new Set(rows.map(r => r.profile_id).filter(Boolean) as string[]));
+            const execIds = Array.from(new Set(rows.map(r => r.executivo_id).filter(Boolean) as string[]));
+            const profExt = new Map<string, string | null>();
+            const execExt = new Map<string, string | null>();
+            if (profIds.length) {
+              const { data } = await supabaseAdmin
+                .from("profiles").select("id, onesignal_external_id").in("id", profIds);
+              for (const p of (data ?? []) as { id: string; onesignal_external_id: string | null }[]) {
+                profExt.set(p.id, p.onesignal_external_id);
+              }
+            }
+            if (execIds.length) {
+              const { data } = await supabaseAdmin
+                .from("responsaveis").select("id, onesignal_external_id").in("id", execIds);
+              for (const e of (data ?? []) as { id: string; onesignal_external_id: string | null }[]) {
+                execExt.set(e.id, e.onesignal_external_id);
+              }
+            }
+            for (const c of rows) {
+              const dests: Array<{ extId: string; audience: "corretor" | "executivo" }> = [];
+              const pExt = c.profile_id ? profExt.get(c.profile_id) : null;
+              const eExt = c.executivo_id ? execExt.get(c.executivo_id) : null;
+              if (pExt) dests.push({ extId: pExt, audience: "corretor" });
+              if (eExt) dests.push({ extId: eExt, audience: "executivo" });
+              if (!dests.length) { capCooledSkip++; continue; }
+              for (const d of dests) {
+                const msg = d.audience === "corretor"
+                  ? `Seu desempenho caiu para 'Frio'. Vamos retomar o ritmo?`
+                  : `${c.nome} esfriou para 'Frio'. Que tal um alinhamento?`;
+                const r = await sendOneSignalPush({
+                  externalId: d.extId,
+                  title: "🔻 Corretor esfriando",
+                  message: msg,
+                  data: { tipo: "corretor_esfriando", lead_id: c.lead_id, fonte: "captacao", audience: d.audience },
+                });
+                if (r.ok) capCooledPushOk++; else { capCooledPushFail++; if (r.error) erros.push(r.error); }
+              }
+            }
+          }
+        } catch (e) {
+          erros.push(`recalc cooling captacao: ${e instanceof Error ? e.message : String(e)}`);
+        }
+
         return new Response(JSON.stringify({
           ok: true,
           dias_vendas: diasVendas,
@@ -242,8 +299,10 @@ export const Route = createFileRoute("/api/public/hooks/followup-leads")({
           push_fail: pushFail,
           skip_sem_destinatario: skipNoDest,
           cooling: { total: cooledTotal, push_ok: cooledPushOk, push_fail: cooledPushFail, skip_sem_destinatario: cooledSkip },
+          cooling_captacao: { total: capCooledTotal, push_ok: capCooledPushOk, push_fail: capCooledPushFail, skip_sem_destinatario: capCooledSkip },
           erros: erros.slice(0, 5),
         }), { status: 200, headers: { "Content-Type": "application/json" } });
+
       },
     },
   },
