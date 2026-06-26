@@ -194,6 +194,44 @@ export const Route = createFileRoute("/api/public/hooks/followup-leads")({
           }
         }
 
+        // 8) Recálculo de temperatura + notificação de esfriamento (Vendas)
+        let cooledTotal = 0, cooledPushOk = 0, cooledPushFail = 0, cooledSkip = 0;
+        try {
+          const { data: cooled, error: rpcErr } = await supabaseAdmin
+            .rpc("recalc_vendas_temperatura_cooling" as never);
+          if (rpcErr) {
+            erros.push(`recalc_vendas_temperatura_cooling: ${rpcErr.message}`);
+          } else {
+            type Cooled = { lead_id: string; corretor_id: string | null; nome: string; temp_anterior: string; temp_nova: string; dias_inativo: number };
+            const rows = (cooled ?? []) as unknown as Cooled[];
+            cooledTotal = rows.length;
+            const ids = Array.from(new Set(rows.map(r => r.corretor_id).filter(Boolean) as string[]));
+            const cooledExtMap = new Map<string, string | null>();
+            if (ids.length) {
+              const { data: profs } = await supabaseAdmin
+                .from("profiles")
+                .select("id, onesignal_external_id")
+                .in("id", ids);
+              for (const p of (profs ?? []) as { id: string; onesignal_external_id: string | null }[]) {
+                cooledExtMap.set(p.id, p.onesignal_external_id);
+              }
+            }
+            for (const c of rows) {
+              const ext = c.corretor_id ? cooledExtMap.get(c.corretor_id) : null;
+              if (!ext) { cooledSkip++; continue; }
+              const r = await sendOneSignalPush({
+                externalId: ext,
+                title: "🔻 Lead esfriando",
+                message: `${c.nome} está sem interação há ${c.dias_inativo} dias (${c.temp_anterior} → ${c.temp_nova}).`,
+                data: { tipo: "lead_esfriando", lead_id: c.lead_id, fonte: "vendas", temp_anterior: c.temp_anterior, temp_nova: c.temp_nova },
+              });
+              if (r.ok) cooledPushOk++; else { cooledPushFail++; if (r.error) erros.push(r.error); }
+            }
+          }
+        } catch (e) {
+          erros.push(`recalc cooling: ${e instanceof Error ? e.message : String(e)}`);
+        }
+
         return new Response(JSON.stringify({
           ok: true,
           dias_vendas: diasVendas,
@@ -203,6 +241,7 @@ export const Route = createFileRoute("/api/public/hooks/followup-leads")({
           push_ok: pushOk,
           push_fail: pushFail,
           skip_sem_destinatario: skipNoDest,
+          cooling: { total: cooledTotal, push_ok: cooledPushOk, push_fail: cooledPushFail, skip_sem_destinatario: cooledSkip },
           erros: erros.slice(0, 5),
         }), { status: 200, headers: { "Content-Type": "application/json" } });
       },
