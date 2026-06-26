@@ -55,6 +55,7 @@ function LeadsPage() {
   const [openLead, setOpenLead] = useState<string | null>(search.open ?? null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [respFilter, setRespFilter] = useState<string>("all");
+  const [tempFilter, setTempFilter] = useState<string>("all");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const fileRef = useRef<HTMLInputElement>(null);
 
