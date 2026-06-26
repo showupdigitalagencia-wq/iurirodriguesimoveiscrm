@@ -230,6 +230,17 @@ function LeadsPage() {
               </SelectContent>
             </Select>
           )}
+          <Select value={tempFilter} onValueChange={setTempFilter}>
+            <SelectTrigger className="w-full md:w-44 h-11 md:h-10">
+              <SelectValue placeholder="Temperatura" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas temperaturas</SelectItem>
+              <SelectItem value="quente">🔥 Quente</SelectItem>
+              <SelectItem value="morno">🌤️ Morno</SelectItem>
+              <SelectItem value="frio">❄️ Frio</SelectItem>
+            </SelectContent>
+          </Select>
           <Button variant="outline" onClick={exportCsv} className="h-11 md:h-10 flex-1 md:flex-none"><Download className="h-4 w-4" /> CSV</Button>
           <Button variant="outline" onClick={exportXlsx} className="h-11 md:h-10 flex-1 md:flex-none"><FileSpreadsheet className="h-4 w-4" /> Excel</Button>
           <CreateLeadDialog mode="lead" isAdmin={isAdmin} responsaveis={resps} onCreated={load} />
