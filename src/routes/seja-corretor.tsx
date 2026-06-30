@@ -1,42 +1,7 @@
 import { createFileRoute, useSearch, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
+import { useState } from "react";
 import { z } from "zod";
-import { getCaptacaoConfig } from "@/lib/captacao.functions";
-import {
-  CAPTACAO_REGIOES_MARQUEE,
-  CAPTACAO_STATS,
-} from "@/lib/captacao.constants";
 import logoAsset from "@/assets/logo_iuri_rodrigues_v2.png.asset.json";
-import { ShieldCheck, Cpu, Scale, GraduationCap } from "lucide-react";
-
-
-const PILARES = [
-  {
-    icon: ShieldCheck,
-    titulo: "Força de uma marca que já conquistou o mercado",
-    texto:
-      "Anos de atuação consolidada no Rio de Janeiro e Baixada Fluminense construíram uma reputação que abre portas. Clientes reconhecem o nome, indicam para outros e voltam a fechar negócio com a Iuri Rodrigues Imóveis. Trabalhar com uma marca respeitada muda completamente a forma como você é recebido em cada negociação.",
-  },
-  {
-    icon: Cpu,
-    titulo: "Tecnologia que nenhuma outra imobiliária da região tem",
-    texto:
-      "Desenvolvemos o Sistema Nexus, nosso próprio ecossistema digital com inteligência artificial integrada, a Laura. Gerencie seus leads, consulte o portfólio completo de imóveis, acompanhe sua agenda e organize toda sua rotina em um só lugar, direto do celular. Enquanto outros corretores ainda usam planilha e WhatsApp pessoal para tudo, você trabalha com tecnologia de ponta.",
-  },
-  {
-    icon: Scale,
-    titulo: "Oportunidades distribuídas com justiça",
-    texto:
-      "Aqui, leads não ficam perdidos em grupo de WhatsApp nem favorecem quem grita mais alto. Nosso sistema distribui oportunidades de forma automática e equilibrada, e acompanha seu desempenho com metas e conquistas reconhecidas por todo o time. Seu crescimento aqui depende do seu esforço, não de sorte.",
-  },
-  {
-    icon: GraduationCap,
-    titulo: "Mentoria e treinamento que formam referências",
-    texto:
-      "Investimos continuamente na formação de cada corretor através de mentorias presenciais, treinamentos práticos e acompanhamento próximo da liderança executiva. Não entregamos apenas ferramentas. Entregamos conhecimento, técnica e direcionamento estratégico construídos a partir de anos de experiência real no mercado imobiliário. É esse compromisso com o desenvolvimento contínuo que faz da Iuri Rodrigues Imóveis uma referência reconhecida.",
-  },
-];
 
 const searchSchema = z.object({
   ref: z.enum(["barra", "recreio", "belford", "mesquita"]).optional(),
@@ -66,12 +31,6 @@ export const Route = createFileRoute("/seja-corretor")({
 const GOLD = "#D4AF37";
 const SERIF = "'Cormorant Garamond', 'Playfair Display', Georgia, serif";
 const LOGO_URL = logoAsset.url;
-
-function youtubeId(url: string): string | null {
-  if (!url) return null;
-  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/);
-  return m ? m[1] : null;
-}
 
 function SejaCorretorPage() {
   const { ref } = useSearch({ from: "/seja-corretor" });
