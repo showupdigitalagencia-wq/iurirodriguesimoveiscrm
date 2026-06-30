@@ -172,11 +172,23 @@ export function useHojeData() {
   });
 
   const followup = useQuery({
-    queryKey: ["hoje-followup", uid],
+    queryKey: ["hoje-followup", uid, responsavelId, isExec],
     enabled: !!uid,
     queryFn: async (): Promise<FollowupHoje[]> => {
       const start = startOfToday();
       const end = endOfToday();
+      // Captação só faz sentido para o executivo responsável pela região.
+      // leads.responsavel_id referencia `responsaveis.id` (não `auth.uid()`),
+      // então usamos o responsavel_id do profile.
+      const capPromise = isExec && responsavelId
+        ? supabase
+            .from("leads")
+            .select("id, nome, telefone, etapa, followup_alerta_em")
+            .eq("responsavel_id", responsavelId)
+            .gte("followup_alerta_em", start)
+            .lte("followup_alerta_em", end)
+            .limit(100)
+        : Promise.resolve({ data: [] as Array<{ id: string; nome: string; telefone: string | null; etapa: string }> });
       const [v, c] = await Promise.all([
         supabase
           .from("vendas_leads")
@@ -185,13 +197,7 @@ export function useHojeData() {
           .gte("followup_alerta_em", start)
           .lte("followup_alerta_em", end)
           .limit(100),
-        supabase
-          .from("leads")
-          .select("id, nome, telefone, etapa, followup_alerta_em")
-          .eq("responsavel_id", uid!)
-          .gte("followup_alerta_em", start)
-          .lte("followup_alerta_em", end)
-          .limit(100),
+        capPromise,
       ]);
       const out: FollowupHoje[] = [];
       (v.data ?? []).forEach((r) =>
@@ -203,6 +209,7 @@ export function useHojeData() {
       return out;
     },
   });
+
 
   const chaves = useQuery({
     queryKey: ["hoje-chaves", uid],
