@@ -240,7 +240,7 @@ function SejaCorretorPage() {
             <div className="aspect-[16/9] w-full bg-black/40 flex items-center justify-center">
               {groupUrl ? (
                 <img
-                  src={groupUrl}
+                    src={groupUrl ?? undefined}
                   alt="Equipe Iuri Rodrigues Imóveis"
                   loading="lazy"
                   className="w-full h-full object-cover"
@@ -568,7 +568,7 @@ function CandidaturaForm({ refRegion }: { refRegion: RegiaoOpt | null }) {
 
       {refRegion ? (
         <div>
-          <label className={labelCls}>Região de atuação</label>
+          <label className={labelCls}>Disponibilidade para atuar na região</label>
           <div
             className="w-full h-11 px-3 rounded-md bg-white/[0.04] border border-white/15 text-white flex items-center"
             style={{ color: GOLD }}
