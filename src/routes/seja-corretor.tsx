@@ -1,17 +1,15 @@
-import { createFileRoute, useSearch } from "@tanstack/react-router";
+import { createFileRoute, useSearch, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getCaptacaoConfig } from "@/lib/captacao.functions";
 import {
-  CAPTACAO_EXECUTIVOS,
   CAPTACAO_REGIOES_MARQUEE,
   CAPTACAO_STATS,
-  findExecutivoByRef,
-  type CaptacaoExecutivo,
 } from "@/lib/captacao.constants";
 import logoAsset from "@/assets/logo_iuri_rodrigues_v2.png.asset.json";
 import { ShieldCheck, Cpu, Scale, GraduationCap } from "lucide-react";
+
 
 const PILARES = [
   {
@@ -75,38 +73,21 @@ function youtubeId(url: string): string | null {
   return m ? m[1] : null;
 }
 
-function whatsappLink(exec: CaptacaoExecutivo) {
-  const msg = `Olá ${exec.nome}! Vim pela página do Ecossistema Nexus e quero saber mais sobre fazer parte do time em ${exec.regiao}.`;
-  return `https://wa.me/${exec.whatsapp}?text=${encodeURIComponent(msg)}`;
-}
-
 function SejaCorretorPage() {
   const { ref } = useSearch({ from: "/seja-corretor" });
   const getConfig = useServerFn(getCaptacaoConfig);
   const [vslId, setVslId] = useState<string | null>(null);
-  const [, setPhotos] = useState<
-    Array<{ url: string | null; nome: string; cargo: string }>
-  >([]);
   const [groupUrl, setGroupUrl] = useState<string | null>(null);
-  const [execPhotos, setExecPhotos] = useState<Record<string, string | null>>({});
 
   useEffect(() => {
     getConfig({})
       .then((r) => {
         setVslId(youtubeId(r.vslUrl));
-        setPhotos(r.photos);
         setGroupUrl(r.groupUrl);
-        setExecPhotos(r.execPhotos);
       })
       .catch(() => null);
   }, [getConfig]);
 
-  const filteredExec = findExecutivoByRef(ref ?? null);
-  const execsToShow = filteredExec ? [filteredExec] : CAPTACAO_EXECUTIVOS;
-
-  function initials(nome: string): string {
-    return nome.split(/\s+/).filter(Boolean).slice(0, 2).map((s) => s[0]?.toUpperCase() ?? "").join("");
-  }
 
   return (
     <div className="min-h-screen" style={{ background: "#0A0E1A", color: "white", fontFamily: "var(--font-sans)" }}>
@@ -381,172 +362,6 @@ function SejaCorretorPage() {
 
 
 
-      {/* EXECUTIVO(S) */}
-      <section id="executivos" className="px-6 py-20 scroll-mt-20" style={{ background: "#0A0E1A" }}>
-
-        <div className="max-w-5xl mx-auto space-y-12">
-          <div className="text-center space-y-3">
-            <div className="text-[10px] md:text-xs uppercase tracking-[0.45em]" style={{ color: GOLD }}>
-              {filteredExec ? "Fale agora com" : "Liderança"}
-            </div>
-            <h2 className="text-3xl md:text-5xl leading-[1.1]" style={{ fontFamily: SERIF, fontWeight: 500, letterSpacing: "-0.01em" }}>
-              {filteredExec ? (
-                <>
-                  Seu próximo passo é com o <em style={{ color: GOLD, fontStyle: "italic", fontWeight: 500 }}>{filteredExec.nome}</em>
-                </>
-              ) : (
-                <>
-                  Escolha por <em style={{ color: GOLD, fontStyle: "italic", fontWeight: 500 }}>região</em>
-                </>
-              )}
-            </h2>
-          </div>
-
-          <div
-            className={
-              execsToShow.length === 1
-                ? "max-w-4xl mx-auto"
-                : "grid grid-cols-1 sm:grid-cols-2 gap-5"
-            }
-          >
-            {execsToShow.map((exec) => {
-              const photoUrl = execPhotos[exec.ref] ?? null;
-              const isSolo = execsToShow.length === 1;
-
-              if (isSolo) {
-                return (
-                  <div
-                    key={exec.ref}
-                    className="rounded-3xl overflow-hidden grid grid-cols-1 md:grid-cols-[minmax(0,42%)_1fr]"
-                    style={{
-                      background: "#0F1626",
-                      border: `1px solid ${GOLD}44`,
-                      boxShadow: `0 40px 100px -40px ${GOLD}33, 0 20px 60px -30px rgba(0,0,0,0.9)`,
-                    }}
-                  >
-                    {/* FOTO — coluna esquerda */}
-                    <div className="relative p-6 md:p-8 flex items-center justify-center" style={{ background: "#0A0E1A" }}>
-                      <div
-                        className="pointer-events-none absolute inset-0"
-                        style={{
-                          background: `radial-gradient(60% 50% at 50% 50%, ${GOLD}22, transparent 70%)`,
-                        }}
-                      />
-                      <div
-                        className="relative w-full max-w-[360px] aspect-[3/4] rounded-2xl overflow-hidden flex items-center justify-center"
-                        style={{
-                          background: "#141B2E",
-                          border: `2px solid ${GOLD}`,
-                          boxShadow: `0 0 0 1px ${GOLD}33, 0 30px 70px -20px ${GOLD}55, 0 20px 60px -20px rgba(0,0,0,0.8)`,
-                        }}
-                      >
-                        {photoUrl ? (
-                          <img src={photoUrl} alt={exec.nome} className="w-full h-full object-cover" />
-                        ) : (
-                          <span
-                            style={{
-                              color: GOLD,
-                              fontFamily: SERIF,
-                              fontSize: 96,
-                              fontWeight: 500,
-                              letterSpacing: "-0.02em",
-                            }}
-                          >
-                            {initials(exec.nome)}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* TEXTO — coluna direita */}
-                    <div className="p-7 md:p-10 flex flex-col justify-center space-y-5">
-                      <div>
-                        <div className="text-[10px] md:text-xs uppercase tracking-[0.45em] text-white/50 mb-2">
-                          {exec.regiao}
-                        </div>
-                        <h3
-                          className="text-3xl md:text-5xl leading-[1.05]"
-                          style={{ fontFamily: SERIF, color: GOLD, fontWeight: 500, letterSpacing: "-0.01em" }}
-                        >
-                          {exec.nome}
-                        </h3>
-                      </div>
-                      <div className="h-px w-16" style={{ background: `${GOLD}66` }} />
-                      <p className="text-white/75 text-base md:text-lg leading-relaxed">
-                        {exec.descricao}
-                      </p>
-                      <a
-                        href={whatsappLink(exec)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-md font-semibold text-sm uppercase tracking-[0.2em] transition-transform hover:scale-[1.02] self-start"
-                        style={{ background: GOLD, color: "#0A0E1A", boxShadow: `0 18px 50px -18px ${GOLD}99` }}
-                      >
-                        Falar no WhatsApp →
-                      </a>
-                    </div>
-                  </div>
-                );
-              }
-
-              return (
-              <div
-                key={exec.ref}
-                className="rounded-2xl p-7 space-y-5 flex flex-col"
-                style={{ background: "#0F1626", border: `1px solid ${GOLD}33` }}
-              >
-                <div className="flex items-center gap-4">
-                  <div
-                    className="shrink-0 rounded-full overflow-hidden flex items-center justify-center"
-                    style={{
-                      width: 96,
-                      height: 96,
-                      background: "#141B2E",
-                      border: `2px solid ${GOLD}`,
-                      color: GOLD,
-                      fontFamily: SERIF,
-                      fontSize: 30,
-                      fontWeight: 500,
-                      boxShadow: `0 0 0 1px ${GOLD}33, 0 18px 40px -15px ${GOLD}66`,
-                    }}
-                  >
-                    {photoUrl ? (
-                      <img src={photoUrl} alt={exec.nome} className="w-full h-full object-cover" />
-                    ) : (
-                      <span>{initials(exec.nome)}</span>
-                    )}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-[10px] md:text-xs uppercase tracking-[0.45em] text-white/50 mb-1">
-                      {exec.regiao}
-                    </div>
-                    <h3
-                      className="text-2xl md:text-3xl leading-[1.1] truncate"
-                      style={{ fontFamily: SERIF, color: GOLD, fontWeight: 500, letterSpacing: "-0.01em" }}
-                    >
-                      {exec.nome}
-                    </h3>
-                  </div>
-                </div>
-                <p className="text-white/70 text-sm md:text-base leading-relaxed flex-1">
-                  {exec.descricao}
-                </p>
-                <a
-                  href={whatsappLink(exec)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-md font-semibold text-sm uppercase tracking-[0.2em] transition-transform hover:scale-[1.02]"
-                  style={{ background: GOLD, color: "#0A0E1A" }}
-                >
-                  Falar no WhatsApp →
-                </a>
-              </div>
-              );
-            })}
-          </div>
-
-        </div>
-      </section>
 
       {/* FORMULÁRIO DE CANDIDATURA */}
       <section id="candidatura" className="px-6 py-20 md:py-24" style={{ background: "#0A0E1A" }}>
@@ -562,7 +377,7 @@ function SejaCorretorPage() {
               Leva menos de 1 minuto. Após enviar, o executivo da sua região entra em contato.
             </p>
           </div>
-          <CandidaturaForm />
+          <CandidaturaForm refRegion={(ref as RegiaoOpt | undefined) ?? null} />
         </div>
       </section>
 
@@ -604,12 +419,13 @@ const REGIAO_LABEL: Record<RegiaoOpt, string> = {
   mesquita: "Mesquita / Nilópolis",
 };
 
-function CandidaturaForm() {
+function CandidaturaForm({ refRegion }: { refRegion: RegiaoOpt | null }) {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     nome: "",
     telefone: "",
     email: "",
-    regiao: "" as RegiaoOpt | "",
+    regiao: (refRegion ?? "") as RegiaoOpt | "",
     ja_corretor: "",
     creci_ativo: "",
     numero_creci: "",
@@ -660,30 +476,14 @@ function CandidaturaForm() {
         throw new Error(t || `Erro ${r.status}`);
       }
       setStatus("ok");
+      navigate({ to: "/obrigado", search: { ref: form.regiao as RegiaoOpt } });
     } catch (e) {
       setErrMsg(e instanceof Error ? e.message : "Falha ao enviar");
       setStatus("err");
     }
   }
 
-  if (status === "ok") {
-    return (
-      <div
-        className="rounded-2xl p-8 md:p-10 text-center"
-        style={{ background: "#0F1626", border: `1px solid ${GOLD}55` }}
-      >
-        <div className="text-[10px] uppercase tracking-[0.45em] mb-3" style={{ color: GOLD }}>
-          Recebido
-        </div>
-        <h3 className="text-2xl md:text-3xl mb-3" style={{ fontFamily: SERIF, fontWeight: 500 }}>
-          Sua candidatura foi enviada.
-        </h3>
-        <p className="text-white/70 text-sm md:text-base">
-          Em breve o executivo responsável pela sua região entra em contato. Fique de olho no WhatsApp.
-        </p>
-      </div>
-    );
-  }
+
 
   const inputCls =
     "w-full h-11 px-3 rounded-md bg-white/[0.04] border border-white/15 text-white placeholder:text-white/30 focus:outline-none focus:border-white/40 transition";
@@ -722,22 +522,35 @@ function CandidaturaForm() {
         </div>
       </div>
 
-      <div>
-        <label className={labelCls}>Em qual região quer atuar? *</label>
-        <select
-          className={inputCls}
-          value={form.regiao}
-          onChange={(e) => upd("regiao", e.target.value as RegiaoOpt)}
-          required
-        >
-          <option value="" style={{ color: "#000" }}>Selecione…</option>
-          {(Object.keys(REGIAO_LABEL) as RegiaoOpt[]).map((r) => (
-            <option key={r} value={r} style={{ color: "#000" }}>
-              {REGIAO_LABEL[r]}
-            </option>
-          ))}
-        </select>
-      </div>
+      {refRegion ? (
+        <div>
+          <label className={labelCls}>Região de atuação</label>
+          <div
+            className="w-full h-11 px-3 rounded-md bg-white/[0.04] border border-white/15 text-white flex items-center"
+            style={{ color: GOLD }}
+          >
+            {REGIAO_LABEL[refRegion]}
+          </div>
+        </div>
+      ) : (
+        <div>
+          <label className={labelCls}>Em qual região quer atuar? *</label>
+          <select
+            className={inputCls}
+            value={form.regiao}
+            onChange={(e) => upd("regiao", e.target.value as RegiaoOpt)}
+            required
+          >
+            <option value="" style={{ color: "#000" }}>Selecione…</option>
+            {(Object.keys(REGIAO_LABEL) as RegiaoOpt[]).map((r) => (
+              <option key={r} value={r} style={{ color: "#000" }}>
+                {REGIAO_LABEL[r]}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>

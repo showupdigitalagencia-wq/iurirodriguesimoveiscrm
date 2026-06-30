@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SejaCorretorRouteImport } from './routes/seja-corretor'
+import { Route as ObrigadoRouteImport } from './routes/obrigado'
 import { Route as FormularioRouteImport } from './routes/formulario'
 import { Route as FinanciamentoRouteImport } from './routes/financiamento'
 import { Route as CadastroRouteImport } from './routes/cadastro'
@@ -82,6 +83,11 @@ import { Route as ApiPublicHooksBackupSemanalRouteImport } from './routes/api/pu
 const SejaCorretorRoute = SejaCorretorRouteImport.update({
   id: '/seja-corretor',
   path: '/seja-corretor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ObrigadoRoute = ObrigadoRouteImport.update({
+  id: '/obrigado',
+  path: '/obrigado',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FormularioRoute = FormularioRouteImport.update({
@@ -473,6 +479,7 @@ export interface FileRoutesByFullPath {
   '/cadastro': typeof CadastroRoute
   '/financiamento': typeof FinanciamentoRoute
   '/formulario': typeof FormularioRoute
+  '/obrigado': typeof ObrigadoRoute
   '/seja-corretor': typeof SejaCorretorRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/agenda': typeof AuthenticatedAgendaRoute
@@ -543,6 +550,7 @@ export interface FileRoutesByTo {
   '/cadastro': typeof CadastroRoute
   '/financiamento': typeof FinanciamentoRoute
   '/formulario': typeof FormularioRoute
+  '/obrigado': typeof ObrigadoRoute
   '/seja-corretor': typeof SejaCorretorRoute
   '/agenda': typeof AuthenticatedAgendaRoute
   '/apresentacao': typeof AuthenticatedApresentacaoRoute
@@ -612,6 +620,7 @@ export interface FileRoutesById {
   '/cadastro': typeof CadastroRoute
   '/financiamento': typeof FinanciamentoRoute
   '/formulario': typeof FormularioRoute
+  '/obrigado': typeof ObrigadoRoute
   '/seja-corretor': typeof SejaCorretorRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/agenda': typeof AuthenticatedAgendaRoute
@@ -684,6 +693,7 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/financiamento'
     | '/formulario'
+    | '/obrigado'
     | '/seja-corretor'
     | '/admin'
     | '/agenda'
@@ -754,6 +764,7 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/financiamento'
     | '/formulario'
+    | '/obrigado'
     | '/seja-corretor'
     | '/agenda'
     | '/apresentacao'
@@ -822,6 +833,7 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/financiamento'
     | '/formulario'
+    | '/obrigado'
     | '/seja-corretor'
     | '/_authenticated/admin'
     | '/_authenticated/agenda'
@@ -894,6 +906,7 @@ export interface RootRouteChildren {
   CadastroRoute: typeof CadastroRoute
   FinanciamentoRoute: typeof FinanciamentoRoute
   FormularioRoute: typeof FormularioRoute
+  ObrigadoRoute: typeof ObrigadoRoute
   SejaCorretorRoute: typeof SejaCorretorRoute
   ApiPublicCronLauraResumoDiarioRoute: typeof ApiPublicCronLauraResumoDiarioRoute
   ApiPublicCronPlantaoDiarioRoute: typeof ApiPublicCronPlantaoDiarioRoute
@@ -922,6 +935,13 @@ declare module '@tanstack/react-router' {
       path: '/seja-corretor'
       fullPath: '/seja-corretor'
       preLoaderRoute: typeof SejaCorretorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/obrigado': {
+      id: '/obrigado'
+      path: '/obrigado'
+      fullPath: '/obrigado'
+      preLoaderRoute: typeof ObrigadoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/formulario': {
@@ -1547,6 +1567,7 @@ const rootRouteChildren: RootRouteChildren = {
   CadastroRoute: CadastroRoute,
   FinanciamentoRoute: FinanciamentoRoute,
   FormularioRoute: FormularioRoute,
+  ObrigadoRoute: ObrigadoRoute,
   SejaCorretorRoute: SejaCorretorRoute,
   ApiPublicCronLauraResumoDiarioRoute: ApiPublicCronLauraResumoDiarioRoute,
   ApiPublicCronPlantaoDiarioRoute: ApiPublicCronPlantaoDiarioRoute,
