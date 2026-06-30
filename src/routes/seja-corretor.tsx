@@ -419,12 +419,13 @@ const REGIAO_LABEL: Record<RegiaoOpt, string> = {
   mesquita: "Mesquita / Nilópolis",
 };
 
-function CandidaturaForm() {
+function CandidaturaForm({ refRegion }: { refRegion: RegiaoOpt | null }) {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     nome: "",
     telefone: "",
     email: "",
-    regiao: "" as RegiaoOpt | "",
+    regiao: (refRegion ?? "") as RegiaoOpt | "",
     ja_corretor: "",
     creci_ativo: "",
     numero_creci: "",
@@ -475,30 +476,14 @@ function CandidaturaForm() {
         throw new Error(t || `Erro ${r.status}`);
       }
       setStatus("ok");
+      navigate({ to: "/obrigado", search: { ref: form.regiao as RegiaoOpt } });
     } catch (e) {
       setErrMsg(e instanceof Error ? e.message : "Falha ao enviar");
       setStatus("err");
     }
   }
 
-  if (status === "ok") {
-    return (
-      <div
-        className="rounded-2xl p-8 md:p-10 text-center"
-        style={{ background: "#0F1626", border: `1px solid ${GOLD}55` }}
-      >
-        <div className="text-[10px] uppercase tracking-[0.45em] mb-3" style={{ color: GOLD }}>
-          Recebido
-        </div>
-        <h3 className="text-2xl md:text-3xl mb-3" style={{ fontFamily: SERIF, fontWeight: 500 }}>
-          Sua candidatura foi enviada.
-        </h3>
-        <p className="text-white/70 text-sm md:text-base">
-          Em breve o executivo responsável pela sua região entra em contato. Fique de olho no WhatsApp.
-        </p>
-      </div>
-    );
-  }
+
 
   const inputCls =
     "w-full h-11 px-3 rounded-md bg-white/[0.04] border border-white/15 text-white placeholder:text-white/30 focus:outline-none focus:border-white/40 transition";
