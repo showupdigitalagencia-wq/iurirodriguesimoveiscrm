@@ -1,17 +1,15 @@
-import { createFileRoute, useSearch } from "@tanstack/react-router";
+import { createFileRoute, useSearch, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getCaptacaoConfig } from "@/lib/captacao.functions";
 import {
-  CAPTACAO_EXECUTIVOS,
   CAPTACAO_REGIOES_MARQUEE,
   CAPTACAO_STATS,
-  findExecutivoByRef,
-  type CaptacaoExecutivo,
 } from "@/lib/captacao.constants";
 import logoAsset from "@/assets/logo_iuri_rodrigues_v2.png.asset.json";
 import { ShieldCheck, Cpu, Scale, GraduationCap } from "lucide-react";
+
 
 const PILARES = [
   {
