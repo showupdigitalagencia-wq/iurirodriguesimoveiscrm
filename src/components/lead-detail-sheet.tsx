@@ -534,12 +534,13 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
                               <div className="font-medium">{String(v)}</div>
                             </div>
                           ))}
-                          {(dc.ad_name || dc.campaign_name) && (
+                          {(dc.ad_name || dc.campaign_name) ? (
                             <div className="pt-2 mt-2 border-t border-border/50 text-[11px] text-muted-foreground space-y-0.5">
                               {dc.campaign_name ? <div>Campanha: {String(dc.campaign_name)}</div> : null}
                               {dc.ad_name ? <div>Anúncio: {String(dc.ad_name)}</div> : null}
                             </div>
-                          )}
+                          ) : null}
+
                         </div>
                       );
                     })()}
