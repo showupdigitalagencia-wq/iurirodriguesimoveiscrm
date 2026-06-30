@@ -1,42 +1,7 @@
 import { createFileRoute, useSearch, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
+import { useState } from "react";
 import { z } from "zod";
-import { getCaptacaoConfig } from "@/lib/captacao.functions";
-import {
-  CAPTACAO_REGIOES_MARQUEE,
-  CAPTACAO_STATS,
-} from "@/lib/captacao.constants";
 import logoAsset from "@/assets/logo_iuri_rodrigues_v2.png.asset.json";
-import { ShieldCheck, Cpu, Scale, GraduationCap } from "lucide-react";
-
-
-const PILARES = [
-  {
-    icon: ShieldCheck,
-    titulo: "Força de uma marca que já conquistou o mercado",
-    texto:
-      "Anos de atuação consolidada no Rio de Janeiro e Baixada Fluminense construíram uma reputação que abre portas. Clientes reconhecem o nome, indicam para outros e voltam a fechar negócio com a Iuri Rodrigues Imóveis. Trabalhar com uma marca respeitada muda completamente a forma como você é recebido em cada negociação.",
-  },
-  {
-    icon: Cpu,
-    titulo: "Tecnologia que nenhuma outra imobiliária da região tem",
-    texto:
-      "Desenvolvemos o Sistema Nexus, nosso próprio ecossistema digital com inteligência artificial integrada, a Laura. Gerencie seus leads, consulte o portfólio completo de imóveis, acompanhe sua agenda e organize toda sua rotina em um só lugar, direto do celular. Enquanto outros corretores ainda usam planilha e WhatsApp pessoal para tudo, você trabalha com tecnologia de ponta.",
-  },
-  {
-    icon: Scale,
-    titulo: "Oportunidades distribuídas com justiça",
-    texto:
-      "Aqui, leads não ficam perdidos em grupo de WhatsApp nem favorecem quem grita mais alto. Nosso sistema distribui oportunidades de forma automática e equilibrada, e acompanha seu desempenho com metas e conquistas reconhecidas por todo o time. Seu crescimento aqui depende do seu esforço, não de sorte.",
-  },
-  {
-    icon: GraduationCap,
-    titulo: "Mentoria e treinamento que formam referências",
-    texto:
-      "Investimos continuamente na formação de cada corretor através de mentorias presenciais, treinamentos práticos e acompanhamento próximo da liderança executiva. Não entregamos apenas ferramentas. Entregamos conhecimento, técnica e direcionamento estratégico construídos a partir de anos de experiência real no mercado imobiliário. É esse compromisso com o desenvolvimento contínuo que faz da Iuri Rodrigues Imóveis uma referência reconhecida.",
-  },
-];
 
 const searchSchema = z.object({
   ref: z.enum(["barra", "recreio", "belford", "mesquita"]).optional(),
@@ -67,346 +32,50 @@ const GOLD = "#D4AF37";
 const SERIF = "'Cormorant Garamond', 'Playfair Display', Georgia, serif";
 const LOGO_URL = logoAsset.url;
 
-function youtubeId(url: string): string | null {
-  if (!url) return null;
-  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/);
-  return m ? m[1] : null;
-}
-
 function SejaCorretorPage() {
   const { ref } = useSearch({ from: "/seja-corretor" });
-  const getConfig = useServerFn(getCaptacaoConfig);
-  const [vslId, setVslId] = useState<string | null>(null);
-  const [groupUrl, setGroupUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    getConfig({})
-      .then((r) => {
-        setVslId(youtubeId(r.vslUrl));
-        setGroupUrl(r.groupUrl);
-      })
-      .catch(() => null);
-  }, [getConfig]);
-
 
   return (
-    <div className="min-h-screen" style={{ background: "#0A0E1A", color: "white", fontFamily: "var(--font-sans)" }}>
-      {/* HERO */}
-      <section
-        className="relative px-6 pt-10 pb-16 md:pt-16 md:pb-24 overflow-hidden"
-        style={{
-          background:
-            "radial-gradient(1200px 600px at 50% -10%, rgba(212,175,55,0.10), transparent 60%), #0A0E1A",
-        }}
-      >
-        <div className="max-w-5xl mx-auto text-center space-y-8 md:space-y-10">
+    <div
+      className="min-h-screen px-6 py-10 md:py-16"
+      style={{
+        background:
+          "radial-gradient(1200px 600px at 50% -10%, rgba(212,175,55,0.10), transparent 60%), #0A0E1A",
+        color: "white",
+        fontFamily: "var(--font-sans)",
+      }}
+    >
+      <main className="max-w-2xl mx-auto space-y-8">
+        <header className="text-center space-y-5">
           <img
             src={LOGO_URL}
             alt="Iuri Rodrigues Imóveis"
-            className="w-full max-w-[140px] md:max-w-[180px] mx-auto object-contain"
+            className="w-full max-w-[120px] md:max-w-[150px] mx-auto object-contain"
             style={{ mixBlendMode: "screen" }}
           />
-
-          <div className="space-y-5">
-            <div
-              className="text-[10px] md:text-xs uppercase tracking-[0.45em]"
-              style={{ color: GOLD }}
-            >
-              Ecossistema Nexus
-            </div>
-            <h1
-              className="text-5xl md:text-7xl lg:text-[5.5rem] leading-[1.05] tracking-tight"
-              style={{ fontFamily: SERIF, fontWeight: 500, letterSpacing: "-0.01em" }}
-            >
-              Os melhores corretores do{" "}
-              <em style={{ color: GOLD, fontStyle: "italic", fontWeight: 500 }}>Rio</em>
-              <br className="hidden md:block" /> estão aqui
-            </h1>
-          </div>
-
-          {/* VÍDEO no hero */}
-          {vslId ? (
-            <div className="relative mx-auto w-full max-w-3xl pt-2">
-              {/* moldura dourada sutil */}
-              <div
-                aria-hidden
-                className="absolute -inset-[1px] rounded-2xl pointer-events-none"
-                style={{
-                  background: `linear-gradient(135deg, ${GOLD}88, transparent 35%, transparent 65%, ${GOLD}55)`,
-                  filter: "blur(0.5px)",
-                }}
-              />
-              <div
-                className="relative aspect-video w-full rounded-2xl overflow-hidden"
-                style={{
-                  border: `1px solid ${GOLD}44`,
-                  boxShadow:
-                    "0 30px 80px -30px rgba(0,0,0,0.8), 0 0 50px -20px rgba(212,175,55,0.25)",
-                  background: "#000",
-                }}
-              >
-                <iframe
-                  className="w-full h-full"
-                  src={`https://www.youtube.com/embed/${vslId}?rel=0&modestbranding=1&playsinline=1`}
-                  title="Uma palavra do Iuri"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              </div>
-            </div>
-          ) : (
-            <div className="mx-auto w-full max-w-3xl aspect-video rounded-2xl bg-white/[0.02] border border-white/5" />
-          )}
-
-          <p className="text-white/70 max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
-            Não somos apenas uma imobiliária. Somos o time, a tecnologia e a liderança que faltavam
-            para você vender mais. Com método, respaldo e presença real em cada negociação.
-          </p>
-
-        </div>
-      </section>
-
-      {/* CTA + FOTO DO TIME (grupo) */}
-      <section className="px-6 py-16 md:py-20" style={{ background: "#0A0E1A" }}>
-        <div className="max-w-5xl mx-auto space-y-10 text-center">
-          <div className="flex flex-col items-center gap-5">
-            <div className="text-[10px] md:text-xs uppercase tracking-[0.45em]" style={{ color: GOLD }}>
-              Próximo passo
-            </div>
-            <h2
-              className="text-3xl md:text-5xl leading-[1.1] max-w-2xl"
-              style={{ fontFamily: SERIF, fontWeight: 500, letterSpacing: "-0.01em" }}
-            >
-              Faça parte do <em style={{ color: GOLD, fontStyle: "italic", fontWeight: 500 }}>nosso time</em>
-            </h2>
-            <a
-              href="#candidatura"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-md font-semibold text-sm md:text-base uppercase tracking-[0.2em] transition-transform hover:scale-[1.03]"
-              style={{ background: GOLD, color: "#0A0E1A", boxShadow: `0 18px 50px -18px ${GOLD}99` }}
-            >
-              Quero fazer parte →
-            </a>
-
-          </div>
-
-          <figure
-            className="relative overflow-hidden rounded-2xl mx-auto"
-            style={{ border: `1px solid ${GOLD}33`, boxShadow: "0 30px 80px -40px rgba(0,0,0,0.9)" }}
-          >
-            <div className="aspect-[16/9] w-full bg-black/40 flex items-center justify-center">
-              {groupUrl ? (
-                <img
-                  src={groupUrl}
-                  alt="Equipe Iuri Rodrigues Imóveis"
-                  loading="lazy"
-                  className="w-full h-full object-cover"
-                  style={{ filter: "saturate(0.9) contrast(1.05)" }}
-                />
-              ) : (
-                <div className="text-center text-white/40 text-xs uppercase tracking-[0.4em] px-6">
-                  Foto da equipe em breve
-                </div>
-              )}
-            </div>
-            {groupUrl && (
-              <div
-                className="pointer-events-none absolute inset-0"
-                style={{
-                  background:
-                    "linear-gradient(180deg, rgba(10,14,26,0) 55%, rgba(10,14,26,0.75) 100%)",
-                }}
-              />
-            )}
-          </figure>
-        </div>
-      </section>
-
-
-
-
-      {/* MARQUEE de regiões */}
-      <section
-        className="overflow-hidden py-5 border-y"
-        style={{ background: "#0F1626", borderColor: `${GOLD}22` }}
-      >
-        <div className="flex animate-[marquee_30s_linear_infinite] gap-12 whitespace-nowrap text-[10px] md:text-xs uppercase tracking-[0.45em] text-white/55">
-          {[...CAPTACAO_REGIOES_MARQUEE, ...CAPTACAO_REGIOES_MARQUEE].map((r, i) => (
-            <span key={i} className="flex items-center gap-3">
-              <span style={{ color: GOLD }}>◆</span> {r}
-            </span>
-          ))}
-        </div>
-        <style>{`@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }`}</style>
-      </section>
-
-
-      {/* MANIFESTO */}
-      <section className="px-6 py-20" style={{ background: "#0F1626" }}>
-
-        <div className="max-w-3xl mx-auto text-center space-y-6">
           <div className="text-[10px] md:text-xs uppercase tracking-[0.45em]" style={{ color: GOLD }}>
-            Manifesto
+            Candidatura
           </div>
-          <h2
-            className="text-3xl md:text-5xl leading-[1.1]"
+          <h1
+            className="text-4xl md:text-6xl leading-[1.05]"
             style={{ fontFamily: SERIF, fontWeight: 500, letterSpacing: "-0.01em" }}
           >
-            Não buscamos quantidade. <span style={{ color: GOLD }}>Selecionamos talentos.</span>
-          </h2>
-          <p className="text-white/70 text-base md:text-lg leading-relaxed">
-            Na Iuri Rodrigues Imóveis, cada novo corretor passa a integrar um ecossistema construído sobre
-            método, tecnologia, processos e desenvolvimento contínuo. Aqui, performance não depende apenas
-            de esforço individual. Ela é potencializada por uma estrutura que reúne inteligência comercial,
-            geração de oportunidades, treinamento permanente e suporte estratégico.
+            Seja corretor da <em style={{ color: GOLD, fontStyle: "italic", fontWeight: 500 }}>Iuri Rodrigues</em>
+          </h1>
+          <p className="text-white/65 text-sm md:text-base leading-relaxed max-w-xl mx-auto">
+            Preencha o formulário. Após enviar, você será direcionado para a página de obrigado com o contato do executivo responsável.
           </p>
-          <p className="text-white/70 text-base md:text-lg leading-relaxed">
-            Não procuramos profissionais em busca de uma oportunidade qualquer. Procuramos pessoas
-            comprometidas com evolução, disciplina e excelência. Se o seu objetivo é apenas utilizar uma
-            marca ou cumprir plantões ocasionais, provavelmente este não é o ambiente ideal.
-          </p>
-          <p className="text-white/70 text-base md:text-lg leading-relaxed">
-            Se você deseja construir uma carreira consistente ao lado de uma equipe que compartilha
-            conhecimento, investe em tecnologia e trabalha de forma integrada, será um prazer conhecer
-            o seu perfil.
-          </p>
-          <p className="text-white/80 text-base md:text-lg leading-relaxed" style={{ fontFamily: SERIF, fontStyle: "italic" }}>
-            Porque grandes resultados são consequência de grandes padrões.
-          </p>
-        </div>
-      </section>
+        </header>
 
-      {/* 3 PILARES */}
-      <section className="px-6 py-20 md:py-24" style={{ background: "#0A0E1A" }}>
-        <div className="max-w-6xl mx-auto space-y-14">
-          <div className="text-center space-y-3">
-            <div className="text-[10px] md:text-xs uppercase tracking-[0.45em]" style={{ color: GOLD }}>
-              Quatro Pilares
-            </div>
-            <h2
-              className="text-3xl md:text-5xl leading-[1.1] max-w-3xl mx-auto"
-              style={{ fontFamily: SERIF, fontWeight: 500, letterSpacing: "-0.01em" }}
-            >
-              O que sustenta <em style={{ color: GOLD, fontStyle: "italic", fontWeight: 500 }}>cada corretor</em> do nosso time
-            </h2>
+        <CandidaturaForm key={ref ?? "sem-ref"} refRegion={(ref as RegiaoOpt | undefined) ?? null} />
+
+        <footer className="text-center text-xs text-white/50 space-y-1 pt-2">
+          <div>© Iuri Rodrigues Imóveis · Ecossistema Nexus</div>
+          <div className="text-[11px] text-white/40">
+            Iuri Rodrigues Imóveis — <span style={{ color: GOLD }}>CRECI 11379J</span> — CNPJ 33.587.804/0001-98
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 md:gap-8">
-            {PILARES.map(({ icon: Icon, titulo, texto }, i) => (
-              <article
-                key={i}
-                className="relative flex flex-col p-8 md:p-10 rounded-2xl h-full"
-                style={{
-                  background: "linear-gradient(180deg, #111A2E 0%, #0C1322 100%)",
-                  border: `1px solid ${GOLD}33`,
-                  boxShadow: "0 30px 80px -40px rgba(0,0,0,0.9)",
-                }}
-              >
-                <div
-                  className="flex items-center justify-center mb-7 rounded-xl"
-                  style={{
-                    width: 64,
-                    height: 64,
-                    background: `${GOLD}14`,
-                    border: `1px solid ${GOLD}55`,
-                  }}
-                >
-                  <Icon size={30} strokeWidth={1.5} style={{ color: GOLD }} />
-                </div>
-                <h3
-                  className="text-base md:text-lg uppercase mb-5 leading-snug"
-                  style={{
-                    color: GOLD,
-                    fontFamily: SERIF,
-                    fontWeight: 500,
-                    letterSpacing: "0.12em",
-                  }}
-                >
-                  {titulo}
-                </h3>
-                <div
-                  className="h-px w-12 mb-5"
-                  style={{ background: `${GOLD}66` }}
-                />
-                <p className="text-white/75 text-[15px] md:text-base leading-relaxed">
-                  {texto}
-                </p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-
-
-
-
-
-
-
-      {/* STATS */}
-      <section className="px-6 py-14" style={{ background: "#0A0E1A" }}>
-        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-          {CAPTACAO_STATS.map((s) => (
-            <div key={s.l} className="space-y-2">
-              <div
-                className="text-5xl md:text-6xl"
-                style={{ fontFamily: SERIF, color: GOLD, fontWeight: 500, letterSpacing: "-0.02em" }}
-              >
-                {s.n}
-              </div>
-              <div className="text-[10px] md:text-xs uppercase tracking-[0.45em] text-white/55">{s.l}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-
-
-
-      {/* FORMULÁRIO DE CANDIDATURA */}
-      <section id="candidatura" className="px-6 py-20 md:py-24" style={{ background: "#0A0E1A" }}>
-        <div className="max-w-2xl mx-auto">
-          <div className="text-center mb-10">
-            <div className="text-[10px] md:text-xs uppercase tracking-[0.45em] mb-3" style={{ color: GOLD }}>
-              Candidatura
-            </div>
-            <h2 className="text-3xl md:text-5xl leading-[1.1]" style={{ fontFamily: SERIF, fontWeight: 500, letterSpacing: "-0.01em" }}>
-              Preencha e <em style={{ color: GOLD, fontStyle: "italic", fontWeight: 500 }}>fale com a liderança</em>
-            </h2>
-            <p className="text-white/60 text-sm md:text-base mt-4">
-              Leva menos de 1 minuto. Após enviar, o executivo da sua região entra em contato.
-            </p>
-          </div>
-          <CandidaturaForm refRegion={(ref as RegiaoOpt | undefined) ?? null} />
-        </div>
-      </section>
-
-      {/* CTA FINAL */}
-      <section className="px-6 py-24" style={{ background: "#0F1626" }}>
-        <div className="max-w-3xl mx-auto text-center space-y-6">
-          <h2 className="text-3xl md:text-5xl leading-[1.1]" style={{ fontFamily: SERIF, fontWeight: 500, letterSpacing: "-0.01em" }}>
-            Pronto para fazer parte do <em style={{ color: GOLD, fontStyle: "italic", fontWeight: 500 }}>maior ecossistema</em> do Rio?
-          </h2>
-          <p className="text-white/70 text-base md:text-lg">
-            Preencha o formulário acima e a liderança entra em contato.
-          </p>
-          <a
-            href="#candidatura"
-            className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-md font-semibold text-sm md:text-base uppercase tracking-[0.2em] transition-transform hover:scale-[1.03]"
-            style={{ background: GOLD, color: "#0A0E1A", boxShadow: `0 18px 50px -18px ${GOLD}99` }}
-          >
-            Quero fazer parte →
-          </a>
-        </div>
-      </section>
-
-
-      <footer className="px-6 py-8 text-center text-xs text-white/50 space-y-1" style={{ background: "#0A0E1A", borderTop: `1px solid ${GOLD}33` }}>
-        <div>© Iuri Rodrigues Imóveis · Ecossistema Nexus</div>
-        <div className="text-[11px] text-white/40">
-          Iuri Rodrigues Imóveis — <span style={{ color: GOLD }}>CRECI 11379J</span> — CNPJ 33.587.804/0001-98
-        </div>
-      </footer>
+        </footer>
+      </main>
     </div>
   );
 }
@@ -524,7 +193,7 @@ function CandidaturaForm({ refRegion }: { refRegion: RegiaoOpt | null }) {
 
       {refRegion ? (
         <div>
-          <label className={labelCls}>Região de atuação</label>
+          <label className={labelCls}>Disponibilidade para atuar na região</label>
           <div
             className="w-full h-11 px-3 rounded-md bg-white/[0.04] border border-white/15 text-white flex items-center"
             style={{ color: GOLD }}
