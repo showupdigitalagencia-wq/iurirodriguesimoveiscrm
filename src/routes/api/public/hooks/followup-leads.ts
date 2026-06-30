@@ -265,25 +265,19 @@ export const Route = createFileRoute("/api/public/hooks/followup-leads")({
               }
             }
             for (const c of rows) {
-              const dests: Array<{ extId: string; audience: "corretor" | "executivo" }> = [];
+              // Notifica APENAS o corretor responsável (quem "está com o lead").
+              // Antes notificava também o executivo, gerando push duplicado.
               const pExt = c.profile_id ? profExt.get(c.profile_id) : null;
-              const eExt = c.executivo_id ? execExt.get(c.executivo_id) : null;
-              if (pExt) dests.push({ extId: pExt, audience: "corretor" });
-              if (eExt) dests.push({ extId: eExt, audience: "executivo" });
-              if (!dests.length) { capCooledSkip++; continue; }
-              for (const d of dests) {
-                const msg = d.audience === "corretor"
-                  ? `Seu desempenho caiu para 'Frio'. Vamos retomar o ritmo?`
-                  : `${c.nome} esfriou para 'Frio'. Que tal um alinhamento?`;
-                const r = await sendOneSignalPush({
-                  externalId: d.extId,
-                  title: "🔻 Corretor esfriando",
-                  message: msg,
-                  data: { tipo: "corretor_esfriando", lead_id: c.lead_id, fonte: "captacao", audience: d.audience },
-                });
-                if (r.ok) capCooledPushOk++; else { capCooledPushFail++; if (r.error) erros.push(r.error); }
-              }
+              if (!pExt) { capCooledSkip++; continue; }
+              const r = await sendOneSignalPush({
+                externalId: pExt,
+                title: "🔻 Seu desempenho esfriou",
+                message: `Seu desempenho caiu para 'Frio'. Vamos retomar o ritmo?`,
+                data: { tipo: "corretor_esfriando", lead_id: c.lead_id, fonte: "captacao", audience: "corretor" },
+              });
+              if (r.ok) capCooledPushOk++; else { capCooledPushFail++; if (r.error) erros.push(r.error); }
             }
+
           }
         } catch (e) {
           erros.push(`recalc cooling captacao: ${e instanceof Error ? e.message : String(e)}`);
