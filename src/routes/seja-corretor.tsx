@@ -377,7 +377,7 @@ function SejaCorretorPage() {
               Leva menos de 1 minuto. Após enviar, o executivo da sua região entra em contato.
             </p>
           </div>
-          <CandidaturaForm />
+          <CandidaturaForm refRegion={(ref as RegiaoOpt | undefined) ?? null} />
         </div>
       </section>
 
