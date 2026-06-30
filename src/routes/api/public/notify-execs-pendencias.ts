@@ -93,7 +93,7 @@ export const Route = createFileRoute("/api/public/notify-execs-pendencias")({
 
         for (const r of recipients) {
           // -- Vendas pessoais (todo perfil que opera) --
-          const [leadsUrg, visitas, fupV, fupC, chaves] = await Promise.all([
+          const [leadsUrg, visitas, fupV, chaves] = await Promise.all([
             supabaseAdmin.from("vendas_leads")
               .select("id", { count: "exact", head: true })
               .eq("corretor_id", r.uid).eq("atribuicao_status", "aceito").is("first_response_at", null),
@@ -103,13 +103,19 @@ export const Route = createFileRoute("/api/public/notify-execs-pendencias")({
             supabaseAdmin.from("vendas_leads")
               .select("id", { count: "exact", head: true })
               .eq("corretor_id", r.uid).gte("followup_alerta_em", start).lte("followup_alerta_em", end),
-            supabaseAdmin.from("leads")
-              .select("id", { count: "exact", head: true })
-              .eq("responsavel_id", r.uid).gte("followup_alerta_em", start).lte("followup_alerta_em", end),
             supabaseAdmin.from("imoveis")
               .select("id", { count: "exact", head: true })
               .eq("chave_com_id", r.uid).not("chave_retirada_em", "is", null).lt("chave_retirada_em", limiteChave),
           ]);
+          // Captação: leads são vinculados via responsavel_id (responsaveis.id),
+          // por isso só faz sentido para o Executivo da região.
+          const fupC = r.resp_id
+            ? await supabaseAdmin.from("leads")
+                .select("id", { count: "exact", head: true })
+                .eq("responsavel_id", r.resp_id)
+                .gte("followup_alerta_em", start).lte("followup_alerta_em", end)
+            : { count: 0 };
+
 
           // -- Captação (só Executivo) --
           let candidatosCount = 0, reunioesCount = 0;
