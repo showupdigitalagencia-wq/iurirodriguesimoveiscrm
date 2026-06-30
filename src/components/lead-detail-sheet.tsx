@@ -519,6 +519,31 @@ export function LeadDetailSheet({ leadId, onClose, onUpdated, backLabel = "Volta
                         ))}
                       </div>
                     )}
+                    {lead.is_corretor && lead.dados_corretor && (() => {
+                      const dc = lead.dados_corretor as Record<string, unknown>;
+                      const fa = dc.form_answers as Record<string, string | null> | undefined;
+                      if (!fa || typeof fa !== "object") return null;
+                      const entries = Object.entries(fa).filter(([, v]) => v != null && String(v).trim() !== "");
+                      if (entries.length === 0) return null;
+                      return (
+                        <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
+                          <div className="text-muted-foreground text-xs uppercase tracking-wide">Respostas do formulário</div>
+                          {entries.map(([k, v]) => (
+                            <div key={k} className="text-sm space-y-0.5">
+                              <div className="text-muted-foreground text-xs">{k}</div>
+                              <div className="font-medium">{String(v)}</div>
+                            </div>
+                          ))}
+                          {(dc.ad_name || dc.campaign_name) && (
+                            <div className="pt-2 mt-2 border-t border-border/50 text-[11px] text-muted-foreground space-y-0.5">
+                              {dc.campaign_name ? <div>Campanha: {String(dc.campaign_name)}</div> : null}
+                              {dc.ad_name ? <div>Anúncio: {String(dc.ad_name)}</div> : null}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
+
                     <InfoRow label="Criado em" value={format(new Date(lead.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR })} />
                   </dl>
                 )}
