@@ -88,6 +88,50 @@ function SejaCorretorPage() {
       .catch(() => null);
   }, [getConfig]);
 
+  return (
+    <div
+      className="min-h-screen px-6 py-10 md:py-16"
+      style={{
+        background:
+          "radial-gradient(1200px 600px at 50% -10%, rgba(212,175,55,0.10), transparent 60%), #0A0E1A",
+        color: "white",
+        fontFamily: "var(--font-sans)",
+      }}
+    >
+      <main className="max-w-2xl mx-auto space-y-8">
+        <header className="text-center space-y-5">
+          <img
+            src={LOGO_URL}
+            alt="Iuri Rodrigues Imóveis"
+            className="w-full max-w-[120px] md:max-w-[150px] mx-auto object-contain"
+            style={{ mixBlendMode: "screen" }}
+          />
+          <div className="text-[10px] md:text-xs uppercase tracking-[0.45em]" style={{ color: GOLD }}>
+            Candidatura
+          </div>
+          <h1
+            className="text-4xl md:text-6xl leading-[1.05]"
+            style={{ fontFamily: SERIF, fontWeight: 500, letterSpacing: "-0.01em" }}
+          >
+            Seja corretor da <em style={{ color: GOLD, fontStyle: "italic", fontWeight: 500 }}>Iuri Rodrigues</em>
+          </h1>
+          <p className="text-white/65 text-sm md:text-base leading-relaxed max-w-xl mx-auto">
+            Preencha o formulário. Após enviar, você será direcionado para a página de obrigado com o contato do executivo responsável.
+          </p>
+        </header>
+
+        <CandidaturaForm key={ref ?? "sem-ref"} refRegion={(ref as RegiaoOpt | undefined) ?? null} />
+
+        <footer className="text-center text-xs text-white/50 space-y-1 pt-2">
+          <div>© Iuri Rodrigues Imóveis · Ecossistema Nexus</div>
+          <div className="text-[11px] text-white/40">
+            Iuri Rodrigues Imóveis — <span style={{ color: GOLD }}>CRECI 11379J</span> — CNPJ 33.587.804/0001-98
+          </div>
+        </footer>
+      </main>
+    </div>
+  );
+
 
   return (
     <div className="min-h-screen" style={{ background: "#0A0E1A", color: "white", fontFamily: "var(--font-sans)" }}>
