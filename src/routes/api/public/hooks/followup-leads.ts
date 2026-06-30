@@ -247,9 +247,7 @@ export const Route = createFileRoute("/api/public/hooks/followup-leads")({
             const rows = (cooledCap ?? []) as unknown as CooledCap[];
             capCooledTotal = rows.length;
             const profIds = Array.from(new Set(rows.map(r => r.profile_id).filter(Boolean) as string[]));
-            const execIds = Array.from(new Set(rows.map(r => r.executivo_id).filter(Boolean) as string[]));
             const profExt = new Map<string, string | null>();
-            const execExt = new Map<string, string | null>();
             if (profIds.length) {
               const { data } = await supabaseAdmin
                 .from("profiles").select("id, onesignal_external_id").in("id", profIds);
@@ -257,13 +255,7 @@ export const Route = createFileRoute("/api/public/hooks/followup-leads")({
                 profExt.set(p.id, p.onesignal_external_id);
               }
             }
-            if (execIds.length) {
-              const { data } = await supabaseAdmin
-                .from("responsaveis").select("id, onesignal_external_id").in("id", execIds);
-              for (const e of (data ?? []) as { id: string; onesignal_external_id: string | null }[]) {
-                execExt.set(e.id, e.onesignal_external_id);
-              }
-            }
+
             for (const c of rows) {
               // Notifica APENAS o corretor responsável (quem "está com o lead").
               // Antes notificava também o executivo, gerando push duplicado.
