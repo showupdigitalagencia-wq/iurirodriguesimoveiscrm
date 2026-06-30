@@ -522,22 +522,35 @@ function CandidaturaForm({ refRegion }: { refRegion: RegiaoOpt | null }) {
         </div>
       </div>
 
-      <div>
-        <label className={labelCls}>Em qual região quer atuar? *</label>
-        <select
-          className={inputCls}
-          value={form.regiao}
-          onChange={(e) => upd("regiao", e.target.value as RegiaoOpt)}
-          required
-        >
-          <option value="" style={{ color: "#000" }}>Selecione…</option>
-          {(Object.keys(REGIAO_LABEL) as RegiaoOpt[]).map((r) => (
-            <option key={r} value={r} style={{ color: "#000" }}>
-              {REGIAO_LABEL[r]}
-            </option>
-          ))}
-        </select>
-      </div>
+      {refRegion ? (
+        <div>
+          <label className={labelCls}>Região de atuação</label>
+          <div
+            className="w-full h-11 px-3 rounded-md bg-white/[0.04] border border-white/15 text-white flex items-center"
+            style={{ color: GOLD }}
+          >
+            {REGIAO_LABEL[refRegion]}
+          </div>
+        </div>
+      ) : (
+        <div>
+          <label className={labelCls}>Em qual região quer atuar? *</label>
+          <select
+            className={inputCls}
+            value={form.regiao}
+            onChange={(e) => upd("regiao", e.target.value as RegiaoOpt)}
+            required
+          >
+            <option value="" style={{ color: "#000" }}>Selecione…</option>
+            {(Object.keys(REGIAO_LABEL) as RegiaoOpt[]).map((r) => (
+              <option key={r} value={r} style={{ color: "#000" }}>
+                {REGIAO_LABEL[r]}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
