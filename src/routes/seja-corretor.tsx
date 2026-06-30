@@ -548,6 +548,24 @@ function SejaCorretorPage() {
         </div>
       </section>
 
+      {/* FORMULÁRIO DE CANDIDATURA */}
+      <section id="candidatura" className="px-6 py-20 md:py-24" style={{ background: "#0A0E1A" }}>
+        <div className="max-w-2xl mx-auto">
+          <div className="text-center mb-10">
+            <div className="text-[10px] md:text-xs uppercase tracking-[0.45em] mb-3" style={{ color: GOLD }}>
+              Candidatura
+            </div>
+            <h2 className="text-3xl md:text-5xl leading-[1.1]" style={{ fontFamily: SERIF, fontWeight: 500, letterSpacing: "-0.01em" }}>
+              Preencha e <em style={{ color: GOLD, fontStyle: "italic", fontWeight: 500 }}>fale com a liderança</em>
+            </h2>
+            <p className="text-white/60 text-sm md:text-base mt-4">
+              Leva menos de 1 minuto. Após enviar, o executivo da sua região entra em contato.
+            </p>
+          </div>
+          <CandidaturaForm />
+        </div>
+      </section>
+
       {/* CTA FINAL */}
       <section className="px-6 py-24" style={{ background: "#0F1626" }}>
         <div className="max-w-3xl mx-auto text-center space-y-6">
@@ -555,23 +573,18 @@ function SejaCorretorPage() {
             Pronto para fazer parte do <em style={{ color: GOLD, fontStyle: "italic", fontWeight: 500 }}>maior ecossistema</em> do Rio?
           </h2>
           <p className="text-white/70 text-base md:text-lg">
-            {filteredExec
-              ? `Chame ${filteredExec.nome} agora e descubra como começar.`
-              : "Escolha o executivo da sua região acima e dê o primeiro passo."}
+            Preencha o formulário acima e a liderança entra em contato.
           </p>
-          {filteredExec && (
-            <a
-              href={whatsappLink(filteredExec)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-md font-semibold text-sm md:text-base uppercase tracking-[0.2em] transition-transform hover:scale-[1.03]"
-              style={{ background: GOLD, color: "#0A0E1A", boxShadow: `0 18px 50px -18px ${GOLD}99` }}
-            >
-              Quero fazer parte →
-            </a>
-          )}
+          <a
+            href="#candidatura"
+            className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-md font-semibold text-sm md:text-base uppercase tracking-[0.2em] transition-transform hover:scale-[1.03]"
+            style={{ background: GOLD, color: "#0A0E1A", boxShadow: `0 18px 50px -18px ${GOLD}99` }}
+          >
+            Quero fazer parte →
+          </a>
         </div>
       </section>
+
 
       <footer className="px-6 py-8 text-center text-xs text-white/50 space-y-1" style={{ background: "#0A0E1A", borderTop: `1px solid ${GOLD}33` }}>
         <div>© Iuri Rodrigues Imóveis · Ecossistema Nexus</div>
