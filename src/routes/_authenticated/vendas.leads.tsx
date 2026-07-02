@@ -218,7 +218,7 @@ function AtribuirLeadButton({ lead, onDone }: { lead: VendasLeadExt; onDone: () 
         <DialogHeader><DialogTitle>Atribuir lead — {lead.nome}</DialogTitle></DialogHeader>
         <div className="space-y-2 py-2 max-h-[60vh] overflow-y-auto">
           {isFetching && <p className="text-xs text-muted-foreground">Carregando corretores...</p>}
-          {!isFetching && corretores.length === 0 && <p className="text-xs text-muted-foreground">Nenhum corretor cadastrado</p>}
+          {!isFetching && corretores.length === 0 && <p className="text-xs text-muted-foreground">Nenhum corretor vinculado à sua equipe.</p>}
           {corretores.map((c) => (
             <div key={c.id} className="flex items-center justify-between border rounded p-2">
               <div className="min-w-0">
