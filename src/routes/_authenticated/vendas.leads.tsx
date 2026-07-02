@@ -38,12 +38,21 @@ function VendasLeads() {
     queryFn: async () => {
       const { data: ud } = await supabase.auth.getUser();
       const uid = ud.user?.id ?? null;
-      if (!uid) return { uid: null, isAdmin: false };
-      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", uid);
-      return { uid, isAdmin: roles?.some((r) => r.role === "admin") ?? false };
+      if (!uid) return { uid: null, isAdmin: false, isExecutivo: false };
+      const [{ data: roles }, { data: execFlag }] = await Promise.all([
+        supabase.from("user_roles").select("role").eq("user_id", uid),
+        supabase.rpc("current_user_is_executivo"),
+      ]);
+      return {
+        uid,
+        isAdmin: roles?.some((r) => r.role === "admin") ?? false,
+        isExecutivo: !!execFlag,
+      };
     },
   });
   const isAdmin = me?.isAdmin ?? false;
+  const isExecutivo = me?.isExecutivo ?? false;
+  const canAssign = isAdmin || isExecutivo;
   const myUid = me?.uid ?? null;
 
   const { data: leads = [] } = useQuery({
@@ -153,7 +162,7 @@ function VendasLeads() {
                   </td>
                   <td className="p-3" onClick={(e) => e.stopPropagation()}>
                     <div className="flex gap-2 justify-end flex-wrap">
-                      {isAdmin && (
+                      {canAssign && (
                         <AtribuirLeadButton lead={l} onDone={invalidate} />
                       )}
                       {isMyPending && (
@@ -209,7 +218,7 @@ function AtribuirLeadButton({ lead, onDone }: { lead: VendasLeadExt; onDone: () 
         <DialogHeader><DialogTitle>Atribuir lead — {lead.nome}</DialogTitle></DialogHeader>
         <div className="space-y-2 py-2 max-h-[60vh] overflow-y-auto">
           {isFetching && <p className="text-xs text-muted-foreground">Carregando corretores...</p>}
-          {!isFetching && corretores.length === 0 && <p className="text-xs text-muted-foreground">Nenhum corretor cadastrado</p>}
+          {!isFetching && corretores.length === 0 && <p className="text-xs text-muted-foreground">Nenhum corretor vinculado à sua equipe.</p>}
           {corretores.map((c) => (
             <div key={c.id} className="flex items-center justify-between border rounded p-2">
               <div className="min-w-0">
