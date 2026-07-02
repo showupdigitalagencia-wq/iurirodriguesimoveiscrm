@@ -106,7 +106,17 @@ export const atribuirLead = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
-    if (!isAdmin) throw new Error("Acesso negado");
+    const { data: execId } = await context.supabase.rpc("current_user_executivo_id");
+    const executivoId = (execId as string | null) ?? null;
+    if (!isAdmin && !executivoId) throw new Error("Acesso negado");
+
+    // Executivo: valida que o corretor destino pertence à sua equipe
+    if (!isAdmin && executivoId) {
+      const { data: alvo } = await supabaseAdmin
+        .from("profiles").select("responsavel_id").eq("id", data.corretor_id).maybeSingle();
+      const alvoExec = (alvo as { responsavel_id: string | null } | null)?.responsavel_id ?? null;
+      if (alvoExec !== executivoId) throw new Error("Corretor não pertence à sua equipe");
+    }
 
     // Captura corretor anterior para registrar transferência
     const { data: prevRaw } = await supabaseAdmin
