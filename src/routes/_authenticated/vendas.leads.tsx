@@ -38,12 +38,21 @@ function VendasLeads() {
     queryFn: async () => {
       const { data: ud } = await supabase.auth.getUser();
       const uid = ud.user?.id ?? null;
-      if (!uid) return { uid: null, isAdmin: false };
-      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", uid);
-      return { uid, isAdmin: roles?.some((r) => r.role === "admin") ?? false };
+      if (!uid) return { uid: null, isAdmin: false, isExecutivo: false };
+      const [{ data: roles }, { data: execFlag }] = await Promise.all([
+        supabase.from("user_roles").select("role").eq("user_id", uid),
+        supabase.rpc("current_user_is_executivo"),
+      ]);
+      return {
+        uid,
+        isAdmin: roles?.some((r) => r.role === "admin") ?? false,
+        isExecutivo: !!execFlag,
+      };
     },
   });
   const isAdmin = me?.isAdmin ?? false;
+  const isExecutivo = me?.isExecutivo ?? false;
+  const canAssign = isAdmin || isExecutivo;
   const myUid = me?.uid ?? null;
 
   const { data: leads = [] } = useQuery({
