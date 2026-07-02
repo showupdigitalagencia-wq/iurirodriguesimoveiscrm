@@ -162,7 +162,7 @@ function VendasLeads() {
                   </td>
                   <td className="p-3" onClick={(e) => e.stopPropagation()}>
                     <div className="flex gap-2 justify-end flex-wrap">
-                      {isAdmin && (
+                      {canAssign && (
                         <AtribuirLeadButton lead={l} onDone={invalidate} />
                       )}
                       {isMyPending && (
