@@ -72,8 +72,12 @@ function VendasLeads() {
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["vendas_leads"] });
 
-  const [detailId, setDetailId] = useState<string | null>(null);
+  const [detailId, setDetailId] = useState<string | null>(search.open ?? null);
   const [filter, setFilter] = useState<"todos" | "nao_compareceu" | "compareceu">("todos");
+
+  useEffect(() => {
+    if (search.open) setDetailId(search.open);
+  }, [search.open]);
 
   const noShowRange = useMemo(() => {
     const now = new Date();
