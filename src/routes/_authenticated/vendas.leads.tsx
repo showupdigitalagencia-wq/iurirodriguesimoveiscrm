@@ -34,6 +34,8 @@ export const Route = createFileRoute("/_authenticated/vendas/leads")({
 
 function VendasLeads() {
   const qc = useQueryClient();
+  const search = Route.useSearch();
+  const navigate = Route.useNavigate();
   const { data: me } = useQuery({
     queryKey: ["me_vendas_ctx"],
     queryFn: async () => {
