@@ -101,7 +101,7 @@ function VendasLeads() {
         </div>
         <CreateVendasLeadDialog onCreated={invalidate} />
       </div>
-      <VendasLeadDetail leadId={detailId} open={!!detailId} onOpenChange={(o) => !o && setDetailId(null)} isAdmin={isAdmin} onChanged={invalidate} />
+      <VendasLeadDetail leadId={detailId} open={!!detailId} onOpenChange={(o) => { if (!o) { setDetailId(null); if (search.open) navigate({ to: "/vendas/leads", search: {} }); } }} isAdmin={isAdmin} onChanged={invalidate} />
 
       {filter === "nao_compareceu" || filter === "compareceu" ? (
         <VisitasNaoCompareceuList
