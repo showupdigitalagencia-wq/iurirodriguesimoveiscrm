@@ -369,7 +369,7 @@ export const addUsersBatchToReuniao = createServerFn({ method: "POST" })
               target_channel: "push",
               headings: { en: "🟡 Você foi adicionado a uma reunião!" },
               contents: { en: `${r.titulo} — ${dt.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })} ${dt.toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" })}` },
-              url: "https://sistemanexus.app/agenda",
+              url: `https://sistemanexus.app/agenda?open=${data.reuniao_id}`,
             }),
           });
         }
