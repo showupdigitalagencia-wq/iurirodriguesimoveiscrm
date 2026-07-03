@@ -10,6 +10,7 @@ import { ChaveActions, useAtrasoHoras } from "@/components/admin/ChaveActions";
 import { Key, KeyRound, AlertTriangle } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/chaves")({
+  validateSearch: (s: Record<string, unknown>) => ({ open: typeof s.open === "string" ? s.open : undefined }),
   component: ChavesPage,
 });
 
