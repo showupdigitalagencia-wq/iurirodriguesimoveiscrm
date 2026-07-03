@@ -256,7 +256,7 @@ export const Route = createFileRoute("/api/public/webhook")({
                   externalId: ext,
                   title: plantonistaOcupado ? "🏠 Novo lead de plantão (você está em compromisso)" : "🏠 Novo lead de plantão",
                   message: `${nome} · ${telefone} · ${origem.replace(/_/g, " ")}`,
-                  url: "https://sistemanexus.app/vendas/leads",
+                  url: `https://sistemanexus.app/vendas/leads?open=${vlead.id}`,
                   data: { lead_id: vlead.id, origem, ocupado: plantonistaOcupado },
                 });
               }
