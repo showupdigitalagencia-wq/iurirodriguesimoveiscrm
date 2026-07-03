@@ -573,7 +573,7 @@ async function evoNotifyPlantonista(args: { supabaseAdmin: any; corretorId: stri
       externalId: ext,
       title: args.isReassign ? "🔁 WhatsApp reatribuído" : "💬 Novo WhatsApp da empresa",
       message: `${args.nome} · ${args.telefone}${preview}`,
-      url: "https://sistemanexus.app/vendas/leads",
+      url: `https://sistemanexus.app/vendas/leads?open=${args.leadId}`,
       data: { lead_id: args.leadId, origem: "whatsapp_empresa" },
     });
   } catch (e) { console.warn("[webhook evolution] push falhou", e); }
