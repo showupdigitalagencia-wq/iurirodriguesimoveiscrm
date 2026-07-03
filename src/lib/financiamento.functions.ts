@@ -330,7 +330,7 @@ export const updateFinanciamentoStatus = createServerFn({ method: "POST" })
               externalIds,
               title,
               message,
-              url: "https://sistemanexus.app/correspondente",
+              url: `https://sistemanexus.app/correspondente?open=${data.id}`,
               data: { financiamento_id: data.id, status: data.status },
             });
           }
