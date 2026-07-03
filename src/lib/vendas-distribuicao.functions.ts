@@ -267,7 +267,7 @@ export const recusarLead = createServerFn({ method: "POST" })
             externalId: execProf.onesignal_external_id,
             title: "↩️ Lead recusado",
             message: `${prof?.nome ?? "Corretor"} recusou um lead${data.motivo ? `: ${data.motivo}` : ""}`,
-            url: "https://sistemanexus.app/vendas/leads",
+            url: `https://sistemanexus.app/vendas/leads?open=${data.lead_id}`,
             data: { lead_id: data.lead_id },
           });
         }
