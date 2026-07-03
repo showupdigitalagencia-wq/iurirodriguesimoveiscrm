@@ -94,7 +94,7 @@ export const Route = createFileRoute("/api/public/hooks/visitas-chave-lembrete")
               externalId: ext,
               title: "🔑 Lembrete de chave para visita",
               message: msg,
-              url: "/admin/chaves",
+              url: `https://sistemanexus.app/admin/chaves?open=${v.imovel_id}`,
               data: { tipo: "visita_chave_lembrete", visita_id: v.id, imovel_id: v.imovel_id },
             });
             if (r.ok) pushOk++; else { pushFail++; if (r.error) erros.push(r.error); }
