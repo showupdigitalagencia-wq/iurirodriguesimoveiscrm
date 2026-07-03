@@ -29,6 +29,7 @@ import { FileText, ExternalLink, CheckCircle2, XCircle, Clock, Loader2, Trash2 }
 
 
 export const Route = createFileRoute("/_authenticated/correspondente")({
+  validateSearch: (s: Record<string, unknown>) => ({ open: typeof s.open === "string" ? s.open : undefined }),
   beforeLoad: async () => {
     const { data: ud } = await supabase.auth.getUser();
     const uid = ud.user?.id;
