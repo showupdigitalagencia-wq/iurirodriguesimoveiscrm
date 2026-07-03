@@ -103,8 +103,8 @@ function FinanciamentoAdminPage() {
         </Tabs>
         <Input
           placeholder="Buscar por nome, CPF ou telefone…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
           className="max-w-xs"
         />
       </div>
