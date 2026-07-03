@@ -76,15 +76,15 @@ function FinanciamentoAdminPage() {
 
   const rows = useMemo(() => {
     const items = data?.financiamentos ?? [];
-    if (!search.trim()) return items;
-    const q = search.toLowerCase().trim();
+    if (!searchText.trim()) return items;
+    const q = searchText.toLowerCase().trim();
     return items.filter(
       (r) =>
         r.nome.toLowerCase().includes(q) ||
         r.cpf.includes(q.replace(/\D/g, "")) ||
         (r.telefone ?? "").includes(q.replace(/\D/g, "")),
     );
-  }, [data, search]);
+  }, [data, searchText]);
 
   return (
     <div className="p-4 md:p-6 space-y-4">
