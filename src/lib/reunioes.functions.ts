@@ -728,7 +728,7 @@ async function cancelMeetingSideEffects(reuniaoId: string, criadoPorUserId: stri
       segments: ["All"],
       title: "❌ Reunião Cancelada",
       message: `A reunião de ${dataStr} às ${horaStr} foi cancelada por ${nome}`,
-      url: "https://sistemanexus.app/agenda",
+      url: `https://sistemanexus.app/agenda?open=${reuniaoId}`,
       data: { reuniao_id: reuniaoId },
     });
   } catch (e) {
