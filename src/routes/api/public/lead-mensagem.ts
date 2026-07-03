@@ -121,7 +121,7 @@ async function notifyPlantonista(args: { supabaseAdmin: any; corretorId: string;
       externalId: ext,
       title: args.isReassign ? "🔁 Lead reatribuído" : "🏠 Novo lead de plantão",
       message: `${args.nome} · ${args.telefone} · ${args.origem.replace(/_/g, " ")}`,
-      url: "https://sistemanexus.app/vendas/leads",
+      url: `https://sistemanexus.app/vendas/leads?open=${args.leadId}`,
       data: { lead_id: args.leadId },
     });
   } catch (e) { console.warn("[lead-mensagem] push falhou", e); }
