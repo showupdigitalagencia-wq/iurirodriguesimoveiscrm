@@ -58,10 +58,16 @@ const TABS: Array<{ value: FinanciamentoStatus | "todos"; label: string }> = [
 ];
 
 function FinanciamentoAdminPage() {
+  const search = Route.useSearch();
+  const navigate = Route.useNavigate();
   const [tab, setTab] = useState<FinanciamentoStatus | "todos">("todos");
-  const [search, setSearch] = useState("");
-  const [openId, setOpenId] = useState<string | null>(null);
+  const [searchText, setSearchText] = useState("");
+  const [openId, setOpenId] = useState<string | null>(search.open ?? null);
   const list = useServerFn(listFinanciamentos);
+
+  useEffect(() => {
+    if (search.open) setOpenId(search.open);
+  }, [search.open]);
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["financiamentos", tab],
