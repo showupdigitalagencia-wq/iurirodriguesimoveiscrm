@@ -33,6 +33,7 @@ function horasFora(iso: string | null): number {
 }
 
 function ChavesPage() {
+  const search = Route.useSearch();
   const qc = useQueryClient();
   const atrasoHoras = useAtrasoHoras();
   const [tab, setTab] = useState<"todas" | "disponiveis" | "em_uso" | "atrasadas">("todas");
