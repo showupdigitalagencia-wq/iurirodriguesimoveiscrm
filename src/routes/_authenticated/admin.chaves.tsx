@@ -45,6 +45,21 @@ function ChavesPage() {
     return () => clearInterval(t);
   }, []);
 
+  // Deep link ?open=<imovel_id>: scroll + highlight
+  useEffect(() => {
+    if (!search.open) return;
+    const id = search.open;
+    const tries = [80, 300, 800, 1500];
+    tries.forEach((delay) => setTimeout(() => {
+      const el = document.querySelector<HTMLElement>(`[data-imovel-id="${id}"]`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.classList.add("ring-2", "ring-gold", "ring-offset-2");
+        setTimeout(() => el.classList.remove("ring-2", "ring-gold", "ring-offset-2"), 3000);
+      }
+    }, delay));
+  }, [search.open]);
+
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["chaves-rastreio"],
     queryFn: async () => {
