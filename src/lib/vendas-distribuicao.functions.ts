@@ -169,7 +169,7 @@ export const atribuirLead = createServerFn({ method: "POST" })
         supabaseAdmin.from("user_roles").select("user_id").eq("role", "admin"),
       ]);
       const lead = updated as { nome: string; telefone: string; regiao: string };
-      const url = "https://sistemanexus.app/vendas/leads";
+      const url = `https://sistemanexus.app/vendas/leads?open=${data.lead_id}`;
       const corretorExt = (corretorProf as { nome: string; onesignal_external_id: string | null } | null)?.onesignal_external_id ?? null;
       const corretorNome = (corretorProf as { nome: string } | null)?.nome ?? "corretor";
 
@@ -267,7 +267,7 @@ export const recusarLead = createServerFn({ method: "POST" })
             externalId: execProf.onesignal_external_id,
             title: "↩️ Lead recusado",
             message: `${prof?.nome ?? "Corretor"} recusou um lead${data.motivo ? `: ${data.motivo}` : ""}`,
-            url: "https://sistemanexus.app/vendas/leads",
+            url: `https://sistemanexus.app/vendas/leads?open=${data.lead_id}`,
             data: { lead_id: data.lead_id },
           });
         }

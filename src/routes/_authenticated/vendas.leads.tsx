@@ -28,11 +28,14 @@ type VendasLeadExt = VendasLead & {
 };
 
 export const Route = createFileRoute("/_authenticated/vendas/leads")({
+  validateSearch: (s: Record<string, unknown>) => ({ open: typeof s.open === "string" ? s.open : undefined }),
   component: VendasLeads,
 });
 
 function VendasLeads() {
   const qc = useQueryClient();
+  const search = Route.useSearch();
+  const navigate = Route.useNavigate();
   const { data: me } = useQuery({
     queryKey: ["me_vendas_ctx"],
     queryFn: async () => {
@@ -69,8 +72,12 @@ function VendasLeads() {
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["vendas_leads"] });
 
-  const [detailId, setDetailId] = useState<string | null>(null);
+  const [detailId, setDetailId] = useState<string | null>(search.open ?? null);
   const [filter, setFilter] = useState<"todos" | "nao_compareceu" | "compareceu">("todos");
+
+  useEffect(() => {
+    if (search.open) setDetailId(search.open);
+  }, [search.open]);
 
   const noShowRange = useMemo(() => {
     const now = new Date();
@@ -94,7 +101,7 @@ function VendasLeads() {
         </div>
         <CreateVendasLeadDialog onCreated={invalidate} />
       </div>
-      <VendasLeadDetail leadId={detailId} open={!!detailId} onOpenChange={(o) => !o && setDetailId(null)} isAdmin={isAdmin} onChanged={invalidate} />
+      <VendasLeadDetail leadId={detailId} open={!!detailId} onOpenChange={(o) => { if (!o) { setDetailId(null); if (search.open) navigate({ to: "/vendas/leads", search: {} }); } }} isAdmin={isAdmin} onChanged={invalidate} />
 
       {filter === "nao_compareceu" || filter === "compareceu" ? (
         <VisitasNaoCompareceuList

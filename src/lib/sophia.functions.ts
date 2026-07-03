@@ -981,7 +981,7 @@ export const sophiaChat = createServerFn({ method: "POST" })
                     externalIds: ext,
                     title: status === "aprovado" ? "Financiamento aprovado" : "Financiamento recusado",
                     message: `${prevRow.nome}: ${status}${observacao ? ` — ${observacao}` : ""}`,
-                    url: "https://sistemanexus.app/correspondente",
+                    url: `https://sistemanexus.app/correspondente?open=${id}`,
                     data: { financiamento_id: id, status },
                   });
                 }
@@ -1072,7 +1072,7 @@ export const sophiaChat = createServerFn({ method: "POST" })
             externalId: ext,
             title: "🏠 Novo Lead Atribuído!",
             message: `${lead.nome} · ${lead.telefone} · ${lead.regiao.replace(/_/g, " ")}`,
-            url: "https://sistemanexus.app/vendas/leads",
+            url: `https://sistemanexus.app/vendas/leads?open=${leadId}`,
             data: { lead_id: leadId },
           });
         }

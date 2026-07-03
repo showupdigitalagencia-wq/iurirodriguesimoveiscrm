@@ -10,6 +10,7 @@ import { ChaveActions, useAtrasoHoras } from "@/components/admin/ChaveActions";
 import { Key, KeyRound, AlertTriangle } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/chaves")({
+  validateSearch: (s: Record<string, unknown>) => ({ open: typeof s.open === "string" ? s.open : undefined }),
   component: ChavesPage,
 });
 
@@ -32,6 +33,7 @@ function horasFora(iso: string | null): number {
 }
 
 function ChavesPage() {
+  const search = Route.useSearch();
   const qc = useQueryClient();
   const atrasoHoras = useAtrasoHoras();
   const [tab, setTab] = useState<"todas" | "disponiveis" | "em_uso" | "atrasadas">("todas");
@@ -42,6 +44,21 @@ function ChavesPage() {
     const t = setInterval(() => setTick((n) => n + 1), 60000);
     return () => clearInterval(t);
   }, []);
+
+  // Deep link ?open=<imovel_id>: scroll + highlight
+  useEffect(() => {
+    if (!search.open) return;
+    const id = search.open;
+    const tries = [80, 300, 800, 1500];
+    tries.forEach((delay) => setTimeout(() => {
+      const el = document.querySelector<HTMLElement>(`[data-imovel-id="${id}"]`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.classList.add("ring-2", "ring-gold", "ring-offset-2");
+        setTimeout(() => el.classList.remove("ring-2", "ring-gold", "ring-offset-2"), 3000);
+      }
+    }, delay));
+  }, [search.open]);
 
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["chaves-rastreio"],
@@ -138,7 +155,7 @@ function ChavesPage() {
             const horas = horasFora(r.chave_retirada_em);
             const atrasada = r.chave_com_id && horas > atrasoHoras;
             return (
-              <Card key={r.id} className={atrasada ? "border-rose-500/40" : ""}>
+              <Card key={r.id} data-imovel-id={r.id} className={`transition-shadow ${atrasada ? "border-rose-500/40" : ""}`}>
                 <CardContent className="p-4 space-y-2">
                   <div className="flex justify-between items-start gap-2">
                     <div>

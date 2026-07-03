@@ -126,7 +126,7 @@ export const Route = createFileRoute("/api/public/hooks/plantao-escalation")({
               externalId: ext,
               title: "🔁 Lead redirecionado pra você",
               message: `${lead.nome} · ${lead.telefone} — o plantonista não respondeu a tempo.`,
-              url: "https://sistemanexus.app/vendas/leads",
+              url: `https://sistemanexus.app/vendas/leads?open=${lead.id}`,
               data: { lead_id: lead.id, tipo: "redirecionamento_demora" },
             });
           }

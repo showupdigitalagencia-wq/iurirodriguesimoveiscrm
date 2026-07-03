@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -29,6 +29,7 @@ import { FileText, ExternalLink, CheckCircle2, XCircle, Clock, Loader2, Trash2 }
 
 
 export const Route = createFileRoute("/_authenticated/correspondente")({
+  validateSearch: (s: Record<string, unknown>) => ({ open: typeof s.open === "string" ? s.open : undefined }),
   beforeLoad: async () => {
     const { data: ud } = await supabase.auth.getUser();
     const uid = ud.user?.id;
@@ -57,10 +58,16 @@ const TABS: Array<{ value: FinanciamentoStatus | "todos"; label: string }> = [
 ];
 
 function FinanciamentoAdminPage() {
+  const search = Route.useSearch();
+  const navigate = Route.useNavigate();
   const [tab, setTab] = useState<FinanciamentoStatus | "todos">("todos");
-  const [search, setSearch] = useState("");
-  const [openId, setOpenId] = useState<string | null>(null);
+  const [searchText, setSearchText] = useState("");
+  const [openId, setOpenId] = useState<string | null>(search.open ?? null);
   const list = useServerFn(listFinanciamentos);
+
+  useEffect(() => {
+    if (search.open) setOpenId(search.open);
+  }, [search.open]);
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["financiamentos", tab],
@@ -69,15 +76,15 @@ function FinanciamentoAdminPage() {
 
   const rows = useMemo(() => {
     const items = data?.financiamentos ?? [];
-    if (!search.trim()) return items;
-    const q = search.toLowerCase().trim();
+    if (!searchText.trim()) return items;
+    const q = searchText.toLowerCase().trim();
     return items.filter(
       (r) =>
         r.nome.toLowerCase().includes(q) ||
         r.cpf.includes(q.replace(/\D/g, "")) ||
         (r.telefone ?? "").includes(q.replace(/\D/g, "")),
     );
-  }, [data, search]);
+  }, [data, searchText]);
 
   return (
     <div className="p-4 md:p-6 space-y-4">
@@ -96,8 +103,8 @@ function FinanciamentoAdminPage() {
         </Tabs>
         <Input
           placeholder="Buscar por nome, CPF ou telefone…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
           className="max-w-xs"
         />
       </div>
@@ -116,7 +123,7 @@ function FinanciamentoAdminPage() {
         <DetailDialog
           id={openId}
           open={!!openId}
-          onClose={() => setOpenId(null)}
+          onClose={() => { setOpenId(null); if (search.open) navigate({ to: "/correspondente", search: {} }); }}
           onChanged={() => refetch()}
         />
       )}

@@ -256,7 +256,7 @@ export const Route = createFileRoute("/api/public/webhook")({
                   externalId: ext,
                   title: plantonistaOcupado ? "🏠 Novo lead de plantão (você está em compromisso)" : "🏠 Novo lead de plantão",
                   message: `${nome} · ${telefone} · ${origem.replace(/_/g, " ")}`,
-                  url: "https://sistemanexus.app/vendas/leads",
+                  url: `https://sistemanexus.app/vendas/leads?open=${vlead.id}`,
                   data: { lead_id: vlead.id, origem, ocupado: plantonistaOcupado },
                 });
               }
@@ -270,7 +270,7 @@ export const Route = createFileRoute("/api/public/webhook")({
                     externalId: extProx,
                     title: "⏳ Plantonista em compromisso",
                     message: `Fique atento: o lead ${nome} pode vir pra você em breve se ele não responder.`,
-                    url: "https://sistemanexus.app/vendas/leads",
+                    url: `https://sistemanexus.app/vendas/leads?open=${vlead.id}`,
                     data: { lead_id: vlead.id, tipo: "pre_aviso_proximo" },
                   });
                 }
@@ -573,7 +573,7 @@ async function evoNotifyPlantonista(args: { supabaseAdmin: any; corretorId: stri
       externalId: ext,
       title: args.isReassign ? "🔁 WhatsApp reatribuído" : "💬 Novo WhatsApp da empresa",
       message: `${args.nome} · ${args.telefone}${preview}`,
-      url: "https://sistemanexus.app/vendas/leads",
+      url: `https://sistemanexus.app/vendas/leads?open=${args.leadId}`,
       data: { lead_id: args.leadId, origem: "whatsapp_empresa" },
     });
   } catch (e) { console.warn("[webhook evolution] push falhou", e); }

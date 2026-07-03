@@ -111,7 +111,7 @@ export const Route = createFileRoute("/api/public/hooks/chaves-atraso")({
               externalIds: Array.from(targets),
               title: "🔑 Chave em atraso",
               message: `${im.codigo ?? ""} ${endereco} — com ${corretor?.nome ?? "corretor"} há ${horasAtraso}h.`,
-              url: "/admin/chaves",
+              url: `https://sistemanexus.app/admin/chaves?open=${im.id}`,
               data: { tipo: "chave_atraso", imovel_id: im.id, horas_atraso: horasAtraso },
             });
             if (r.ok) pushOk++; else { pushFail++; if (r.error) erros.push(r.error); }
