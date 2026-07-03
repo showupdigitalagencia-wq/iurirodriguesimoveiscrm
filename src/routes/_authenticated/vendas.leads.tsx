@@ -28,6 +28,7 @@ type VendasLeadExt = VendasLead & {
 };
 
 export const Route = createFileRoute("/_authenticated/vendas/leads")({
+  validateSearch: (s: Record<string, unknown>) => ({ open: typeof s.open === "string" ? s.open : undefined }),
   component: VendasLeads,
 });
 
