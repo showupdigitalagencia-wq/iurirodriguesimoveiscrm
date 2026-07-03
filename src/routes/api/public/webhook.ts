@@ -270,7 +270,7 @@ export const Route = createFileRoute("/api/public/webhook")({
                     externalId: extProx,
                     title: "⏳ Plantonista em compromisso",
                     message: `Fique atento: o lead ${nome} pode vir pra você em breve se ele não responder.`,
-                    url: "https://sistemanexus.app/vendas/leads",
+                    url: `https://sistemanexus.app/vendas/leads?open=${vlead.id}`,
                     data: { lead_id: vlead.id, tipo: "pre_aviso_proximo" },
                   });
                 }
