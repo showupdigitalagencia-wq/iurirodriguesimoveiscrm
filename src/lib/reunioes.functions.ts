@@ -656,7 +656,7 @@ export const createReuniao = createServerFn({ method: "POST" })
       const dt = new Date(data.data_inicio);
       const dataStr = dt.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "2-digit", year: "numeric" });
       const horaStr = dt.toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" });
-      const url = `https://sistemanexus.app/agenda`;
+      const url = `https://sistemanexus.app/agenda?open=${reuniaoId}`;
 
       if (externalIds.length) {
         await sendOneSignalPush({
