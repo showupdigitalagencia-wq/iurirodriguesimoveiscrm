@@ -981,7 +981,7 @@ export const sophiaChat = createServerFn({ method: "POST" })
                     externalIds: ext,
                     title: status === "aprovado" ? "Financiamento aprovado" : "Financiamento recusado",
                     message: `${prevRow.nome}: ${status}${observacao ? ` — ${observacao}` : ""}`,
-                    url: "https://sistemanexus.app/correspondente",
+                    url: `https://sistemanexus.app/correspondente?open=${id}`,
                     data: { financiamento_id: id, status },
                   });
                 }
