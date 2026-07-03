@@ -427,7 +427,7 @@ export const addUserToReuniao = createServerFn({ method: "POST" })
             target_channel: "push",
             headings: { en: "🟡 Você foi adicionado a uma reunião!" },
             contents: { en: `${r.titulo} — ${dataStr} às ${horaStr}` },
-            url: "https://sistemanexus.app/agenda",
+            url: `https://sistemanexus.app/agenda?open=${data.reuniao_id}`,
           }),
         });
       }
