@@ -155,7 +155,7 @@ function ChavesPage() {
             const horas = horasFora(r.chave_retirada_em);
             const atrasada = r.chave_com_id && horas > atrasoHoras;
             return (
-              <Card key={r.id} className={atrasada ? "border-rose-500/40" : ""}>
+              <Card key={r.id} data-imovel-id={r.id} className={`transition-shadow ${atrasada ? "border-rose-500/40" : ""}`}>
                 <CardContent className="p-4 space-y-2">
                   <div className="flex justify-between items-start gap-2">
                     <div>
