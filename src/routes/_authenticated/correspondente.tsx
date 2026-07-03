@@ -123,7 +123,7 @@ function FinanciamentoAdminPage() {
         <DetailDialog
           id={openId}
           open={!!openId}
-          onClose={() => setOpenId(null)}
+          onClose={() => { setOpenId(null); if (search.open) navigate({ to: "/correspondente", search: {} }); }}
           onChanged={() => refetch()}
         />
       )}
