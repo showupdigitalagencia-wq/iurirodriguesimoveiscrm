@@ -169,7 +169,7 @@ export const atribuirLead = createServerFn({ method: "POST" })
         supabaseAdmin.from("user_roles").select("user_id").eq("role", "admin"),
       ]);
       const lead = updated as { nome: string; telefone: string; regiao: string };
-      const url = "https://sistemanexus.app/vendas/leads";
+      const url = `https://sistemanexus.app/vendas/leads?open=${data.lead_id}`;
       const corretorExt = (corretorProf as { nome: string; onesignal_external_id: string | null } | null)?.onesignal_external_id ?? null;
       const corretorNome = (corretorProf as { nome: string } | null)?.nome ?? "corretor";
 
