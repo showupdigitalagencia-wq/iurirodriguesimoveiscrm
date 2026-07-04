@@ -113,82 +113,143 @@ function VendasLeads() {
           onLeadClick={(id) => setDetailId(id)}
         />
       ) : (
-      <div className="rounded-md border overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-muted/50">
-            <tr className="text-left">
-              <th className="p-3">Nome</th>
-              <th className="p-3">Score</th>
-              <th className="p-3">Tipo</th>
-              <th className="p-3">Telefone</th>
-              <th className="p-3">Valor</th>
-              <th className="p-3">Etapa</th>
-              <th className="p-3">Atribuição</th>
-              <th className="p-3 text-right">Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {leads.length === 0 && (
-              <tr><td colSpan={8} className="p-6 text-center text-muted-foreground">Nenhum lead ainda</td></tr>
-            )}
-            {leads.map((l) => {
-              const info = vendasEtapaInfo(l.etapa);
-              const isMyPending = l.corretor_id === myUid && l.atribuicao_status === "pendente";
-              return (
-                <tr key={l.id} className="border-t hover:bg-muted/30 cursor-pointer" onClick={() => setDetailId(l.id)}>
-                  <td className="p-3 font-medium underline-offset-2 hover:underline">{l.nome}</td>
-                  <td className="p-3">
-                    <Termometro
-                      score={(l as unknown as { score_temperatura: number | null }).score_temperatura}
-                      temperatura={(l as unknown as { temperatura: "frio" | "morno" | "quente" | null }).temperatura}
-                      tendencia={tendenciaFromTemperaturas(
-                        (l as unknown as { temperatura: string | null }).temperatura,
-                        (l as unknown as { temperatura_anterior: string | null }).temperatura_anterior,
-                      )}
-                      size="sm"
-                    />
-                  </td>
-                  <td className="p-3">{l.tipo === "compra" ? "Compra" : "Locação"}</td>
-                  <td className="p-3">{l.telefone}</td>
-                  <td className="p-3">{formatBRL(l.valor != null ? Number(l.valor) : null)}</td>
-                  <td className="p-3">
-                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs border ${info.color}`}>
-                      {info.emoji} {info.nome}
-                    </span>
-                  </td>
-                  <td className="p-3">
-                    {!l.corretor_id ? (
-                      <span className="text-xs text-muted-foreground">— Sem corretor</span>
-                    ) : l.atribuicao_status === "pendente" ? (
-                      <span className="text-xs px-2 py-0.5 rounded border bg-yellow-500/15 text-yellow-700 border-yellow-300">⏳ Aguardando aceite</span>
-                    ) : l.atribuicao_status === "aceito" ? (
-                      <span className="text-xs px-2 py-0.5 rounded border bg-green-600/15 text-green-700 border-green-300">✅ Aceito</span>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">Atribuído</span>
-                    )}
-                  </td>
-                  <td className="p-3" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex gap-2 justify-end flex-wrap">
-                      {canAssign && (
-                        <AtribuirLeadButton lead={l} onDone={invalidate} />
-                      )}
-                      {isMyPending && (
-                        <AceitarRecusarButtons leadId={l.id} onDone={invalidate} />
-                      )}
-                      <AgendarVisitaButton lead={l} onDone={invalidate} />
-                      <ReuniaoOnlineButton lead={l} onDone={invalidate} />
+      <>
+        {/* Mobile: card list — tudo visível sem scroll horizontal */}
+        <div className="md:hidden space-y-2">
+          {leads.length === 0 && (
+            <div className="p-6 text-center text-muted-foreground text-sm border rounded-md">Nenhum lead ainda</div>
+          )}
+          {leads.map((l) => {
+            const info = vendasEtapaInfo(l.etapa);
+            const isMyPending = l.corretor_id === myUid && l.atribuicao_status === "pendente";
+            return (
+              <div
+                key={l.id}
+                className="rounded-md border bg-card p-3 space-y-2 cursor-pointer hover:bg-muted/30"
+                onClick={() => setDetailId(l.id)}
+              >
+                <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
+                  <div className="min-w-0">
+                    <div className="font-medium truncate underline-offset-2">{l.nome}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {l.tipo === "compra" ? "Compra" : "Locação"} · {formatBRL(l.valor != null ? Number(l.valor) : null)}
                     </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+                    <div className="text-xs text-muted-foreground truncate">{l.telefone}</div>
+                  </div>
+                  <Termometro
+                    score={(l as unknown as { score_temperatura: number | null }).score_temperatura}
+                    temperatura={(l as unknown as { temperatura: "frio" | "morno" | "quente" | null }).temperatura}
+                    tendencia={tendenciaFromTemperaturas(
+                      (l as unknown as { temperatura: string | null }).temperatura,
+                      (l as unknown as { temperatura_anterior: string | null }).temperatura_anterior,
+                    )}
+                    size="sm"
+                  />
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] border ${info.color}`}>
+                    {info.emoji} {info.nome}
+                  </span>
+                  {!l.corretor_id ? (
+                    <span className="text-[11px] px-2 py-0.5 rounded border text-muted-foreground">Sem corretor</span>
+                  ) : l.atribuicao_status === "pendente" ? (
+                    <span className="text-[11px] px-2 py-0.5 rounded border bg-yellow-500/15 text-yellow-700 border-yellow-300">⏳ Aguardando</span>
+                  ) : l.atribuicao_status === "aceito" ? (
+                    <span className="text-[11px] px-2 py-0.5 rounded border bg-green-600/15 text-green-700 border-green-300">✅ Aceito</span>
+                  ) : (
+                    <span className="text-[11px] px-2 py-0.5 rounded border text-muted-foreground">Atribuído</span>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-1.5 pt-1" onClick={(e) => e.stopPropagation()}>
+                  {canAssign && <AtribuirLeadButton lead={l} onDone={invalidate} />}
+                  {isMyPending && <AceitarRecusarButtons leadId={l.id} onDone={invalidate} />}
+                  <AgendarVisitaButton lead={l} onDone={invalidate} />
+                  <ReuniaoOnlineButton lead={l} onDone={invalidate} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Desktop: tabela completa */}
+        <div className="hidden md:block rounded-md border overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/50">
+              <tr className="text-left">
+                <th className="p-3">Nome</th>
+                <th className="p-3">Score</th>
+                <th className="p-3">Tipo</th>
+                <th className="p-3">Telefone</th>
+                <th className="p-3">Valor</th>
+                <th className="p-3">Etapa</th>
+                <th className="p-3">Atribuição</th>
+                <th className="p-3 text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {leads.length === 0 && (
+                <tr><td colSpan={8} className="p-6 text-center text-muted-foreground">Nenhum lead ainda</td></tr>
+              )}
+              {leads.map((l) => {
+                const info = vendasEtapaInfo(l.etapa);
+                const isMyPending = l.corretor_id === myUid && l.atribuicao_status === "pendente";
+                return (
+                  <tr key={l.id} className="border-t hover:bg-muted/30 cursor-pointer" onClick={() => setDetailId(l.id)}>
+                    <td className="p-3 font-medium underline-offset-2 hover:underline">{l.nome}</td>
+                    <td className="p-3">
+                      <Termometro
+                        score={(l as unknown as { score_temperatura: number | null }).score_temperatura}
+                        temperatura={(l as unknown as { temperatura: "frio" | "morno" | "quente" | null }).temperatura}
+                        tendencia={tendenciaFromTemperaturas(
+                          (l as unknown as { temperatura: string | null }).temperatura,
+                          (l as unknown as { temperatura_anterior: string | null }).temperatura_anterior,
+                        )}
+                        size="sm"
+                      />
+                    </td>
+                    <td className="p-3">{l.tipo === "compra" ? "Compra" : "Locação"}</td>
+                    <td className="p-3">{l.telefone}</td>
+                    <td className="p-3">{formatBRL(l.valor != null ? Number(l.valor) : null)}</td>
+                    <td className="p-3">
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs border ${info.color}`}>
+                        {info.emoji} {info.nome}
+                      </span>
+                    </td>
+                    <td className="p-3">
+                      {!l.corretor_id ? (
+                        <span className="text-xs text-muted-foreground">— Sem corretor</span>
+                      ) : l.atribuicao_status === "pendente" ? (
+                        <span className="text-xs px-2 py-0.5 rounded border bg-yellow-500/15 text-yellow-700 border-yellow-300">⏳ Aguardando aceite</span>
+                      ) : l.atribuicao_status === "aceito" ? (
+                        <span className="text-xs px-2 py-0.5 rounded border bg-green-600/15 text-green-700 border-green-300">✅ Aceito</span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">Atribuído</span>
+                      )}
+                    </td>
+                    <td className="p-3" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex gap-2 justify-end flex-wrap">
+                        {canAssign && (
+                          <AtribuirLeadButton lead={l} onDone={invalidate} />
+                        )}
+                        {isMyPending && (
+                          <AceitarRecusarButtons leadId={l.id} onDone={invalidate} />
+                        )}
+                        <AgendarVisitaButton lead={l} onDone={invalidate} />
+                        <ReuniaoOnlineButton lead={l} onDone={invalidate} />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </>
       )}
     </div>
   );
 }
+
 
 function AtribuirLeadButton({ lead, onDone }: { lead: VendasLeadExt; onDone: () => void }) {
   const [open, setOpen] = useState(false);
