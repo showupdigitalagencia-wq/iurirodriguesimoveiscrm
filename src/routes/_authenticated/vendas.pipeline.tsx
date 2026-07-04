@@ -1,14 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { VENDAS_ETAPAS, formatBRL, type VendasLead } from "@/lib/vendas-helpers";
 import { VendasLeadDetail } from "@/components/vendas-lead-detail";
 import { Termometro, tendenciaFromTemperaturas } from "@/components/termometro";
+import { UserCircle2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/vendas/pipeline")({
   component: VendasPipeline,
 });
+
+type VendasLeadExt = VendasLead & { atribuicao_status?: "pendente" | "aceito" | "recusado" | null };
 
 function VendasPipeline() {
   const qc = useQueryClient();
@@ -33,9 +36,30 @@ function VendasPipeline() {
         .select("*")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return (data ?? []) as VendasLead[];
+      return (data ?? []) as VendasLeadExt[];
     },
   });
+
+  const corretorIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const l of leads) if (l.corretor_id) ids.add(l.corretor_id);
+    return Array.from(ids);
+  }, [leads]);
+
+  const { data: corretores = [] } = useQuery({
+    queryKey: ["vendas_pipeline_corretores", corretorIds.sort().join(",")],
+    enabled: corretorIds.length > 0,
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("id, nome").in("id", corretorIds);
+      return (data ?? []) as Array<{ id: string; nome: string | null }>;
+    },
+  });
+
+  const nomeById = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const c of corretores) if (c.id) m.set(c.id, c.nome ?? "—");
+    return m;
+  }, [corretores]);
 
   return (
     <div className="p-4 md:p-6">
@@ -80,6 +104,8 @@ function VendasPipeline() {
                     const tp = (l as unknown as { temperatura: "frio" | "morno" | "quente" | null }).temperatura ?? null;
                     const tpAnt = (l as unknown as { temperatura_anterior: string | null }).temperatura_anterior ?? null;
                     const trend = tendenciaFromTemperaturas(tp, tpAnt);
+                    const corretorNome = l.corretor_id ? nomeById.get(l.corretor_id) : null;
+                    const pendente = l.atribuicao_status === "pendente";
                     return (
                       <button
                         key={l.id}
@@ -96,6 +122,21 @@ function VendasPipeline() {
                           </div>
                           {sc !== null && <Termometro score={sc} temperatura={tp} tendencia={trend} size="sm" />}
                         </div>
+                        <div className="mt-2 flex items-center gap-1.5 text-[11px] min-w-0">
+                          <UserCircle2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                          {corretorNome ? (
+                            <>
+                              <span className="truncate text-foreground/80">{corretorNome}</span>
+                              {pendente && (
+                                <span className="shrink-0 px-1.5 py-0.5 rounded border bg-yellow-500/15 text-yellow-700 border-yellow-300 text-[10px]">
+                                  aguardando
+                                </span>
+                              )}
+                            </>
+                          ) : (
+                            <span className="text-muted-foreground italic">Sem corretor</span>
+                          )}
+                        </div>
                       </button>
                     );
                   })}
@@ -108,3 +149,4 @@ function VendasPipeline() {
     </div>
   );
 }
+
