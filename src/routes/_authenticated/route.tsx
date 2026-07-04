@@ -139,7 +139,7 @@ function AuthLayout() {
       return items;
     }
     const base: Array<{ to: string; label: string; icon: typeof LayoutDashboard }> = [...NAV];
-    if ((isAdmin || isExec) && vendasAtivo) base.push({ to: "/vendas", label: "Vendas", icon: Briefcase });
+    if (isExec || (isAdmin && vendasAtivo)) base.push({ to: "/vendas", label: "Vendas", icon: Briefcase });
     if (isAdmin && adminModuloAtivo) base.push({ to: "/admin", label: "Gestão Patrimonial", icon: Building2 });
     if (isAdmin || isExec) base.push({ to: "/executivos/landing-page", label: "Central de Conversão", icon: Megaphone });
     if (isAdmin || isExec) base.push({ to: "/captacao-links", label: "Hub de Captação", icon: Share2 });
