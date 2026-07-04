@@ -2439,7 +2439,13 @@ export type Database = {
         | "candidatos_viewer"
       candidato_status: "pendente_revisao" | "arquivado" | "recebido_confirmado"
       financiamento_status: "pendente" | "em_analise" | "aprovado" | "recusado"
-      lead_canal: "denise" | "fabiola" | "renata" | "robson" | "teste_nego"
+      lead_canal:
+        | "denise"
+        | "fabiola"
+        | "renata"
+        | "robson"
+        | "teste_nego"
+        | "rodrigo"
       lead_etapa:
         | "novos_leads"
         | "em_atendimento"
@@ -2637,7 +2643,14 @@ export const Constants = {
         "recebido_confirmado",
       ],
       financiamento_status: ["pendente", "em_analise", "aprovado", "recusado"],
-      lead_canal: ["denise", "fabiola", "renata", "robson", "teste_nego"],
+      lead_canal: [
+        "denise",
+        "fabiola",
+        "renata",
+        "robson",
+        "teste_nego",
+        "rodrigo",
+      ],
       lead_etapa: [
         "novos_leads",
         "em_atendimento",

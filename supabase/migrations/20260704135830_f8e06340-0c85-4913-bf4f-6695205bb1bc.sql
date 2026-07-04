@@ -1,0 +1,1 @@
+ALTER TYPE public.lead_canal ADD VALUE IF NOT EXISTS 'rodrigo';
