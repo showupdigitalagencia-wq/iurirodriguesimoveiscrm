@@ -14,6 +14,7 @@ import { createVisita, createReuniaoOnlineVenda, listImoveisForVisita, confirmar
 import { formatImovelEndereco, formatImovelOptionLabel, buildVisitaConfirmacaoMsg } from "@/lib/visita-helpers";
 
 import { getFinanciamentoStatusByLead, type FinanciamentoStatus } from "@/lib/financiamento.functions";
+import { updateVendasLeadEtapa } from "@/lib/vendas-lead-actions.functions";
 import { toast } from "sonner";
 import { MessageCircle, Trash2, Pencil, MapPin, Video, Banknote, Copy, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
 import { FecharLeadDialog } from "@/components/fechar-lead-dialog";
@@ -96,6 +97,26 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
   });
   const canEnviarFinanciamento = isAdmin || !!isExec;
 
+  // Responsáveis: corretor + executivo gestor da equipe
+  const { data: responsaveis } = useQuery({
+    queryKey: ["vendas_lead_responsaveis", lead?.corretor_id],
+    enabled: !!lead?.corretor_id && open,
+    queryFn: async () => {
+      const { data: prof } = await supabase
+        .from("profiles").select("id, nome, responsavel_id").eq("id", lead!.corretor_id!).maybeSingle();
+      const respId = (prof as { responsavel_id: string | null } | null)?.responsavel_id ?? null;
+      let executivoNome: string | null = null;
+      if (respId) {
+        const { data: r } = await supabase.from("responsaveis").select("nome").eq("id", respId).maybeSingle();
+        executivoNome = (r as { nome: string | null } | null)?.nome ?? null;
+      }
+      return {
+        corretor: (prof as { nome: string | null } | null)?.nome ?? null,
+        executivo: executivoNome,
+      };
+    },
+  });
+
   useEffect(() => {
     if (lead && !editing) setForm(lead);
   }, [lead, editing]);
@@ -107,6 +128,7 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
     onChanged?.();
   }
 
+  const updateEtapaFn = useServerFn(updateVendasLeadEtapa);
   async function changeEtapa(etapa: VendasEtapa) {
     if (!lead) return;
     // Fechamento exige modal com seleção de imóvel + cálculo de comissão
@@ -116,8 +138,7 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
     }
     setSavingEtapa(true);
     try {
-      const { error } = await supabase.from("vendas_leads").update({ etapa }).eq("id", lead.id);
-      if (error) throw error;
+      await updateEtapaFn({ data: { lead_id: lead.id, etapa } });
       toast.success("Etapa atualizada");
       invalidate();
       refetch();
@@ -252,6 +273,16 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
               <div><Label>Observações</Label><Textarea rows={3} value={form.observacoes ?? ""} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} /></div>
             </div>
           )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 rounded-lg border border-border/60 bg-muted/20 p-3 text-sm">
+            <div>
+              <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Corretor responsável</div>
+              <div className="font-medium">{responsaveis?.corretor ?? (lead.corretor_id ? "—" : <span className="text-muted-foreground italic">Sem corretor</span>)}</div>
+            </div>
+            <div>
+              <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Executivo responsável</div>
+              <div className="font-medium">{responsaveis?.executivo ?? <span className="text-muted-foreground italic">—</span>}</div>
+            </div>
+          </div>
 
           <div>
             <Label className="text-xs">Mover para etapa</Label>

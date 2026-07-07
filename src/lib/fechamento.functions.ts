@@ -35,6 +35,30 @@ export const fecharLeadVendas = createServerFn({ method: "POST" })
       _imovel_id: data.imovel_id,
     } as never);
     if (error) throw new Error(error.message);
+
+    try {
+      const { notifyVendasLeadStakeholders } = await import("@/lib/vendas-notify.server");
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { data: lead } = await supabaseAdmin
+        .from("vendas_leads").select("nome, comissao").eq("id", data.lead_id).maybeSingle();
+      const nome = (lead as { nome: string | null } | null)?.nome ?? "Lead";
+      const comissao = (lead as { comissao: number | null } | null)?.comissao ?? null;
+      const valor = comissao != null
+        ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(comissao))
+        : null;
+      await notifyVendasLeadStakeholders({
+        leadId: data.lead_id,
+        title: `🏆 Lead fechado — ${nome}`,
+        message: valor ? `Comissão calculada: ${valor}` : "Fechamento registrado",
+        url: `https://sistemanexus.app/vendas/leads?open=${data.lead_id}`,
+        data: { lead_id: data.lead_id },
+        includeAdmins: true,
+        excludeUserId: context.userId,
+      });
+    } catch (e) {
+      console.warn("[fechamento] notify falhou", e);
+    }
+
     return rpc as { ok: boolean; comissao: number; lead_id: string; imovel_id: string };
   });
 
