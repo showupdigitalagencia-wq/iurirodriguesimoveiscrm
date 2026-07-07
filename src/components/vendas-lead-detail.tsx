@@ -273,6 +273,16 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
               <div><Label>Observações</Label><Textarea rows={3} value={form.observacoes ?? ""} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} /></div>
             </div>
           )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 rounded-lg border border-border/60 bg-muted/20 p-3 text-sm">
+            <div>
+              <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Corretor responsável</div>
+              <div className="font-medium">{responsaveis?.corretor ?? (lead.corretor_id ? "—" : <span className="text-muted-foreground italic">Sem corretor</span>)}</div>
+            </div>
+            <div>
+              <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Executivo responsável</div>
+              <div className="font-medium">{responsaveis?.executivo ?? <span className="text-muted-foreground italic">—</span>}</div>
+            </div>
+          </div>
 
           <div>
             <Label className="text-xs">Mover para etapa</Label>
