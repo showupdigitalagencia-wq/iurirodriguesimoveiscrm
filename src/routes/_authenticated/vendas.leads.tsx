@@ -74,6 +74,41 @@ function VendasLeads() {
 
   const [detailId, setDetailId] = useState<string | null>(search.open ?? null);
   const [filter, setFilter] = useState<"todos" | "nao_compareceu" | "compareceu">("todos");
+  const [escopo, setEscopo] = useState<"todos" | "meus" | "equipe" | "regiao">("todos");
+
+  // IDs dos corretores da equipe do executivo (para filtro "equipe")
+  const { data: equipeIds = [] } = useQuery({
+    queryKey: ["vendas_equipe_ids", myUid],
+    enabled: !!myUid && isExecutivo,
+    queryFn: async () => {
+      const { data: exec } = await supabase.rpc("current_user_executivo_id");
+      const execId = exec as string | null;
+      if (!execId) return [] as string[];
+      const { data } = await supabase.from("profiles").select("id").eq("responsavel_id", execId);
+      return ((data ?? []) as { id: string }[]).map((r) => r.id);
+    },
+  });
+
+  // Regiões atribuídas ao executivo
+  const { data: minhasRegioes = [] } = useQuery({
+    queryKey: ["vendas_minhas_regioes", myUid],
+    enabled: !!myUid && isExecutivo,
+    queryFn: async () => {
+      const { data: exec } = await supabase.rpc("current_user_executivo_id");
+      const execId = exec as string | null;
+      if (!execId) return [] as string[];
+      const { data } = await supabase.from("regiao_responsavel").select("regiao").eq("responsavel_id", execId);
+      return ((data ?? []) as { regiao: string }[]).map((r) => r.regiao);
+    },
+  });
+
+  const leadsFiltrados = useMemo(() => {
+    if (!isExecutivo || escopo === "todos") return leads;
+    if (escopo === "meus") return leads.filter((l) => l.atribuido_por === myUid || (l.corretor_id === null && minhasRegioes.includes(l.regiao as unknown as string)));
+    if (escopo === "equipe") return leads.filter((l) => l.corretor_id && equipeIds.includes(l.corretor_id));
+    if (escopo === "regiao") return leads.filter((l) => minhasRegioes.includes(l.regiao as unknown as string));
+    return leads;
+  }, [leads, escopo, isExecutivo, myUid, equipeIds, minhasRegioes]);
 
   useEffect(() => {
     if (search.open) setDetailId(search.open);
@@ -84,6 +119,7 @@ function VendasLeads() {
     const start = new Date(now); start.setDate(now.getDate() - 30);
     return { from: start.toISOString(), to: now.toISOString() };
   }, []);
+
 
   return (
     <div className="space-y-3">
@@ -101,6 +137,24 @@ function VendasLeads() {
         </div>
         <CreateVendasLeadDialog onCreated={invalidate} />
       </div>
+      {isExecutivo && filter === "todos" && (
+        <div className="flex gap-2 flex-wrap">
+          <Button size="sm" variant={escopo === "todos" ? "gold" : "outline"} onClick={() => setEscopo("todos")}>
+            Todos visíveis
+          </Button>
+          <Button size="sm" variant={escopo === "meus" ? "gold" : "outline"} onClick={() => setEscopo("meus")}>
+            Meus leads
+          </Button>
+          <Button size="sm" variant={escopo === "equipe" ? "gold" : "outline"} onClick={() => setEscopo("equipe")}>
+            Leads da minha equipe
+          </Button>
+          {minhasRegioes.length > 0 && (
+            <Button size="sm" variant={escopo === "regiao" ? "gold" : "outline"} onClick={() => setEscopo("regiao")}>
+              Todos da minha região
+            </Button>
+          )}
+        </div>
+      )}
       <VendasLeadDetail leadId={detailId} open={!!detailId} onOpenChange={(o) => { if (!o) { setDetailId(null); if (search.open) navigate({ to: "/vendas/leads", search: {} }); } }} isAdmin={isAdmin} onChanged={invalidate} />
 
       {filter === "nao_compareceu" || filter === "compareceu" ? (
@@ -116,10 +170,10 @@ function VendasLeads() {
       <>
         {/* Mobile: card list — tudo visível sem scroll horizontal */}
         <div className="md:hidden space-y-2">
-          {leads.length === 0 && (
+          {leadsFiltrados.length === 0 && (
             <div className="p-6 text-center text-muted-foreground text-sm border rounded-md">Nenhum lead ainda</div>
           )}
-          {leads.map((l) => {
+          {leadsFiltrados.map((l) => {
             const info = vendasEtapaInfo(l.etapa);
             const isMyPending = l.corretor_id === myUid && l.atribuicao_status === "pendente";
             return (
@@ -187,10 +241,10 @@ function VendasLeads() {
               </tr>
             </thead>
             <tbody>
-              {leads.length === 0 && (
+              {leadsFiltrados.length === 0 && (
                 <tr><td colSpan={8} className="p-6 text-center text-muted-foreground">Nenhum lead ainda</td></tr>
               )}
-              {leads.map((l) => {
+              {leadsFiltrados.map((l) => {
                 const info = vendasEtapaInfo(l.etapa);
                 const isMyPending = l.corretor_id === myUid && l.atribuicao_status === "pendente";
                 return (
