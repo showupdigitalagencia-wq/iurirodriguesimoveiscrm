@@ -114,6 +114,23 @@ export const createVisita = createServerFn({ method: "POST" })
       console.warn("[visitas] google sync failed", e);
     }
 
+    // Notifica executivo gestor (o corretor criou; não precisa auto-push)
+    try {
+      const { notifyVendasLeadStakeholders } = await import("@/lib/vendas-notify.server");
+      const quando = new Date(data.data_inicio).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", dateStyle: "short", timeStyle: "short" });
+      await notifyVendasLeadStakeholders({
+        leadId: data.lead_id,
+        title: `📅 Visita agendada — ${leadRow?.nome ?? "Lead"}`,
+        message: `${quando} · ${data.endereco}`,
+        url: `https://sistemanexus.app/vendas/leads?open=${data.lead_id}`,
+        data: { lead_id: data.lead_id, visita_id: visitaId },
+        includeCorretor: false,
+        excludeUserId: userId,
+      });
+    } catch (e) {
+      console.warn("[visitas] notify exec failed", e);
+    }
+
     return {
       id: visitaId,
       googleEventId,
