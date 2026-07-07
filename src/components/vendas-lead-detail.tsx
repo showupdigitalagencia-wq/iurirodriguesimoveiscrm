@@ -14,6 +14,7 @@ import { createVisita, createReuniaoOnlineVenda, listImoveisForVisita, confirmar
 import { formatImovelEndereco, formatImovelOptionLabel, buildVisitaConfirmacaoMsg } from "@/lib/visita-helpers";
 
 import { getFinanciamentoStatusByLead, type FinanciamentoStatus } from "@/lib/financiamento.functions";
+import { updateVendasLeadEtapa } from "@/lib/vendas-lead-actions.functions";
 import { toast } from "sonner";
 import { MessageCircle, Trash2, Pencil, MapPin, Video, Banknote, Copy, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
 import { FecharLeadDialog } from "@/components/fechar-lead-dialog";
