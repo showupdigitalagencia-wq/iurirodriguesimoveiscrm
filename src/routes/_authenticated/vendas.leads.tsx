@@ -137,6 +137,24 @@ function VendasLeads() {
         </div>
         <CreateVendasLeadDialog onCreated={invalidate} />
       </div>
+      {isExecutivo && filter === "todos" && (
+        <div className="flex gap-2 flex-wrap">
+          <Button size="sm" variant={escopo === "todos" ? "gold" : "outline"} onClick={() => setEscopo("todos")}>
+            Todos visíveis
+          </Button>
+          <Button size="sm" variant={escopo === "meus" ? "gold" : "outline"} onClick={() => setEscopo("meus")}>
+            Meus leads
+          </Button>
+          <Button size="sm" variant={escopo === "equipe" ? "gold" : "outline"} onClick={() => setEscopo("equipe")}>
+            Leads da minha equipe
+          </Button>
+          {minhasRegioes.length > 0 && (
+            <Button size="sm" variant={escopo === "regiao" ? "gold" : "outline"} onClick={() => setEscopo("regiao")}>
+              Todos da minha região
+            </Button>
+          )}
+        </div>
+      )}
       <VendasLeadDetail leadId={detailId} open={!!detailId} onOpenChange={(o) => { if (!o) { setDetailId(null); if (search.open) navigate({ to: "/vendas/leads", search: {} }); } }} isAdmin={isAdmin} onChanged={invalidate} />
 
       {filter === "nao_compareceu" || filter === "compareceu" ? (
