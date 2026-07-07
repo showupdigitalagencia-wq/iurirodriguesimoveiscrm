@@ -170,10 +170,10 @@ function VendasLeads() {
       <>
         {/* Mobile: card list — tudo visível sem scroll horizontal */}
         <div className="md:hidden space-y-2">
-          {leads.length === 0 && (
+          {leadsFiltrados.length === 0 && (
             <div className="p-6 text-center text-muted-foreground text-sm border rounded-md">Nenhum lead ainda</div>
           )}
-          {leads.map((l) => {
+          {leadsFiltrados.map((l) => {
             const info = vendasEtapaInfo(l.etapa);
             const isMyPending = l.corretor_id === myUid && l.atribuicao_status === "pendente";
             return (
@@ -241,10 +241,10 @@ function VendasLeads() {
               </tr>
             </thead>
             <tbody>
-              {leads.length === 0 && (
+              {leadsFiltrados.length === 0 && (
                 <tr><td colSpan={8} className="p-6 text-center text-muted-foreground">Nenhum lead ainda</td></tr>
               )}
-              {leads.map((l) => {
+              {leadsFiltrados.map((l) => {
                 const info = vendasEtapaInfo(l.etapa);
                 const isMyPending = l.corretor_id === myUid && l.atribuicao_status === "pendente";
                 return (
