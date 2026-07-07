@@ -97,6 +97,26 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
   });
   const canEnviarFinanciamento = isAdmin || !!isExec;
 
+  // Responsáveis: corretor + executivo gestor da equipe
+  const { data: responsaveis } = useQuery({
+    queryKey: ["vendas_lead_responsaveis", lead?.corretor_id],
+    enabled: !!lead?.corretor_id && open,
+    queryFn: async () => {
+      const { data: prof } = await supabase
+        .from("profiles").select("id, nome, responsavel_id").eq("id", lead!.corretor_id!).maybeSingle();
+      const respId = (prof as { responsavel_id: string | null } | null)?.responsavel_id ?? null;
+      let executivoNome: string | null = null;
+      if (respId) {
+        const { data: r } = await supabase.from("responsaveis").select("nome").eq("id", respId).maybeSingle();
+        executivoNome = (r as { nome: string | null } | null)?.nome ?? null;
+      }
+      return {
+        corretor: (prof as { nome: string | null } | null)?.nome ?? null,
+        executivo: executivoNome,
+      };
+    },
+  });
+
   useEffect(() => {
     if (lead && !editing) setForm(lead);
   }, [lead, editing]);
@@ -108,6 +128,7 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
     onChanged?.();
   }
 
+  const updateEtapaFn = useServerFn(updateVendasLeadEtapa);
   async function changeEtapa(etapa: VendasEtapa) {
     if (!lead) return;
     // Fechamento exige modal com seleção de imóvel + cálculo de comissão
@@ -117,8 +138,7 @@ export function VendasLeadDetail({ leadId, open, onOpenChange, isAdmin, onChange
     }
     setSavingEtapa(true);
     try {
-      const { error } = await supabase.from("vendas_leads").update({ etapa }).eq("id", lead.id);
-      if (error) throw error;
+      await updateEtapaFn({ data: { lead_id: lead.id, etapa } });
       toast.success("Etapa atualizada");
       invalidate();
       refetch();
