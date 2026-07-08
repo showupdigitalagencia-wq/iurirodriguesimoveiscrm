@@ -30,11 +30,12 @@ export const Route = createFileRoute("/_authenticated/vendas")({
   component: VendasLayout,
 });
 
-type TabDef = { to: string; label: string; icon: typeof LayoutDashboard; exact: boolean; adminOnly?: boolean };
+type TabDef = { to: string; label: string; icon: typeof LayoutDashboard; exact: boolean; adminOnly?: boolean; execOrAdminOnly?: boolean };
 const TABS: readonly TabDef[] = [
   { to: "/vendas", label: "Centro de Comando", icon: LayoutDashboard, exact: true },
   { to: "/vendas/leads", label: "Oportunidades", icon: Users, exact: false },
   { to: "/vendas/pipeline", label: "Negócios", icon: Kanban, exact: false },
+  { to: "/vendas/equipe", label: "Minha Equipe", icon: UsersRound, exact: false, execOrAdminOnly: true },
   { to: "/vendas/agenda", label: "Agenda", icon: CalendarDays, exact: false },
   { to: "/vendas/portfolio", label: "Portfólio", icon: Building2, exact: false },
   { to: "/vendas/plantao", label: "Plantão", icon: CalendarClock, exact: false },
