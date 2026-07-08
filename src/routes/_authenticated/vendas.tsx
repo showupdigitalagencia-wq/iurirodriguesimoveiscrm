@@ -45,8 +45,12 @@ const TABS: readonly TabDef[] = [
 ];
 
 function VendasLayout() {
-  const { isAdmin } = Route.useRouteContext();
-  const tabs = TABS.filter((t) => !t.adminOnly || isAdmin);
+  const { isAdmin, isExec } = Route.useRouteContext();
+  const tabs = TABS.filter((t) => {
+    if (t.adminOnly && !isAdmin) return false;
+    if (t.execOrAdminOnly && !isAdmin && !isExec) return false;
+    return true;
+  });
   return (
     <div data-vendas-root className="p-3 md:p-6 space-y-4 pb-24 md:pb-6">
       <div className="flex items-center justify-between">
