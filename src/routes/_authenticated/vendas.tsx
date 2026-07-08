@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, Link, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { LayoutDashboard, Kanban, Users, CalendarDays, BellRing, CalendarClock, Building2, BarChart3, Target } from "lucide-react";
+import { LayoutDashboard, Kanban, Users, CalendarDays, BellRing, CalendarClock, Building2, BarChart3, Target, UsersRound } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/vendas")({
   beforeLoad: async () => {
@@ -30,11 +30,12 @@ export const Route = createFileRoute("/_authenticated/vendas")({
   component: VendasLayout,
 });
 
-type TabDef = { to: string; label: string; icon: typeof LayoutDashboard; exact: boolean; adminOnly?: boolean };
+type TabDef = { to: string; label: string; icon: typeof LayoutDashboard; exact: boolean; adminOnly?: boolean; execOrAdminOnly?: boolean };
 const TABS: readonly TabDef[] = [
   { to: "/vendas", label: "Centro de Comando", icon: LayoutDashboard, exact: true },
   { to: "/vendas/leads", label: "Oportunidades", icon: Users, exact: false },
   { to: "/vendas/pipeline", label: "Negócios", icon: Kanban, exact: false },
+  { to: "/vendas/equipe", label: "Minha Equipe", icon: UsersRound, exact: false, execOrAdminOnly: true },
   { to: "/vendas/agenda", label: "Agenda", icon: CalendarDays, exact: false },
   { to: "/vendas/portfolio", label: "Portfólio", icon: Building2, exact: false },
   { to: "/vendas/plantao", label: "Plantão", icon: CalendarClock, exact: false },
@@ -44,8 +45,12 @@ const TABS: readonly TabDef[] = [
 ];
 
 function VendasLayout() {
-  const { isAdmin } = Route.useRouteContext();
-  const tabs = TABS.filter((t) => !t.adminOnly || isAdmin);
+  const { isAdmin, isExec } = Route.useRouteContext();
+  const tabs = TABS.filter((t) => {
+    if (t.adminOnly && !isAdmin) return false;
+    if (t.execOrAdminOnly && !isAdmin && !isExec) return false;
+    return true;
+  });
   return (
     <div data-vendas-root className="p-3 md:p-6 space-y-4 pb-24 md:pb-6">
       <div className="flex items-center justify-between">
