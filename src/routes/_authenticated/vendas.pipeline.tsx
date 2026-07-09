@@ -17,6 +17,7 @@ type VendasLeadExt = VendasLead & { atribuicao_status?: "pendente" | "aceito" | 
 function VendasPipeline() {
   const qc = useQueryClient();
   const [detailId, setDetailId] = useState<string | null>(null);
+  useRealtimeInvalidate(["vendas_leads"], [["vendas_leads_pipeline"]]);
 
   const { data: me } = useQuery({
     queryKey: ["me_vendas_pipeline_ctx"],
