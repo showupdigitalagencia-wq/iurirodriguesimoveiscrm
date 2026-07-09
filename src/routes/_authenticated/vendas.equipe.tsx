@@ -37,6 +37,11 @@ type CorretorStats = {
   visitaAgendada: number;
   negociacao: number;
   fechados: number;
+  propostasEnviadas: number;
+  followUpPendentes: number;
+  visitasRealizadas: number;
+  ultimaMovimentacao: Date | null;
+  ultimoAtendimento: Date | null;
   conversao: number;              // %
   tempoMedioResposta: number | null; // minutos
   tempoParado: number | null;     // dias médios desde updated_at (leads ativos)
@@ -47,12 +52,14 @@ type CorretorStats = {
 const NEGOCIACAO_ETAPAS = new Set(["proposta_enviada", "em_negociacao"]);
 const ATIVAS = new Set(["novo_lead", "contato_realizado", "visita_agendada", "proposta_enviada", "em_negociacao", "follow_up"]);
 
-function statsFor(profile: Profile, leads: VendasLead[]): CorretorStats {
+function statsFor(profile: Profile, leads: VendasLead[], visitasRealizadas: number): CorretorStats {
   const total = leads.length;
   const novos = leads.filter((l) => l.etapa === "novo_lead").length;
   const semContato = leads.filter((l) => !l.first_response_at && l.etapa !== "fechado" && l.etapa !== "perdido").length;
   const visitaAgendada = leads.filter((l) => l.etapa === "visita_agendada").length;
   const negociacao = leads.filter((l) => NEGOCIACAO_ETAPAS.has(l.etapa)).length;
+  const propostasEnviadas = leads.filter((l) => l.etapa === "proposta_enviada").length;
+  const followUpPendentes = leads.filter((l) => l.etapa === "follow_up").length;
   const fechados = leads.filter((l) => l.etapa === "fechado").length;
   const decididos = fechados + leads.filter((l) => l.etapa === "perdido").length;
   const conversao = decididos > 0 ? (fechados / decididos) * 100 : 0;
@@ -69,6 +76,12 @@ function statsFor(profile: Profile, leads: VendasLead[]): CorretorStats {
     ? ativos.reduce((s, l) => s + (now - new Date(l.updated_at).getTime()), 0) / ativos.length / 86400000
     : null;
 
+  const ultimaMovimentacao = leads.length
+    ? new Date(Math.max(...leads.map((l) => new Date(l.updated_at).getTime())))
+    : null;
+  const respostas = leads.filter((l) => l.first_response_at).map((l) => new Date(l.first_response_at!).getTime());
+  const ultimoAtendimento = respostas.length ? new Date(Math.max(...respostas)) : null;
+
   const valorNegociacao = leads
     .filter((l) => NEGOCIACAO_ETAPAS.has(l.etapa))
     .reduce((s, l) => s + (Number(l.valor) || 0), 0);
@@ -80,6 +93,8 @@ function statsFor(profile: Profile, leads: VendasLead[]): CorretorStats {
     corretor: profile,
     leads,
     total, novos, semContato, visitaAgendada, negociacao, fechados,
+    propostasEnviadas, followUpPendentes, visitasRealizadas,
+    ultimaMovimentacao, ultimoAtendimento,
     conversao, tempoMedioResposta, tempoParado, valorNegociacao, valorVendido,
   };
 }
