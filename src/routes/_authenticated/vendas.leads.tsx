@@ -73,6 +73,26 @@ function VendasLeads() {
   });
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["vendas_leads"] });
+  useRealtimeInvalidate(["vendas_leads", "vendas_visitas"], [["vendas_leads"]]);
+
+  // Nomes dos corretores para exibir "Responsável" nos cards
+  const corretorIds = useMemo(() => {
+    const set = new Set<string>();
+    for (const l of leads) if (l.corretor_id) set.add(l.corretor_id);
+    return Array.from(set);
+  }, [leads]);
+  const { data: corretoresMap = new Map<string, string>() } = useQuery({
+    queryKey: ["vendas_leads_corretor_names", corretorIds.sort().join(",")],
+    enabled: corretorIds.length > 0,
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("id, nome").in("id", corretorIds);
+      const m = new Map<string, string>();
+      for (const r of (data ?? []) as { id: string; nome: string | null }[]) {
+        if (r.id) m.set(r.id, r.nome ?? "—");
+      }
+      return m;
+    },
+  });
 
   const [detailId, setDetailId] = useState<string | null>(search.open ?? null);
   const [filter, setFilter] = useState<"todos" | "nao_compareceu" | "compareceu">("todos");
