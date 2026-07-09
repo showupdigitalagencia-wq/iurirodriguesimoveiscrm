@@ -8,9 +8,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { useRealtimeInvalidate } from "@/hooks/use-realtime-invalidate";
+import { formatDistanceToNow } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import {
   Users, Sparkles, PhoneOff, CalendarCheck, Handshake, Trophy,
   TrendingUp, Timer, Hourglass, DollarSign, Loader2, ChevronRight,
+  FileText, Clock, Zap, Medal,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/vendas/equipe")({
@@ -33,6 +37,11 @@ type CorretorStats = {
   visitaAgendada: number;
   negociacao: number;
   fechados: number;
+  propostasEnviadas: number;
+  followUpPendentes: number;
+  visitasRealizadas: number;
+  ultimaMovimentacao: Date | null;
+  ultimoAtendimento: Date | null;
   conversao: number;              // %
   tempoMedioResposta: number | null; // minutos
   tempoParado: number | null;     // dias médios desde updated_at (leads ativos)
@@ -43,12 +52,14 @@ type CorretorStats = {
 const NEGOCIACAO_ETAPAS = new Set(["proposta_enviada", "em_negociacao"]);
 const ATIVAS = new Set(["novo_lead", "contato_realizado", "visita_agendada", "proposta_enviada", "em_negociacao", "follow_up"]);
 
-function statsFor(profile: Profile, leads: VendasLead[]): CorretorStats {
+function statsFor(profile: Profile, leads: VendasLead[], visitasRealizadas: number): CorretorStats {
   const total = leads.length;
   const novos = leads.filter((l) => l.etapa === "novo_lead").length;
   const semContato = leads.filter((l) => !l.first_response_at && l.etapa !== "fechado" && l.etapa !== "perdido").length;
   const visitaAgendada = leads.filter((l) => l.etapa === "visita_agendada").length;
   const negociacao = leads.filter((l) => NEGOCIACAO_ETAPAS.has(l.etapa)).length;
+  const propostasEnviadas = leads.filter((l) => l.etapa === "proposta_enviada").length;
+  const followUpPendentes = leads.filter((l) => l.etapa === "follow_up").length;
   const fechados = leads.filter((l) => l.etapa === "fechado").length;
   const decididos = fechados + leads.filter((l) => l.etapa === "perdido").length;
   const conversao = decididos > 0 ? (fechados / decididos) * 100 : 0;
@@ -65,6 +76,12 @@ function statsFor(profile: Profile, leads: VendasLead[]): CorretorStats {
     ? ativos.reduce((s, l) => s + (now - new Date(l.updated_at).getTime()), 0) / ativos.length / 86400000
     : null;
 
+  const ultimaMovimentacao = leads.length
+    ? new Date(Math.max(...leads.map((l) => new Date(l.updated_at).getTime())))
+    : null;
+  const respostas = leads.filter((l) => l.first_response_at).map((l) => new Date(l.first_response_at!).getTime());
+  const ultimoAtendimento = respostas.length ? new Date(Math.max(...respostas)) : null;
+
   const valorNegociacao = leads
     .filter((l) => NEGOCIACAO_ETAPAS.has(l.etapa))
     .reduce((s, l) => s + (Number(l.valor) || 0), 0);
@@ -76,6 +93,8 @@ function statsFor(profile: Profile, leads: VendasLead[]): CorretorStats {
     corretor: profile,
     leads,
     total, novos, semContato, visitaAgendada, negociacao, fechados,
+    propostasEnviadas, followUpPendentes, visitasRealizadas,
+    ultimaMovimentacao, ultimoAtendimento,
     conversao, tempoMedioResposta, tempoParado, valorNegociacao, valorVendido,
   };
 }
@@ -147,8 +166,13 @@ function MinhaEquipePage() {
       if (error) throw error;
       return (data ?? []) as VendasLead[];
     },
-    refetchInterval: 60000,
   });
+
+  // Realtime: substitui o polling de 60s por atualização instantânea
+  useRealtimeInvalidate(
+    ["vendas_leads", "vendas_visitas"],
+    [["equipe_leads"], ["equipe_visitas_realizadas"]],
+  );
 
   const corretorIds = useMemo(() => Array.from(new Set(leads.map((l) => l.corretor_id).filter(Boolean) as string[])), [leads]);
 
@@ -165,6 +189,25 @@ function MinhaEquipePage() {
     },
   });
 
+  const profileIds = useMemo(() => profiles.map((p) => p.id).sort().join(","), [profiles]);
+  const { data: visitasByCorretor = new Map<string, number>() } = useQuery({
+    queryKey: ["equipe_visitas_realizadas", profileIds],
+    enabled: profiles.length > 0,
+    queryFn: async () => {
+      const ids = profiles.map((p) => p.id);
+      const { data } = await supabase
+        .from("vendas_visitas")
+        .select("corretor_id")
+        .eq("comparecimento", "realizada")
+        .in("corretor_id", ids);
+      const m = new Map<string, number>();
+      for (const r of (data ?? []) as { corretor_id: string | null }[]) {
+        if (r.corretor_id) m.set(r.corretor_id, (m.get(r.corretor_id) ?? 0) + 1);
+      }
+      return m;
+    },
+  });
+
   const perCorretor = useMemo(() => {
     const map = new Map<string, VendasLead[]>();
     for (const p of profiles) map.set(p.id, []);
@@ -172,9 +215,23 @@ function MinhaEquipePage() {
       if (l.corretor_id && map.has(l.corretor_id)) map.get(l.corretor_id)!.push(l);
     }
     return profiles
-      .map((p) => statsFor(p, map.get(p.id) ?? []))
+      .map((p) => statsFor(p, map.get(p.id) ?? [], visitasByCorretor.get(p.id) ?? 0))
       .sort((a, b) => b.total - a.total);
-  }, [leads, profiles]);
+  }, [leads, profiles, visitasByCorretor]);
+
+  // Ranking: top 1 por categoria
+  const ranking = useMemo(() => {
+    const withSales = perCorretor.filter((s) => s.fechados > 0);
+    const withDecisoes = perCorretor.filter((s) => s.fechados + s.leads.filter((l) => l.etapa === "perdido").length > 0);
+    const withResp = perCorretor.filter((s) => s.tempoMedioResposta != null);
+    const withRev = perCorretor.filter((s) => s.valorVendido > 0);
+    return {
+      vendas: [...withSales].sort((a, b) => b.fechados - a.fechados)[0] ?? null,
+      conversao: [...withDecisoes].sort((a, b) => b.conversao - a.conversao)[0] ?? null,
+      resposta: [...withResp].sort((a, b) => (a.tempoMedioResposta ?? Infinity) - (b.tempoMedioResposta ?? Infinity))[0] ?? null,
+      receita: [...withRev].sort((a, b) => b.valorVendido - a.valorVendido)[0] ?? null,
+    };
+  }, [perCorretor]);
 
   const teamTotals = useMemo(() => {
     const acc = perCorretor.reduce(
@@ -220,6 +277,25 @@ function MinhaEquipePage() {
         <KpiCard icon={<Timer className="h-4 w-4" />} label="1º atendimento" value={fmtMin(teamTotals.tempoMedioResposta)} />
       </div>
 
+      {/* Ranking da equipe */}
+      {!loading && perCorretor.length > 0 && (
+        <div className="space-y-2">
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+            <Medal className="h-3.5 w-3.5" /> Ranking da equipe
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <RankingCard icon={<Trophy className="h-4 w-4" />} label="Mais vendas" tone="green"
+              nome={ranking.vendas?.corretor.nome ?? "—"} valor={ranking.vendas ? `${ranking.vendas.fechados} vendas` : "sem dados"} />
+            <RankingCard icon={<TrendingUp className="h-4 w-4" />} label="Melhor conversão" tone="blue"
+              nome={ranking.conversao?.corretor.nome ?? "—"} valor={ranking.conversao ? `${ranking.conversao.conversao.toFixed(0)}%` : "sem dados"} />
+            <RankingCard icon={<Zap className="h-4 w-4" />} label="Resposta mais rápida" tone="yellow"
+              nome={ranking.resposta?.corretor.nome ?? "—"} valor={ranking.resposta ? fmtMin(ranking.resposta.tempoMedioResposta) : "sem dados"} />
+            <RankingCard icon={<DollarSign className="h-4 w-4" />} label="Maior receita" tone="pink"
+              nome={ranking.receita?.corretor.nome ?? "—"} valor={ranking.receita ? formatBRL(ranking.receita.valorVendido) : "sem dados"} />
+          </div>
+        </div>
+      )}
+
       {loading && (
         <div className="flex items-center justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
       )}
@@ -229,8 +305,17 @@ function MinhaEquipePage() {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        {perCorretor.map((s) => (
-          <Card key={s.corretor.id} className="overflow-hidden">
+        {perCorretor.map((s) => {
+          // SLA: verde <=3d, amarelo <=7d, vermelho >7d ou sem contato > 0
+          const sla: "ok" | "warn" | "danger" =
+            s.semContato > 3 || (s.tempoParado != null && s.tempoParado > 7) ? "danger"
+            : (s.tempoParado != null && s.tempoParado > 3) || s.semContato > 0 ? "warn"
+            : "ok";
+          const slaBar = sla === "ok" ? "bg-green-500" : sla === "warn" ? "bg-yellow-500" : "bg-red-500";
+          const slaLabel = sla === "ok" ? "🟢 Dentro do SLA" : sla === "warn" ? "🟡 Atenção" : "🔴 Fora do SLA";
+          return (
+          <Card key={s.corretor.id} className="overflow-hidden relative">
+            <div className={`absolute left-0 top-0 bottom-0 w-1 ${slaBar}`} aria-hidden />
             <CardContent className="p-4 space-y-3">
               <div className="flex items-center gap-3">
                 <Avatar className="h-11 w-11">
@@ -238,9 +323,10 @@ function MinhaEquipePage() {
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <div className="font-medium truncate">{s.corretor.nome ?? "—"}</div>
-                  <div className="text-[11px] text-muted-foreground flex items-center gap-2">
+                  <div className="text-[11px] text-muted-foreground flex items-center gap-2 flex-wrap">
                     <Badge variant="outline" className="text-[10px]">{s.total} leads</Badge>
                     <span className="inline-flex items-center gap-1"><TrendingUp className="h-3 w-3" />{s.conversao.toFixed(0)}%</span>
+                    <span>{slaLabel}</span>
                   </div>
                 </div>
               </div>
@@ -255,14 +341,20 @@ function MinhaEquipePage() {
               </div>
 
               <div className="grid grid-cols-2 gap-2 pt-1 border-t border-border/40 text-xs">
+                <InfoRow icon={<CalendarCheck className="h-3 w-3" />} label="Visitas realizadas" value={String(s.visitasRealizadas)} />
+                <InfoRow icon={<FileText className="h-3 w-3" />} label="Propostas enviadas" value={String(s.propostasEnviadas)} />
+                <InfoRow icon={<Hourglass className="h-3 w-3" />} label="Follow-up pendente" value={String(s.followUpPendentes)} tone={s.followUpPendentes > 0 ? "warn" : undefined} />
                 <InfoRow icon={<Timer className="h-3 w-3" />} label="1º atendimento" value={fmtMin(s.tempoMedioResposta)} />
                 <InfoRow icon={<Hourglass className="h-3 w-3" />} label="Sem movimentação" value={fmtDays(s.tempoParado)} tone={s.tempoParado != null && s.tempoParado > 5 ? "warn" : undefined} />
+                <InfoRow icon={<Clock className="h-3 w-3" />} label="Última movimentação" value={s.ultimaMovimentacao ? formatDistanceToNow(s.ultimaMovimentacao, { addSuffix: true, locale: ptBR }) : "—"} />
+                <InfoRow icon={<Clock className="h-3 w-3" />} label="Último atendimento" value={s.ultimoAtendimento ? formatDistanceToNow(s.ultimoAtendimento, { addSuffix: true, locale: ptBR }) : "—"} />
                 <InfoRow icon={<Handshake className="h-3 w-3" />} label="Em negociação" value={formatBRL(s.valorNegociacao)} />
                 <InfoRow icon={<DollarSign className="h-3 w-3" />} label="Vendido" value={formatBRL(s.valorVendido)} tone="ok" />
               </div>
             </CardContent>
           </Card>
-        ))}
+          );
+        })}
       </div>
 
       {/* Drill-down sheet */}
@@ -351,5 +443,17 @@ function InfoRow({ icon, label, value, tone }: { icon: React.ReactNode; label: s
       <span className="text-muted-foreground flex items-center gap-1">{icon}{label}</span>
       <span className={`font-medium ${cls}`}>{value}</span>
     </div>
+  );
+}
+
+function RankingCard({ icon, label, nome, valor, tone }: { icon: React.ReactNode; label: string; nome: string; valor: string; tone?: Tone }) {
+  return (
+    <Card className={`border ${tone ? TONE_BG[tone] : ""}`}>
+      <CardContent className="p-3">
+        <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider opacity-80">{icon}{label}</div>
+        <div className="text-sm font-semibold mt-1 leading-tight truncate">🥇 {nome}</div>
+        <div className="text-xs opacity-80">{valor}</div>
+      </CardContent>
+    </Card>
   );
 }

@@ -20,6 +20,8 @@ import { Plus, MapPin, Video, UserPlus, Check, X, CalendarX2, CalendarCheck2 } f
 import { VendasLeadDetail } from "@/components/vendas-lead-detail";
 import { VisitasNaoCompareceuList } from "@/components/visitas-nao-compareceu-list";
 import { Termometro, tendenciaFromTemperaturas } from "@/components/termometro";
+import { useRealtimeInvalidate } from "@/hooks/use-realtime-invalidate";
+import { UserCircle2 } from "lucide-react";
 
 type VendasLeadExt = VendasLead & {
   atribuicao_status?: "pendente" | "aceito" | "recusado" | null;
@@ -71,6 +73,26 @@ function VendasLeads() {
   });
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["vendas_leads"] });
+  useRealtimeInvalidate(["vendas_leads", "vendas_visitas"], [["vendas_leads"]]);
+
+  // Nomes dos corretores para exibir "Responsável" nos cards
+  const corretorIds = useMemo(() => {
+    const set = new Set<string>();
+    for (const l of leads) if (l.corretor_id) set.add(l.corretor_id);
+    return Array.from(set);
+  }, [leads]);
+  const { data: corretoresMap = new Map<string, string>() } = useQuery({
+    queryKey: ["vendas_leads_corretor_names", corretorIds.sort().join(",")],
+    enabled: corretorIds.length > 0,
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("id, nome").in("id", corretorIds);
+      const m = new Map<string, string>();
+      for (const r of (data ?? []) as { id: string; nome: string | null }[]) {
+        if (r.id) m.set(r.id, r.nome ?? "—");
+      }
+      return m;
+    },
+  });
 
   const [detailId, setDetailId] = useState<string | null>(search.open ?? null);
   const [filter, setFilter] = useState<"todos" | "nao_compareceu" | "compareceu">("todos");
@@ -185,6 +207,10 @@ function VendasLeads() {
                 <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
                   <div className="min-w-0">
                     <div className="font-medium truncate underline-offset-2">{l.nome}</div>
+                    <div className="text-[11px] text-muted-foreground truncate inline-flex items-center gap-1">
+                      <UserCircle2 className="h-3 w-3 shrink-0" />
+                      Responsável: {l.corretor_id ? (corretoresMap.get(l.corretor_id) ?? "—") : <span className="italic">Não atribuído</span>}
+                    </div>
                     <div className="text-xs text-muted-foreground">
                       {l.tipo === "compra" ? "Compra" : "Locação"} · {formatBRL(l.valor != null ? Number(l.valor) : null)}
                     </div>
@@ -249,7 +275,13 @@ function VendasLeads() {
                 const isMyPending = l.corretor_id === myUid && l.atribuicao_status === "pendente";
                 return (
                   <tr key={l.id} className="border-t hover:bg-muted/30 cursor-pointer" onClick={() => setDetailId(l.id)}>
-                    <td className="p-3 font-medium underline-offset-2 hover:underline">{l.nome}</td>
+                    <td className="p-3 font-medium underline-offset-2 hover:underline">
+                      <div>{l.nome}</div>
+                      <div className="text-[11px] text-muted-foreground font-normal inline-flex items-center gap-1 mt-0.5">
+                        <UserCircle2 className="h-3 w-3 shrink-0" />
+                        {l.corretor_id ? (corretoresMap.get(l.corretor_id) ?? "—") : <span className="italic">Não atribuído</span>}
+                      </div>
+                    </td>
                     <td className="p-3">
                       <Termometro
                         score={(l as unknown as { score_temperatura: number | null }).score_temperatura}
