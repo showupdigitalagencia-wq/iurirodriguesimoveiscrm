@@ -445,3 +445,15 @@ function InfoRow({ icon, label, value, tone }: { icon: React.ReactNode; label: s
     </div>
   );
 }
+
+function RankingCard({ icon, label, nome, valor, tone }: { icon: React.ReactNode; label: string; nome: string; valor: string; tone?: Tone }) {
+  return (
+    <Card className={`border ${tone ? TONE_BG[tone] : ""}`}>
+      <CardContent className="p-3">
+        <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider opacity-80">{icon}{label}</div>
+        <div className="text-sm font-semibold mt-1 leading-tight truncate">🥇 {nome}</div>
+        <div className="text-xs opacity-80">{valor}</div>
+      </CardContent>
+    </Card>
+  );
+}
