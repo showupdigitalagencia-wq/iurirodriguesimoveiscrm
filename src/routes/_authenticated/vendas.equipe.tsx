@@ -277,6 +277,25 @@ function MinhaEquipePage() {
         <KpiCard icon={<Timer className="h-4 w-4" />} label="1º atendimento" value={fmtMin(teamTotals.tempoMedioResposta)} />
       </div>
 
+      {/* Ranking da equipe */}
+      {!loading && perCorretor.length > 0 && (
+        <div className="space-y-2">
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+            <Medal className="h-3.5 w-3.5" /> Ranking da equipe
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <RankingCard icon={<Trophy className="h-4 w-4" />} label="Mais vendas" tone="green"
+              nome={ranking.vendas?.corretor.nome ?? "—"} valor={ranking.vendas ? `${ranking.vendas.fechados} vendas` : "sem dados"} />
+            <RankingCard icon={<TrendingUp className="h-4 w-4" />} label="Melhor conversão" tone="blue"
+              nome={ranking.conversao?.corretor.nome ?? "—"} valor={ranking.conversao ? `${ranking.conversao.conversao.toFixed(0)}%` : "sem dados"} />
+            <RankingCard icon={<Zap className="h-4 w-4" />} label="Resposta mais rápida" tone="yellow"
+              nome={ranking.resposta?.corretor.nome ?? "—"} valor={ranking.resposta ? fmtMin(ranking.resposta.tempoMedioResposta) : "sem dados"} />
+            <RankingCard icon={<DollarSign className="h-4 w-4" />} label="Maior receita" tone="pink"
+              nome={ranking.receita?.corretor.nome ?? "—"} valor={ranking.receita ? formatBRL(ranking.receita.valorVendido) : "sem dados"} />
+          </div>
+        </div>
+      )}
+
       {loading && (
         <div className="flex items-center justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
       )}
@@ -286,8 +305,17 @@ function MinhaEquipePage() {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        {perCorretor.map((s) => (
-          <Card key={s.corretor.id} className="overflow-hidden">
+        {perCorretor.map((s) => {
+          // SLA: verde <=3d, amarelo <=7d, vermelho >7d ou sem contato > 0
+          const sla: "ok" | "warn" | "danger" =
+            s.semContato > 3 || (s.tempoParado != null && s.tempoParado > 7) ? "danger"
+            : (s.tempoParado != null && s.tempoParado > 3) || s.semContato > 0 ? "warn"
+            : "ok";
+          const slaBar = sla === "ok" ? "bg-green-500" : sla === "warn" ? "bg-yellow-500" : "bg-red-500";
+          const slaLabel = sla === "ok" ? "🟢 Dentro do SLA" : sla === "warn" ? "🟡 Atenção" : "🔴 Fora do SLA";
+          return (
+          <Card key={s.corretor.id} className="overflow-hidden relative">
+            <div className={`absolute left-0 top-0 bottom-0 w-1 ${slaBar}`} aria-hidden />
             <CardContent className="p-4 space-y-3">
               <div className="flex items-center gap-3">
                 <Avatar className="h-11 w-11">
@@ -295,9 +323,10 @@ function MinhaEquipePage() {
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <div className="font-medium truncate">{s.corretor.nome ?? "—"}</div>
-                  <div className="text-[11px] text-muted-foreground flex items-center gap-2">
+                  <div className="text-[11px] text-muted-foreground flex items-center gap-2 flex-wrap">
                     <Badge variant="outline" className="text-[10px]">{s.total} leads</Badge>
                     <span className="inline-flex items-center gap-1"><TrendingUp className="h-3 w-3" />{s.conversao.toFixed(0)}%</span>
+                    <span>{slaLabel}</span>
                   </div>
                 </div>
               </div>
@@ -312,14 +341,20 @@ function MinhaEquipePage() {
               </div>
 
               <div className="grid grid-cols-2 gap-2 pt-1 border-t border-border/40 text-xs">
+                <InfoRow icon={<CalendarCheck className="h-3 w-3" />} label="Visitas realizadas" value={String(s.visitasRealizadas)} />
+                <InfoRow icon={<FileText className="h-3 w-3" />} label="Propostas enviadas" value={String(s.propostasEnviadas)} />
+                <InfoRow icon={<Hourglass className="h-3 w-3" />} label="Follow-up pendente" value={String(s.followUpPendentes)} tone={s.followUpPendentes > 0 ? "warn" : undefined} />
                 <InfoRow icon={<Timer className="h-3 w-3" />} label="1º atendimento" value={fmtMin(s.tempoMedioResposta)} />
                 <InfoRow icon={<Hourglass className="h-3 w-3" />} label="Sem movimentação" value={fmtDays(s.tempoParado)} tone={s.tempoParado != null && s.tempoParado > 5 ? "warn" : undefined} />
+                <InfoRow icon={<Clock className="h-3 w-3" />} label="Última movimentação" value={s.ultimaMovimentacao ? formatDistanceToNow(s.ultimaMovimentacao, { addSuffix: true, locale: ptBR }) : "—"} />
+                <InfoRow icon={<Clock className="h-3 w-3" />} label="Último atendimento" value={s.ultimoAtendimento ? formatDistanceToNow(s.ultimoAtendimento, { addSuffix: true, locale: ptBR }) : "—"} />
                 <InfoRow icon={<Handshake className="h-3 w-3" />} label="Em negociação" value={formatBRL(s.valorNegociacao)} />
                 <InfoRow icon={<DollarSign className="h-3 w-3" />} label="Vendido" value={formatBRL(s.valorVendido)} tone="ok" />
               </div>
             </CardContent>
           </Card>
-        ))}
+          );
+        })}
       </div>
 
       {/* Drill-down sheet */}
