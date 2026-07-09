@@ -207,6 +207,10 @@ function VendasLeads() {
                 <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
                   <div className="min-w-0">
                     <div className="font-medium truncate underline-offset-2">{l.nome}</div>
+                    <div className="text-[11px] text-muted-foreground truncate inline-flex items-center gap-1">
+                      <UserCircle2 className="h-3 w-3 shrink-0" />
+                      Responsável: {l.corretor_id ? (corretoresMap.get(l.corretor_id) ?? "—") : <span className="italic">Não atribuído</span>}
+                    </div>
                     <div className="text-xs text-muted-foreground">
                       {l.tipo === "compra" ? "Compra" : "Locação"} · {formatBRL(l.valor != null ? Number(l.valor) : null)}
                     </div>
