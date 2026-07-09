@@ -8,9 +8,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { useRealtimeInvalidate } from "@/hooks/use-realtime-invalidate";
+import { formatDistanceToNow } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import {
   Users, Sparkles, PhoneOff, CalendarCheck, Handshake, Trophy,
   TrendingUp, Timer, Hourglass, DollarSign, Loader2, ChevronRight,
+  FileText, Clock, Zap, Medal,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/vendas/equipe")({
