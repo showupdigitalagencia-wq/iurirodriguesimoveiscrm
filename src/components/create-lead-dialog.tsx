@@ -68,14 +68,21 @@ export function CreateLeadDialog({ mode, isAdmin, responsaveis, onCreated, trigg
       if (isAdmin && responsavel_id) {
         canal = responsaveis.find((r) => r.id === responsavel_id)?.canal ?? REGIAO_TO_CANAL[form.regiao] ?? "robson";
       } else if (!isAdmin) {
-        // executive: lookup own responsavel via profile
-        const { data: u } = await supabase.auth.getUser();
-        const uid = u.user?.id;
-        if (uid) {
-          const { data: p } = await supabase.from("profiles").select("responsavel_id").eq("id", uid).maybeSingle();
-          responsavel_id = (p?.responsavel_id as string | null) ?? null;
+        // Se o usuário atual for um executivo, usa o próprio exec_id.
+        // Caso contrário (corretor comum), usa o responsavel_id do profile.
+        const { data: execRpc } = await supabase.rpc("current_user_executivo_id");
+        const execId = (execRpc as string | null) ?? null;
+        if (execId) {
+          responsavel_id = execId;
+        } else {
+          const { data: u } = await supabase.auth.getUser();
+          const uid = u.user?.id;
+          if (uid) {
+            const { data: p } = await supabase.from("profiles").select("responsavel_id").eq("id", uid).maybeSingle();
+            responsavel_id = (p?.responsavel_id as string | null) ?? null;
+          }
         }
-        canal = responsavel_id ? (responsaveis.find((r) => r.id === responsavel_id)?.canal ?? "robson") : "robson";
+        canal = responsavel_id ? (responsaveis.find((r) => r.id === responsavel_id)?.canal ?? REGIAO_TO_CANAL[form.regiao] ?? "robson") : (REGIAO_TO_CANAL[form.regiao] ?? "robson");
       } else {
         canal = REGIAO_TO_CANAL[form.regiao] ?? "robson";
         const r = responsaveis.find((x) => x.canal === canal);
