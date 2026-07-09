@@ -275,7 +275,13 @@ function VendasLeads() {
                 const isMyPending = l.corretor_id === myUid && l.atribuicao_status === "pendente";
                 return (
                   <tr key={l.id} className="border-t hover:bg-muted/30 cursor-pointer" onClick={() => setDetailId(l.id)}>
-                    <td className="p-3 font-medium underline-offset-2 hover:underline">{l.nome}</td>
+                    <td className="p-3 font-medium underline-offset-2 hover:underline">
+                      <div>{l.nome}</div>
+                      <div className="text-[11px] text-muted-foreground font-normal inline-flex items-center gap-1 mt-0.5">
+                        <UserCircle2 className="h-3 w-3 shrink-0" />
+                        {l.corretor_id ? (corretoresMap.get(l.corretor_id) ?? "—") : <span className="italic">Não atribuído</span>}
+                      </div>
+                    </td>
                     <td className="p-3">
                       <Termometro
                         score={(l as unknown as { score_temperatura: number | null }).score_temperatura}
