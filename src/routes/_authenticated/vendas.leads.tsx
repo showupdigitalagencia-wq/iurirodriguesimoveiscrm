@@ -20,6 +20,8 @@ import { Plus, MapPin, Video, UserPlus, Check, X, CalendarX2, CalendarCheck2 } f
 import { VendasLeadDetail } from "@/components/vendas-lead-detail";
 import { VisitasNaoCompareceuList } from "@/components/visitas-nao-compareceu-list";
 import { Termometro, tendenciaFromTemperaturas } from "@/components/termometro";
+import { useRealtimeInvalidate } from "@/hooks/use-realtime-invalidate";
+import { UserCircle2 } from "lucide-react";
 
 type VendasLeadExt = VendasLead & {
   atribuicao_status?: "pendente" | "aceito" | "recusado" | null;
