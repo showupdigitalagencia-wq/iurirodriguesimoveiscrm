@@ -166,8 +166,13 @@ function MinhaEquipePage() {
       if (error) throw error;
       return (data ?? []) as VendasLead[];
     },
-    refetchInterval: 60000,
   });
+
+  // Realtime: substitui o polling de 60s por atualização instantânea
+  useRealtimeInvalidate(
+    ["vendas_leads", "vendas_visitas"],
+    [["equipe_leads"], ["equipe_visitas_realizadas"]],
+  );
 
   const corretorIds = useMemo(() => Array.from(new Set(leads.map((l) => l.corretor_id).filter(Boolean) as string[])), [leads]);
 
@@ -184,6 +189,25 @@ function MinhaEquipePage() {
     },
   });
 
+  const profileIds = useMemo(() => profiles.map((p) => p.id).sort().join(","), [profiles]);
+  const { data: visitasByCorretor = new Map<string, number>() } = useQuery({
+    queryKey: ["equipe_visitas_realizadas", profileIds],
+    enabled: profiles.length > 0,
+    queryFn: async () => {
+      const ids = profiles.map((p) => p.id);
+      const { data } = await supabase
+        .from("vendas_visitas")
+        .select("corretor_id")
+        .eq("comparecimento", "realizada")
+        .in("corretor_id", ids);
+      const m = new Map<string, number>();
+      for (const r of (data ?? []) as { corretor_id: string | null }[]) {
+        if (r.corretor_id) m.set(r.corretor_id, (m.get(r.corretor_id) ?? 0) + 1);
+      }
+      return m;
+    },
+  });
+
   const perCorretor = useMemo(() => {
     const map = new Map<string, VendasLead[]>();
     for (const p of profiles) map.set(p.id, []);
@@ -191,9 +215,23 @@ function MinhaEquipePage() {
       if (l.corretor_id && map.has(l.corretor_id)) map.get(l.corretor_id)!.push(l);
     }
     return profiles
-      .map((p) => statsFor(p, map.get(p.id) ?? []))
+      .map((p) => statsFor(p, map.get(p.id) ?? [], visitasByCorretor.get(p.id) ?? 0))
       .sort((a, b) => b.total - a.total);
-  }, [leads, profiles]);
+  }, [leads, profiles, visitasByCorretor]);
+
+  // Ranking: top 1 por categoria
+  const ranking = useMemo(() => {
+    const withSales = perCorretor.filter((s) => s.fechados > 0);
+    const withDecisoes = perCorretor.filter((s) => s.fechados + s.leads.filter((l) => l.etapa === "perdido").length > 0);
+    const withResp = perCorretor.filter((s) => s.tempoMedioResposta != null);
+    const withRev = perCorretor.filter((s) => s.valorVendido > 0);
+    return {
+      vendas: [...withSales].sort((a, b) => b.fechados - a.fechados)[0] ?? null,
+      conversao: [...withDecisoes].sort((a, b) => b.conversao - a.conversao)[0] ?? null,
+      resposta: [...withResp].sort((a, b) => (a.tempoMedioResposta ?? Infinity) - (b.tempoMedioResposta ?? Infinity))[0] ?? null,
+      receita: [...withRev].sort((a, b) => b.valorVendido - a.valorVendido)[0] ?? null,
+    };
+  }, [perCorretor]);
 
   const teamTotals = useMemo(() => {
     const acc = perCorretor.reduce(
