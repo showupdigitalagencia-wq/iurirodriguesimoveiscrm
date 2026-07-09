@@ -6,6 +6,7 @@ import { VENDAS_ETAPAS, formatBRL, type VendasLead } from "@/lib/vendas-helpers"
 import { VendasLeadDetail } from "@/components/vendas-lead-detail";
 import { Termometro, tendenciaFromTemperaturas } from "@/components/termometro";
 import { UserCircle2 } from "lucide-react";
+import { useRealtimeInvalidate } from "@/hooks/use-realtime-invalidate";
 
 export const Route = createFileRoute("/_authenticated/vendas/pipeline")({
   component: VendasPipeline,
