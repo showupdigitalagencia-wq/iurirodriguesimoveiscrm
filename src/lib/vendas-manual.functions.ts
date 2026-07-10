@@ -124,9 +124,13 @@ export const createManualVendasLead = createServerFn({ method: "POST" })
     const mensagem =
       atribuicaoTipo === "admin_manual"
         ? "Lead manual atribuído manualmente por administrador"
-        : atribuicaoTipo === "plantao_auto"
-          ? "Lead manual atribuído automaticamente ao plantonista do dia"
-          : "Lead manual criado sem plantonista definido (fallback)";
+        : atribuicaoTipo === "exec_manual"
+          ? "Lead manual atribuído pelo executivo a corretor da equipe"
+          : atribuicaoTipo === "self_manual"
+            ? "Lead manual cadastrado pelo próprio responsável"
+            : atribuicaoTipo === "plantao_auto"
+              ? "Lead manual atribuído automaticamente ao plantonista do dia"
+              : "Lead manual criado sem plantonista definido (fallback)";
 
     const detalhe = {
       mensagem,
