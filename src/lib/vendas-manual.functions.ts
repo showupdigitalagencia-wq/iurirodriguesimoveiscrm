@@ -13,7 +13,8 @@ const InputSchema = z.object({
   valor: z.number().nullable().optional(),
   observacoes: z.string().nullable().optional(),
   etapa: z.string().min(1),
-  // Apenas admins podem informar — para os demais é ignorado.
+  // Admins podem informar qualquer corretor. Executivos podem informar a si mesmos ou membros da própria equipe.
+  // Corretores podem informar apenas a si mesmos. Se omitido, o default varia por papel (ver handler).
   corretor_id_override: z.string().uuid().nullable().optional(),
 });
 
