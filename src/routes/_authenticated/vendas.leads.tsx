@@ -748,6 +748,7 @@ function CreateVendasLeadDialog({ onCreated }: { onCreated: () => void }) {
           </div>
 
           <div>
+          <div>
             <Label>Atribuir a</Label>
             {isAdmin ? (
               <Select
@@ -771,15 +772,41 @@ function CreateVendasLeadDialog({ onCreated }: { onCreated: () => void }) {
                   ))}
                 </SelectContent>
               </Select>
+            ) : isExec ? (
+              <Select
+                value={form.corretor_id || meuId || ""}
+                onValueChange={(v) => setForm({ ...form, corretor_id: v })}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {meuId && (
+                    <SelectItem value={meuId}>
+                      👤 {me?.nome ?? "Eu"} (você)
+                    </SelectItem>
+                  )}
+                  {(equipe ?? []).length > 0 && (
+                    <div className="px-2 py-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+                      Sua equipe
+                    </div>
+                  )}
+                  {(equipe ?? []).map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             ) : (
               <Input
-                value={plantonistaNome ? `⭐ ${plantonistaNome} — Plantonista do dia` : sugestaoLabel}
+                value={me?.nome ? `👤 ${me.nome} (você)` : "Atribuído a você"}
                 disabled
                 readOnly
               />
             )}
             <p className="text-xs text-muted-foreground mt-1">
-              Por padrão, os leads manuais são atribuídos ao plantonista do dia.
+              {isAdmin
+                ? "Por padrão, os leads manuais são atribuídos ao plantonista do dia."
+                : isExec
+                  ? "Você pode atribuir a si mesmo ou a um corretor da sua equipe. Não entra na fila do plantão."
+                  : "O lead ficará com você. Não entra na fila do plantão."}
             </p>
             {isAdmin && plantonistaId && form.corretor_id && form.corretor_id !== plantonistaId && (
               <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
@@ -787,6 +814,7 @@ function CreateVendasLeadDialog({ onCreated }: { onCreated: () => void }) {
               </p>
             )}
           </div>
+
 
 
           <div><Label>Observações</Label><Textarea rows={3} value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} /></div>
