@@ -589,16 +589,29 @@ function CreateVendasLeadDialog({ onCreated }: { onCreated: () => void }) {
     queryFn: async () => {
       const { data: ud } = await supabase.auth.getUser();
       const uid = ud.user?.id ?? null;
-      if (!uid) return { uid: null, isAdmin: false };
-      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", uid);
-      return { uid, isAdmin: roles?.some((r) => r.role === "admin") ?? false };
+      if (!uid) return { uid: null, nome: null as string | null, isAdmin: false, isExec: false, execId: null as string | null };
+      const [{ data: roles }, { data: prof }, { data: execRpc }] = await Promise.all([
+        supabase.from("user_roles").select("role").eq("user_id", uid),
+        supabase.from("profiles").select("nome").eq("id", uid).maybeSingle(),
+        supabase.rpc("current_user_executivo_id"),
+      ]);
+      const execId = (execRpc as string | null) ?? null;
+      return {
+        uid,
+        nome: (prof?.nome as string | null) ?? null,
+        isAdmin: roles?.some((r) => r.role === "admin") ?? false,
+        isExec: !!execId && execId === uid,
+        execId,
+      };
     },
   });
   const isAdmin = me?.isAdmin ?? false;
+  const isExec = me?.isExec ?? false;
+  const meuId = me?.uid ?? null;
 
   const { data: plantonista } = useQuery({
     queryKey: ["plantonista_hoje_create_lead"],
-    enabled: open,
+    enabled: open && isAdmin,
     queryFn: async () => getPlantonista(),
   });
 
@@ -608,6 +621,20 @@ function CreateVendasLeadDialog({ onCreated }: { onCreated: () => void }) {
     queryFn: async () => listElegiveis(),
   });
 
+  // Equipe do executivo (para permitir atribuir a membros da própria equipe)
+  const { data: equipe } = useQuery({
+    queryKey: ["equipe_exec_create_lead", meuId],
+    enabled: open && isExec && !!meuId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles").select("id, nome, ativo")
+        .eq("responsavel_id", meuId!)
+        .order("nome");
+      return ((data ?? []) as { id: string; nome: string; ativo: boolean | null }[])
+        .filter((p) => p.ativo !== false);
+    },
+  });
+
   const [form, setForm] = useState({
     nome: "", telefone: "", email: "",
     tipo: "compra" as VendasTipo,
@@ -615,20 +642,22 @@ function CreateVendasLeadDialog({ onCreated }: { onCreated: () => void }) {
     valor: "",
     observacoes: "",
     etapa: "novo_lead" as VendasEtapa,
-    corretor_id: "" as string, // admin override
+    corretor_id: "" as string,
   });
 
   const plantonistaId = plantonista?.corretor_id ?? null;
   const plantonistaNome = plantonista?.corretor_nome ?? null;
 
-  // Pré-seleciona o plantonista do dia como valor padrão do "Atribuir a"
+  // Default do "Atribuir a":
+  // - Admin: plantonista do dia
+  // - Exec/Corretor: si mesmo (não cai no plantão)
   useEffect(() => {
-    if (open && plantonistaId && !form.corretor_id) {
-      setForm((f) => (f.corretor_id ? f : { ...f, corretor_id: plantonistaId }));
-    }
-  }, [open, plantonistaId, form.corretor_id]);
+    if (!open || form.corretor_id) return;
+    if (isAdmin && plantonistaId) setForm((f) => (f.corretor_id ? f : { ...f, corretor_id: plantonistaId }));
+    else if (!isAdmin && meuId) setForm((f) => (f.corretor_id ? f : { ...f, corretor_id: meuId }));
+  }, [open, isAdmin, plantonistaId, meuId, form.corretor_id]);
 
-  // Lista final do select: plantonista no topo + demais elegíveis sem duplicar
+  // Lista final do select (admin): plantonista no topo + demais elegíveis sem duplicar
   const outrosElegiveis = useMemo(() => {
     const items = (elegiveis?.items ?? []) as { id: string; nome: string }[];
     return items.filter((c) => c.id !== plantonistaId);
