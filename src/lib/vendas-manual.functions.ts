@@ -44,16 +44,45 @@ export const createManualVendasLead = createServerFn({ method: "POST" })
       .maybeSingle();
     const plantonista = (escala as { corretor_id: string } | null)?.corretor_id ?? null;
 
+    // Executivo do usuário (se for exec)
+    const { data: execRpc } = await (context.supabase as unknown as {
+      rpc: (n: string, a?: unknown) => Promise<{ data: string | null }>;
+    }).rpc("current_user_executivo_id");
+    const execId = (execRpc as string | null) ?? null;
+    const isExec = !!execId && execId === context.userId;
+
     // Resolve atribuição final
     let corretorId: string | null;
-    let atribuicaoTipo: "plantao_auto" | "admin_manual" | "sem_plantonista";
+    let atribuicaoTipo: "plantao_auto" | "admin_manual" | "sem_plantonista" | "self_manual" | "exec_manual";
 
-    if (isAdmin && data.corretor_id_override) {
-      corretorId = data.corretor_id_override;
+    const override = data.corretor_id_override ?? null;
+
+    if (isAdmin && override) {
+      corretorId = override;
       atribuicaoTipo = corretorId === plantonista ? "plantao_auto" : "admin_manual";
+    } else if (override) {
+      // Não-admin: só pode atribuir a si mesmo ou (se exec) a alguém da sua equipe
+      if (override === context.userId) {
+        corretorId = override;
+        atribuicaoTipo = "self_manual";
+      } else if (isExec) {
+        const { data: membro } = await supabaseAdmin
+          .from("profiles").select("id").eq("id", override).eq("responsavel_id", execId).maybeSingle();
+        if (!membro) throw new Error("Corretor informado não pertence à sua equipe");
+        corretorId = override;
+        atribuicaoTipo = "exec_manual";
+      } else {
+        throw new Error("Você só pode cadastrar leads em seu próprio nome");
+      }
     } else {
-      corretorId = plantonista;
-      atribuicaoTipo = plantonista ? "plantao_auto" : "sem_plantonista";
+      // Sem override: admin cai no plantonista; exec/corretor ficam com si mesmos (não vai pro plantão)
+      if (isAdmin) {
+        corretorId = plantonista;
+        atribuicaoTipo = plantonista ? "plantao_auto" : "sem_plantonista";
+      } else {
+        corretorId = context.userId;
+        atribuicaoTipo = "self_manual";
+      }
     }
 
     const nowIso = new Date().toISOString();
