@@ -748,7 +748,6 @@ function CreateVendasLeadDialog({ onCreated }: { onCreated: () => void }) {
           </div>
 
           <div>
-          <div>
             <Label>Atribuir a</Label>
             {isAdmin ? (
               <Select
