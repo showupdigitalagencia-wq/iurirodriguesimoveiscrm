@@ -321,6 +321,8 @@ function AuthLayout() {
           </footer>
         </main>
 
+        <EnableNotificationsModal />
+
         {/* Bottom nav mobile — derivado de navItems para garantir paridade com desktop */}
         <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-sidebar text-sidebar-foreground border-t border-sidebar-border pb-[env(safe-area-inset-bottom)]">
           {isCorretorVendas && !isAdmin ? (
