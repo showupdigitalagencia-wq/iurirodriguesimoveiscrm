@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { endUserSession, startUserSession } from "@/lib/session-tracker";
 import { LauraChat } from "@/components/sophia-chat";
 import { HojeIconButton } from "@/components/hoje/hoje-icon-button";
+import { EnableNotificationsModal } from "@/components/enable-notifications-modal";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -319,6 +320,8 @@ function AuthLayout() {
             Iuri Rodrigues Imóveis — CRECI 11379J — CNPJ 33.587.804/0001-98
           </footer>
         </main>
+
+        <EnableNotificationsModal />
 
         {/* Bottom nav mobile — derivado de navItems para garantir paridade com desktop */}
         <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-sidebar text-sidebar-foreground border-t border-sidebar-border pb-[env(safe-area-inset-bottom)]">
