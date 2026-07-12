@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { endUserSession, startUserSession } from "@/lib/session-tracker";
 import { LauraChat } from "@/components/sophia-chat";
 import { HojeIconButton } from "@/components/hoje/hoje-icon-button";
+import { EnableNotificationsModal } from "@/components/enable-notifications-modal";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
