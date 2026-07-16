@@ -129,16 +129,13 @@ export function EnableNotificationsModal() {
     <Dialog
       open={open}
       onOpenChange={(v) => {
-        // Se bloqueado, não permite fechar clicando fora — só via instruções.
-        if (denied) return;
         if (!v) handleSnooze();
       }}
     >
       <DialogContent
         className="max-w-md"
-        onInteractOutside={(e) => { if (denied) e.preventDefault(); }}
-        onEscapeKeyDown={(e) => { if (denied) e.preventDefault(); }}
       >
+
         <DialogHeader>
           <div className="mx-auto rounded-full bg-gold/15 p-3 w-fit mb-2">
             {denied ? <AlertTriangle className="h-6 w-6 text-red-500" /> : <Bell className="h-6 w-6 text-gold" />}
