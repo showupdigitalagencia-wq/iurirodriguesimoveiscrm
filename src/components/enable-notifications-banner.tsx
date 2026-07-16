@@ -168,6 +168,15 @@ export function EnableNotificationsBanner() {
             </Button>
           </div>
         </div>
+        <button
+          onClick={handleDismiss}
+          aria-label="Fechar"
+          title="Fechar"
+          className="text-red-100/80 hover:text-red-50 p-1 rounded-md"
+        >
+          <X className="h-4 w-4" />
+        </button>
+
       </div>
     );
   }
